@@ -10,13 +10,13 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class ExampleSubsystem extends SubsystemBase {
-  static ExampleSubsystem instance;
+public class PrototypeShooter extends SubsystemBase {
+  static PrototypeShooter instance;
   CANSparkFlex motorA;
   CANSparkFlex motorB;
 
   /** Creates a new ExampleSubsystem. */
-  public ExampleSubsystem() {
+  public PrototypeShooter() {
     motorA = new CANSparkFlex(12, MotorType.kBrushless);
     motorB = new CANSparkFlex(11, MotorType.kBrushless);
   }
@@ -37,9 +37,9 @@ public class ExampleSubsystem extends SubsystemBase {
   public Command spinMotorBCommand(double vBus) {
     return runOnce(() -> spinMotorB(vBus));
   }
-  public static ExampleSubsystem getInstance() {
+  public static PrototypeShooter getInstance() {
     if(instance == null) {
-      instance = new ExampleSubsystem();
+      instance = new PrototypeShooter();
     }
 
     return instance;
