@@ -55,5 +55,8 @@ public class RobotContainer {
 
   }
 
+  public void logVals() {
+    m_exampleSubsystem.logValues();
+  }
 
 }
