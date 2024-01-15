@@ -4,12 +4,46 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.CANSparkFlex;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ExampleSubsystem extends SubsystemBase {
+  static ExampleSubsystem instance;
+  CANSparkFlex motorA;
+  CANSparkFlex motorB;
+
   /** Creates a new ExampleSubsystem. */
-  public ExampleSubsystem() {}
+  public ExampleSubsystem() {
+    motorA = new CANSparkFlex(12, MotorType.kBrushless);
+    motorB = new CANSparkFlex(11, MotorType.kBrushless);
+  }
+
+  private void spinMotorA(double vBus) {
+    motorA.set(vBus);
+    
+  }
+
+  private void spinMotorB(double vBus) {
+    motorB.set(vBus);
+    
+  }
+  public Command spinMotorACommand(double vBus) {
+    return runOnce(() -> spinMotorA(vBus));
+  }
+
+  public Command spinMotorBCommand(double vBus) {
+    return runOnce(() -> spinMotorB(vBus));
+  }
+  public static ExampleSubsystem getInstance() {
+    if(instance == null) {
+      instance = new ExampleSubsystem();
+    }
+
+    return instance;
+  }
 
   /**
    * Example command factory method.
@@ -19,6 +53,7 @@ public class ExampleSubsystem extends SubsystemBase {
   public Command exampleMethodCommand() {
     // Inline construction of command goes here.
     // Subsystem::RunOnce implicitly requires `this` subsystem.
+
     return runOnce(
         () -> {
           /* one-time action goes here */
@@ -26,7 +61,8 @@ public class ExampleSubsystem extends SubsystemBase {
   }
 
   /**
-   * An example method querying a boolean state of the subsystem (for example, a digital sensor).
+   * An example method querying a boolean state of the subsystem (for example, a
+   * digital sensor).
    *
    * @return value of some boolean subsystem state, such as a digital sensor.
    */
