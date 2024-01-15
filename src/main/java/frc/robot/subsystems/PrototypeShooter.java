@@ -7,68 +7,64 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class PrototypeShooter extends SubsystemBase {
   static PrototypeShooter instance;
-  CANSparkFlex motorA;
-  CANSparkFlex motorB;
+  CANSparkFlex shooterMotorA;
+  CANSparkFlex shooterMotorB;
+  DataLog log;
+  public DoubleLogEntry shooterMotorACurrent, shooterMotorBCurrent, shooterMotorAVelocity, shooterMotorBVelocity;
 
   /** Creates a new ExampleSubsystem. */
   public PrototypeShooter() {
-    motorA = new CANSparkFlex(12, MotorType.kBrushless);
-    motorB = new CANSparkFlex(11, MotorType.kBrushless);
+    shooterMotorA = new CANSparkFlex(12, MotorType.kBrushless);
+    shooterMotorB = new CANSparkFlex(11, MotorType.kBrushless);
+    
+    log = DataLogManager.getLog();
+
+    shooterMotorB.follow(shooterMotorA);
+
+    shooterMotorB.setInverted(true);
+    shooterMotorA.setInverted(false);
   }
 
-  private void spinMotorA(double vBus) {
-    motorA.set(vBus);
-    
+  private void spinMotor(double vBus) {
+    shooterMotorA.set(vBus);
+
   }
 
-  private void spinMotorB(double vBus) {
-    motorB.set(vBus);
-    
-  }
   public Command spinMotorACommand(double vBus) {
-    return runOnce(() -> spinMotorA(vBus));
+    return runOnce(() -> spinMotor(vBus));
   }
 
-  public Command spinMotorBCommand(double vBus) {
-    return runOnce(() -> spinMotorB(vBus));
-  }
   public static PrototypeShooter getInstance() {
-    if(instance == null) {
+    if (instance == null) {
       instance = new PrototypeShooter();
     }
 
     return instance;
   }
 
-  /**
-   * Example command factory method.
-   *
-   * @return a command
-   */
-  public Command exampleMethodCommand() {
-    // Inline construction of command goes here.
-    // Subsystem::RunOnce implicitly requires `this` subsystem.
+  private void configureLogs() {
+    shooterMotorACurrent = new DoubleLogEntry(log, "/A/Current");
+    shooterMotorBCurrent = new DoubleLogEntry(log, "/B/Current");
+    shooterMotorAVelocity = new DoubleLogEntry(log, "/A/Velocity");
+    shooterMotorBVelocity = new DoubleLogEntry(log, "/B/Velocity");
 
-    return runOnce(
-        () -> {
-          /* one-time action goes here */
-        });
   }
 
-  /**
-   * An example method querying a boolean state of the subsystem (for example, a
-   * digital sensor).
-   *
-   * @return value of some boolean subsystem state, such as a digital sensor.
-   */
-  public boolean exampleCondition() {
-    // Query some boolean state, such as a digital sensor.
-    return false;
+
+  public void logValues() {
+    shooterMotorACurrent.append(shooterMotorA.getOutputCurrent());
+    shooterMotorBCurrent.append(shooterMotorB.getOutputCurrent());
+
+    shooterMotorAVelocity.append(shooterMotorA.getEncoder().getVelocity());
+    shooterMotorBVelocity.append(shooterMotorB.getEncoder().getVelocity());
   }
 
   @Override
