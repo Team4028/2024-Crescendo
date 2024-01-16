@@ -50,7 +50,7 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    m_driverController.a().onTrue(m_exampleSubsystem.spinMotorACommand(0.12))
+    m_driverController.a().onTrue(m_exampleSubsystem.spinMotorACommand(0.2522))
         .onFalse(m_exampleSubsystem.spinMotorACommand(0));
 
   }
