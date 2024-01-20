@@ -19,7 +19,7 @@ public class PrototypeShooter extends SubsystemBase {
   DataLog log;
   public DoubleLogEntry shooterMotorACurrent, shooterMotorBCurrent, shooterMotorAVelocity, shooterMotorBVelocity;
 
-  /** Creates a new ExampleSubsystem. */
+
   public PrototypeShooter() {
     log = DataLogManager.getLog();    
     configureLogs();

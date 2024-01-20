@@ -6,9 +6,9 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
-import frc.robot.subsystems.PrototypeShooter;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -21,7 +21,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final PrototypeShooter m_exampleSubsystem = PrototypeShooter.getInstance();
+  private final PrototypeShooter m_PrototypeShooter = PrototypeShooter.getInstance();
+  private final PhotonPrototype m_PhotonVision = PhotonPrototype.getInstance();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController = new CommandXboxController(
@@ -50,13 +51,14 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    m_driverController.a().onTrue(m_exampleSubsystem.spinMotorACommand(0.2522))
-        .onFalse(m_exampleSubsystem.spinMotorACommand(0));
+    m_driverController.a().onTrue(m_PrototypeShooter.spinMotorACommand(0.2522))
+        .onFalse(m_PrototypeShooter.spinMotorACommand(0));
 
   }
 
+  
   public void logVals() {
-    m_exampleSubsystem.logValues();
+    m_PrototypeShooter.logValues();
   }
 
 }
