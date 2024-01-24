@@ -8,6 +8,12 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.SensorMotor;
+
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.playingwithfusion.TimeOfFlight;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -21,6 +27,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+  private SensorMotor m_sensorMotor = new SensorMotor();
+ // private TimeOfFlight sensor;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
@@ -29,7 +37,9 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
+
     configureBindings();
+    //sensor = new TimeOfFlight(1);
   }
 
   /**
@@ -46,10 +56,20 @@ public class RobotContainer {
     new Trigger(m_exampleSubsystem::exampleCondition)
         .onTrue(new ExampleCommand(m_exampleSubsystem));
 
+    m_sensorMotor.setDefaultCommand(m_sensorMotor.stopMotor());
+
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
     m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+    m_driverController.a().whileTrue(m_sensorMotor.runMotor().until(m_sensorMotor.hasGamePieceSupplier()).andThen(m_sensorMotor.stopMotor()));
+
+
+    
   }
+
+ /*  public void logToDash() {
+    SmartDashboard.putNumber("tof distance", sensor.getRange());
+  }*/
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
