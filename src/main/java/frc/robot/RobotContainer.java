@@ -56,7 +56,10 @@ public class RobotContainer {
     // Set vBus to as needed for speed difference
     m_driverController.a().onTrue(m_PrototypeShooter.spinMotorBCommand(0.25))
         .onFalse(m_PrototypeShooter.spinMotorBCommand(0));
-  }
+  
+    m_driverController.b().onTrue(m_PrototypeShooter.spinFeederMotorCommand(.25))
+    .onFalse(m_PrototypeShooter.spinFeederMotorCommand(0));
+      }
 
   public void logVals() {
     m_PrototypeShooter.logValues();

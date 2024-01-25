@@ -15,15 +15,25 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class PrototypeShooter extends SubsystemBase {
   static PrototypeShooter instance;
-  CANSparkFlex shooterMotorA, shooterMotorB;
+  CANSparkFlex shooterMotorA, shooterMotorB, feederMotor;
+
   DataLog log;
   public DoubleLogEntry shooterMotorACurrent, shooterMotorBCurrent, shooterMotorAVelocity, shooterMotorBVelocity;
 
   public PrototypeShooter() {
     log = DataLogManager.getLog();
     configureLogs();
+    feederMotor = new CANSparkFlex(44, MotorType.kBrushless);
     shooterMotorA = new CANSparkFlex(12, MotorType.kBrushless);
     shooterMotorB = new CANSparkFlex(11, MotorType.kBrushless);
+  }
+
+  private void spinFeederMotor(double vBus) {
+    feederMotor.set(vBus);
+  }
+
+  public Command spinFeederMotorCommand(double vBus) {
+    return runOnce(() -> spinFeederMotor(vBus));
   }
 
   private void spinMotorA(double vBus) {
@@ -38,7 +48,7 @@ public class PrototypeShooter extends SubsystemBase {
     return runOnce(() -> spinMotorA(vBus));
   }
 
-  public Command spinMotorBCommand(double vBus){
+  public Command spinMotorBCommand(double vBus) {
     return runOnce(() -> spinMotorB(vBus));
   }
 
