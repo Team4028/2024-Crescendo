@@ -19,21 +19,27 @@ public class PrototypeShooter extends SubsystemBase {
   DataLog log;
   public DoubleLogEntry shooterMotorACurrent, shooterMotorBCurrent, shooterMotorAVelocity, shooterMotorBVelocity;
 
-
   public PrototypeShooter() {
-    log = DataLogManager.getLog();    
+    log = DataLogManager.getLog();
     configureLogs();
     shooterMotorA = new CANSparkFlex(12, MotorType.kBrushless);
     shooterMotorB = new CANSparkFlex(11, MotorType.kBrushless);
   }
 
-  private void spinMotor(double vBus) {
+  private void spinMotorA(double vBus) {
     shooterMotorA.set(vBus);
+  }
+
+  private void spinMotorB(double vBus) {
     shooterMotorB.set(-1. * vBus);
   }
 
   public Command spinMotorACommand(double vBus) {
-    return runOnce(() -> spinMotor(vBus));
+    return runOnce(() -> spinMotorA(vBus));
+  }
+
+  public Command spinMotorBCommand(double vBus){
+    return runOnce(() -> spinMotorB(vBus));
   }
 
   public static PrototypeShooter getInstance() {
@@ -51,7 +57,6 @@ public class PrototypeShooter extends SubsystemBase {
     shooterMotorBVelocity = new DoubleLogEntry(log, "/B/Velocity");
 
   }
-
 
   public void logValues() {
     shooterMotorACurrent.append(shooterMotorA.getOutputCurrent());

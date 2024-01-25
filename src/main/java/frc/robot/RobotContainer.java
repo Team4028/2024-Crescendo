@@ -22,7 +22,6 @@ import frc.robot.subsystems.*;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final PrototypeShooter m_PrototypeShooter = PrototypeShooter.getInstance();
-  private final PhotonPrototype m_PhotonVision = PhotonPrototype.getInstance();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController = new CommandXboxController(
@@ -51,12 +50,14 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    m_driverController.a().onTrue(m_PrototypeShooter.spinMotorACommand(0.2522))
+    m_driverController.a().onTrue(m_PrototypeShooter.spinMotorACommand(0.25))
         .onFalse(m_PrototypeShooter.spinMotorACommand(0));
 
+    // Set vBus to as needed for speed difference
+    m_driverController.a().onTrue(m_PrototypeShooter.spinMotorBCommand(0.25))
+        .onFalse(m_PrototypeShooter.spinMotorBCommand(0));
   }
 
-  
   public void logVals() {
     m_PrototypeShooter.logValues();
   }
