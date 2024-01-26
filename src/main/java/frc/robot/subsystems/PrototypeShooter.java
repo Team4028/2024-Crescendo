@@ -5,6 +5,8 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkFlex;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.util.datalog.DataLog;
@@ -16,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class PrototypeShooter extends SubsystemBase {
   static PrototypeShooter instance;
   CANSparkFlex shooterMotorA, shooterMotorB, feederMotor;
+  SparkPIDController pidA, pidB;
 
   DataLog log;
   public DoubleLogEntry shooterMotorACurrent, shooterMotorBCurrent, shooterMotorAVelocity, shooterMotorBVelocity;
@@ -23,17 +26,39 @@ public class PrototypeShooter extends SubsystemBase {
   public PrototypeShooter() {
     log = DataLogManager.getLog();
     configureLogs();
-    feederMotor = new CANSparkFlex(44, MotorType.kBrushless);
     shooterMotorA = new CANSparkFlex(12, MotorType.kBrushless);
     shooterMotorB = new CANSparkFlex(11, MotorType.kBrushless);
+
+    pidA = shooterMotorA.getPIDController();
+    pidB = shooterMotorB.getPIDController();
+
+    pidA.setP(0);
+    pidA.setI(0);
+    pidA.setD(0);
+    pidA.setIZone(0);
+    pidA.setOutputRange(-0.9, 0.9);
+
+    pidB.setP(0);
+    pidB.setI(0);
+    pidB.setD(0);
+    pidB.setIZone(0);
+    pidB.setOutputRange(-0.9, 0.9);
   }
 
-  private void spinFeederMotor(double vBus) {
-    feederMotor.set(vBus);
+  private void setAToVel(double velRPM) {
+    pidA.setReference(velRPM, ControlType.kVelocity);
   }
 
-  public Command spinFeederMotorCommand(double vBus) {
-    return runOnce(() -> spinFeederMotor(vBus));
+  private void setBToVel(double velRPM) {
+    pidB.setReference(velRPM, ControlType.kVelocity);
+  }
+
+  public Command setAToVelCommand(double velRPM) {
+    return runOnce(() -> setAToVel(velRPM));
+  }
+
+  public Command setBToVelCommand(double velRPM) {
+    return runOnce(() -> setBToVel(velRPM));
   }
 
   private void spinMotorA(double vBus) {
@@ -50,14 +75,6 @@ public class PrototypeShooter extends SubsystemBase {
 
   public Command spinMotorBCommand(double vBus) {
     return runOnce(() -> spinMotorB(vBus));
-  }
-
-  public static PrototypeShooter getInstance() {
-    if (instance == null) {
-      instance = new PrototypeShooter();
-    }
-
-    return instance;
   }
 
   private void configureLogs() {
