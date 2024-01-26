@@ -21,7 +21,8 @@ import frc.robot.subsystems.*;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final PrototypeShooter m_PrototypeShooter = PrototypeShooter.getInstance();
+  private final PrototypeShooter prototypeShooter = new PrototypeShooter();
+  private final Feeder feeder = new Feeder();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController = new CommandXboxController(
@@ -50,19 +51,21 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    m_driverController.a().onTrue(m_PrototypeShooter.spinMotorACommand(0.25))
-        .onFalse(m_PrototypeShooter.spinMotorACommand(0));
+    m_driverController.a().onTrue(prototypeShooter.spinMotorACommand(0.25))
+        .onFalse(prototypeShooter.spinMotorACommand(0));
 
     // Set vBus to as needed for speed difference
-    m_driverController.a().onTrue(m_PrototypeShooter.spinMotorBCommand(0.25))
-        .onFalse(m_PrototypeShooter.spinMotorBCommand(0));
+    m_driverController.a().onTrue(prototypeShooter.spinMotorBCommand(0.25))
+        .onFalse(prototypeShooter.spinMotorBCommand(0));
   
-    m_driverController.b().onTrue(m_PrototypeShooter.spinFeederMotorCommand(.25))
-    .onFalse(m_PrototypeShooter.spinFeederMotorCommand(0));
+    m_driverController.b().onTrue(feeder.runFeederMotorCommand(.1))
+    .onFalse(feeder.runFeederMotorCommand(0));
+    //m_driverController.x().onTrue(prototypeShooter.setAToVelCommand(600)).onTrue(prototypeShooter.setBToVelCommand(600));
+    //m_driverController.y().onTrue(prototypeShooter.setAToVelCommand(0)).onTrue(prototypeShooter.setBToVelCommand(0));
       }
 
   public void logVals() {
-    m_PrototypeShooter.logValues();
+    prototypeShooter.logValues();
   }
 
 }
