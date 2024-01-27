@@ -51,14 +51,16 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    //vBus for trap is .15
     m_driverController.a().onTrue(prototypeShooter.spinMotorACommand(0.75))
         .onFalse(prototypeShooter.spinMotorACommand(0));
 
     // Set vBus to as needed for speed difference
-    m_driverController.a().onTrue(prototypeShooter.spinMotorBCommand(0.95))
+    //vBus for trap is .25
+    m_driverController.a().onTrue(prototypeShooter.spinMotorBCommand(0.9))
         .onFalse(prototypeShooter.spinMotorBCommand(0));
   
-    m_driverController.b().onTrue(feeder.runFeederMotorCommand(.1))
+    m_driverController.b().onTrue(feeder.runFeederMotorCommand(.9))
     .onFalse(feeder.runFeederMotorCommand(0));
     //m_driverController.x().onTrue(prototypeShooter.setAToVelCommand(600)).onTrue(prototypeShooter.setBToVelCommand(600));
     //m_driverController.y().onTrue(prototypeShooter.setAToVelCommand(0)).onTrue(prototypeShooter.setBToVelCommand(0));
