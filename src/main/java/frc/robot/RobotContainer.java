@@ -51,11 +51,11 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    m_driverController.a().onTrue(prototypeShooter.spinMotorACommand(0.25))
+    m_driverController.a().onTrue(prototypeShooter.spinMotorACommand(0.75))
         .onFalse(prototypeShooter.spinMotorACommand(0));
 
     // Set vBus to as needed for speed difference
-    m_driverController.a().onTrue(prototypeShooter.spinMotorBCommand(0.25))
+    m_driverController.a().onTrue(prototypeShooter.spinMotorBCommand(0.95))
         .onFalse(prototypeShooter.spinMotorBCommand(0));
   
     m_driverController.b().onTrue(feeder.runFeederMotorCommand(.1))
