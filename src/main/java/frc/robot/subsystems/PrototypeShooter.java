@@ -10,29 +10,50 @@ import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.units.Unit;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.util.datalog.StringLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog.State;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
-public class PrototypeShooter extends SubsystemBase {
+public class PrototypeShooter implements Subsystem {
   static PrototypeShooter instance;
   private CANSparkFlex rightMotor, leftMotor;
   private RelativeEncoder rightEncoder, leftEncoder;
   private SparkPIDController pidRight, pidLeft;
 
   private DataLog log;
-  public DoubleLogEntry rightMotorCurrent, leftMotorCurrent, rightMotorVelocity, leftMotorVelocity;
+  public DoubleLogEntry rightMotorCurrent, leftMotorCurrent, rightMotorVelocity, leftMotorVelocity, leftMotorVoltage,
+      rightMotorVoltage;
+  public StringLogEntry stateLog;
 
   private int scan;
+
+  private SysIdRoutine routine = new SysIdRoutine(
+    new SysIdRoutine.Config(),
+    new SysIdRoutine.Mechanism((volts) -> setMotorsVoltage(volts.in(Units.Volts)), log -> {
+      log.motor("right")
+        .voltage(Units.Volts.of(rightMotor.get() * rightMotor.getBusVoltage()))
+        .angularPosition(Units.Rotations.of(rightMotor.getEncoder().getPosition()))
+        .angularVelocity(Units.RPM.of(rightMotor.getEncoder().getVelocity()));
+      log.motor("left")
+        .voltage(Units.Volts.of(leftMotor.get() * leftMotor.getBusVoltage()))
+        .angularPosition(Units.Rotations.of(leftMotor.getEncoder().getPosition()))
+        .angularVelocity(Units.RPM.of(leftMotor.getEncoder().getVelocity()));
+    }, this));
 
   private PrototypeShooter() {
     scan = 0;
     log = DataLogManager.getLog();
     initLogs();
-
     rightMotor = new CANSparkFlex(12, MotorType.kBrushless);
     leftMotor = new CANSparkFlex(11, MotorType.kBrushless);
     rightEncoder = rightMotor.getEncoder();
@@ -64,8 +85,21 @@ public class PrototypeShooter extends SubsystemBase {
     pidRight.setReference(velRPM, ControlType.kVelocity);
   }
 
+  public Command runQuasi(Direction dir) {
+    return routine.quasistatic(dir);
+  }
+
+  public Command runDynamuc(Direction dir) {
+    return routine.dynamic(dir);
+  }
+
   private void setLeftToVel(double velRPM) {
     pidLeft.setReference(velRPM, ControlType.kVelocity);
+  }
+
+  private void setMotorsVoltage(double volts) {
+    leftMotor.setVoltage(volts);
+    rightMotor.setVoltage(volts);
   }
 
   public Command setRightToVelCommand(double velRPM) {
@@ -97,6 +131,9 @@ public class PrototypeShooter extends SubsystemBase {
     leftMotorCurrent = new DoubleLogEntry(log, "/left/Current");
     rightMotorVelocity = new DoubleLogEntry(log, "/right/Velocity");
     leftMotorVelocity = new DoubleLogEntry(log, "/left/Velocity");
+    rightMotorVoltage = new DoubleLogEntry(log, "/right/Voltage");
+    leftMotorVoltage = new DoubleLogEntry(log, "/left/Voltage");
+    stateLog = new StringLogEntry(log, "test-state");
   }
 
   public void logValues() {
@@ -105,6 +142,9 @@ public class PrototypeShooter extends SubsystemBase {
 
     rightMotorVelocity.append(rightMotor.getEncoder().getVelocity());
     leftMotorVelocity.append(leftMotor.getEncoder().getVelocity());
+
+    rightMotorVoltage.append(rightMotor.get() * rightMotor.getBusVoltage());
+    leftMotorVoltage.append(leftMotor.get() * leftMotor.getBusVoltage());
   }
 
   @Override

@@ -7,6 +7,7 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.*;
 
 /**
@@ -24,7 +25,7 @@ public class RobotContainer {
   private final Feeder feeder = Feeder.getInstance();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController m_driverController = new CommandXboxController(
+  private final CommandXboxController driverController = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
 
   /**
@@ -50,23 +51,29 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    //vBus for trap is 0.15
-    // vbus for  speaker is 0.75
-    m_driverController.a().onTrue(prototypeShooter.spinMotorRightCommand(0.75))
+    // vBus for trap is 0.15
+    // vbus for speaker is 0.75
+    driverController.a().onTrue(prototypeShooter.spinMotorRightCommand(0.75))
         .onFalse(prototypeShooter.spinMotorRightCommand(0));
 
     // Set vBus to as needed for speed difference
-    //vBus for trap is 0.25
+    // vBus for trap is 0.25
     // vBus for speaker is 0.9
-    m_driverController.a().onTrue(prototypeShooter.spinMotorLeftCommand(0.9))
+    driverController.a().onTrue(prototypeShooter.spinMotorLeftCommand(0.9))
         .onFalse(prototypeShooter.spinMotorLeftCommand(0));
-  
-        //consistent feed vbus is ???
-    m_driverController.b().onTrue(feeder.runFeederMotorCommand(.5))
-    .onFalse(feeder.runFeederMotorCommand(0));
-    //m_driverController.x().onTrue(prototypeShooter.setAToVelCommand(600)).onTrue(prototypeShooter.setBToVelCommand(600));
-    //m_driverController.y().onTrue(prototypeShooter.setAToVelCommand(0)).onTrue(prototypeShooter.setBToVelCommand(0));
-      }
+
+    // consistent feed vbus is ???
+    driverController.b().onTrue(feeder.runFeederMotorCommand(.5))
+        .onFalse(feeder.runFeederMotorCommand(0));
+
+    driverController.x().and(driverController.pov(0)).whileTrue(prototypeShooter.runDynamuc(Direction.kForward));
+    driverController.x().and(driverController.pov(180)).whileTrue(prototypeShooter.runDynamuc(Direction.kReverse));
+
+    driverController.y().and(driverController.pov(0)).whileTrue(prototypeShooter.runQuasi(Direction.kForward));
+    driverController.y().and(driverController.pov(180)).whileTrue(prototypeShooter.runQuasi(Direction.kReverse));
+    // m_driverController.x().onTrue(prototypeShooter.setAToVelCommand(600)).onTrue(prototypeShooter.setBToVelCommand(600));
+    // m_driverController.y().onTrue(prototypeShooter.setAToVelCommand(0)).onTrue(prototypeShooter.setBToVelCommand(0));
+  }
 
   public void logVals() {
     prototypeShooter.logValues();
