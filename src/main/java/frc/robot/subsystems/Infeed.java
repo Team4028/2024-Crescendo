@@ -10,16 +10,20 @@ import com.playingwithfusion.TimeOfFlight;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Infeed extends SubsystemBase {
-  private TimeOfFlight sensorRun;
-  private CANSparkFlex infeedMotor;
+  private static Infeed instance;
+  private TimeOfFlight tofSensor; //TODO: Add logging
+  private CANSparkFlex infeedMotor; //TODO: Add logging
+
+  private final double RANGE_THRESH = 100;
 
   /** Creates a new SensorMotor. */
-  public Infeed() {
-    sensorRun = new TimeOfFlight(1);
+  private Infeed() {
+    tofSensor = new TimeOfFlight(1);
     infeedMotor = new CANSparkFlex(1, MotorType.kBrushless);
   }
 
@@ -36,11 +40,11 @@ public class Infeed extends SubsystemBase {
   //}
 
   public boolean hasGamePiece() {
-    return sensorRun.getRange() < 100;
+    return tofSensor.getRange() < RANGE_THRESH;
   }
 
   public BooleanSupplier hasGamePieceSupplier() {
-    return () -> hasGamePiece();
+    return this::hasGamePiece;
   }
 
   private void runInfeedMotor(double vBus) {
@@ -48,7 +52,7 @@ public class Infeed extends SubsystemBase {
   }
   
   public Command runInfeedMotorCommand(double vBus) {
-    return runOnce (() -> runInfeedMotor(vBus));
+    return runOnce(() -> runInfeedMotor(vBus));
   }
 
   //public Command runMotorWithSensorCommand() {
@@ -57,7 +61,12 @@ public class Infeed extends SubsystemBase {
 
   @Override
   public void periodic() {
-    System.out.println(sensorRun.getRange());
     // This method will be called once per scheduler run
+    SmartDashboard.putNumber("Infeed TOF", tofSensor.getRange());
+  }
+
+  public static Infeed getInstance() {
+    if (instance == null) instance = new Infeed();
+    return instance;
   }
 }
