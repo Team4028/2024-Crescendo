@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class PrototypeShooter extends SubsystemBase {
   static PrototypeShooter instance;
-  private CANSparkFlex rightMotor, leftMotor, feederMotor;
+  private CANSparkFlex rightMotor, leftMotor;
   private RelativeEncoder rightEncoder, leftEncoder;
   private SparkPIDController pidRight, pidLeft;
 
@@ -28,10 +28,11 @@ public class PrototypeShooter extends SubsystemBase {
 
   private int scan;
 
-  public PrototypeShooter() {
+  private PrototypeShooter() {
     scan = 0;
     log = DataLogManager.getLog();
-    configureLogs();
+    initLogs();
+
     rightMotor = new CANSparkFlex(12, MotorType.kBrushless);
     leftMotor = new CANSparkFlex(11, MotorType.kBrushless);
     rightEncoder = rightMotor.getEncoder();
@@ -45,6 +46,7 @@ public class PrototypeShooter extends SubsystemBase {
     pidRight.setFeedbackDevice(rightEncoder);
     pidLeft.setFeedbackDevice(leftEncoder);
 
+    // PID Constants
     pidRight.setP(0);
     pidRight.setI(0);
     pidRight.setD(0);
@@ -58,44 +60,43 @@ public class PrototypeShooter extends SubsystemBase {
     pidLeft.setOutputRange(-0.9, 0.9);
   }
 
-  private void setAToVel(double velRPM) {
+  private void setRightToVel(double velRPM) {
     pidRight.setReference(velRPM, ControlType.kVelocity);
   }
 
-  private void setBToVel(double velRPM) {
+  private void setLeftToVel(double velRPM) {
     pidLeft.setReference(velRPM, ControlType.kVelocity);
   }
 
-  public Command setAToVelCommand(double velRPM) {
-    return runOnce(() -> setAToVel(velRPM));
+  public Command setRightToVelCommand(double velRPM) {
+    return runOnce(() -> setRightToVel(velRPM));
   }
 
-  public Command setBToVelCommand(double velRPM) {
-    return runOnce(() -> setBToVel(velRPM));
+  public Command setLeftToVelCommand(double velRPM) {
+    return runOnce(() -> setLeftToVel(velRPM));
   }
 
-  private void spinMotorA(double vBus) {
+  private void spinMotorRight(double vBus) {
     rightMotor.set(vBus);
   }
 
-  private void spinMotorB(double vBus) {
+  private void spinMotorLeft(double vBus) {
     leftMotor.set(-1. * vBus);
   }
 
-  public Command spinMotorACommand(double vBus) {
-    return runOnce(() -> spinMotorA(vBus));
+  public Command spinMotorRightCommand(double vBus) {
+    return runOnce(() -> spinMotorRight(vBus));
   }
 
-  public Command spinMotorBCommand(double vBus) {
-    return runOnce(() -> spinMotorB(vBus));
+  public Command spinMotorLeftCommand(double vBus) {
+    return runOnce(() -> spinMotorLeft(vBus));
   }
 
-  private void configureLogs() {
+  private void initLogs() {
     rightMotorCurrent = new DoubleLogEntry(log, "/right/Current");
     leftMotorCurrent = new DoubleLogEntry(log, "/left/Current");
     rightMotorVelocity = new DoubleLogEntry(log, "/right/Velocity");
     leftMotorVelocity = new DoubleLogEntry(log, "/left/Velocity");
-
   }
 
   public void logValues() {
@@ -109,18 +110,19 @@ public class PrototypeShooter extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    if ( scan != 0 && scan % 3 == 0) {
+    if (scan != 0 && scan % 3 == 0) {
       scan = 0;
       SmartDashboard.putNumber("rightMotorCurrent", rightMotor.getOutputCurrent());
       SmartDashboard.putNumber("leftMotorCurrent", leftMotor.getOutputCurrent());
       SmartDashboard.putNumber("rightMotorVel", rightEncoder.getVelocity());
       SmartDashboard.putNumber("leftMotorVel", leftEncoder.getVelocity());
     }
-
+    scan++;
   }
 
-  @Override
-  public void simulationPeriodic() {
-    // This method will be called once per scheduler run during simulation
+  public static PrototypeShooter getInstance() {
+    if (instance == null)
+      instance = new PrototypeShooter();
+    return instance;
   }
 }

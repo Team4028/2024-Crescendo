@@ -5,7 +5,6 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.Autos;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
@@ -21,8 +20,8 @@ import frc.robot.subsystems.*;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final PrototypeShooter prototypeShooter = new PrototypeShooter();
-  private final Feeder feeder = new Feeder();
+  private final PrototypeShooter prototypeShooter = PrototypeShooter.getInstance();
+  private final Feeder feeder = Feeder.getInstance();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController = new CommandXboxController(
@@ -53,14 +52,14 @@ public class RobotContainer {
   private void configureBindings() {
     //vBus for trap is 0.15
     // vbus for  speaker is 0.75
-    m_driverController.a().onTrue(prototypeShooter.spinMotorACommand(0.75))
-        .onFalse(prototypeShooter.spinMotorACommand(0));
+    m_driverController.a().onTrue(prototypeShooter.spinMotorRightCommand(0.75))
+        .onFalse(prototypeShooter.spinMotorRightCommand(0));
 
     // Set vBus to as needed for speed difference
     //vBus for trap is 0.25
     // vBus for speaker is 0.9
-    m_driverController.a().onTrue(prototypeShooter.spinMotorBCommand(0.9))
-        .onFalse(prototypeShooter.spinMotorBCommand(0));
+    m_driverController.a().onTrue(prototypeShooter.spinMotorLeftCommand(0.9))
+        .onFalse(prototypeShooter.spinMotorLeftCommand(0));
   
         //consistent feed vbus is ???
     m_driverController.b().onTrue(feeder.runFeederMotorCommand(.5))
@@ -72,5 +71,4 @@ public class RobotContainer {
   public void logVals() {
     prototypeShooter.logValues();
   }
-
 }
