@@ -8,9 +8,8 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.ExampleSubsystem;
-import frc.robot.subsystems.SensorMotor;
+import frc.robot.subsystems.Infeed;
 
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.playingwithfusion.TimeOfFlight;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -27,7 +26,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
-  private SensorMotor m_sensorMotor = new SensorMotor();
+  private Infeed m_sensorMotor = new Infeed();
  // private TimeOfFlight sensor;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -56,14 +55,14 @@ public class RobotContainer {
     new Trigger(m_exampleSubsystem::exampleCondition)
         .onTrue(new ExampleCommand(m_exampleSubsystem));
 
-    m_sensorMotor.setDefaultCommand(m_sensorMotor.stopMotor());
+    m_sensorMotor.setDefaultCommand(m_sensorMotor.runInfeedMotorCommand(0));
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
-    m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
-    m_driverController.a().whileTrue(m_sensorMotor.runMotor().until(m_sensorMotor.hasGamePieceSupplier()).andThen(m_sensorMotor.stopMotor()));
-
-
+    //m_driverController.x().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+    //m_driverController.a().whileTrue(m_sensorMotor.runInfeedMotorCommand(0.2).until(m_sensorMotor.hasGamePieceSupplier()).andThen(m_sensorMotor.runInfeedMotorCommand(0)));
+    m_driverController.a().onTrue(m_sensorMotor.runInfeedMotorCommand(0.2)).onFalse(m_sensorMotor.runInfeedMotorCommand(0));
+     m_driverController.b().onTrue(m_sensorMotor.runInfeedMotorCommand(-0.2)).onFalse(m_sensorMotor.runInfeedMotorCommand(0));
     
   }
 
