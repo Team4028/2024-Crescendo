@@ -26,7 +26,7 @@ public class PrototypeShooter extends SubsystemBase {
   private DataLog log;
   public DoubleLogEntry rightMotorCurrent, leftMotorCurrent, rightMotorVelocity, leftMotorVelocity;
 
-  private long scan;
+  private int scan;
 
   public PrototypeShooter() {
     scan = 0;
@@ -37,8 +37,8 @@ public class PrototypeShooter extends SubsystemBase {
     rightEncoder = rightMotor.getEncoder();
     leftEncoder = leftMotor.getEncoder();
 
-    rightMotor.setSmartCurrentLimit(60);
-    leftMotor.setSmartCurrentLimit(60);
+    rightMotor.setSmartCurrentLimit(80);
+    leftMotor.setSmartCurrentLimit(80);
 
     pidRight = rightMotor.getPIDController();
     pidLeft = leftMotor.getPIDController();
@@ -109,13 +109,12 @@ public class PrototypeShooter extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    if (scan %3 == 0) {
-
-    
-    SmartDashboard.putNumber("rightMotorCurrent", rightMotor.getOutputCurrent());
-    SmartDashboard.putNumber("leftMotorCurrent", leftMotor.getOutputCurrent());
-    SmartDashboard.putNumber("rightMotorVel", rightEncoder.getVelocity());
-    SmartDashboard.putNumber("leftMotorVel", leftEncoder.getVelocity());
+    if ( scan != 0 && scan % 3 == 0) {
+      scan = 0;
+      SmartDashboard.putNumber("rightMotorCurrent", rightMotor.getOutputCurrent());
+      SmartDashboard.putNumber("leftMotorCurrent", leftMotor.getOutputCurrent());
+      SmartDashboard.putNumber("rightMotorVel", rightEncoder.getVelocity());
+      SmartDashboard.putNumber("leftMotorVel", leftEncoder.getVelocity());
     }
 
   }
