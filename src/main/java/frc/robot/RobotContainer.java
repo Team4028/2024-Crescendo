@@ -53,24 +53,24 @@ public class RobotContainer {
   private void configureBindings() {
     // vBus for trap is 0.15
     // vbus for speaker is 0.75
-    driverController.a().onTrue(prototypeShooter.spinMotorRightCommand(0.75))
-        .onFalse(prototypeShooter.spinMotorRightCommand(0));
+    // driverController.a().onTrue(prototypeShooter.setRightToVelCommand(7000))
+    //     .onFalse(prototypeShooter.setRightToVelCommand(0));
 
     // Set vBus to as needed for speed difference
     // vBus for trap is 0.25
     // vBus for speaker is 0.9
-    driverController.a().onTrue(prototypeShooter.spinMotorLeftCommand(0.9))
-        .onFalse(prototypeShooter.spinMotorLeftCommand(0));
+    driverController.a().onTrue(prototypeShooter.setLeftToVelCommand(7000))
+        .onFalse(prototypeShooter.setLeftToVelCommand(0));
 
     // consistent feed vbus is ???
     driverController.b().onTrue(feeder.runFeederMotorCommand(.5))
         .onFalse(feeder.runFeederMotorCommand(0));
 
-    driverController.x().and(driverController.pov(0)).whileTrue(prototypeShooter.runDynamuc(Direction.kForward));
-    driverController.x().and(driverController.pov(180)).whileTrue(prototypeShooter.runDynamuc(Direction.kReverse));
+    // driverController.x().and(driverController.pov(0)).whileTrue(prototypeShooter.runDynamuc(Direction.kForward));
+    // driverController.x().and(driverController.pov(180)).whileTrue(prototypeShooter.runDynamuc(Direction.kReverse));
 
-    driverController.y().and(driverController.pov(0)).whileTrue(prototypeShooter.runQuasi(Direction.kForward));
-    driverController.y().and(driverController.pov(180)).whileTrue(prototypeShooter.runQuasi(Direction.kReverse));
+    // driverController.y().and(driverController.pov(0)).whileTrue(prototypeShooter.runQuasi(Direction.kForward));
+    // driverController.y().and(driverController.pov(180)).whileTrue(prototypeShooter.runQuasi(Direction.kReverse));
     // m_driverController.x().onTrue(prototypeShooter.setAToVelCommand(600)).onTrue(prototypeShooter.setBToVelCommand(600));
     // m_driverController.y().onTrue(prototypeShooter.setAToVelCommand(0)).onTrue(prototypeShooter.setBToVelCommand(0));
   }

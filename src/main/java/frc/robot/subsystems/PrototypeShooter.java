@@ -80,18 +80,18 @@ public class PrototypeShooter implements Subsystem {
     pidLeft.setFeedbackDevice(leftEncoder);
 
     // PID Constants
-    pidRight.setP(0);
+    pidRight.setP(.0075);
     pidRight.setI(0);
-    pidRight.setD(0);
+    pidRight.setD(0.1);
     pidRight.setIZone(0);
-    pidRight.setOutputRange(-0.9, 0.9);
+    pidRight.setOutputRange(-1, 1);
     pidRight.setFF(0.0020301);
 
-    pidLeft.setP(0);
+    pidLeft.setP(0.0075);
     pidLeft.setI(0);
-    pidLeft.setD(0);
+    pidLeft.setD(0.1);
     pidLeft.setIZone(0);
-    pidLeft.setOutputRange(-0.9, 0.9);
+    pidLeft.setOutputRange(-1, 1);
     pidLeft.setFF(0.0018903);
   }
 
