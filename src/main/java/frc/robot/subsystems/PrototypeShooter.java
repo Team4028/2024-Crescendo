@@ -10,14 +10,12 @@ import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
-import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.util.datalog.StringLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog.State;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -32,23 +30,35 @@ public class PrototypeShooter implements Subsystem {
 
   private DataLog log;
   public DoubleLogEntry rightMotorCurrent, leftMotorCurrent, rightMotorVelocity, leftMotorVelocity, leftMotorVoltage,
-      rightMotorVoltage;
+      rightMotorVoltage, rightPosLog, leftPosLog;
   public StringLogEntry stateLog;
 
   private int scan;
 
   private SysIdRoutine routine = new SysIdRoutine(
-    new SysIdRoutine.Config(),
-    new SysIdRoutine.Mechanism((volts) -> setMotorsVoltage(volts.in(Units.Volts)), log -> {
-      log.motor("right")
-        .voltage(Units.Volts.of(rightMotor.get() * rightMotor.getBusVoltage()))
-        .angularPosition(Units.Rotations.of(rightMotor.getEncoder().getPosition()))
-        .angularVelocity(Units.RPM.of(rightMotor.getEncoder().getVelocity()));
-      log.motor("left")
-        .voltage(Units.Volts.of(leftMotor.get() * leftMotor.getBusVoltage()))
-        .angularPosition(Units.Rotations.of(leftMotor.getEncoder().getPosition()))
-        .angularVelocity(Units.RPM.of(leftMotor.getEncoder().getVelocity()));
-    }, this));
+      new SysIdRoutine.Config(null, null, null, this::logState),
+      new SysIdRoutine.Mechanism((volts) -> setMotorsVoltage(volts.in(Units.Volts)), null, this));
+
+  private void logState(State state) {
+    switch (state) {
+      case kQuasistaticForward:
+        stateLog.append("quasistatic-forward");
+        break;
+      case kQuasistaticReverse:
+        stateLog.append("quasistatic-reverse");
+        break;
+      case kDynamicForward:
+        stateLog.append("dynamic-forward");
+        break;
+      case kDynamicReverse:
+        stateLog.append("dynamic-reverse");
+        break;
+      default:
+        break;
+    }
+
+    logValues();
+  }
 
   private PrototypeShooter() {
     scan = 0;
@@ -62,6 +72,8 @@ public class PrototypeShooter implements Subsystem {
     rightMotor.setSmartCurrentLimit(80);
     leftMotor.setSmartCurrentLimit(80);
 
+    rightMotor.setInverted(true);
+
     pidRight = rightMotor.getPIDController();
     pidLeft = leftMotor.getPIDController();
     pidRight.setFeedbackDevice(rightEncoder);
@@ -73,12 +85,14 @@ public class PrototypeShooter implements Subsystem {
     pidRight.setD(0);
     pidRight.setIZone(0);
     pidRight.setOutputRange(-0.9, 0.9);
+    pidRight.setFF(0.0020301);
 
     pidLeft.setP(0);
     pidLeft.setI(0);
     pidLeft.setD(0);
     pidLeft.setIZone(0);
     pidLeft.setOutputRange(-0.9, 0.9);
+    pidLeft.setFF(0.0018903);
   }
 
   private void setRightToVel(double velRPM) {
@@ -115,7 +129,7 @@ public class PrototypeShooter implements Subsystem {
   }
 
   private void spinMotorLeft(double vBus) {
-    leftMotor.set(-1. * vBus);
+    leftMotor.set(vBus);
   }
 
   public Command spinMotorRightCommand(double vBus) {
@@ -133,6 +147,8 @@ public class PrototypeShooter implements Subsystem {
     leftMotorVelocity = new DoubleLogEntry(log, "/left/Velocity");
     rightMotorVoltage = new DoubleLogEntry(log, "/right/Voltage");
     leftMotorVoltage = new DoubleLogEntry(log, "/left/Voltage");
+    leftPosLog = new DoubleLogEntry(log, "/left/Pos");
+    rightPosLog = new DoubleLogEntry(log, "/right/Pos");
     stateLog = new StringLogEntry(log, "test-state");
   }
 
@@ -143,8 +159,11 @@ public class PrototypeShooter implements Subsystem {
     rightMotorVelocity.append(rightMotor.getEncoder().getVelocity());
     leftMotorVelocity.append(leftMotor.getEncoder().getVelocity());
 
-    rightMotorVoltage.append(rightMotor.get() * rightMotor.getBusVoltage());
-    leftMotorVoltage.append(leftMotor.get() * leftMotor.getBusVoltage());
+    rightMotorVoltage.append(rightMotor.getAppliedOutput() * rightMotor.getBusVoltage());
+    leftMotorVoltage.append(leftMotor.getAppliedOutput() * leftMotor.getBusVoltage());
+
+    leftPosLog.append(leftEncoder.getPosition());
+    rightPosLog.append(rightEncoder.getPosition());
   }
 
   @Override

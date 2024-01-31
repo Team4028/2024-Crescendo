@@ -76,6 +76,6 @@ public class RobotContainer {
   }
 
   public void logVals() {
-    prototypeShooter.logValues();
+    // prototypeShooter.logValues();
   }
 }
