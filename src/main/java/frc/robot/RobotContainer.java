@@ -51,8 +51,8 @@ public class RobotContainer {
     // cancelling on release.
     //m_driverController.x().whileTrue(m_exampleSubsystem.exampleMethodCommand());
     //m_driverController.a().whileTrue(m_sensorMotor.runInfeedMotorCommand(0.2).until(m_sensorMotor.hasGamePieceSupplier()).andThen(m_sensorMotor.runInfeedMotorCommand(0)));
-    driverController.a().onTrue(sensorMotor.runInfeedMotorCommand(0.2)).onFalse(sensorMotor.runInfeedMotorCommand(0));
-     driverController.b().onTrue(sensorMotor.runInfeedMotorCommand(-0.2)).onFalse(sensorMotor.runInfeedMotorCommand(0));
+    driverController.a().onTrue(sensorMotor.runInfeedMotorCommand(0.6)).onFalse(sensorMotor.runInfeedMotorCommand(0));
+     driverController.b().onTrue(sensorMotor.runInfeedMotorCommand(-0.8)).onFalse(sensorMotor.runInfeedMotorCommand(0));
     
   }
 

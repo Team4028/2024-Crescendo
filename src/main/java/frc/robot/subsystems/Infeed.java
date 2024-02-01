@@ -24,7 +24,7 @@ public class Infeed extends SubsystemBase {
   /** Creates a new SensorMotor. */
   private Infeed() {
     tofSensor = new TimeOfFlight(1);
-    infeedMotor = new CANSparkFlex(1, MotorType.kBrushless);
+    infeedMotor = new CANSparkFlex(44, MotorType.kBrushless);
   }
 
   // public void logToDash() {
