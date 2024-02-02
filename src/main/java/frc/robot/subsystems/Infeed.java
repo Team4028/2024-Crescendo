@@ -10,19 +10,27 @@ import com.playingwithfusion.TimeOfFlight;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Infeed extends SubsystemBase {
   private static Infeed instance;
-  private TimeOfFlight tofSensor; //TODO: Add logging
-  private CANSparkFlex infeedMotor; //TODO: Add logging
+  private TimeOfFlight tofSensor;
+  private CANSparkFlex infeedMotor;
 
   private final double RANGE_THRESH = 100;
 
+  DataLog log;
+  public DoubleLogEntry infeedMotorCurrent, infeedMotorVelocity;
+
   /** Creates a new SensorMotor. */
   private Infeed() {
+    log = DataLogManager.getLog();
+    configureLogs();
     tofSensor = new TimeOfFlight(1);
     infeedMotor = new CANSparkFlex(44, MotorType.kBrushless);
   }
@@ -30,14 +38,14 @@ public class Infeed extends SubsystemBase {
   // public void logToDash() {
   // SmartDashboard.putNumber("tof distance", sensor.getRange());
 
-  //public void runMotorWithSensor() {
+  // public void runMotorWithSensor() {
 
-   // if (sensorRun.getRange() > 100) {
-      
-    //  } else {
+  // if (sensorRun.getRange() > 100) {
 
-   // }
-  //}
+  // } else {
+
+  // }
+  // }
 
   public boolean hasGamePiece() {
     return tofSensor.getRange() < RANGE_THRESH;
@@ -50,14 +58,25 @@ public class Infeed extends SubsystemBase {
   private void runInfeedMotor(double vBus) {
     infeedMotor.set(vBus);
   }
-  
+
   public Command runInfeedMotorCommand(double vBus) {
     return runOnce(() -> runInfeedMotor(vBus));
   }
 
-  //public Command runMotorWithSensorCommand() {
-   // return runOnce(this::runMotorWithSensor);
-  //}
+  private void configureLogs() {
+    infeedMotorCurrent = new DoubleLogEntry(log, "Current");
+    infeedMotorVelocity = new DoubleLogEntry(log, "Velocity");
+  }
+
+  public void logValues() {
+    infeedMotorCurrent.append(infeedMotor.getOutputCurrent());
+
+    infeedMotorVelocity.append(infeedMotor.getEncoder().getVelocity());
+  }
+
+  // public Command runMotorWithSensorCommand() {
+  // return runOnce(this::runMotorWithSensor);
+  // }
 
   @Override
   public void periodic() {
@@ -66,7 +85,8 @@ public class Infeed extends SubsystemBase {
   }
 
   public static Infeed getInstance() {
-    if (instance == null) instance = new Infeed();
+    if (instance == null)
+      instance = new Infeed();
     return instance;
   }
 }
