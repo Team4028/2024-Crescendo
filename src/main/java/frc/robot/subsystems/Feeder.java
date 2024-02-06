@@ -14,7 +14,7 @@ public class Feeder extends SubsystemBase {
   static Feeder instance;
 
   private Feeder() {
-    feederMotor = new CANSparkFlex(44/* BAD */, MotorType.kBrushless);
+    feederMotor = new CANSparkFlex(11/* BAD */, MotorType.kBrushless);
   }
 
 private final void runFeederMotor(double vBus){

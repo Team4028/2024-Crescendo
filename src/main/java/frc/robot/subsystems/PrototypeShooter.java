@@ -64,8 +64,8 @@ public class PrototypeShooter implements Subsystem {
     scan = 0;
     log = DataLogManager.getLog();
     initLogs();
-    rightMotor = new CANSparkFlex(12, MotorType.kBrushless);
-    leftMotor = new CANSparkFlex(11, MotorType.kBrushless);
+    rightMotor = new CANSparkFlex(11, MotorType.kBrushless);
+    leftMotor = new CANSparkFlex(10, MotorType.kBrushless);
     rightEncoder = rightMotor.getEncoder();
     leftEncoder = leftMotor.getEncoder();
 
