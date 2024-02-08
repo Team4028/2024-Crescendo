@@ -20,62 +20,63 @@ import frc.robot.subsystems.*;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  // The robot's subsystems and commands are defined here...
-  private final PrototypeShooter prototypeShooter = PrototypeShooter.getInstance();
-  private final Feeder feeder = Feeder.getInstance();
+    // The robot's subsystems and commands are defined here...
+    private final Shooter shooter = new Shooter();
+    private final Feeder feeder = Feeder.getInstance();
 
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController driverController = new CommandXboxController(
-      OperatorConstants.kDriverControllerPort);
+    // Replace with CommandPS4Controller or CommandJoystick if needed
+    private final CommandXboxController driverController = new CommandXboxController(
+            OperatorConstants.kDriverControllerPort);
 
-  /**
-   * The container for the robot. Contains subsystems, OI devices, and commands.
-   */
-  public RobotContainer() {
-    // Configure the trigger bindings
-    configureBindings();
-  }
+    /**
+     * The container for the robot. Contains subsystems, OI devices, and commands.
+     */
+    public RobotContainer() {
+        // Configure the trigger bindings
+        configureBindings();
+    }
 
-  /**
-   * Use this method to define your trigger->command mappings. Triggers can be
-   * created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with
-   * an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for
-   * {@link
-   * CommandXboxController
-   * Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or
-   * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
-   */
-  private void configureBindings() {
-    // vBus for trap is 0.15
-    // vbus for speaker is 0.75
-    // driverController.a().onTrue(prototypeShooter.setRightToVelCommand(7000))
-    //     .onFalse(prototypeShooter.setRightToVelCommand(0));
+    /**
+     * Use this method to define your trigger->command mappings. Triggers can be
+     * created via the
+     * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with
+     * an arbitrary
+     * predicate, or via the named factories in {@link
+     * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for
+     * {@link
+     * CommandXboxController
+     * Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
+     * PS4} controllers or
+     * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
+     * joysticks}.
+     */
+    private void configureBindings() {
+        // vBus for trap is 0.15
+        // vbus for speaker is 0.75
+        // driverController.a().onTrue(shooter.setRightToVelCommand(7000))
+        // .onFalse(shooter.setRightToVelCommand(0));
 
-    // Set vBus to as needed for speed difference
-    // vBus for trap is 0.25
-    // vBus for speaker is 0.9
-    driverController.a().onTrue(prototypeShooter.setLeftToVelCommand(7000))
-        .onFalse(prototypeShooter.setLeftToVelCommand(0));
+        // Set vBus to as needed for speed difference
+        // vBus for trap is 0.25
+        // vBus for speaker is 0.9
+        // driverController.a().onTrue(shooter.setLeftToVelCommand(7000))
+        // .onFalse(shooter.setLeftToVelCommand(0));
 
-    // consistent feed vbus is ???
-    driverController.b().onTrue(feeder.runFeederMotorCommand(.5))
-        .onFalse(feeder.runFeederMotorCommand(0));
+        // consistent feed vbus is ???
+        driverController.b().onTrue(feeder.runFeederMotorCommand(.5))
+                .onFalse(feeder.runFeederMotorCommand(0));
 
-    // driverController.x().and(driverController.pov(0)).whileTrue(prototypeShooter.runDynamuc(Direction.kForward));
-    // driverController.x().and(driverController.pov(180)).whileTrue(prototypeShooter.runDynamuc(Direction.kReverse));
+        driverController.a().onTrue(shooter.runVelocityCommand());
 
-    // driverController.y().and(driverController.pov(0)).whileTrue(prototypeShooter.runQuasi(Direction.kForward));
-    // driverController.y().and(driverController.pov(180)).whileTrue(prototypeShooter.runQuasi(Direction.kReverse));
-    // m_driverController.x().onTrue(prototypeShooter.setAToVelCommand(600)).onTrue(prototypeShooter.setBToVelCommand(600));
-    // m_driverController.y().onTrue(prototypeShooter.setAToVelCommand(0)).onTrue(prototypeShooter.setBToVelCommand(0));
-  }
+        driverController.x().and(driverController.pov(0)).whileTrue(shooter.runDynamuc(Direction.kForward));
+        driverController.x().and(driverController.pov(180)).whileTrue(shooter.runDynamuc(Direction.kReverse));
 
-  public void logVals() {
-    // prototypeShooter.logValues();
-  }
+        driverController.y().and(driverController.pov(0)).whileTrue(shooter.runQuasi(Direction.kForward));
+        driverController.y().and(driverController.pov(180)).whileTrue(shooter.runQuasi(Direction.kReverse));
+
+    }
+
+    public void logVals() {
+        // shooter.logValues();
+    }
 }
