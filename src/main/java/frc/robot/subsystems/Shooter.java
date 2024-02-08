@@ -34,20 +34,51 @@ public class Shooter extends SubsystemBase {
 
     private int scan;
 
-    private static double RIGHT_SHOOTER_KP = 0.004;
-    private static double RIGHT_SHOOTER_KI = 0.0;
-    private static double RIGHT_SHOOTER_KD = 0.0;
-    private static double RIGHT_SHOOTER_KF = 0.00022;
+    private int m_slot = 0;
 
-    private static double LEFT_SHOOTER_KP = 0.001;
-    private static double LEFT_SHOOTER_KI = 0.0;
-    private static double LEFT_SHOOTER_KD = 0.0;
-    private static double LEFT_SHOOTER_KF = 0.00019;
+    private final class PIDConstants {
+        private static final int TRAP_SLOT = 1;
+        private static final int SPEAKER_SLOT = 0;
+
+        private static class Left {
+            private static double kFF = 0.00019;
+
+            private final class Trap {
+                private static double velocity = 1300;
+                private static double kP = 0.0002;
+                private static double kI = 0.0;
+                private static double kD = 0.0;
+            }
+
+            private final class Speaker {
+                private static double velocity = 2500;
+                private static double kP = 0.001;
+                private static double kI = 0.0;
+                private static double kD = 0.0;
+            }
+        }
+
+        private static class Right {
+            private static double kFF = 0.00022;
+
+            private final class Trap {
+                private static double velocity = 1300;
+                private static double kP = 0.001;
+                private static double kI = 0.0;
+                private static double kD = 0.0;
+            }
+
+            private final class Speaker {
+                private static double velocity = 3400;
+                private static double kP = 0.004;
+                private static double kI = 0.0;
+                private static double kD = 0.0;
+            }
+        }
+    }
 
     // trap:
-    // left P: 0.0002
     // left vel: 1300
-    // right P: 0.001
     // right vel: 1300
 
     private SysIdRoutine routine = new SysIdRoutine(
@@ -81,30 +112,40 @@ public class Shooter extends SubsystemBase {
         m_leftPid.setFeedbackDevice(m_leftEncoder);
 
         // PID Constants
-        m_rightPid.setP(RIGHT_SHOOTER_KP);
-        m_rightPid.setI(RIGHT_SHOOTER_KI);
-        m_rightPid.setD(RIGHT_SHOOTER_KD);
-        m_rightPid.setFF(RIGHT_SHOOTER_KF);
+        int slot = PIDConstants.SPEAKER_SLOT;
+
+        m_rightPid.setP(PIDConstants.Right.Speaker.kP, slot);
+        m_rightPid.setI(PIDConstants.Right.Speaker.kI, slot);
+        m_rightPid.setD(PIDConstants.Right.Speaker.kD, slot);
+        m_rightPid.setFF(PIDConstants.Right.kFF, slot);
+
+        slot = PIDConstants.TRAP_SLOT;
+
+        m_rightPid.setP(PIDConstants.Right.Trap.kP, slot);
+        m_rightPid.setI(PIDConstants.Right.Trap.kI, slot);
+        m_rightPid.setD(PIDConstants.Right.Trap.kD, slot);
+        m_rightPid.setFF(PIDConstants.Right.kFF, slot);
+
         m_rightPid.setOutputRange(-1, 1);
 
-        m_leftPid.setP(LEFT_SHOOTER_KP);
-        m_leftPid.setI(LEFT_SHOOTER_KI);
-        m_leftPid.setD(LEFT_SHOOTER_KD);
-        m_leftPid.setFF(LEFT_SHOOTER_KF);
+        // LEFT
+        slot = PIDConstants.SPEAKER_SLOT;
+
+        m_leftPid.setP(PIDConstants.Left.Speaker.kP, slot);
+        m_leftPid.setI(PIDConstants.Left.Speaker.kI, slot);
+        m_leftPid.setD(PIDConstants.Left.Speaker.kD, slot);
+        m_leftPid.setFF(PIDConstants.Left.kFF, slot);
+
+        slot = PIDConstants.TRAP_SLOT;
+
+        m_leftPid.setP(PIDConstants.Left.Trap.kP, slot);
+        m_leftPid.setI(PIDConstants.Left.Trap.kI, slot);
+        m_leftPid.setD(PIDConstants.Left.Trap.kD, slot);
+        m_leftPid.setFF(PIDConstants.Left.kFF, slot);
+
         m_leftPid.setOutputRange(-1, 1);
 
-        SmartDashboard.putNumber("Left P Gain", LEFT_SHOOTER_KP);
-        SmartDashboard.putNumber("Left I Gain", LEFT_SHOOTER_KI);
-        SmartDashboard.putNumber("Left D Gain", LEFT_SHOOTER_KD);
-        SmartDashboard.putNumber("Left Feed Forward", LEFT_SHOOTER_KF);
-
-        SmartDashboard.putNumber("Right P Gain", RIGHT_SHOOTER_KP);
-        SmartDashboard.putNumber("Right I Gain", RIGHT_SHOOTER_KI);
-        SmartDashboard.putNumber("Right D Gain", RIGHT_SHOOTER_KD);
-        SmartDashboard.putNumber("Right Feed Forward", RIGHT_SHOOTER_KF);
-
-        SmartDashboard.putNumber("Left Velocity", 2500);
-        SmartDashboard.putNumber("Right Velocity", 3400);
+        speakerMode();
     }
 
     /**
@@ -121,6 +162,57 @@ public class Shooter extends SubsystemBase {
             setRightToVel(right);
             setLeftToVel(left);
         });
+    }
+
+    public void stop() {
+        m_rightMotor.stopMotor();
+        m_leftMotor.stopMotor();
+    }
+
+    public Command stopCommand() {
+        return runOnce(this::stop);
+    }
+
+    public void trapMode() {
+        m_slot = PIDConstants.TRAP_SLOT;
+
+        SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Trap.kP);
+        SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Trap.kI);
+        SmartDashboard.putNumber("Left D Gain", PIDConstants.Left.Trap.kD);
+        SmartDashboard.putNumber("Left Feed Forward", PIDConstants.Left.kFF);
+
+        SmartDashboard.putNumber("Right P Gain", PIDConstants.Right.Trap.kP);
+        SmartDashboard.putNumber("Right I Gain", PIDConstants.Right.Trap.kI);
+        SmartDashboard.putNumber("Right D Gain", PIDConstants.Right.Trap.kD);
+        SmartDashboard.putNumber("Right Feed Forward", PIDConstants.Right.kFF);
+
+        SmartDashboard.putNumber("Left Velocity", PIDConstants.Left.Trap.velocity);
+        SmartDashboard.putNumber("Right Velocity", PIDConstants.Right.Trap.velocity);
+    }
+
+    public void speakerMode() {
+        m_slot = PIDConstants.SPEAKER_SLOT;
+
+        SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Speaker.kP);
+        SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Speaker.kI);
+        SmartDashboard.putNumber("Left D Gain", PIDConstants.Left.Speaker.kD);
+        SmartDashboard.putNumber("Left Feed Forward", PIDConstants.Left.kFF);
+
+        SmartDashboard.putNumber("Right P Gain", PIDConstants.Right.Speaker.kP);
+        SmartDashboard.putNumber("Right I Gain", PIDConstants.Right.Speaker.kI);
+        SmartDashboard.putNumber("Right D Gain", PIDConstants.Right.Speaker.kD);
+        SmartDashboard.putNumber("Right Feed Forward", PIDConstants.Right.kFF);
+
+        SmartDashboard.putNumber("Left Velocity", PIDConstants.Left.Speaker.velocity);
+        SmartDashboard.putNumber("Right Velocity", PIDConstants.Right.Speaker.velocity);
+    }
+
+    public Command trapCommand() {
+        return runOnce(this::trapMode);
+    }
+
+    public Command speakerCommand() {
+        return runOnce(this::speakerMode);
     }
 
     private void setMotorsVoltage(double volts) {
@@ -238,21 +330,17 @@ public class Shooter extends SubsystemBase {
 
         // if PID coefficients on SmartDashboard have changed, write new values to
         // controller
-        if (leftP != LEFT_SHOOTER_KP) {
-            LEFT_SHOOTER_KP = leftP;
-            m_leftPid.setP(leftP);
+        if (leftP != m_leftPid.getP(m_slot)) {
+            m_leftPid.setP(leftP, m_slot);
         }
-        if (leftI != LEFT_SHOOTER_KI) {
-            LEFT_SHOOTER_KP = leftP;
-            m_leftPid.setI(leftI);
+        if (leftI != m_leftPid.getI(m_slot)) {
+            m_leftPid.setI(leftI, m_slot);
         }
-        if (leftD != LEFT_SHOOTER_KD) {
-            LEFT_SHOOTER_KP = leftP;
-            m_leftPid.setD(leftD);
+        if (leftD != m_leftPid.getD(m_slot)) {
+            m_leftPid.setD(leftD, m_slot);
         }
-        if (leftFF != LEFT_SHOOTER_KF) {
-            LEFT_SHOOTER_KP = leftP;
-            m_leftPid.setFF(leftFF);
+        if (leftFF != m_leftPid.getFF(m_slot)) {
+            m_leftPid.setFF(leftFF, m_slot);
         }
 
         double rightP = SmartDashboard.getNumber("Right P Gain", 0);
@@ -262,21 +350,17 @@ public class Shooter extends SubsystemBase {
 
         // if PID coefficients on SmartDashboard have changed, write new values to
         // controller
-        if (rightP != RIGHT_SHOOTER_KP) {
-            RIGHT_SHOOTER_KP = rightP;
-            m_rightPid.setP(rightP);
+        if (rightP != m_rightPid.getP(m_slot)) {
+            m_rightPid.setP(rightP, m_slot);
         }
-        if (rightI != RIGHT_SHOOTER_KI) {
-            RIGHT_SHOOTER_KI = rightI;
-            m_rightPid.setI(rightI);
+        if (rightI != m_rightPid.getI(m_slot)) {
+            m_rightPid.setI(rightI, m_slot);
         }
-        if (rightD != RIGHT_SHOOTER_KD) {
-            RIGHT_SHOOTER_KD = rightD;
-            m_rightPid.setD(rightD);
+        if (rightD != m_rightPid.getD(m_slot)) {
+            m_rightPid.setD(rightD, m_slot);
         }
-        if (rightFF != RIGHT_SHOOTER_KF) {
-            RIGHT_SHOOTER_KF = rightFF;
-            m_rightPid.setFF(rightFF);
+        if (rightFF != m_rightPid.getFF(m_slot)) {
+            m_rightPid.setFF(rightFF, m_slot);
         }
     }
 }

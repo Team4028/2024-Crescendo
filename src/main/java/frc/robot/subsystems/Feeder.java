@@ -11,13 +11,12 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 
 public class Feeder extends SubsystemBase {
     CANSparkFlex feederMotor; // TODO: log this
-    static Feeder instance;
 
-    private Feeder() {
-        feederMotor = new CANSparkFlex(11/* BAD */, MotorType.kBrushless);
+    public Feeder() {
+        feederMotor = new CANSparkFlex(11, MotorType.kBrushless);
     }
 
-    private final void runFeederMotor(double vBus) {
+    public final void runFeederMotor(double vBus) {
         feederMotor.set(vBus);
     }
 
@@ -25,15 +24,8 @@ public class Feeder extends SubsystemBase {
         return runOnce(() -> runFeederMotor(vBus));
     }
 
-    public static Feeder getInstance() {
-        if (instance == null)
-            instance = new Feeder();
-        return instance;
-    }
-
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        // TODO: Maybe print values to sd
     }
 }
