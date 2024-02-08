@@ -5,14 +5,17 @@ import java.util.ArrayList;
 public class ShooterTable {
     public static final class ShooterTableEntry {
         public double angle;
-        public double speed;
+        public double leftSpeed;
+        public double rightSpeed;
         public double distance;
 
-        public ShooterTableEntry(double angle, double speed, double distance) {
+        public ShooterTableEntry(double angle, double leftSpeed, double distance, double rightSpeed) {
             this.angle = angle;
-            this.speed = speed;
+            this.leftSpeed = leftSpeed;
             this.distance = distance;
+            this.rightSpeed = rightSpeed;
         }
+
     }
 
     ArrayList<ShooterTableEntry> table = new ArrayList<>();
@@ -44,11 +47,12 @@ public class ShooterTable {
 
         double scaleFactor = (distance - closestLower.distance) / (closestHigher.distance - closestLower.distance);
 
-        double calculatedSpeed = scaleFactor * (closestHigher.speed - closestLower.speed);
+        double calculatedLeftSpeed = scaleFactor * (closestHigher.leftSpeed - closestLower.leftSpeed);
+        double calculatedRightSpeed = scaleFactor * (closestHigher.rightSpeed - closestLower.rightSpeed);
 
         double calculatedAngle = scaleFactor * (closestHigher.angle - closestLower.angle);
 
-        return new ShooterTableEntry(calculatedAngle, calculatedSpeed, distance);
+        return new ShooterTableEntry(calculatedAngle, calculatedLeftSpeed, calculatedRightSpeed, distance);
 
     }
 }
