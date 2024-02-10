@@ -53,6 +53,12 @@ public class RobotContainer {
         driverController.y().and(driverController.povDown()).onTrue(shooter.trapCommand());
         driverController.y().and(driverController.povUp()).onTrue(shooter.speakerCommand());
 
+        
+        
+        driverController.leftBumper()
+        driverController.rightBumper().onTrue(shooter.runPivetCommand(0.3)).onFalse(shooter.runPivetCommand(0));
+       
+
         // driverController.x().and(driverController.pov(0)).whileTrue(shooter.runDynamuc(Direction.kForward));
         // driverController.x().and(driverController.pov(180)).whileTrue(shooter.runDynamuc(Direction.kReverse));
 

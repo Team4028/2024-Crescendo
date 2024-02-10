@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.fasterxml.jackson.databind.ser.std.CalendarSerializer;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -23,8 +24,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 public class Shooter extends SubsystemBase {
-    private CANSparkFlex m_rightMotor, m_leftMotor;
-    private RelativeEncoder m_rightEncoder, m_leftEncoder;
+    private CANSparkFlex m_rightMotor, m_leftMotor, m_pivetMotor;
+    private RelativeEncoder m_rightEncoder, m_leftEncoder, m_pivetEncoder;
     private SparkPIDController m_rightPid, m_leftPid;
 
     private DataLog m_log;
@@ -102,6 +103,11 @@ public class Shooter extends SubsystemBase {
         m_rightMotor.setSmartCurrentLimit(80);
         m_leftMotor.setSmartCurrentLimit(60);
 
+        m_pivetMotor = new CANSparkFlex(12, MotorType.kBrushless);
+
+        // Change this is needed
+        m_pivetMotor.setInverted(false);
+
         // GABES COOL THEORY PLS RE,MINMD
         m_rightMotor.setClosedLoopRampRate(0.1);
         m_leftMotor.setClosedLoopRampRate(0.1);
@@ -146,6 +152,14 @@ public class Shooter extends SubsystemBase {
         m_leftPid.setOutputRange(-1, 1);
 
         speakerMode();
+    }
+
+    public void runPivetMotor(double vBus) {
+        m_pivetMotor.set(vBus);
+    }
+
+    public Command runPivetCommand(double vBus) {
+        return runOnce(() -> runPivetMotor(vBus));
     }
 
     /**
