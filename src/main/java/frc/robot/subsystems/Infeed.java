@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import java.util.function.BooleanSupplier;
 
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.playingwithfusion.TimeOfFlight;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -20,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Infeed extends SubsystemBase {
   private static Infeed instance;
   private TimeOfFlight tofSensor;
-  private CANSparkFlex infeedMotor;
+  private TalonFX infeedMotor;
 
   private final double RANGE_THRESH = 100;
 
@@ -32,7 +33,7 @@ public class Infeed extends SubsystemBase {
     log = DataLogManager.getLog();
     configureLogs();
     tofSensor = new TimeOfFlight(1);
-    infeedMotor = new CANSparkFlex(44, MotorType.kBrushless);
+    infeedMotor = new TalonFX(13);
   }
 
   // public void logToDash() {
@@ -69,9 +70,9 @@ public class Infeed extends SubsystemBase {
   }
 
   public void logValues() {
-    infeedMotorCurrent.append(infeedMotor.getOutputCurrent());
+    infeedMotorCurrent.append(infeedMotor.getSupplyCurrent().getValueAsDouble());
 
-    infeedMotorVelocity.append(infeedMotor.getEncoder().getVelocity());
+    infeedMotorVelocity.append(infeedMotor.getVelocity().getValueAsDouble());
   }
 
   // public Command runMotorWithSensorCommand() {
