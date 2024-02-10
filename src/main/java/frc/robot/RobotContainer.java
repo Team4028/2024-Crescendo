@@ -6,6 +6,9 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.Light;
+
+import java.awt.Color;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -41,6 +44,10 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    driverController.a().onTrue(leds.runBurnyBurnCommand());
+    driverController.b().onTrue(leds.runRainbowAnimationCommnad());
+    driverController.x().onTrue(leds.setColorGreenCommand());
+    driverController.y().onTrue(leds.setNoColorCommand());
   }
 
   /**

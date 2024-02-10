@@ -23,23 +23,21 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
-
-
 public class Light extends SubsystemBase {
   private static Light instance;
   private Color m_color;
   private CANdle candle;
-  private final int NUM_LEDS = 119;
-  private final int STRIP_LENGTH = 51;
+  private final int NUM_LEDS = 69;
+  private final int STRIP_LENGTH = 40;
 
   enum Color {
 
-    GREEN(0, 254, 0), 
-    PURPLE(118, 0, 254), 
-    ORANGE(254, 55, 0), 
-    BLUE(0, 0, 254), 
-    WHITE(254, 254, 254), 
-    RED(254, 0, 0), 
+    GREEN(0, 254, 0),
+    PURPLE(118, 0, 254),
+    ORANGE(254, 55, 0),
+    BLUE(0, 0, 254),
+    WHITE(254, 254, 254),
+    RED(254, 0, 0),
     OFF(0, 0, 0);
 
     public int r;
@@ -63,31 +61,41 @@ public class Light extends SubsystemBase {
 
   public void setColor(Color color) {
     m_color = color;
+    candle.animate(null);
+    candle.setLEDs(color.r, color.g, color.b);
+    
   }
 
-  public void setNoColor(Color color){
-  setColor(Color.OFF); 
+  public void setNoColor() {
+    setColor(Color.OFF);
   }
 
+  public Command setColorGreenCommand() {
+    return runOnce(() -> setColor(Color.GREEN));
+  }
+public Command setNoColorCommand(){
+  return runOnce(() -> setColor(Color.OFF));
+}
   public static Light getInstance() {
     return instance == null ? instance = new Light() : instance;
   }
+
   public FireAnimation BurnyBurn() {
     return new FireAnimation(1, .5, NUM_LEDS, .5, .5);
   }
-  
+
   public RainbowAnimation Rainbow() {
     return new RainbowAnimation();
   }
 
   public Command runBurnyBurnCommand() {
-    return runOnce (() -> BurnyBurn());
+    return runOnce(() -> candle.animate(BurnyBurn()));
   }
 
   public Command runRainbowAnimationCommnad() {
-    return runOnce(() -> Rainbow());
+    return runOnce(() -> candle.animate(Rainbow()));
   }
-  
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
