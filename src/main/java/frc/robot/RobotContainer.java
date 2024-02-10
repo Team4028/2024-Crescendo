@@ -51,10 +51,10 @@ public class RobotContainer {
   private void configureBindings() {
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
         drivetrain.applyRequest(() -> drive
-          .withVelocityX(scaleDriverController(-driverController.getLeftY(), xLimiter, .25) * MaxSpeed)
-          .withVelocityY(scaleDriverController(-driverController.getLeftX(), yLimiter, .25) * MaxSpeed)
-          .withRotationalRate(scaleDriverController(-driverController.getRightX(), thetaLimiter, .25) * MaxAngularRate)
-        ));
+            .withVelocityX(scaleDriverController(-driverController.getLeftY(), xLimiter, .25) * MaxSpeed)
+            .withVelocityY(scaleDriverController(-driverController.getLeftX(), yLimiter, .25) * MaxSpeed)
+            .withRotationalRate(
+                scaleDriverController(-driverController.getRightX(), thetaLimiter, .25) * MaxAngularRate)));
 
     driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
     driverController.b().whileTrue(drivetrain
