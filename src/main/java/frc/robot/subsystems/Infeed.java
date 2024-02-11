@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Infeed extends SubsystemBase {
   private static Infeed instance;
   private TimeOfFlight tofSensor;
-  private TalonFX infeedMotor;
+  private CANSparkFlex infeedMotor;
 
   private final double RANGE_THRESH = 100;
 
@@ -33,7 +33,7 @@ public class Infeed extends SubsystemBase {
     log = DataLogManager.getLog();
     configureLogs();
     tofSensor = new TimeOfFlight(1);
-    infeedMotor = new TalonFX(13);
+    infeedMotor = new CANSparkFlex(13, MotorType.kBrushless);
   }
 
   // public void logToDash() {
@@ -69,11 +69,11 @@ public class Infeed extends SubsystemBase {
     infeedMotorVelocity = new DoubleLogEntry(log, "Velocity");
   }
 
-  public void logValues() {
-    infeedMotorCurrent.append(infeedMotor.getSupplyCurrent().getValueAsDouble());
+  // public void logValues() {
+  //   infeedMotorCurrent.append(infeedMotor.getSupplyCurrent().getValueAsDouble());
 
-    infeedMotorVelocity.append(infeedMotor.getVelocity().getValueAsDouble());
-  }
+  //   infeedMotorVelocity.append(infeedMotor.getVelocity().getValueAsDouble());
+  // }
 
   // public Command runMotorWithSensorCommand() {
   // return runOnce(this::runMotorWithSensor);
