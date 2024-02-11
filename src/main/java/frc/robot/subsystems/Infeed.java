@@ -6,11 +6,9 @@ package frc.robot.subsystems;
 
 import java.util.function.BooleanSupplier;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.playingwithfusion.TimeOfFlight;
-import com.revrobotics.CANSparkFlex;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -33,7 +31,14 @@ public class Infeed extends SubsystemBase {
     log = DataLogManager.getLog();
     configureLogs();
     tofSensor = new TimeOfFlight(1);
-    infeedMotor = new TalonFX(13);
+    infeedMotor = new TalonFX(18);
+    infeedMotor.setInverted(true);
+    infeedMotor.getConfigurator().apply(
+        new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(60)
+            .withSupplyCurrentLimit(60)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimitEnable(true));
   }
 
   // public void logToDash() {

@@ -16,10 +16,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Infeed;
 
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
@@ -28,6 +28,7 @@ public class RobotContainer {
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
+  private final Infeed infeed = Infeed.getInstance();
   SendableChooser<Command> autonChooser;
 
   SlewRateLimiter xLimiter = new SlewRateLimiter(4.);
@@ -51,18 +52,22 @@ public class RobotContainer {
   private void configureBindings() {
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
         drivetrain.applyRequest(() -> drive
-            .withVelocityX(scaleDriverController(-driverController.getLeftY(), xLimiter, .25) * MaxSpeed)
-            .withVelocityY(scaleDriverController(-driverController.getLeftX(), yLimiter, .25) * MaxSpeed)
+            .withVelocityX(scaleDriverController(-driverController.getLeftY(), xLimiter, .4) * MaxSpeed)
+            .withVelocityY(scaleDriverController(-driverController.getLeftX(), yLimiter, .4) * MaxSpeed)
             .withRotationalRate(
-                scaleDriverController(-driverController.getRightX(), thetaLimiter, .25) * MaxAngularRate)));
+                scaleDriverController(-driverController.getRightX(), thetaLimiter, .4) * MaxSpeed)));
 
     driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
     driverController.b().whileTrue(drivetrain
         .applyRequest(() -> point
             .withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))));
 
+    driverController.x().onTrue(infeed.runInfeedMotorCommand(.9)).onFalse(infeed.runInfeedMotorCommand(0.));
+    driverController.y().onTrue(infeed.runInfeedMotorCommand(-.9)).onFalse(infeed.runInfeedMotorCommand(0.));
+
     // reset the field-centric heading on left bumper press
     driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
+    driverController.back().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d(0., 0., Rotation2d.fromDegrees(180)))));
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
