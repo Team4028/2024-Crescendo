@@ -19,7 +19,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.Infeed;
+import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
@@ -29,6 +31,9 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
   private final Infeed infeed = Infeed.getInstance();
+  private final Shooter shooter = new Shooter();
+  private final Feeder feeder = new Feeder();
+  private final Command smartInfeedCommand;
   SendableChooser<Command> autonChooser;
 
   SlewRateLimiter xLimiter = new SlewRateLimiter(4.);
@@ -62,12 +67,22 @@ public class RobotContainer {
         .applyRequest(() -> point
             .withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))));
 
-    driverController.x().onTrue(infeed.runInfeedMotorCommand(.9)).onFalse(infeed.runInfeedMotorCommand(0.));
-    driverController.y().onTrue(infeed.runInfeedMotorCommand(-.9)).onFalse(infeed.runInfeedMotorCommand(0.));
+    // driverController.x().onTrue(infeed.runInfeedMotorCommand(.9)).onFalse(infeed.runInfeedMotorCommand(0.));
+    // driverController.y().onTrue(infeed.runInfeedMotorCommand(-.9)).onFalse(infeed.runInfeedMotorCommand(0.));
+    driverController.x().toggleOnTrue(smartInfeedCommand);
 
     // reset the field-centric heading on left bumper press
     driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
-    driverController.back().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d(0., 0., Rotation2d.fromDegrees(180)))));
+    driverController.back().onTrue(
+        drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d(0., 0., Rotation2d.fromDegrees(180)))));
+
+    driverController.leftBumper().onTrue(shooter.runVelocityCommand());
+    driverController.rightBumper().onTrue(shooter.stopCommand());
+
+    // driverController.povUp().onTrue(feeder.runFeederMotorCommand(.5))
+    // .onFalse(feeder.runFeederMotorCommand(0.));
+    // driverController.povDown().onTrue(
+    // feeder.runFeederMotorCommand(-.5).repeatedly().withTimeout(.05).andThen(feeder.runFeederMotorCommand(0.)));
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -81,6 +96,9 @@ public class RobotContainer {
   }
 
   public RobotContainer() {
+    smartInfeedCommand = infeed.runInfeedMotorCommand(.9).alongWith(feeder.runFeederMotorCommand(.5))
+        .until(feeder.hasGamePieceSupplier())
+        .andThen(feeder.runXRotations(-4).alongWith(infeed.runInfeedMotorCommand(0.)));
     initAutonChooser();
     configureBindings();
   }
@@ -91,5 +109,7 @@ public class RobotContainer {
 
   public void logDrivetrainValues() {
     drivetrain.logValues();
+    feeder.logFeeder();
+    infeed.logValues();
   }
 }

@@ -33,7 +33,7 @@ public class Infeed extends SubsystemBase {
   private Infeed() {
     log = DataLogManager.getLog();
     configureLogs();
-    tofSensor = new TimeOfFlight(21);
+    tofSensor = new TimeOfFlight(1);
     infeedMotor = new CANSparkFlex(18, MotorType.kBrushless);
     infeedMotor.setInverted(true);
     infeedMotor.setSmartCurrentLimit(60);
