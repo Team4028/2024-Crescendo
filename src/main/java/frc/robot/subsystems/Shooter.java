@@ -24,9 +24,9 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 public class Shooter extends SubsystemBase {
-    private CANSparkFlex m_rightMotor, m_leftMotor, m_pivetMotor;
-    private RelativeEncoder m_rightEncoder, m_leftEncoder, m_pivetEncoder;
-    private SparkPIDController m_rightPid, m_leftPid;
+    private CANSparkFlex m_rightMotor, m_leftMotor, m_pivotMotor;
+    private RelativeEncoder m_rightEncoder, m_leftEncoder, m_pivotEncoder;
+    private SparkPIDController m_rightPid, m_leftPid, m_pivotPid;
 
     private DataLog m_log;
     private DoubleLogEntry rightMotorCurrent, leftMotorCurrent, rightMotorVelocity, leftMotorVelocity, leftMotorVoltage,
@@ -76,6 +76,14 @@ public class Shooter extends SubsystemBase {
                 private static double kD = 0.0;
             }
         }
+
+        private static class Pivot {
+            private static double kFF = 0.0;
+
+            private static double kP = 0.1;
+            private static double kI = 0.0;
+            private static double kD = 0.0;
+        }
     }
 
     private SysIdRoutine routine = new SysIdRoutine(
@@ -87,7 +95,7 @@ public class Shooter extends SubsystemBase {
         m_log = DataLogManager.getLog();
         initLogs();
 
-        // Motor Init
+        // Shooters
         m_rightMotor = new CANSparkFlex(9, MotorType.kBrushless);
         m_leftMotor = new CANSparkFlex(10, MotorType.kBrushless);
 
@@ -98,11 +106,6 @@ public class Shooter extends SubsystemBase {
 
         m_rightMotor.setSmartCurrentLimit(80);
         m_leftMotor.setSmartCurrentLimit(60);
-
-        m_pivetMotor = new CANSparkFlex(12, MotorType.kBrushless);
-
-        // Change this is needed
-        m_pivetMotor.setInverted(false);
 
         // GABES COOL THEORY PLS RE,MINMD
         m_rightMotor.setClosedLoopRampRate(0.1);
@@ -148,14 +151,32 @@ public class Shooter extends SubsystemBase {
         m_leftPid.setOutputRange(-1, 1);
 
         speakerMode();
+
+        // PIVOT
+        m_pivotMotor = new CANSparkFlex(12, MotorType.kBrushless);
+
+        // Change this is needed
+        m_pivotMotor.setInverted(false);
+
+        m_pivotEncoder = m_pivotMotor.getEncoder();
+        m_pivotPid = m_pivotMotor.getPIDController();
+
+        m_pivotPid.setP(PIDConstants.Pivot.kP);
+        m_pivotPid.setI(PIDConstants.Pivot.kI);
+        m_pivotPid.setD(PIDConstants.Pivot.kD);
+        m_pivotPid.setFF(PIDConstants.Pivot.kFF);
     }
 
-    public void runPivetMotor(double vBus) {
-        m_pivetMotor.set(vBus);
+    public void runPivotMotor(double vBus) {
+        m_pivotMotor.set(vBus);
     }
 
-    public Command runPivetCommand(double vBus) {
-        return runOnce(() -> runPivetMotor(vBus));
+    public Command runPivotCommand(double vBus) {
+        return runOnce(() -> runPivotMotor(vBus));
+    }
+
+    public void runPivotToPosition(double position) {
+        m_pivotPid.setReference(position, ControlType.kPosition);
     }
 
     /**
