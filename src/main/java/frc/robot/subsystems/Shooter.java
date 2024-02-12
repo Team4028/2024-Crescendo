@@ -78,10 +78,6 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    // trap:
-    // left vel: 1300
-    // right vel: 1300
-
     private SysIdRoutine routine = new SysIdRoutine(
             new SysIdRoutine.Config(null, null, null, this::logState),
             new SysIdRoutine.Mechanism((volts) -> setMotorsVoltage(volts.in(Units.Volts)), null, this));
@@ -296,14 +292,14 @@ public class Shooter extends SubsystemBase {
     }
 
     private void initLogs() {
-        rightMotorCurrent = new DoubleLogEntry(m_log, "/right/Current");
-        leftMotorCurrent = new DoubleLogEntry(m_log, "/left/Current");
-        rightMotorVelocity = new DoubleLogEntry(m_log, "/right/Velocity");
-        leftMotorVelocity = new DoubleLogEntry(m_log, "/left/Velocity");
-        rightMotorVoltage = new DoubleLogEntry(m_log, "/right/Voltage");
-        leftMotorVoltage = new DoubleLogEntry(m_log, "/left/Voltage");
-        leftPosLog = new DoubleLogEntry(m_log, "/left/Pos");
-        rightPosLog = new DoubleLogEntry(m_log, "/right/Pos");
+        rightMotorCurrent = new DoubleLogEntry(m_log, "/Shooter/right/Current");
+        leftMotorCurrent = new DoubleLogEntry(m_log, "/Shooter/left/Current");
+        rightMotorVelocity = new DoubleLogEntry(m_log, "/Shooter/right/Velocity");
+        leftMotorVelocity = new DoubleLogEntry(m_log, "/Shooter/left/Velocity");
+        rightMotorVoltage = new DoubleLogEntry(m_log, "/Shooter/right/Voltage");
+        leftMotorVoltage = new DoubleLogEntry(m_log, "/Shooter/left/Voltage");
+        leftPosLog = new DoubleLogEntry(m_log, "/Shooter/left/Pos");
+        rightPosLog = new DoubleLogEntry(m_log, "/Shooter/right/Pos");
         stateLog = new StringLogEntry(m_log, "test-state");
     }
 
