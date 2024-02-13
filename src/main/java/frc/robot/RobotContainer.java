@@ -55,12 +55,19 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive
-            .withVelocityX(scaleDriverController(-driverController.getLeftY(), xLimiter, .4) * MaxSpeed)
-            .withVelocityY(scaleDriverController(-driverController.getLeftX(), yLimiter, .4) * MaxSpeed)
-            .withRotationalRate(
-                scaleDriverController(-driverController.getRightX(), thetaLimiter, .4) * MaxSpeed)));
+    // drivetrain.setDefaultCommand( // Drivetrain will execute this command
+    // periodically
+    // drivetrain.applyRequest(() -> drive
+    // .withVelocityX(scaleDriverController(-driverController.getLeftY(), xLimiter,
+    // .4) * MaxSpeed)
+    // .withVelocityY(scaleDriverController(-driverController.getLeftX(), yLimiter,
+    // .4) * MaxSpeed)
+    // .withRotationalRate(
+    // scaleDriverController(-driverController.getRightX(), thetaLimiter, .4) *
+    // MaxSpeed)));
+
+    feeder.setDefaultCommand(feeder.runFeederMotorCommand(0.));
+    infeed.setDefaultCommand(infeed.runInfeedMotorCommand(0.));
 
     driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
     driverController.b().whileTrue(drivetrain
@@ -70,6 +77,7 @@ public class RobotContainer {
     // driverController.x().onTrue(infeed.runInfeedMotorCommand(.9)).onFalse(infeed.runInfeedMotorCommand(0.));
     // driverController.y().onTrue(infeed.runInfeedMotorCommand(-.9)).onFalse(infeed.runInfeedMotorCommand(0.));
     driverController.x().toggleOnTrue(smartInfeedCommand);
+    driverController.y().onTrue(feeder.runFeederMotorCommand(.9).repeatedly().until(() -> !driverController.y().getAsBoolean()));
 
     // reset the field-centric heading on left bumper press
     driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
@@ -96,9 +104,13 @@ public class RobotContainer {
   }
 
   public RobotContainer() {
-    smartInfeedCommand = infeed.runInfeedMotorCommand(.9).alongWith(feeder.runFeederMotorCommand(.5))
+    smartInfeedCommand = infeed.runInfeedMotorCommand(.9).alongWith(feeder.runFeederMotorCommand(.5)).repeatedly()
         .until(feeder.hasGamePieceSupplier())
-        .andThen(feeder.runXRotations(-4).alongWith(infeed.runInfeedMotorCommand(0.)));
+        .andThen(infeed.runInfeedMotorCommand(.9).alongWith(feeder.runFeederMotorCommand(.5)).repeatedly()
+            .until(() -> !feeder.hasGamePiece()))
+        // .andThen(feeder.runXRotationsNoPID(20).raceWith(infeed.runInfeedMotorCommand(0.4).repeatedly()))
+        .andThen(feeder.runXRotationsNoPID(-.25).alongWith(infeed.runInfeedMotorCommand(0.)))
+        .andThen(shooter.runVelocityCommand());
     initAutonChooser();
     configureBindings();
   }
@@ -108,8 +120,8 @@ public class RobotContainer {
   }
 
   public void logDrivetrainValues() {
-    drivetrain.logValues();
-    feeder.logFeeder();
-    infeed.logValues();
+    // drivetrain.logValues();
+    // feeder.logFeeder();
+    // infeed.logValues();
   }
 }

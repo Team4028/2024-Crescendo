@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.revrobotics.CANSparkFlex;
@@ -22,8 +23,9 @@ public class Feeder extends SubsystemBase {
     private final CANSparkFlex feederMotor; // TODO: log this
     private final RelativeEncoder feederEncoder;
     private final TimeOfFlight tofSensor;
-    private final double RANGE_THRESH = 100;
+    private final double RANGE_THRESH = 65;
     private final SparkPIDController pid;
+    private double setPos = 0;
     private final DataLog log;
     private final DoubleLogEntry fCurrent, fVBus, fPosition, fVelocity;
 
@@ -54,6 +56,13 @@ public class Feeder extends SubsystemBase {
         return run(() -> pid.setReference(feederMotor.getEncoder().getPosition() + x, ControlType.kPosition));
     }
 
+    public Command runXRotationsNoPID(double x) {
+        return runOnce(() -> setPos = feederEncoder.getPosition() + x)
+                .andThen(runFeederMotorCommand(0.2 * Math.signum(x)).repeatedly()
+                        .until(() -> Math.signum(x) == 1 ? feederEncoder.getPosition() > setPos
+                                : feederEncoder.getPosition() < setPos));
+    }
+
     public BooleanSupplier hasGamePieceSupplier() {
         return this::hasGamePiece;
     }
@@ -76,5 +85,6 @@ public class Feeder extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
+        SmartDashboard.putNumber("TOF FEEDEDE", tofSensor.getRange());
     }
 }

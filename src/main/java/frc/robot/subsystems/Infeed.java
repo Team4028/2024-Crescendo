@@ -11,6 +11,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.playingwithfusion.TimeOfFlight;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
@@ -23,6 +24,7 @@ public class Infeed extends SubsystemBase {
   private static Infeed instance;
   private TimeOfFlight tofSensor;
   private CANSparkFlex infeedMotor;
+  private RelativeEncoder infeedEncoder;
 
   private final double RANGE_THRESH = 100;
 
@@ -35,6 +37,7 @@ public class Infeed extends SubsystemBase {
     configureLogs();
     tofSensor = new TimeOfFlight(1);
     infeedMotor = new CANSparkFlex(18, MotorType.kBrushless);
+    infeedEncoder = infeedMotor.getEncoder();
     infeedMotor.setInverted(true);
     infeedMotor.setSmartCurrentLimit(60);
     // infeedMotor.getConfigurator().apply(
@@ -82,6 +85,7 @@ public class Infeed extends SubsystemBase {
     // infeedMotorCurrent.append(infeedMotor.getSupplyCurrent().getValueAsDouble());
 
     // infeedMotorVelocity.append(infeedMotor.getVelocity().getValueAsDouble());
+    // infeedMotorVelocity.append(infeedMotor.getEncoder().getVelocity());
   }
 
   // public Command runMotorWithSensorCommand() {
@@ -91,8 +95,9 @@ public class Infeed extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    SmartDashboard.putNumber("Infeed TOF", tofSensor.getRange());
-    SmartDashboard.putNumber("Infeed Current", infeedMotor.getOutputCurrent());
+    // SmartDashboard.putNumber("Infeed TOF", tofSensor.getRange());
+    // SmartDashboard.putNumber("Infeed Current", infeedMotor.getOutputCurrent());
+    SmartDashboard.putNumber("Infeed RPM", infeedEncoder.getVelocity());
   }
 
   public static Infeed getInstance() {

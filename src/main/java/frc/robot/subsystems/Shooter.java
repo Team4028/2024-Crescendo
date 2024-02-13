@@ -154,13 +154,13 @@ public class Shooter extends SubsystemBase {
         speakerMode();
     }
 
-    public void runPivetMotor(double vBus) {
-        m_pivetMotor.set(vBus);
-    }
+    // public void runPivetMotor(double vBus) {
+    //     m_pivetMotor.set(vBus);
+    // }
 
-    public Command runPivetCommand(double vBus) {
-        return runOnce(() -> runPivetMotor(vBus));
-    }
+    // public Command runPivetCommand(double vBus) {
+    //     return runOnce(() -> runPivetMotor(vBus));
+    // }
 
     /**
      * Run motors at the velocity input from the dashboard.
@@ -326,55 +326,55 @@ public class Shooter extends SubsystemBase {
         // This method will be called once per scheduler run
         if (scan != 0 && scan % 3 == 0) {
             scan = 0;
-            SmartDashboard.putNumber("rightMotorCurrent", m_rightMotor.getOutputCurrent());
-            SmartDashboard.putNumber("leftMotorCurrent", m_leftMotor.getOutputCurrent());
-            SmartDashboard.putNumber("rightMotorVel", m_rightEncoder.getVelocity());
-            SmartDashboard.putNumber("leftMotorVel", m_leftEncoder.getVelocity());
-        }
-        scan++;
-
-        SmartDashboard.putNumber("Left Actual", m_leftEncoder.getVelocity());
-        SmartDashboard.putNumber("Right Actual", m_rightEncoder.getVelocity());
-
-        // testing
-        double leftP = SmartDashboard.getNumber("Left P Gain", 0);
-        double leftI = SmartDashboard.getNumber("Left I Gain", 0);
-        double leftD = SmartDashboard.getNumber("Left D Gain", 0);
-        double leftFF = SmartDashboard.getNumber("Left Feed Forward", 0);
+            // SmartDashboard.putNumber("rightMotorCurrent", m_rightMotor.getOutputCurrent());
+            // SmartDashboard.putNumber("leftMotorCurrent", m_leftMotor.getOutputCurrent());
+            // SmartDashboard.putNumber("rightMotorVel", m_rightEncoder.getVelocity());
+            // SmartDashboard.putNumber("leftMotorVel", m_leftEncoder.getVelocity());
+            // SmartDashboard.putNumber("Left Actual", m_leftEncoder.getVelocity());
+            // SmartDashboard.putNumber("Right Actual", m_rightEncoder.getVelocity());
+            
+            
+        //     // testing
+        //     double leftP = SmartDashboard.getNumber("Left P Gain", 0);
+        //     double leftI = SmartDashboard.getNumber("Left I Gain", 0);
+        //     double leftD = SmartDashboard.getNumber("Left D Gain", 0);
+        // double leftFF = SmartDashboard.getNumber("Left Feed Forward", 0);
 
         // if PID coefficients on SmartDashboard have changed, write new values to
         // controller
-        if (leftP != m_leftPid.getP(m_slot)) {
-            m_leftPid.setP(leftP, m_slot);
-        }
-        if (leftI != m_leftPid.getI(m_slot)) {
-            m_leftPid.setI(leftI, m_slot);
-        }
-        if (leftD != m_leftPid.getD(m_slot)) {
-            m_leftPid.setD(leftD, m_slot);
-        }
-        if (leftFF != m_leftPid.getFF(m_slot)) {
-            m_leftPid.setFF(leftFF, m_slot);
-        }
+        // if (leftP != m_leftPid.getP(m_slot)) {
+        //     m_leftPid.setP(leftP, m_slot);
+        // }
+        // if (leftI != m_leftPid.getI(m_slot)) {
+        //     m_leftPid.setI(leftI, m_slot);
+        // }
+        // if (leftD != m_leftPid.getD(m_slot)) {
+        //     m_leftPid.setD(leftD, m_slot);
+        // }
+        // if (leftFF != m_leftPid.getFF(m_slot)) {
+        //     m_leftPid.setFF(leftFF, m_slot);
+        // }
 
-        double rightP = SmartDashboard.getNumber("Right P Gain", 0);
-        double rightI = SmartDashboard.getNumber("Right I Gain", 0);
-        double rightD = SmartDashboard.getNumber("Right D Gain", 0);
-        double rightFF = SmartDashboard.getNumber("Right Feed Forward", 0);
+        // double rightP = SmartDashboard.getNumber("Right P Gain", 0);
+        // double rightI = SmartDashboard.getNumber("Right I Gain", 0);
+        // double rightD = SmartDashboard.getNumber("Right D Gain", 0);
+        // double rightFF = SmartDashboard.getNumber("Right Feed Forward", 0);
 
         // if PID coefficients on SmartDashboard have changed, write new values to
         // controller
-        if (rightP != m_rightPid.getP(m_slot)) {
-            m_rightPid.setP(rightP, m_slot);
-        }
-        if (rightI != m_rightPid.getI(m_slot)) {
-            m_rightPid.setI(rightI, m_slot);
-        }
-        if (rightD != m_rightPid.getD(m_slot)) {
-            m_rightPid.setD(rightD, m_slot);
-        }
-        if (rightFF != m_rightPid.getFF(m_slot)) {
-            m_rightPid.setFF(rightFF, m_slot);
-        }
+        // if (rightP != m_rightPid.getP(m_slot)) {
+        //     m_rightPid.setP(rightP, m_slot);
+        // }
+        // if (rightI != m_rightPid.getI(m_slot)) {
+        //     m_rightPid.setI(rightI, m_slot);
+        // }
+        // if (rightD != m_rightPid.getD(m_slot)) {
+        //     m_rightPid.setD(rightD, m_slot);
+        // }
+        // if (rightFF != m_rightPid.getFF(m_slot)) {
+        //     m_rightPid.setFF(rightFF, m_slot);
+        // }
+    }
+    scan++;
     }
 }
