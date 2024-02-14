@@ -41,11 +41,11 @@ public class Feeder extends SubsystemBase {
         fVelocity = new DoubleLogEntry(log, "/Feeder Motor/Velocity");
 
         pid = feederMotor.getPIDController();
-        pid.setP(0.1);
+        pid.setP(16);
         pid.setI(0);
         pid.setD(0);
         pid.setIZone(0);
-        pid.setOutputRange(-.2, .2);
+        pid.setOutputRange(-.4, .4);
     }
 
     public boolean hasGamePiece() {
@@ -53,7 +53,7 @@ public class Feeder extends SubsystemBase {
     }
 
     public Command runXRotations(double x) {
-        return run(() -> pid.setReference(feederMotor.getEncoder().getPosition() + x, ControlType.kPosition));
+        return runOnce(() -> pid.setReference(feederMotor.getEncoder().getPosition() + x, ControlType.kPosition)).andThen(run(() -> {}));
     }
 
     public Command runXRotationsNoPID(double x) {
