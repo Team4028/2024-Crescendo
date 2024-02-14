@@ -41,11 +41,11 @@ public class Feeder extends SubsystemBase {
         fVelocity = new DoubleLogEntry(log, "/Feeder Motor/Velocity");
 
         pid = feederMotor.getPIDController();
-        pid.setP(0);
+        pid.setP(0.1);
         pid.setI(0);
         pid.setD(0);
         pid.setIZone(0);
-        pid.setOutputRange(-.9, .9);
+        pid.setOutputRange(-.2, .2);
     }
 
     public boolean hasGamePiece() {

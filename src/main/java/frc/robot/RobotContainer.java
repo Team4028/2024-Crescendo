@@ -77,7 +77,8 @@ public class RobotContainer {
     // driverController.x().onTrue(infeed.runInfeedMotorCommand(.9)).onFalse(infeed.runInfeedMotorCommand(0.));
     // driverController.y().onTrue(infeed.runInfeedMotorCommand(-.9)).onFalse(infeed.runInfeedMotorCommand(0.));
     driverController.x().toggleOnTrue(smartInfeedCommand);
-    driverController.y().onTrue(feeder.runFeederMotorCommand(.9).repeatedly().until(() -> !driverController.y().getAsBoolean()));
+    // driverController.y().onTrue(feeder.runFeederMotorCommand(.9).repeatedly().until(() -> !driverController.y().getAsBoolean()));
+    driverController.y().onTrue(feeder.runXRotations(10));
 
     // reset the field-centric heading on left bumper press
     driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
