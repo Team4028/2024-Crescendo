@@ -4,8 +4,8 @@
 
 package frc.robot.subsystems;
 
-import com.fasterxml.jackson.databind.ser.std.CalendarSerializer;
 import com.revrobotics.CANSparkFlex;
+import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
@@ -24,7 +24,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 public class Shooter extends SubsystemBase {
-    private CANSparkFlex m_rightMotor, m_leftMotor, m_pivotMotor;
+    private CANSparkFlex m_rightMotor, m_leftMotor;
+    private CANSparkMax m_pivotMotor;
     private RelativeEncoder m_rightEncoder, m_leftEncoder, m_pivotEncoder;
     private SparkPIDController m_rightPid, m_leftPid, m_pivotPid;
 
@@ -153,7 +154,7 @@ public class Shooter extends SubsystemBase {
         speakerMode();
 
         // PIVOT
-        m_pivotMotor = new CANSparkFlex(12, MotorType.kBrushless);
+        m_pivotMotor = new CANSparkMax(13, MotorType.kBrushless);
 
         // Change this is needed
         m_pivotMotor.setInverted(false);
