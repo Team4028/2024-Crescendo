@@ -345,11 +345,12 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         // This method will be called once per scheduler run
         // if (scan != 0 && scan % 3 == 0) {
-        //     scan = 0;
-        //     SmartDashboard.putNumber("rightMotorCurrent", m_rightMotor.getOutputCurrent());
-        //     SmartDashboard.putNumber("leftMotorCurrent", m_leftMotor.getOutputCurrent());
-        //     SmartDashboard.putNumber("rightMotorVel", m_rightEncoder.getVelocity());
-        //     SmartDashboard.putNumber("leftMotorVel", m_leftEncoder.getVelocity());
+        // scan = 0;
+        // SmartDashboard.putNumber("rightMotorCurrent",
+        // m_rightMotor.getOutputCurrent());
+        // SmartDashboard.putNumber("leftMotorCurrent", m_leftMotor.getOutputCurrent());
+        // SmartDashboard.putNumber("rightMotorVel", m_rightEncoder.getVelocity());
+        // SmartDashboard.putNumber("leftMotorVel", m_leftEncoder.getVelocity());
         // }
         // scan++;
 
@@ -365,16 +366,16 @@ public class Shooter extends SubsystemBase {
         // // if PID coefficients on SmartDashboard have changed, write new values to
         // // controller
         // if (leftP != m_leftPid.getP(m_slot)) {
-        //     m_leftPid.setP(leftP, m_slot);
+        // m_leftPid.setP(leftP, m_slot);
         // }
         // if (leftI != m_leftPid.getI(m_slot)) {
-        //     m_leftPid.setI(leftI, m_slot);
+        // m_leftPid.setI(leftI, m_slot);
         // }
         // if (leftD != m_leftPid.getD(m_slot)) {
-        //     m_leftPid.setD(leftD, m_slot);
+        // m_leftPid.setD(leftD, m_slot);
         // }
         // if (leftFF != m_leftPid.getFF(m_slot)) {
-        //     m_leftPid.setFF(leftFF, m_slot);
+        // m_leftPid.setFF(leftFF, m_slot);
         // }
 
         // double rightP = SmartDashboard.getNumber("Right P Gain", 0);
@@ -385,16 +386,16 @@ public class Shooter extends SubsystemBase {
         // // if PID coefficients on SmartDashboard have changed, write new values to
         // // controller
         // if (rightP != m_rightPid.getP(m_slot)) {
-        //     m_rightPid.setP(rightP, m_slot);
+        // m_rightPid.setP(rightP, m_slot);
         // }
         // if (rightI != m_rightPid.getI(m_slot)) {
-        //     m_rightPid.setI(rightI, m_slot);
+        // m_rightPid.setI(rightI, m_slot);
         // }
         // if (rightD != m_rightPid.getD(m_slot)) {
-        //     m_rightPid.setD(rightD, m_slot);
+        // m_rightPid.setD(rightD, m_slot);
         // }
         // if (rightFF != m_rightPid.getFF(m_slot)) {
-        //     m_rightPid.setFF(rightFF, m_slot);
+        // m_rightPid.setFF(rightFF, m_slot);
         // }
     }
 }
