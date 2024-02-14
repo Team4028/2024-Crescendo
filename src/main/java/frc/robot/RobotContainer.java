@@ -50,11 +50,11 @@ public class RobotContainer {
         // driverController.a().onTrue(shooter.runVelocityCommand());
         // driverController.x().onTrue(shooter.stopCommand());
 
-        driverController.a().onTrue(shooter.runPivotCommand(0.3));
+        driverController.a().onTrue(shooter.runPivotCommand(0.9));
         driverController.a().onFalse(shooter.runPivotCommand(0.0));
 
-        driverController.b().onTrue(shooter.runPivotCommand(-0.3));
-        driverController.b().onFalse(shooter.runPivotCommand(0.0));
+        driverController.x().onTrue(shooter.runPivotCommand(-0.9));
+        driverController.x().onFalse(shooter.runPivotCommand(0.0));
 
         driverController.y().and(driverController.povDown()).onTrue(shooter.trapCommand());
         driverController.y().and(driverController.povUp()).onTrue(shooter.speakerCommand());
