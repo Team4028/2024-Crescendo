@@ -47,6 +47,9 @@ public class Telemetry {
     private Pose2d m_lastPose = new Pose2d();
     private double lastTime = Utils.getCurrentTimeSeconds();
 
+    /* Direct double array representation of swerve module states */
+    private final DoubleArrayPublisher state = driveStats.getDoubleArrayTopic("States").publish();
+
     /* Mechanisms to represent the swerve module states */
     private final Mechanism2d[] m_moduleMechanisms = new Mechanism2d[] {
             new Mechanism2d(1, 1),
@@ -98,11 +101,16 @@ public class Telemetry {
         velocityY.set(velocities.getY());
         odomPeriod.set(state.OdometryPeriod);
 
+        double[] states = new double[8];
+
         /* Telemeterize the module's states */
         for (int i = 0; i < 4; ++i) {
             m_moduleSpeeds[i].setAngle(state.ModuleStates[i].angle);
             m_moduleDirections[i].setAngle(state.ModuleStates[i].angle);
             m_moduleSpeeds[i].setLength(state.ModuleStates[i].speedMetersPerSecond / (2 * MaxSpeed));
+
+            states[2 * i] = state.ModuleStates[i].speedMetersPerSecond;
+            states[2 * i + 1] = state.ModuleStates[i].angle.getDegrees();
 
             SmartDashboard.putData("Module " + i, m_moduleMechanisms[i]);
         }
