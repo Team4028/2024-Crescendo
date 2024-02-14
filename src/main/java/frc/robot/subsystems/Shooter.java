@@ -4,11 +4,12 @@
 
 package frc.robot.subsystems;
 
-import com.fasterxml.jackson.databind.ser.std.CalendarSerializer;
 import com.revrobotics.CANSparkFlex;
+import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.units.Units;
@@ -24,9 +25,10 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 public class Shooter extends SubsystemBase {
-    private CANSparkFlex m_rightMotor, m_leftMotor, m_pivetMotor;
-    private RelativeEncoder m_rightEncoder, m_leftEncoder, m_pivetEncoder;
-    private SparkPIDController m_rightPid, m_leftPid;
+    private CANSparkFlex m_rightMotor, m_leftMotor;
+    private CANSparkMax m_pivotMotor;
+    private RelativeEncoder m_rightEncoder, m_leftEncoder, m_pivotEncoder;
+    private SparkPIDController m_rightPid, m_leftPid, m_pivotPid;
 
     private DataLog m_log;
     private DoubleLogEntry rightMotorCurrent, leftMotorCurrent, rightMotorVelocity, leftMotorVelocity, leftMotorVoltage,
@@ -76,11 +78,15 @@ public class Shooter extends SubsystemBase {
                 private static double kD = 0.0;
             }
         }
-    }
 
-    // trap:
-    // left vel: 1300
-    // right vel: 1300
+        private static class Pivot {
+            private static double kFF = 0.0;
+
+            private static double kP = 0.1;
+            private static double kI = 0.0;
+            private static double kD = 0.0;
+        }
+    }
 
     private SysIdRoutine routine = new SysIdRoutine(
             new SysIdRoutine.Config(null, null, null, this::logState),
@@ -91,7 +97,7 @@ public class Shooter extends SubsystemBase {
         m_log = DataLogManager.getLog();
         initLogs();
 
-        // Motor Init
+        // Shooters
         m_rightMotor = new CANSparkFlex(9, MotorType.kBrushless);
         m_leftMotor = new CANSparkFlex(10, MotorType.kBrushless);
 
@@ -102,11 +108,6 @@ public class Shooter extends SubsystemBase {
 
         m_rightMotor.setSmartCurrentLimit(80);
         m_leftMotor.setSmartCurrentLimit(60);
-
-        m_pivetMotor = new CANSparkFlex(12, MotorType.kBrushless);
-
-        // Change this is needed
-        m_pivetMotor.setInverted(false);
 
         // GABES COOL THEORY PLS RE,MINMD
         m_rightMotor.setClosedLoopRampRate(0.1);
@@ -152,15 +153,34 @@ public class Shooter extends SubsystemBase {
         m_leftPid.setOutputRange(-1, 1);
 
         speakerMode();
+
+        // PIVOT
+        m_pivotMotor = new CANSparkMax(13, MotorType.kBrushless);
+
+        // Change this is needed
+        m_pivotMotor.setInverted(true);
+        m_pivotMotor.setIdleMode(IdleMode.kBrake);
+
+        m_pivotEncoder = m_pivotMotor.getEncoder();
+        m_pivotPid = m_pivotMotor.getPIDController();
+
+        m_pivotPid.setP(PIDConstants.Pivot.kP);
+        m_pivotPid.setI(PIDConstants.Pivot.kI);
+        m_pivotPid.setD(PIDConstants.Pivot.kD);
+        m_pivotPid.setFF(PIDConstants.Pivot.kFF);
     }
 
-    // public void runPivetMotor(double vBus) {
-    //     m_pivetMotor.set(vBus);
-    // }
+    public void runPivotMotor(double vBus) {
+        m_pivotMotor.set(vBus);
+    }
 
-    // public Command runPivetCommand(double vBus) {
-    //     return runOnce(() -> runPivetMotor(vBus));
-    // }
+    public Command runPivotCommand(double vBus) {
+        return runOnce(() -> runPivotMotor(vBus));
+    }
+
+    public void runPivotToPosition(double position) {
+        m_pivotPid.setReference(position, ControlType.kPosition);
+    }
 
     /**
      * Run motors at the velocity input from the dashboard.
@@ -296,14 +316,14 @@ public class Shooter extends SubsystemBase {
     }
 
     private void initLogs() {
-        rightMotorCurrent = new DoubleLogEntry(m_log, "/right/Current");
-        leftMotorCurrent = new DoubleLogEntry(m_log, "/left/Current");
-        rightMotorVelocity = new DoubleLogEntry(m_log, "/right/Velocity");
-        leftMotorVelocity = new DoubleLogEntry(m_log, "/left/Velocity");
-        rightMotorVoltage = new DoubleLogEntry(m_log, "/right/Voltage");
-        leftMotorVoltage = new DoubleLogEntry(m_log, "/left/Voltage");
-        leftPosLog = new DoubleLogEntry(m_log, "/left/Pos");
-        rightPosLog = new DoubleLogEntry(m_log, "/right/Pos");
+        rightMotorCurrent = new DoubleLogEntry(m_log, "/Shooter/right/Current");
+        leftMotorCurrent = new DoubleLogEntry(m_log, "/Shooter/left/Current");
+        rightMotorVelocity = new DoubleLogEntry(m_log, "/Shooter/right/Velocity");
+        leftMotorVelocity = new DoubleLogEntry(m_log, "/Shooter/left/Velocity");
+        rightMotorVoltage = new DoubleLogEntry(m_log, "/Shooter/right/Voltage");
+        leftMotorVoltage = new DoubleLogEntry(m_log, "/Shooter/left/Voltage");
+        leftPosLog = new DoubleLogEntry(m_log, "/Shooter/left/Pos");
+        rightPosLog = new DoubleLogEntry(m_log, "/Shooter/right/Pos");
         stateLog = new StringLogEntry(m_log, "test-state");
     }
 
@@ -324,35 +344,38 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        if (scan != 0 && scan % 3 == 0) {
-            scan = 0;
-            // SmartDashboard.putNumber("rightMotorCurrent", m_rightMotor.getOutputCurrent());
-            // SmartDashboard.putNumber("leftMotorCurrent", m_leftMotor.getOutputCurrent());
-            // SmartDashboard.putNumber("rightMotorVel", m_rightEncoder.getVelocity());
-            // SmartDashboard.putNumber("leftMotorVel", m_leftEncoder.getVelocity());
-            // SmartDashboard.putNumber("Left Actual", m_leftEncoder.getVelocity());
-            // SmartDashboard.putNumber("Right Actual", m_rightEncoder.getVelocity());
-            
-            
-        //     // testing
-        //     double leftP = SmartDashboard.getNumber("Left P Gain", 0);
-        //     double leftI = SmartDashboard.getNumber("Left I Gain", 0);
-        //     double leftD = SmartDashboard.getNumber("Left D Gain", 0);
+        // if (scan != 0 && scan % 3 == 0) {
+        // scan = 0;
+        // SmartDashboard.putNumber("rightMotorCurrent",
+        // m_rightMotor.getOutputCurrent());
+        // SmartDashboard.putNumber("leftMotorCurrent", m_leftMotor.getOutputCurrent());
+        // SmartDashboard.putNumber("rightMotorVel", m_rightEncoder.getVelocity());
+        // SmartDashboard.putNumber("leftMotorVel", m_leftEncoder.getVelocity());
+        // }
+        // scan++;
+
+        // SmartDashboard.putNumber("Left Actual", m_leftEncoder.getVelocity());
+        // SmartDashboard.putNumber("Right Actual", m_rightEncoder.getVelocity());
+
+        // // testing
+        // double leftP = SmartDashboard.getNumber("Left P Gain", 0);
+        // double leftI = SmartDashboard.getNumber("Left I Gain", 0);
+        // double leftD = SmartDashboard.getNumber("Left D Gain", 0);
         // double leftFF = SmartDashboard.getNumber("Left Feed Forward", 0);
 
-        // if PID coefficients on SmartDashboard have changed, write new values to
-        // controller
+        // // if PID coefficients on SmartDashboard have changed, write new values to
+        // // controller
         // if (leftP != m_leftPid.getP(m_slot)) {
-        //     m_leftPid.setP(leftP, m_slot);
+        // m_leftPid.setP(leftP, m_slot);
         // }
         // if (leftI != m_leftPid.getI(m_slot)) {
-        //     m_leftPid.setI(leftI, m_slot);
+        // m_leftPid.setI(leftI, m_slot);
         // }
         // if (leftD != m_leftPid.getD(m_slot)) {
-        //     m_leftPid.setD(leftD, m_slot);
+        // m_leftPid.setD(leftD, m_slot);
         // }
         // if (leftFF != m_leftPid.getFF(m_slot)) {
-        //     m_leftPid.setFF(leftFF, m_slot);
+        // m_leftPid.setFF(leftFF, m_slot);
         // }
 
         // double rightP = SmartDashboard.getNumber("Right P Gain", 0);
@@ -360,21 +383,19 @@ public class Shooter extends SubsystemBase {
         // double rightD = SmartDashboard.getNumber("Right D Gain", 0);
         // double rightFF = SmartDashboard.getNumber("Right Feed Forward", 0);
 
-        // if PID coefficients on SmartDashboard have changed, write new values to
-        // controller
+        // // if PID coefficients on SmartDashboard have changed, write new values to
+        // // controller
         // if (rightP != m_rightPid.getP(m_slot)) {
-        //     m_rightPid.setP(rightP, m_slot);
+        // m_rightPid.setP(rightP, m_slot);
         // }
         // if (rightI != m_rightPid.getI(m_slot)) {
-        //     m_rightPid.setI(rightI, m_slot);
+        // m_rightPid.setI(rightI, m_slot);
         // }
         // if (rightD != m_rightPid.getD(m_slot)) {
-        //     m_rightPid.setD(rightD, m_slot);
+        // m_rightPid.setD(rightD, m_slot);
         // }
         // if (rightFF != m_rightPid.getFF(m_slot)) {
-        //     m_rightPid.setFF(rightFF, m_slot);
+        // m_rightPid.setFF(rightFF, m_slot);
         // }
-    }
-    scan++;
     }
 }
