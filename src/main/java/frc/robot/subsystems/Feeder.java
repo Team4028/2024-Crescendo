@@ -61,6 +61,7 @@ public class Feeder extends SubsystemBase {
                 .andThen(runFeederMotorCommand(0.2 * Math.signum(x)).repeatedly()
                         .until(() -> Math.signum(x) == 1 ? feederEncoder.getPosition() > setPos
                                 : feederEncoder.getPosition() < setPos));
+        // .finallyDo(() -> runFeederMotor(0.));
     }
 
     public BooleanSupplier hasGamePieceSupplier() {

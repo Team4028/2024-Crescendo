@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -76,15 +78,21 @@ public class RobotContainer {
         // .withModuleDirection(new Rotation2d(-driverController.getLeftY(),
         // -driverController.getLeftX()))));
 
-        driverController.leftTrigger().whileTrue(smartInfeedCommand);
+        driverController.leftTrigger().onTrue(
+                infeed.runInfeedMotorCommand(.8).alongWith(
+                        feeder.runFeederMotorCommand(0.8)))
+                .onFalse(infeed.runInfeedMotorCommand(0.).alongWith(
+                        feeder.runFeederMotorCommand(0.)));
 
-        driverController.a().onTrue(feeder.runXRotations(10));
+        driverController.a().whileTrue(feeder.runXRotations(10));
+        driverController.b().toggleOnTrue(smartInfeedCommand);
 
-        driverController.back().and(driverController.x()).onTrue(shooter.stopCommand());
-
-        driverController.x().onTrue(shooter.runVelocityCommand());
-        driverController.x().and(driverController.povDown()).onTrue(shooter.speakerCommand());
-        driverController.x().and(driverController.povUp()).onTrue(shooter.trapCommand());
+        driverController.x().and(driverController.povCenter())
+                .toggleOnTrue(shooter.runVelocityCommand());
+        driverController.x().and(driverController.povDown())
+                .onTrue(shooter.cycleDownCommand());
+        driverController.x().and(driverController.povUp())
+                .onTrue(shooter.cycleUpCommand());
 
         // reset the field-centric heading on start
         driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
@@ -113,8 +121,8 @@ public class RobotContainer {
                 .andThen(infeed.runInfeedMotorCommand(.9).alongWith(feeder.runFeederMotorCommand(.5)).repeatedly()
                         .until(() -> !feeder.hasGamePiece()))
                 // .andThen(feeder.runXRotationsNoPID(20).raceWith(infeed.runInfeedMotorCommand(0.4).repeatedly()))
-                .andThen(feeder.runXRotationsNoPID(-.25).alongWith(infeed.runInfeedMotorCommand(0.)))
-                .andThen(shooter.runVelocityCommand());
+                .andThen(feeder.runXRotationsNoPID(-.25).alongWith(infeed.runInfeedMotorCommand(0.)));
+        // .andThen(shooter.runVelocityCommand().withTimeout(0.3));
         initAutonChooser();
         configureBindings();
     }

@@ -12,17 +12,9 @@ import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
-import edu.wpi.first.units.Units;
-import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.util.datalog.StringLogEntry;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog.State;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 public class Shooter extends SubsystemBase {
     private CANSparkFlex m_rightMotor, m_leftMotor;
@@ -30,18 +22,23 @@ public class Shooter extends SubsystemBase {
     private RelativeEncoder m_rightEncoder, m_leftEncoder, m_pivotEncoder;
     private SparkPIDController m_rightPid, m_leftPid, m_pivotPid;
 
-    private DataLog m_log;
-    private DoubleLogEntry rightMotorCurrent, leftMotorCurrent, rightMotorVelocity, leftMotorVelocity, leftMotorVoltage,
-            rightMotorVoltage, rightPosLog, leftPosLog;
-    public StringLogEntry stateLog;
+    // private DataLog m_log;
+    // private DoubleLogEntry rightMotorCurrent, leftMotorCurrent,
+    // rightMotorVelocity, leftMotorVelocity, leftMotorVoltage,
+    // rightMotorVoltage, rightPosLog, leftPosLog;
+    // public StringLogEntry stateLog;
 
-    private int scan;
+    // private int scan;
 
     private int m_slot = 0;
 
+    private double m_leftTarget, m_rightTarget;
+
     private final class PIDConstants {
-        private static final int TRAP_SLOT = 1;
-        private static final int SPEAKER_SLOT = 0;
+        private static final int TRAP_SLOT = 0;
+        private static final int SHORT_SLOT = 1;
+        private static final int MEDIUM_SLOT = 2;
+        private static final int LONG_SLOT = 3;
 
         private static class Left {
             private static double kFF = 0.00019;
@@ -53,8 +50,22 @@ public class Shooter extends SubsystemBase {
                 private static double kD = 0.0;
             }
 
-            private final class Speaker {
+            private final class Long {
                 private static double velocity = 2500;
+                private static double kP = 0.001;
+                private static double kI = 0.0;
+                private static double kD = 0.0;
+            }
+
+            private final class Medium {
+                private static double velocity = 1250;
+                private static double kP = 0.001;
+                private static double kI = 0.0;
+                private static double kD = 0.0;
+            }
+
+            private final class Short {
+                private static double velocity = 625;
                 private static double kP = 0.001;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
@@ -71,8 +82,22 @@ public class Shooter extends SubsystemBase {
                 private static double kD = 0.0;
             }
 
-            private final class Speaker {
+            private final class Long {
                 private static double velocity = 3400;
+                private static double kP = 0.004;
+                private static double kI = 0.0;
+                private static double kD = 0.0;
+            }
+
+            private final class Medium {
+                private static double velocity = 1700;
+                private static double kP = 0.004;
+                private static double kI = 0.0;
+                private static double kD = 0.0;
+            }
+
+            private final class Short {
+                private static double velocity = 850;
                 private static double kP = 0.004;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
@@ -88,13 +113,14 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    private SysIdRoutine routine = new SysIdRoutine(
-            new SysIdRoutine.Config(null, null, null, this::logState),
-            new SysIdRoutine.Mechanism((volts) -> setMotorsVoltage(volts.in(Units.Volts)), null, this));
+    // private SysIdRoutine routine = new SysIdRoutine(
+    // new SysIdRoutine.Config(null, null, null, this::logState),
+    // new SysIdRoutine.Mechanism((volts) ->
+    // setMotorsVoltage(volts.in(Units.Volts)), null, this));
 
     public Shooter() {
-        scan = 0;
-        m_log = DataLogManager.getLog();
+        // scan = 0;
+        // m_log = DataLogManager.getLog();
         initLogs();
 
         // Shooters
@@ -109,6 +135,12 @@ public class Shooter extends SubsystemBase {
         m_rightMotor.setSmartCurrentLimit(80);
         m_leftMotor.setSmartCurrentLimit(60);
 
+        m_rightEncoder.setMeasurementPeriod(16);
+        m_rightEncoder.setAverageDepth(2);
+
+        m_leftEncoder.setMeasurementPeriod(16);
+        m_leftEncoder.setAverageDepth(2);
+
         // GABES COOL THEORY PLS RE,MINMD
         m_rightMotor.setClosedLoopRampRate(0.1);
         m_leftMotor.setClosedLoopRampRate(0.1);
@@ -119,11 +151,25 @@ public class Shooter extends SubsystemBase {
         m_leftPid.setFeedbackDevice(m_leftEncoder);
 
         // PID Constants
-        int slot = PIDConstants.SPEAKER_SLOT;
+        int slot = PIDConstants.LONG_SLOT;
 
-        m_rightPid.setP(PIDConstants.Right.Speaker.kP, slot);
-        m_rightPid.setI(PIDConstants.Right.Speaker.kI, slot);
-        m_rightPid.setD(PIDConstants.Right.Speaker.kD, slot);
+        m_rightPid.setP(PIDConstants.Right.Long.kP, slot);
+        m_rightPid.setI(PIDConstants.Right.Long.kI, slot);
+        m_rightPid.setD(PIDConstants.Right.Long.kD, slot);
+        m_rightPid.setFF(PIDConstants.Right.kFF, slot);
+
+        slot = PIDConstants.MEDIUM_SLOT;
+
+        m_rightPid.setP(PIDConstants.Right.Medium.kP, slot);
+        m_rightPid.setI(PIDConstants.Right.Medium.kI, slot);
+        m_rightPid.setD(PIDConstants.Right.Medium.kD, slot);
+        m_rightPid.setFF(PIDConstants.Right.kFF, slot);
+
+        slot = PIDConstants.SHORT_SLOT;
+
+        m_rightPid.setP(PIDConstants.Right.Short.kP, slot);
+        m_rightPid.setI(PIDConstants.Right.Short.kI, slot);
+        m_rightPid.setD(PIDConstants.Right.Short.kD, slot);
         m_rightPid.setFF(PIDConstants.Right.kFF, slot);
 
         slot = PIDConstants.TRAP_SLOT;
@@ -136,11 +182,25 @@ public class Shooter extends SubsystemBase {
         m_rightPid.setOutputRange(-1, 1);
 
         // LEFT
-        slot = PIDConstants.SPEAKER_SLOT;
+        slot = PIDConstants.LONG_SLOT;
 
-        m_leftPid.setP(PIDConstants.Left.Speaker.kP, slot);
-        m_leftPid.setI(PIDConstants.Left.Speaker.kI, slot);
-        m_leftPid.setD(PIDConstants.Left.Speaker.kD, slot);
+        m_leftPid.setP(PIDConstants.Left.Long.kP, slot);
+        m_leftPid.setI(PIDConstants.Left.Long.kI, slot);
+        m_leftPid.setD(PIDConstants.Left.Long.kD, slot);
+        m_leftPid.setFF(PIDConstants.Left.kFF, slot);
+
+        slot = PIDConstants.MEDIUM_SLOT;
+
+        m_leftPid.setP(PIDConstants.Left.Medium.kP, slot);
+        m_leftPid.setI(PIDConstants.Left.Medium.kI, slot);
+        m_leftPid.setD(PIDConstants.Left.Medium.kD, slot);
+        m_leftPid.setFF(PIDConstants.Left.kFF, slot);
+
+        slot = PIDConstants.SHORT_SLOT;
+
+        m_leftPid.setP(PIDConstants.Left.Short.kP, slot);
+        m_leftPid.setI(PIDConstants.Left.Short.kI, slot);
+        m_leftPid.setD(PIDConstants.Left.Short.kD, slot);
         m_leftPid.setFF(PIDConstants.Left.kFF, slot);
 
         slot = PIDConstants.TRAP_SLOT;
@@ -152,7 +212,7 @@ public class Shooter extends SubsystemBase {
 
         m_leftPid.setOutputRange(-1, 1);
 
-        speakerMode();
+        longMode();
 
         // PIVOT
         m_pivotMotor = new CANSparkMax(13, MotorType.kBrushless);
@@ -189,13 +249,15 @@ public class Shooter extends SubsystemBase {
      *         velocities.
      */
     public Command runVelocityCommand() {
-        return runOnce(() -> {
-            double left = SmartDashboard.getNumber("Left Velocity", 0);
-            double right = SmartDashboard.getNumber("Right Velocity", 0);
+        return startEnd(
+                () -> {
+                    // double left = SmartDashboard.getNumber("Left Velocity", 0);
+                    // double right = SmartDashboard.getNumber("Right Velocity", 0);
 
-            setRightToVel(right);
-            setLeftToVel(left);
-        });
+                    setRightToVel(m_rightTarget);
+                    setLeftToVel(m_leftTarget);
+                },
+                () -> stop());
     }
 
     public void stop() {
@@ -205,6 +267,48 @@ public class Shooter extends SubsystemBase {
 
     public Command stopCommand() {
         return runOnce(this::stop);
+    }
+
+    public void resetMode() {
+        SmartDashboard.putNumber("Slot", m_slot);
+        switch (m_slot) {
+            case 0:
+                trapMode();
+                break;
+            case 1:
+                shortMode();
+                break;
+            case 2:
+                mediumMode();
+                break;
+            case 3:
+                longMode();
+                break;
+            default:
+                break;
+        }
+    }
+
+    public Command cycleUpCommand() {
+        return runOnce(() -> {
+            m_slot += 1;
+
+            if (m_slot > 3)
+                m_slot = 3;
+
+            resetMode();
+        });
+    }
+
+    public Command cycleDownCommand() {
+        return runOnce(() -> {
+            m_slot -= 1;
+
+            if (m_slot < 0)
+                m_slot = 0;
+
+            resetMode();
+        });
     }
 
     public void trapMode() {
@@ -222,66 +326,128 @@ public class Shooter extends SubsystemBase {
 
         SmartDashboard.putNumber("Left Velocity", PIDConstants.Left.Trap.velocity);
         SmartDashboard.putNumber("Right Velocity", PIDConstants.Right.Trap.velocity);
+
+        SmartDashboard.putString("Shooter Mode", "Trap");
+
+        m_leftTarget = PIDConstants.Left.Trap.velocity;
+        m_rightTarget = PIDConstants.Right.Trap.velocity;
     }
 
-    public void speakerMode() {
-        m_slot = PIDConstants.SPEAKER_SLOT;
+    public void longMode() {
+        m_slot = PIDConstants.LONG_SLOT;
 
-        SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Speaker.kP);
-        SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Speaker.kI);
-        SmartDashboard.putNumber("Left D Gain", PIDConstants.Left.Speaker.kD);
+        SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Long.kP);
+        SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Long.kI);
+        SmartDashboard.putNumber("Left D Gain", PIDConstants.Left.Long.kD);
         SmartDashboard.putNumber("Left Feed Forward", PIDConstants.Left.kFF);
 
-        SmartDashboard.putNumber("Right P Gain", PIDConstants.Right.Speaker.kP);
-        SmartDashboard.putNumber("Right I Gain", PIDConstants.Right.Speaker.kI);
-        SmartDashboard.putNumber("Right D Gain", PIDConstants.Right.Speaker.kD);
+        SmartDashboard.putNumber("Right P Gain", PIDConstants.Right.Long.kP);
+        SmartDashboard.putNumber("Right I Gain", PIDConstants.Right.Long.kI);
+        SmartDashboard.putNumber("Right D Gain", PIDConstants.Right.Long.kD);
         SmartDashboard.putNumber("Right Feed Forward", PIDConstants.Right.kFF);
 
-        SmartDashboard.putNumber("Left Velocity", PIDConstants.Left.Speaker.velocity);
-        SmartDashboard.putNumber("Right Velocity", PIDConstants.Right.Speaker.velocity);
+        SmartDashboard.putNumber("Left Velocity", PIDConstants.Left.Long.velocity);
+        SmartDashboard.putNumber("Right Velocity", PIDConstants.Right.Long.velocity);
+
+        SmartDashboard.putString("Shooter Mode", "Long");
+
+        m_leftTarget = PIDConstants.Left.Long.velocity;
+        m_rightTarget = PIDConstants.Right.Long.velocity;
+    }
+
+    public void mediumMode() {
+        m_slot = PIDConstants.MEDIUM_SLOT;
+
+        SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Medium.kP);
+        SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Medium.kI);
+        SmartDashboard.putNumber("Left D Gain", PIDConstants.Left.Medium.kD);
+        SmartDashboard.putNumber("Left Feed Forward", PIDConstants.Left.kFF);
+
+        SmartDashboard.putNumber("Right P Gain", PIDConstants.Right.Medium.kP);
+        SmartDashboard.putNumber("Right I Gain", PIDConstants.Right.Medium.kI);
+        SmartDashboard.putNumber("Right D Gain", PIDConstants.Right.Medium.kD);
+        SmartDashboard.putNumber("Right Feed Forward", PIDConstants.Right.kFF);
+
+        SmartDashboard.putNumber("Left Velocity", PIDConstants.Left.Medium.velocity);
+        SmartDashboard.putNumber("Right Velocity", PIDConstants.Right.Medium.velocity);
+
+        SmartDashboard.putString("Shooter Mode", "Medium");
+
+        m_leftTarget = PIDConstants.Left.Medium.velocity;
+        m_rightTarget = PIDConstants.Right.Medium.velocity;
+    }
+
+    public void shortMode() {
+        m_slot = PIDConstants.SHORT_SLOT;
+
+        SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Short.kP);
+        SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Short.kI);
+        SmartDashboard.putNumber("Left D Gain", PIDConstants.Left.Short.kD);
+        SmartDashboard.putNumber("Left Feed Forward", PIDConstants.Left.kFF);
+
+        SmartDashboard.putNumber("Right P Gain", PIDConstants.Right.Short.kP);
+        SmartDashboard.putNumber("Right I Gain", PIDConstants.Right.Short.kI);
+        SmartDashboard.putNumber("Right D Gain", PIDConstants.Right.Short.kD);
+        SmartDashboard.putNumber("Right Feed Forward", PIDConstants.Right.kFF);
+
+        SmartDashboard.putNumber("Left Velocity", PIDConstants.Left.Short.velocity);
+        SmartDashboard.putNumber("Right Velocity", PIDConstants.Right.Short.velocity);
+
+        SmartDashboard.putString("Shooter Mode", "Short");
+
+        m_leftTarget = PIDConstants.Left.Short.velocity;
+        m_rightTarget = PIDConstants.Right.Short.velocity;
     }
 
     public Command trapCommand() {
         return runOnce(this::trapMode);
     }
 
-    public Command speakerCommand() {
-        return runOnce(this::speakerMode);
+    public Command longCommand() {
+        return runOnce(this::longMode);
     }
 
-    private void setMotorsVoltage(double volts) {
-        // m_leftMotor.setVoltage(volts);
-        m_rightMotor.setVoltage(volts);
+    public Command mediumCommand() {
+        return runOnce(this::mediumMode);
     }
 
-    private void logState(State state) {
-        switch (state) {
-            case kQuasistaticForward:
-                stateLog.append("quasistatic-forward");
-                break;
-            case kQuasistaticReverse:
-                stateLog.append("quasistatic-reverse");
-                break;
-            case kDynamicForward:
-                stateLog.append("dynamic-forward");
-                break;
-            case kDynamicReverse:
-                stateLog.append("dynamic-reverse");
-                break;
-            default:
-                break;
-        }
-
-        logValues();
+    public Command shortCommand() {
+        return runOnce(this::shortMode);
     }
 
-    public Command runQuasi(Direction dir) {
-        return routine.quasistatic(dir);
-    }
+    // private void setMotorsVoltage(double volts) {
+    // // m_leftMotor.setVoltage(volts);
+    // m_rightMotor.setVoltage(volts);
+    // }
 
-    public Command runDynamuc(Direction dir) {
-        return routine.dynamic(dir);
-    }
+    // private void logState(State state) {
+    // switch (state) {
+    // case kQuasistaticForward:
+    // stateLog.append("quasistatic-forward");
+    // break;
+    // case kQuasistaticReverse:
+    // stateLog.append("quasistatic-reverse");
+    // break;
+    // case kDynamicForward:
+    // stateLog.append("dynamic-forward");
+    // break;
+    // case kDynamicReverse:
+    // stateLog.append("dynamic-reverse");
+    // break;
+    // default:
+    // break;
+    // }
+
+    // logValues();
+    // }
+
+    // public Command runQuasi(Direction dir) {
+    // return routine.quasistatic(dir);
+    // }
+
+    // public Command runDynamuc(Direction dir) {
+    // return routine.dynamic(dir);
+    // }
 
     public void setRightToVel(double velRPM) {
         m_rightPid.setReference(velRPM, ControlType.kVelocity);
@@ -316,44 +482,36 @@ public class Shooter extends SubsystemBase {
     }
 
     private void initLogs() {
-        rightMotorCurrent = new DoubleLogEntry(m_log, "/Shooter/right/Current");
-        leftMotorCurrent = new DoubleLogEntry(m_log, "/Shooter/left/Current");
-        rightMotorVelocity = new DoubleLogEntry(m_log, "/Shooter/right/Velocity");
-        leftMotorVelocity = new DoubleLogEntry(m_log, "/Shooter/left/Velocity");
-        rightMotorVoltage = new DoubleLogEntry(m_log, "/Shooter/right/Voltage");
-        leftMotorVoltage = new DoubleLogEntry(m_log, "/Shooter/left/Voltage");
-        leftPosLog = new DoubleLogEntry(m_log, "/Shooter/left/Pos");
-        rightPosLog = new DoubleLogEntry(m_log, "/Shooter/right/Pos");
-        stateLog = new StringLogEntry(m_log, "test-state");
+        // rightMotorCurrent = new DoubleLogEntry(m_log, "/Shooter/right/Current");
+        // leftMotorCurrent = new DoubleLogEntry(m_log, "/Shooter/left/Current");
+        // rightMotorVelocity = new DoubleLogEntry(m_log, "/Shooter/right/Velocity");
+        // leftMotorVelocity = new DoubleLogEntry(m_log, "/Shooter/left/Velocity");
+        // rightMotorVoltage = new DoubleLogEntry(m_log, "/Shooter/right/Voltage");
+        // leftMotorVoltage = new DoubleLogEntry(m_log, "/Shooter/left/Voltage");
+        // leftPosLog = new DoubleLogEntry(m_log, "/Shooter/left/Pos");
+        // rightPosLog = new DoubleLogEntry(m_log, "/Shooter/right/Pos");
+        // stateLog = new StringLogEntry(m_log, "test-state");
     }
 
-    public void logValues() {
-        rightMotorCurrent.append(m_rightMotor.getOutputCurrent());
-        leftMotorCurrent.append(m_leftMotor.getOutputCurrent());
+    // public void logValues() {
+    // rightMotorCurrent.append(m_rightMotor.getOutputCurrent());
+    // leftMotorCurrent.append(m_leftMotor.getOutputCurrent());
 
-        rightMotorVelocity.append(m_rightMotor.getEncoder().getVelocity());
-        leftMotorVelocity.append(m_leftMotor.getEncoder().getVelocity());
+    // rightMotorVelocity.append(m_rightMotor.getEncoder().getVelocity());
+    // leftMotorVelocity.append(m_leftMotor.getEncoder().getVelocity());
 
-        rightMotorVoltage.append(m_rightMotor.getAppliedOutput() * m_rightMotor.getBusVoltage());
-        leftMotorVoltage.append(m_leftMotor.getAppliedOutput() * m_leftMotor.getBusVoltage());
+    // rightMotorVoltage.append(m_rightMotor.getAppliedOutput() *
+    // m_rightMotor.getBusVoltage());
+    // leftMotorVoltage.append(m_leftMotor.getAppliedOutput() *
+    // m_leftMotor.getBusVoltage());
 
-        leftPosLog.append(m_leftEncoder.getPosition());
-        rightPosLog.append(m_rightEncoder.getPosition());
-    }
+    // leftPosLog.append(m_leftEncoder.getPosition());
+    // rightPosLog.append(m_rightEncoder.getPosition());
+    // }
 
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        // if (scan != 0 && scan % 3 == 0) {
-        // scan = 0;
-        // SmartDashboard.putNumber("rightMotorCurrent",
-        // m_rightMotor.getOutputCurrent());
-        // SmartDashboard.putNumber("leftMotorCurrent", m_leftMotor.getOutputCurrent());
-        // SmartDashboard.putNumber("rightMotorVel", m_rightEncoder.getVelocity());
-        // SmartDashboard.putNumber("leftMotorVel", m_leftEncoder.getVelocity());
-        // }
-        // scan++;
-
         // SmartDashboard.putNumber("Left Actual", m_leftEncoder.getVelocity());
         // SmartDashboard.putNumber("Right Actual", m_rightEncoder.getVelocity());
 
