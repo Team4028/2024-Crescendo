@@ -112,6 +112,8 @@ public class Telemetry {
             states[2 * i] = state.ModuleStates[i].speedMetersPerSecond;
             states[2 * i + 1] = state.ModuleStates[i].angle.getDegrees();
 
+            this.state.set(states);
+
             SmartDashboard.putData("Module " + i, m_moduleMechanisms[i]);
         }
     }

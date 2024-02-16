@@ -214,20 +214,20 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         }
     }
 
-    private void configLoggersMan() {
-        currentFL = new DoubleLogEntry(log, "/FL/current");
-        currentFR = new DoubleLogEntry(log, "/FR/current");
-        currentBL = new DoubleLogEntry(log, "/BL/current");
-        currentBR = new DoubleLogEntry(log, "/BR/current");
-        velFL = new DoubleLogEntry(log, "/FL/velocity");
-        velFR = new DoubleLogEntry(log, "/FR/velocity");
-        velBL = new DoubleLogEntry(log, "/BL/velocity");
-        velBR = new DoubleLogEntry(log, "/BR/velocity");
-        vbFL = new DoubleLogEntry(log, "/FL/vBus");
-        vbFR = new DoubleLogEntry(log, "/FR/vBus");
-        vbBL = new DoubleLogEntry(log, "/BL/vBus");
-        vbBR = new DoubleLogEntry(log, "/BR/vBus");
-    }
+    // private void configLoggersMan() {
+    // currentFL = new DoubleLogEntry(log, "/FL/current");
+    // currentFR = new DoubleLogEntry(log, "/FR/current");
+    // currentBL = new DoubleLogEntry(log, "/BL/current");
+    // currentBR = new DoubleLogEntry(log, "/BR/current");
+    // velFL = new DoubleLogEntry(log, "/FL/velocity");
+    // velFR = new DoubleLogEntry(log, "/FR/velocity");
+    // velBL = new DoubleLogEntry(log, "/BL/velocity");
+    // velBR = new DoubleLogEntry(log, "/BR/velocity");
+    // vbFL = new DoubleLogEntry(log, "/FL/vBus");
+    // vbFR = new DoubleLogEntry(log, "/FR/vBus");
+    // vbBL = new DoubleLogEntry(log, "/BL/vBus");
+    // vbBR = new DoubleLogEntry(log, "/BR/vBus");
+    // }
 
     private void configLoggersProcedural() {
         try {

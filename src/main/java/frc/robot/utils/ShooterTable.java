@@ -63,9 +63,9 @@ public class ShooterTable {
 
         double calculatedAngle = scaleFactor * (closestHigher.angle - closestLower.angle) + closestLower.angle;
 
-        System.out.println("Lower: " + closestLower.distance);
-        System.out.println("Higher: " + closestHigher.distance);
-        System.out.println(scaleFactor);
+        // System.out.println("Lower: " + closestLower.distance);
+        // System.out.println("Higher: " + closestHigher.distance);
+        // System.out.println(scaleFactor);
 
         return new ShooterTableEntry(calculatedAngle, calculatedLeftSpeed, calculatedRightSpeed, distance);
 
