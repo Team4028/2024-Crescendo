@@ -87,7 +87,7 @@ public class Feeder extends SubsystemBase {
     }
 
     public Command runFeederMotorCommand(double vBus) {
-        return startEnd(() -> runFeederMotor(vBus), () -> runFeederMotor(0));
+        return runOnce(() -> runFeederMotor(vBus));
     }
 
     public void logValues() {

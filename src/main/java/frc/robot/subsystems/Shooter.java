@@ -12,6 +12,7 @@ import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,10 +20,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Shooter extends SubsystemBase {
-    private CANSparkFlex m_rightMotor, m_leftMotor;
-    private CANSparkMax m_pivotMotor;
-    private RelativeEncoder m_rightEncoder, m_leftEncoder, m_pivotEncoder;
-    private SparkPIDController m_rightPid, m_leftPid, m_pivotPid;
+    private CANSparkFlex rightMotor, leftMotor;
+    private CANSparkMax pivotMotor;
+    private RelativeEncoder rightEncoder, leftEncoder, pivotEncoder;
+    private SparkPIDController rightPid, leftPid, pivotPid;
 
     // private DataLog m_log;
     // private DoubleLogEntry rightMotorCurrent, leftMotorCurrent,
@@ -32,9 +33,9 @@ public class Shooter extends SubsystemBase {
 
     // private int scan;
 
-    private int m_slot = 0;
+    private int slot = 0;
 
-    private double m_leftTarget, m_rightTarget;
+    private double leftTarget, rightTarget;
 
     private final Timer m_zeroTimer;
 
@@ -115,9 +116,15 @@ public class Shooter extends SubsystemBase {
             private static double kI = 0.0;
             private static double kD = 0.0;
 
-            private static double LONG_POSITION = 10.;
-            private static double MEDIUM_POSITION = 107.;
-            private static double SHORT_POSITION = 180.;
+            //@formatter:off
+            private static double LONG_POSITION = 2.5; // was 10.            ===================================================
+            private static double MEDIUM_POSITION = 26.75; // was 107.     ||  **DIVIDED BY 4 BC TOOK A STAGE OFF OF MPLANETARY ||
+                                                           //              ||    (16:1 -> 4:1)**                                ||
+            private static double SHORT_POSITION = 45.; // was 108.          ===================================================
+            //@formatter:on
+
+            private static double MIN_VAL = 0.;
+            private static double MAX_VAL = 55.0;
         }
     }
 
@@ -134,116 +141,114 @@ public class Shooter extends SubsystemBase {
         // ==================================
         // SHOOTER WHEELS
         // ==================================
-        m_rightMotor = new CANSparkFlex(9, MotorType.kBrushless);
-        m_leftMotor = new CANSparkFlex(10, MotorType.kBrushless);
+        rightMotor = new CANSparkFlex(9, MotorType.kBrushless);
+        leftMotor = new CANSparkFlex(10, MotorType.kBrushless);
 
-        m_rightMotor.setInverted(false);
+        rightMotor.setInverted(false);
 
-        m_rightEncoder = m_rightMotor.getEncoder();
-        m_leftEncoder = m_leftMotor.getEncoder();
+        rightEncoder = rightMotor.getEncoder();
+        leftEncoder = leftMotor.getEncoder();
 
-        m_rightMotor.setSmartCurrentLimit(80);
-        m_leftMotor.setSmartCurrentLimit(60);
+        rightMotor.setSmartCurrentLimit(80);
+        leftMotor.setSmartCurrentLimit(60);
 
-        m_rightEncoder.setMeasurementPeriod(16);
-        m_rightEncoder.setAverageDepth(2);
+        rightEncoder.setMeasurementPeriod(16);
+        rightEncoder.setAverageDepth(2);
 
-        m_leftEncoder.setMeasurementPeriod(16);
-        m_leftEncoder.setAverageDepth(2);
+        leftEncoder.setMeasurementPeriod(16);
+        leftEncoder.setAverageDepth(2);
 
         // GABES COOL THEORY PLS RE,MINMD
-        m_rightMotor.setClosedLoopRampRate(0.1);
-        m_leftMotor.setClosedLoopRampRate(0.1);
+        rightMotor.setClosedLoopRampRate(0.1);
+        leftMotor.setClosedLoopRampRate(0.1);
 
-        m_rightPid = m_rightMotor.getPIDController();
-        m_leftPid = m_leftMotor.getPIDController();
-        m_rightPid.setFeedbackDevice(m_rightEncoder);
-        m_leftPid.setFeedbackDevice(m_leftEncoder);
+        rightPid = rightMotor.getPIDController();
+        leftPid = leftMotor.getPIDController();
+        rightPid.setFeedbackDevice(rightEncoder);
+        leftPid.setFeedbackDevice(leftEncoder);
 
         // ==================================
         // SHOOTER PID
         // ==================================
-        int slot = PIDConstants.LONG_SLOT;
+        // int slot = PIDConstants.TRAP_SLOT;
 
-        m_rightPid.setP(PIDConstants.Right.Long.kP, slot);
-        m_rightPid.setI(PIDConstants.Right.Long.kI, slot);
-        m_rightPid.setD(PIDConstants.Right.Long.kD, slot);
-        m_rightPid.setFF(PIDConstants.Right.kFF, slot);
+        rightPid.setP(PIDConstants.Right.Long.kP, PIDConstants.LONG_SLOT);
+        rightPid.setI(PIDConstants.Right.Long.kI, PIDConstants.LONG_SLOT);
+        rightPid.setD(PIDConstants.Right.Long.kD, PIDConstants.LONG_SLOT);
+        rightPid.setFF(PIDConstants.Right.kFF, PIDConstants.LONG_SLOT);
 
-        slot = PIDConstants.MEDIUM_SLOT;
+        // slot = PIDConstants.MEDIUM_SLOT;
 
-        m_rightPid.setP(PIDConstants.Right.Medium.kP, slot);
-        m_rightPid.setI(PIDConstants.Right.Medium.kI, slot);
-        m_rightPid.setD(PIDConstants.Right.Medium.kD, slot);
-        m_rightPid.setFF(PIDConstants.Right.kFF, slot);
+        rightPid.setP(PIDConstants.Right.Medium.kP, PIDConstants.MEDIUM_SLOT);
+        rightPid.setI(PIDConstants.Right.Medium.kI, PIDConstants.MEDIUM_SLOT);
+        rightPid.setD(PIDConstants.Right.Medium.kD, PIDConstants.MEDIUM_SLOT);
+        rightPid.setFF(PIDConstants.Right.kFF, PIDConstants.MEDIUM_SLOT);
 
-        slot = PIDConstants.SHORT_SLOT;
+        // slot = PIDConstants.SHORT_SLOT;
 
-        m_rightPid.setP(PIDConstants.Right.Short.kP, slot);
-        m_rightPid.setI(PIDConstants.Right.Short.kI, slot);
-        m_rightPid.setD(PIDConstants.Right.Short.kD, slot);
-        m_rightPid.setFF(PIDConstants.Right.kFF, slot);
+        rightPid.setP(PIDConstants.Right.Short.kP, PIDConstants.SHORT_SLOT);
+        rightPid.setI(PIDConstants.Right.Short.kI, PIDConstants.SHORT_SLOT);
+        rightPid.setD(PIDConstants.Right.Short.kD, PIDConstants.SHORT_SLOT);
+        rightPid.setFF(PIDConstants.Right.kFF, PIDConstants.SHORT_SLOT);
 
-        slot = PIDConstants.TRAP_SLOT;
+        rightPid.setP(PIDConstants.Right.Trap.kP, PIDConstants.TRAP_SLOT);
+        rightPid.setI(PIDConstants.Right.Trap.kI, PIDConstants.TRAP_SLOT);
+        rightPid.setD(PIDConstants.Right.Trap.kD, PIDConstants.TRAP_SLOT);
+        rightPid.setFF(PIDConstants.Right.kFF, PIDConstants.TRAP_SLOT);
 
-        m_rightPid.setP(PIDConstants.Right.Trap.kP, slot);
-        m_rightPid.setI(PIDConstants.Right.Trap.kI, slot);
-        m_rightPid.setD(PIDConstants.Right.Trap.kD, slot);
-        m_rightPid.setFF(PIDConstants.Right.kFF, slot);
-
-        m_rightPid.setOutputRange(-1, 1);
+        rightPid.setOutputRange(-1, 1);
 
         // LEFT
-        slot = PIDConstants.LONG_SLOT;
+        // slot = PIDConstants.LONG_SLOT;
 
-        m_leftPid.setP(PIDConstants.Left.Long.kP, slot);
-        m_leftPid.setI(PIDConstants.Left.Long.kI, slot);
-        m_leftPid.setD(PIDConstants.Left.Long.kD, slot);
-        m_leftPid.setFF(PIDConstants.Left.kFF, slot);
+        leftPid.setP(PIDConstants.Left.Long.kP, PIDConstants.LONG_SLOT);
+        leftPid.setI(PIDConstants.Left.Long.kI, PIDConstants.LONG_SLOT);
+        leftPid.setD(PIDConstants.Left.Long.kD, PIDConstants.LONG_SLOT);
+        leftPid.setFF(PIDConstants.Left.kFF, PIDConstants.LONG_SLOT);
 
-        slot = PIDConstants.MEDIUM_SLOT;
+        // slot = PIDConstants.MEDIUM_SLOT;
 
-        m_leftPid.setP(PIDConstants.Left.Medium.kP, slot);
-        m_leftPid.setI(PIDConstants.Left.Medium.kI, slot);
-        m_leftPid.setD(PIDConstants.Left.Medium.kD, slot);
-        m_leftPid.setFF(PIDConstants.Left.kFF, slot);
+        leftPid.setP(PIDConstants.Left.Medium.kP, PIDConstants.MEDIUM_SLOT);
+        leftPid.setI(PIDConstants.Left.Medium.kI, PIDConstants.MEDIUM_SLOT);
+        leftPid.setD(PIDConstants.Left.Medium.kD, PIDConstants.MEDIUM_SLOT);
+        leftPid.setFF(PIDConstants.Left.kFF, PIDConstants.MEDIUM_SLOT);
 
-        slot = PIDConstants.SHORT_SLOT;
+        // slot = PIDConstants.SHORT_SLOT;
 
-        m_leftPid.setP(PIDConstants.Left.Short.kP, slot);
-        m_leftPid.setI(PIDConstants.Left.Short.kI, slot);
-        m_leftPid.setD(PIDConstants.Left.Short.kD, slot);
-        m_leftPid.setFF(PIDConstants.Left.kFF, slot);
+        leftPid.setP(PIDConstants.Left.Short.kP, PIDConstants.SHORT_SLOT);
+        leftPid.setI(PIDConstants.Left.Short.kI, PIDConstants.SHORT_SLOT);
+        leftPid.setD(PIDConstants.Left.Short.kD, PIDConstants.SHORT_SLOT);
+        leftPid.setFF(PIDConstants.Left.kFF, PIDConstants.SHORT_SLOT);
 
-        slot = PIDConstants.TRAP_SLOT;
+        // slot = PIDConstants.TRAP_SLOT;
 
-        m_leftPid.setP(PIDConstants.Left.Trap.kP, slot);
-        m_leftPid.setI(PIDConstants.Left.Trap.kI, slot);
-        m_leftPid.setD(PIDConstants.Left.Trap.kD, slot);
-        m_leftPid.setFF(PIDConstants.Left.kFF, slot);
+        leftPid.setP(PIDConstants.Left.Trap.kP, PIDConstants.TRAP_SLOT);
+        leftPid.setI(PIDConstants.Left.Trap.kI, PIDConstants.TRAP_SLOT);
+        leftPid.setD(PIDConstants.Left.Trap.kD, PIDConstants.TRAP_SLOT);
+        leftPid.setFF(PIDConstants.Left.kFF, PIDConstants.TRAP_SLOT);
 
-        m_leftPid.setOutputRange(-1, 1);
+        leftPid.setOutputRange(-1, 1);
 
         longMode();
 
         // ==================================
         // PIVOT
         // ==================================
-        m_pivotMotor = new CANSparkMax(13, MotorType.kBrushless);
+        pivotMotor = new CANSparkMax(13, MotorType.kBrushless);
 
-        m_pivotMotor.setInverted(true);
-        m_pivotMotor.setIdleMode(IdleMode.kBrake);
+        pivotMotor.setInverted(true);
+        pivotMotor.setIdleMode(IdleMode.kBrake);
 
-        m_pivotEncoder = m_pivotMotor.getEncoder();
-        m_pivotPid = m_pivotMotor.getPIDController();
+        pivotEncoder = pivotMotor.getEncoder();
+        pivotPid = pivotMotor.getPIDController();
 
         // ==================================
         // PIVOT PID
         // ==================================
-        m_pivotPid.setP(PIDConstants.Pivot.kP);
-        m_pivotPid.setI(PIDConstants.Pivot.kI);
-        m_pivotPid.setD(PIDConstants.Pivot.kD);
-        m_pivotPid.setFF(PIDConstants.Pivot.kFF);
+        pivotPid.setP(PIDConstants.Pivot.kP);
+        pivotPid.setI(PIDConstants.Pivot.kI);
+        pivotPid.setD(PIDConstants.Pivot.kD);
+        pivotPid.setFF(PIDConstants.Pivot.kFF);
 
         // ==================================
         // TIMER
@@ -256,7 +261,7 @@ public class Shooter extends SubsystemBase {
     // ==================================
 
     public void runPivotMotor(double vBus) {
-        m_pivotMotor.set(vBus);
+        pivotMotor.set(vBus);
     }
 
     public Command runPivotCommand(double vBus) {
@@ -264,7 +269,8 @@ public class Shooter extends SubsystemBase {
     }
 
     public void runPivotToPosition(double position) {
-        m_pivotPid.setReference(position, ControlType.kPosition);
+        pivotPid.setReference(MathUtil.clamp(position, PIDConstants.Pivot.MIN_VAL, PIDConstants.Pivot.MAX_VAL),
+                ControlType.kPosition);
     }
 
     public Command pivotZeroCommand() {
@@ -272,13 +278,13 @@ public class Shooter extends SubsystemBase {
             m_zeroTimer.restart();
         })
                 .andThen(runPivotCommand(-0.1).repeatedly()
-                        .until(() -> m_zeroTimer.get() >= 0.2 && Math.abs(m_pivotEncoder.getVelocity()) < 0.2))
+                        .until(() -> m_zeroTimer.get() >= 0.2 && Math.abs(pivotEncoder.getVelocity()) < 0.2))
                 .andThen(runPivotCommand(0.).alongWith(Commands.runOnce(() -> m_zeroTimer.stop())))
-                .andThen(runOnce(() -> m_pivotEncoder.setPosition(0.)));
+                .andThen(runOnce(() -> pivotEncoder.setPosition(0.)));
     }
 
     public double getPivotPosition() {
-        switch (m_slot) {
+        switch (slot) {
             case PIDConstants.TRAP_SLOT:
             case PIDConstants.SHORT_SLOT:
                 return PIDConstants.Pivot.SHORT_POSITION;
@@ -307,16 +313,16 @@ public class Shooter extends SubsystemBase {
                     // double left = SmartDashboard.getNumber("Left Velocity", 0);
                     // double right = SmartDashboard.getNumber("Right Velocity", 0);
 
-                    setRightToVel(m_rightTarget);
-                    setLeftToVel(m_leftTarget);
+                    setRightToVel(rightTarget);
+                    setLeftToVel(leftTarget);
                     runPivotToPosition(getPivotPosition());
                 },
                 () -> stop());
     }
 
     public void stop() {
-        m_rightMotor.stopMotor();
-        m_leftMotor.stopMotor();
+        rightMotor.stopMotor();
+        leftMotor.stopMotor();
     }
 
     public Command stopCommand() {
@@ -324,8 +330,8 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setMode() {
-        SmartDashboard.putNumber("Slot", m_slot);
-        switch (m_slot) {
+        SmartDashboard.putNumber("Slot", slot);
+        switch (slot) {
             case PIDConstants.TRAP_SLOT:
                 trapMode();
                 break;
@@ -345,10 +351,10 @@ public class Shooter extends SubsystemBase {
 
     public Command cycleUpCommand() {
         return runOnce(() -> {
-            m_slot += 1;
+            slot += 1;
 
-            if (m_slot > 3)
-                m_slot = 3;
+            if (slot > 3)
+                slot = 3;
 
             setMode();
         });
@@ -356,17 +362,23 @@ public class Shooter extends SubsystemBase {
 
     public Command cycleDownCommand() {
         return runOnce(() -> {
-            m_slot -= 1;
+            slot -= 1;
 
-            if (m_slot < 0)
-                m_slot = 0;
+            if (slot < 0)
+                slot = 0;
 
             setMode();
         });
     }
 
+    public Command setSlot(int slot) {
+        return runOnce(() -> {
+            this.slot = MathUtil.clamp(slot, 0, 3);
+        });
+    }
+
     public void trapMode() {
-        m_slot = PIDConstants.TRAP_SLOT;
+        slot = PIDConstants.TRAP_SLOT;
 
         SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Trap.kP);
         SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Trap.kI);
@@ -383,12 +395,12 @@ public class Shooter extends SubsystemBase {
 
         SmartDashboard.putString("Shooter Mode", "Trap");
 
-        m_leftTarget = PIDConstants.Left.Trap.velocity;
-        m_rightTarget = PIDConstants.Right.Trap.velocity;
+        leftTarget = PIDConstants.Left.Trap.velocity;
+        rightTarget = PIDConstants.Right.Trap.velocity;
     }
 
     public void longMode() {
-        m_slot = PIDConstants.LONG_SLOT;
+        slot = PIDConstants.LONG_SLOT;
 
         SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Long.kP);
         SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Long.kI);
@@ -405,12 +417,12 @@ public class Shooter extends SubsystemBase {
 
         SmartDashboard.putString("Shooter Mode", "Long");
 
-        m_leftTarget = PIDConstants.Left.Long.velocity;
-        m_rightTarget = PIDConstants.Right.Long.velocity;
+        leftTarget = PIDConstants.Left.Long.velocity;
+        rightTarget = PIDConstants.Right.Long.velocity;
     }
 
     public void mediumMode() {
-        m_slot = PIDConstants.MEDIUM_SLOT;
+        slot = PIDConstants.MEDIUM_SLOT;
 
         SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Medium.kP);
         SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Medium.kI);
@@ -427,12 +439,12 @@ public class Shooter extends SubsystemBase {
 
         SmartDashboard.putString("Shooter Mode", "Medium");
 
-        m_leftTarget = PIDConstants.Left.Medium.velocity;
-        m_rightTarget = PIDConstants.Right.Medium.velocity;
+        leftTarget = PIDConstants.Left.Medium.velocity;
+        rightTarget = PIDConstants.Right.Medium.velocity;
     }
 
     public void shortMode() {
-        m_slot = PIDConstants.SHORT_SLOT;
+        slot = PIDConstants.SHORT_SLOT;
 
         SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Short.kP);
         SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Short.kI);
@@ -449,8 +461,8 @@ public class Shooter extends SubsystemBase {
 
         SmartDashboard.putString("Shooter Mode", "Short");
 
-        m_leftTarget = PIDConstants.Left.Short.velocity;
-        m_rightTarget = PIDConstants.Right.Short.velocity;
+        leftTarget = PIDConstants.Left.Short.velocity;
+        rightTarget = PIDConstants.Right.Short.velocity;
     }
 
     public Command trapCommand() {
@@ -504,11 +516,11 @@ public class Shooter extends SubsystemBase {
     // }
 
     public void setRightToVel(double velRPM) {
-        m_rightPid.setReference(velRPM, ControlType.kVelocity);
+        rightPid.setReference(velRPM, ControlType.kVelocity);
     }
 
     public void setLeftToVel(double velRPM) {
-        m_leftPid.setReference(velRPM, ControlType.kVelocity);
+        leftPid.setReference(velRPM, ControlType.kVelocity);
     }
 
     public Command setRightToVelCommand(double velRPM) {
@@ -520,11 +532,11 @@ public class Shooter extends SubsystemBase {
     }
 
     public void spinMotorRight(double vBus) {
-        m_rightMotor.set(vBus);
+        rightMotor.set(vBus);
     }
 
     public void spinMotorLeft(double vBus) {
-        m_leftMotor.set(vBus);
+        leftMotor.set(vBus);
     }
 
     public Command spinMotorRightCommand(double vBus) {
@@ -610,7 +622,7 @@ public class Shooter extends SubsystemBase {
         // m_rightPid.setFF(rightFF, m_slot);
         // }
 
-        SmartDashboard.putNumber("Pivot Position", m_pivotEncoder.getPosition());
-        SmartDashboard.putNumber("Pivot Velocity", m_pivotEncoder.getVelocity());
+        SmartDashboard.putNumber("Pivot Position", pivotEncoder.getPosition());
+        SmartDashboard.putNumber("Pivot Velocity", pivotEncoder.getVelocity());
     }
 }
