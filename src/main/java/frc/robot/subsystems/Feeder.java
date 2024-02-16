@@ -9,11 +9,13 @@ import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import java.util.function.BooleanSupplier;
@@ -29,23 +31,32 @@ public class Feeder extends SubsystemBase {
     private final DataLog log;
     private final DoubleLogEntry fCurrent, fVBus, fPosition, fVelocity;
 
+    private final static class PIDConstants {
+        private static final double kP = 0.8;
+        private static final double kI = 0.0;
+        private static final double kD = 0.0;
+    }
+
+    private double m_target;
+
     public Feeder() {
         feederMotor = new CANSparkFlex(11, MotorType.kBrushless);
+        feederMotor.setIdleMode(IdleMode.kBrake);
         feederEncoder = feederMotor.getEncoder();
         tofSensor = new TimeOfFlight(21);
         log = DataLogManager.getLog();
 
-        fCurrent = new DoubleLogEntry(log, "/Feeder Motor/Current");
-        fVBus = new DoubleLogEntry(log, "/Feeder Motor/vBus");
-        fPosition = new DoubleLogEntry(log, "/Feeder Motor/Position");
-        fVelocity = new DoubleLogEntry(log, "/Feeder Motor/Velocity");
+        fCurrent = new DoubleLogEntry(log, "/Feeder/Current");
+        fVBus = new DoubleLogEntry(log, "/Feeder/vBus");
+        fPosition = new DoubleLogEntry(log, "/Feeder/Position");
+        fVelocity = new DoubleLogEntry(log, "/Feeder/Velocity");
 
         pid = feederMotor.getPIDController();
-        pid.setP(0.1);
-        pid.setI(0);
-        pid.setD(0);
+        pid.setP(PIDConstants.kP);
+        pid.setI(PIDConstants.kI);
+        pid.setD(PIDConstants.kD);
         pid.setIZone(0);
-        pid.setOutputRange(-.2, .2);
+        pid.setOutputRange(-.8, .8);
     }
 
     public boolean hasGamePiece() {
@@ -53,7 +64,10 @@ public class Feeder extends SubsystemBase {
     }
 
     public Command runXRotations(double x) {
-        return run(() -> pid.setReference(feederMotor.getEncoder().getPosition() + x, ControlType.kPosition));
+        return runOnce(() -> {
+            m_target = feederEncoder.getPosition() + x;
+            pid.setReference(m_target, ControlType.kPosition);
+        }).andThen(Commands.idle(this)).until(() -> Math.abs(m_target - feederEncoder.getPosition()) < 0.06);
     }
 
     public Command runXRotationsNoPID(double x) {
@@ -73,10 +87,10 @@ public class Feeder extends SubsystemBase {
     }
 
     public Command runFeederMotorCommand(double vBus) {
-        return runOnce(() -> runFeederMotor(vBus));
+        return startEnd(() -> runFeederMotor(vBus), () -> runFeederMotor(0));
     }
 
-    public void logFeeder() {
+    public void logValues() {
         fCurrent.append(feederMotor.getOutputCurrent());
         fVBus.append(feederMotor.getAppliedOutput());
         fPosition.append(feederEncoder.getPosition());
@@ -86,6 +100,7 @@ public class Feeder extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        SmartDashboard.putNumber("TOF FEEDEDE", tofSensor.getRange());
+        SmartDashboard.putNumber("Feeder ToF Sensor", tofSensor.getRange());
+        SmartDashboard.putNumber("Feeder Position", feederEncoder.getPosition());
     }
 }

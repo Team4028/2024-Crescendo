@@ -12,8 +12,10 @@ import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Shooter extends SubsystemBase {
@@ -34,11 +36,13 @@ public class Shooter extends SubsystemBase {
 
     private double m_leftTarget, m_rightTarget;
 
+    private final Timer m_zeroTimer;
+
     private final class PIDConstants {
-        private static final int TRAP_SLOT = 0;
-        private static final int SHORT_SLOT = 1;
-        private static final int MEDIUM_SLOT = 2;
-        private static final int LONG_SLOT = 3;
+        private static final int TRAP_SLOT = 3;
+        private static final int SHORT_SLOT = 2;
+        private static final int MEDIUM_SLOT = 1;
+        private static final int LONG_SLOT = 0;
 
         private static class Left {
             private static double kFF = 0.00019;
@@ -84,21 +88,21 @@ public class Shooter extends SubsystemBase {
 
             private final class Long {
                 private static double velocity = 3400;
-                private static double kP = 0.004;
+                private static double kP = 0.002;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
             }
 
             private final class Medium {
                 private static double velocity = 1700;
-                private static double kP = 0.004;
+                private static double kP = 0.002;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
             }
 
             private final class Short {
                 private static double velocity = 850;
-                private static double kP = 0.004;
+                private static double kP = 0.002;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
             }
@@ -107,9 +111,13 @@ public class Shooter extends SubsystemBase {
         private static class Pivot {
             private static double kFF = 0.0;
 
-            private static double kP = 0.1;
+            private static double kP = 0.02;
             private static double kI = 0.0;
             private static double kD = 0.0;
+
+            private static double LONG_POSITION = 10.;
+            private static double MEDIUM_POSITION = 107.;
+            private static double SHORT_POSITION = 180.;
         }
     }
 
@@ -123,7 +131,9 @@ public class Shooter extends SubsystemBase {
         // m_log = DataLogManager.getLog();
         initLogs();
 
-        // Shooters
+        // ==================================
+        // SHOOTER WHEELS
+        // ==================================
         m_rightMotor = new CANSparkFlex(9, MotorType.kBrushless);
         m_leftMotor = new CANSparkFlex(10, MotorType.kBrushless);
 
@@ -150,7 +160,9 @@ public class Shooter extends SubsystemBase {
         m_rightPid.setFeedbackDevice(m_rightEncoder);
         m_leftPid.setFeedbackDevice(m_leftEncoder);
 
-        // PID Constants
+        // ==================================
+        // SHOOTER PID
+        // ==================================
         int slot = PIDConstants.LONG_SLOT;
 
         m_rightPid.setP(PIDConstants.Right.Long.kP, slot);
@@ -214,21 +226,34 @@ public class Shooter extends SubsystemBase {
 
         longMode();
 
+        // ==================================
         // PIVOT
+        // ==================================
         m_pivotMotor = new CANSparkMax(13, MotorType.kBrushless);
 
-        // Change this is needed
         m_pivotMotor.setInverted(true);
         m_pivotMotor.setIdleMode(IdleMode.kBrake);
 
         m_pivotEncoder = m_pivotMotor.getEncoder();
         m_pivotPid = m_pivotMotor.getPIDController();
 
+        // ==================================
+        // PIVOT PID
+        // ==================================
         m_pivotPid.setP(PIDConstants.Pivot.kP);
         m_pivotPid.setI(PIDConstants.Pivot.kI);
         m_pivotPid.setD(PIDConstants.Pivot.kD);
         m_pivotPid.setFF(PIDConstants.Pivot.kFF);
+
+        // ==================================
+        // TIMER
+        // ==================================
+        m_zeroTimer = new Timer();
     }
+
+    // ==================================
+    // PIVOT COMMANDS
+    // ==================================
 
     public void runPivotMotor(double vBus) {
         m_pivotMotor.set(vBus);
@@ -241,6 +266,34 @@ public class Shooter extends SubsystemBase {
     public void runPivotToPosition(double position) {
         m_pivotPid.setReference(position, ControlType.kPosition);
     }
+
+    public Command pivotZeroCommand() {
+        return runOnce(() -> {
+            m_zeroTimer.restart();
+        })
+                .andThen(runPivotCommand(-0.1).repeatedly()
+                        .until(() -> m_zeroTimer.get() >= 0.2 && Math.abs(m_pivotEncoder.getVelocity()) < 0.2))
+                .andThen(runPivotCommand(0.).alongWith(Commands.runOnce(() -> m_zeroTimer.stop())))
+                .andThen(runOnce(() -> m_pivotEncoder.setPosition(0.)));
+    }
+
+    public double getPivotPosition() {
+        switch (m_slot) {
+            case PIDConstants.TRAP_SLOT:
+            case PIDConstants.SHORT_SLOT:
+                return PIDConstants.Pivot.SHORT_POSITION;
+            case PIDConstants.MEDIUM_SLOT:
+                return PIDConstants.Pivot.MEDIUM_POSITION;
+            case PIDConstants.LONG_SLOT:
+                return PIDConstants.Pivot.LONG_POSITION;
+            default:
+                return PIDConstants.Pivot.MEDIUM_POSITION;
+        }
+    }
+
+    // ==================================
+    // SHOOTER COMMANDS
+    // ==================================
 
     /**
      * Run motors at the velocity input from the dashboard.
@@ -256,6 +309,7 @@ public class Shooter extends SubsystemBase {
 
                     setRightToVel(m_rightTarget);
                     setLeftToVel(m_leftTarget);
+                    runPivotToPosition(getPivotPosition());
                 },
                 () -> stop());
     }
@@ -269,19 +323,19 @@ public class Shooter extends SubsystemBase {
         return runOnce(this::stop);
     }
 
-    public void resetMode() {
+    public void setMode() {
         SmartDashboard.putNumber("Slot", m_slot);
         switch (m_slot) {
-            case 0:
+            case PIDConstants.TRAP_SLOT:
                 trapMode();
                 break;
-            case 1:
+            case PIDConstants.SHORT_SLOT:
                 shortMode();
                 break;
-            case 2:
+            case PIDConstants.MEDIUM_SLOT:
                 mediumMode();
                 break;
-            case 3:
+            case PIDConstants.LONG_SLOT:
                 longMode();
                 break;
             default:
@@ -296,7 +350,7 @@ public class Shooter extends SubsystemBase {
             if (m_slot > 3)
                 m_slot = 3;
 
-            resetMode();
+            setMode();
         });
     }
 
@@ -307,7 +361,7 @@ public class Shooter extends SubsystemBase {
             if (m_slot < 0)
                 m_slot = 0;
 
-            resetMode();
+            setMode();
         });
     }
 
@@ -555,5 +609,8 @@ public class Shooter extends SubsystemBase {
         // if (rightFF != m_rightPid.getFF(m_slot)) {
         // m_rightPid.setFF(rightFF, m_slot);
         // }
+
+        SmartDashboard.putNumber("Pivot Position", m_pivotEncoder.getPosition());
+        SmartDashboard.putNumber("Pivot Velocity", m_pivotEncoder.getVelocity());
     }
 }
