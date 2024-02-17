@@ -13,6 +13,9 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -25,19 +28,19 @@ public class Shooter extends SubsystemBase {
     private RelativeEncoder rightEncoder, leftEncoder, pivotEncoder;
     private SparkPIDController rightPid, leftPid, pivotPid;
 
-    // private DataLog m_log;
-    // private DoubleLogEntry rightMotorCurrent, leftMotorCurrent,
-    // rightMotorVelocity, leftMotorVelocity, leftMotorVoltage,
-    // rightMotorVoltage, rightPosLog, leftPosLog;
-    // public StringLogEntry stateLog;
-
-    // private int scan;
+    private DataLog log;
+    private DoubleLogEntry rightCurrent, leftCurrent,
+            rightVelocity, leftVelocity, leftVoltage,
+            rightVoltage, pivotCurrent, pivotVelocity, pivotVoltage;
 
     private int slot = 0;
 
     private double leftTarget, rightTarget;
 
-    private final Timer m_zeroTimer;
+    private final Timer zeroTimer;
+
+    private final double ZERO_TIMER_THRESHOLD = 0.06; // 3 scans
+    private final double ZERO_VELOCITY_THRESHOLD = 0.2;
 
     private final class PIDConstants {
         private static final int TRAP_SLOT = 3;
@@ -128,14 +131,8 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    // private SysIdRoutine routine = new SysIdRoutine(
-    // new SysIdRoutine.Config(null, null, null, this::logState),
-    // new SysIdRoutine.Mechanism((volts) ->
-    // setMotorsVoltage(volts.in(Units.Volts)), null, this));
-
     public Shooter() {
-        // scan = 0;
-        // m_log = DataLogManager.getLog();
+        log = DataLogManager.getLog();
         initLogs();
 
         // ==================================
@@ -158,7 +155,6 @@ public class Shooter extends SubsystemBase {
         leftEncoder.setMeasurementPeriod(16);
         leftEncoder.setAverageDepth(2);
 
-        // GABES COOL THEORY PLS RE,MINMD
         rightMotor.setClosedLoopRampRate(0.1);
         leftMotor.setClosedLoopRampRate(0.1);
 
@@ -253,7 +249,7 @@ public class Shooter extends SubsystemBase {
         // ==================================
         // TIMER
         // ==================================
-        m_zeroTimer = new Timer();
+        zeroTimer = new Timer();
     }
 
     // ==================================
@@ -275,11 +271,12 @@ public class Shooter extends SubsystemBase {
 
     public Command pivotZeroCommand() {
         return runOnce(() -> {
-            m_zeroTimer.restart();
+            zeroTimer.restart();
         })
                 .andThen(runPivotCommand(-0.1).repeatedly()
-                        .until(() -> m_zeroTimer.get() >= 0.2 && Math.abs(pivotEncoder.getVelocity()) < 0.2))
-                .andThen(runPivotCommand(0.).alongWith(Commands.runOnce(() -> m_zeroTimer.stop())))
+                        .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
+                                && Math.abs(pivotEncoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
+                .andThen(runPivotCommand(0.).alongWith(Commands.runOnce(() -> zeroTimer.stop())))
                 .andThen(runOnce(() -> pivotEncoder.setPosition(0.)));
     }
 
@@ -310,9 +307,6 @@ public class Shooter extends SubsystemBase {
     public Command runVelocityCommand() {
         return startEnd(
                 () -> {
-                    // double left = SmartDashboard.getNumber("Left Velocity", 0);
-                    // double right = SmartDashboard.getNumber("Right Velocity", 0);
-
                     setRightToVel(rightTarget);
                     setLeftToVel(leftTarget);
                     runPivotToPosition(getPivotPosition());
@@ -330,7 +324,6 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setMode() {
-        SmartDashboard.putNumber("Slot", slot);
         switch (slot) {
             case PIDConstants.TRAP_SLOT:
                 trapMode();
@@ -374,6 +367,7 @@ public class Shooter extends SubsystemBase {
     public Command setSlot(int slot) {
         return runOnce(() -> {
             this.slot = MathUtil.clamp(slot, 0, 3);
+            setMode();
         });
     }
 
@@ -481,40 +475,6 @@ public class Shooter extends SubsystemBase {
         return runOnce(this::shortMode);
     }
 
-    // private void setMotorsVoltage(double volts) {
-    // // m_leftMotor.setVoltage(volts);
-    // m_rightMotor.setVoltage(volts);
-    // }
-
-    // private void logState(State state) {
-    // switch (state) {
-    // case kQuasistaticForward:
-    // stateLog.append("quasistatic-forward");
-    // break;
-    // case kQuasistaticReverse:
-    // stateLog.append("quasistatic-reverse");
-    // break;
-    // case kDynamicForward:
-    // stateLog.append("dynamic-forward");
-    // break;
-    // case kDynamicReverse:
-    // stateLog.append("dynamic-reverse");
-    // break;
-    // default:
-    // break;
-    // }
-
-    // logValues();
-    // }
-
-    // public Command runQuasi(Direction dir) {
-    // return routine.quasistatic(dir);
-    // }
-
-    // public Command runDynamuc(Direction dir) {
-    // return routine.dynamic(dir);
-    // }
-
     public void setRightToVel(double velRPM) {
         rightPid.setReference(velRPM, ControlType.kVelocity);
     }
@@ -548,81 +508,35 @@ public class Shooter extends SubsystemBase {
     }
 
     private void initLogs() {
-        // rightMotorCurrent = new DoubleLogEntry(m_log, "/Shooter/right/Current");
-        // leftMotorCurrent = new DoubleLogEntry(m_log, "/Shooter/left/Current");
-        // rightMotorVelocity = new DoubleLogEntry(m_log, "/Shooter/right/Velocity");
-        // leftMotorVelocity = new DoubleLogEntry(m_log, "/Shooter/left/Velocity");
-        // rightMotorVoltage = new DoubleLogEntry(m_log, "/Shooter/right/Voltage");
-        // leftMotorVoltage = new DoubleLogEntry(m_log, "/Shooter/left/Voltage");
-        // leftPosLog = new DoubleLogEntry(m_log, "/Shooter/left/Pos");
-        // rightPosLog = new DoubleLogEntry(m_log, "/Shooter/right/Pos");
-        // stateLog = new StringLogEntry(m_log, "test-state");
+        rightCurrent = new DoubleLogEntry(log, "/Shooter/right/Current");
+        leftCurrent = new DoubleLogEntry(log, "/Shooter/left/Current");
+        rightVelocity = new DoubleLogEntry(log, "/Shooter/right/Velocity");
+        leftVelocity = new DoubleLogEntry(log, "/Shooter/left/Velocity");
+        rightVoltage = new DoubleLogEntry(log, "/Shooter/right/Voltage");
+        leftVoltage = new DoubleLogEntry(log, "/Shooter/left/Voltage");
+        pivotCurrent = new DoubleLogEntry(log, "/Pivot/Current");
+        pivotVoltage = new DoubleLogEntry(log, "/Pivot/Voltage");
+        pivotVelocity = new DoubleLogEntry(log, "/Pivot/Velocity");
     }
 
-    // public void logValues() {
-    // rightMotorCurrent.append(m_rightMotor.getOutputCurrent());
-    // leftMotorCurrent.append(m_leftMotor.getOutputCurrent());
+    public void logValues() {
+        rightCurrent.append(rightMotor.getOutputCurrent());
+        leftCurrent.append(leftMotor.getOutputCurrent());
 
-    // rightMotorVelocity.append(m_rightMotor.getEncoder().getVelocity());
-    // leftMotorVelocity.append(m_leftMotor.getEncoder().getVelocity());
+        rightVelocity.append(rightMotor.getEncoder().getVelocity());
+        leftVelocity.append(leftMotor.getEncoder().getVelocity());
 
-    // rightMotorVoltage.append(m_rightMotor.getAppliedOutput() *
-    // m_rightMotor.getBusVoltage());
-    // leftMotorVoltage.append(m_leftMotor.getAppliedOutput() *
-    // m_leftMotor.getBusVoltage());
+        rightVoltage.append(rightMotor.getAppliedOutput() *
+                rightMotor.getBusVoltage());
+        leftVoltage.append(leftMotor.getAppliedOutput() *
+                leftMotor.getBusVoltage());
 
-    // leftPosLog.append(m_leftEncoder.getPosition());
-    // rightPosLog.append(m_rightEncoder.getPosition());
-    // }
+        pivotCurrent.append(pivotMotor.getOutputCurrent());
+        pivotVoltage.append(pivotMotor.getBusVoltage() * pivotMotor.getAppliedOutput());
+        pivotVelocity.append(pivotEncoder.getVelocity());
+    }
 
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
-        // SmartDashboard.putNumber("Left Actual", m_leftEncoder.getVelocity());
-        // SmartDashboard.putNumber("Right Actual", m_rightEncoder.getVelocity());
-
-        // // testing
-        // double leftP = SmartDashboard.getNumber("Left P Gain", 0);
-        // double leftI = SmartDashboard.getNumber("Left I Gain", 0);
-        // double leftD = SmartDashboard.getNumber("Left D Gain", 0);
-        // double leftFF = SmartDashboard.getNumber("Left Feed Forward", 0);
-
-        // // if PID coefficients on SmartDashboard have changed, write new values to
-        // // controller
-        // if (leftP != m_leftPid.getP(m_slot)) {
-        // m_leftPid.setP(leftP, m_slot);
-        // }
-        // if (leftI != m_leftPid.getI(m_slot)) {
-        // m_leftPid.setI(leftI, m_slot);
-        // }
-        // if (leftD != m_leftPid.getD(m_slot)) {
-        // m_leftPid.setD(leftD, m_slot);
-        // }
-        // if (leftFF != m_leftPid.getFF(m_slot)) {
-        // m_leftPid.setFF(leftFF, m_slot);
-        // }
-
-        // double rightP = SmartDashboard.getNumber("Right P Gain", 0);
-        // double rightI = SmartDashboard.getNumber("Right I Gain", 0);
-        // double rightD = SmartDashboard.getNumber("Right D Gain", 0);
-        // double rightFF = SmartDashboard.getNumber("Right Feed Forward", 0);
-
-        // // if PID coefficients on SmartDashboard have changed, write new values to
-        // // controller
-        // if (rightP != m_rightPid.getP(m_slot)) {
-        // m_rightPid.setP(rightP, m_slot);
-        // }
-        // if (rightI != m_rightPid.getI(m_slot)) {
-        // m_rightPid.setI(rightI, m_slot);
-        // }
-        // if (rightD != m_rightPid.getD(m_slot)) {
-        // m_rightPid.setD(rightD, m_slot);
-        // }
-        // if (rightFF != m_rightPid.getFF(m_slot)) {
-        // m_rightPid.setFF(rightFF, m_slot);
-        // }
-
-        SmartDashboard.putNumber("Pivot Position", pivotEncoder.getPosition());
-        SmartDashboard.putNumber("Pivot Velocity", pivotEncoder.getVelocity());
     }
 }

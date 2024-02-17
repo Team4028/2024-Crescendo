@@ -21,15 +21,13 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import java.util.function.BooleanSupplier;
 import com.playingwithfusion.TimeOfFlight;
 
-public class Feeder extends SubsystemBase {
-    private final CANSparkFlex feederMotor; // TODO: log this
-    private final RelativeEncoder feederEncoder;
+public class Conveyor extends SubsystemBase {
+    private final CANSparkFlex motor;
+    private final RelativeEncoder encoder;
     private final TimeOfFlight tofSensor;
-    private final double RANGE_THRESH = 65;
     private final SparkPIDController pid;
-    private double setPos = 0;
     private final DataLog log;
-    private final DoubleLogEntry fCurrent, fVBus, fPosition, fVelocity;
+    private final DoubleLogEntry current, vBus, position, velocity;
 
     private final static class PIDConstants {
         private static final double kP = 0.4;
@@ -37,27 +35,30 @@ public class Feeder extends SubsystemBase {
         private static final double kD = 0.0;
     }
 
-    private double target;
+    private final double RANGE_THRESH = 65;
 
-    public Feeder() {
-        feederMotor = new CANSparkFlex(11, MotorType.kBrushless);
-        feederMotor.setIdleMode(IdleMode.kBrake);
-        feederMotor.setClosedLoopRampRate(.1);
-        feederEncoder = feederMotor.getEncoder();
+    private double target;
+    private double setPos = 0;
+
+    public Conveyor() {
+        motor = new CANSparkFlex(11, MotorType.kBrushless);
+        motor.setIdleMode(IdleMode.kBrake);
+        motor.setClosedLoopRampRate(.1);
+        encoder = motor.getEncoder();
         tofSensor = new TimeOfFlight(21);
         log = DataLogManager.getLog();
 
-        fCurrent = new DoubleLogEntry(log, "/Feeder/Current");
-        fVBus = new DoubleLogEntry(log, "/Feeder/vBus");
-        fPosition = new DoubleLogEntry(log, "/Feeder/Position");
-        fVelocity = new DoubleLogEntry(log, "/Feeder/Velocity");
+        current = new DoubleLogEntry(log, "/Conveyor/Current");
+        vBus = new DoubleLogEntry(log, "/Conveyor/vBus");
+        position = new DoubleLogEntry(log, "/Conveyor/Position");
+        velocity = new DoubleLogEntry(log, "/Conveyor/Velocity");
 
-        pid = feederMotor.getPIDController();
+        pid = motor.getPIDController();
         pid.setP(PIDConstants.kP);
         pid.setI(PIDConstants.kI);
         pid.setD(PIDConstants.kD);
         pid.setIZone(0);
-        pid.setOutputRange(-.8, .8);
+        pid.setOutputRange(-.4, .8);
     }
 
     public boolean hasGamePiece() {
@@ -66,42 +67,40 @@ public class Feeder extends SubsystemBase {
 
     public Command runXRotations(double x) {
         return runOnce(() -> {
-            target = feederEncoder.getPosition() + x;
+            target = encoder.getPosition() + x;
             pid.setReference(target, ControlType.kPosition);
-        }).andThen(Commands.idle(this)).until(() -> Math.abs(target - feederEncoder.getPosition()) < 0.06);
+        }).andThen(Commands.idle(this)).until(() -> Math.abs(target - encoder.getPosition()) < 0.06);
     }
 
     public Command runXRotationsNoPID(double x) {
-        return runOnce(() -> setPos = feederEncoder.getPosition() + x)
-                .andThen(runFeederMotorCommand(0.2 * Math.signum(x)).repeatedly()
-                        .until(() -> Math.signum(x) == 1 ? feederEncoder.getPosition() > setPos
-                                : feederEncoder.getPosition() < setPos));
-        // .finallyDo(() -> runFeederMotor(0.));
+        return runOnce(() -> setPos = encoder.getPosition() + x)
+                .andThen(runMotorCommand(0.2 * Math.signum(x)).repeatedly()
+                        .until(() -> Math.signum(x) == 1 ? encoder.getPosition() > setPos
+                                : encoder.getPosition() < setPos));
     }
 
     public BooleanSupplier hasGamePieceSupplier() {
         return this::hasGamePiece;
     }
 
-    public final void runFeederMotor(double vBus) {
-        feederMotor.set(vBus);
+    public final void runMotor(double vBus) {
+        motor.set(vBus);
     }
 
-    public Command runFeederMotorCommand(double vBus) {
-        return runOnce(() -> runFeederMotor(vBus));
+    public Command runMotorCommand(double vBus) {
+        return runOnce(() -> runMotor(vBus));
     }
 
     public void logValues() {
-        fCurrent.append(feederMotor.getOutputCurrent());
-        fVBus.append(feederMotor.getAppliedOutput());
-        fPosition.append(feederEncoder.getPosition());
-        fVelocity.append(feederEncoder.getVelocity());
+        current.append(motor.getOutputCurrent());
+        vBus.append(motor.getAppliedOutput());
+        position.append(encoder.getPosition());
+        velocity.append(encoder.getVelocity());
     }
 
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        SmartDashboard.putNumber("Feeder ToF Sensor", tofSensor.getRange());
-        SmartDashboard.putNumber("Feeder Position", feederEncoder.getPosition());
+        SmartDashboard.putNumber("ToF Sensor", tofSensor.getRange());
     }
 }

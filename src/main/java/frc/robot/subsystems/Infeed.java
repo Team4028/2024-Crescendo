@@ -3,10 +3,6 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
-
-import java.util.function.BooleanSupplier;
-
-import com.playingwithfusion.TimeOfFlight;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
@@ -14,56 +10,28 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Infeed extends SubsystemBase {
     private static Infeed instance;
-    private TimeOfFlight tofSensor;
-    private CANSparkFlex infeedMotor;
-    private RelativeEncoder infeedEncoder;
+    private final CANSparkFlex infeedMotor;
+    private final RelativeEncoder infeedEncoder;
 
-    private final double RANGE_THRESH = 100;
-
-    DataLog log;
+    private final DataLog log;
     public DoubleLogEntry infeedMotorCurrent, infeedMotorVelocity;
 
     /** Creates a new SensorMotor. */
     private Infeed() {
         log = DataLogManager.getLog();
         configureLogs();
-        tofSensor = new TimeOfFlight(1);
         infeedMotor = new CANSparkFlex(18, MotorType.kBrushless);
         infeedEncoder = infeedMotor.getEncoder();
         infeedMotor.setInverted(true);
         infeedMotor.setSmartCurrentLimit(60);
-        // infeedMotor.getConfigurator().apply(
-        // new CurrentLimitsConfigs()
-        // .withStatorCurrentLimit(60)
-        // .withSupplyCurrentLimit(60)
-        // .withStatorCurrentLimitEnable(true)
-        // .withSupplyCurrentLimitEnable(true));
-    }
 
-    // public void logToDash() {
-    // SmartDashboard.putNumber("tof distance", sensor.getRange());
-
-    // public void runMotorWithSensor() {
-
-    // if (sensorRun.getRange() > 100) {
-
-    // } else {
-
-    // }
-    // }
-
-    public boolean hasGamePiece() {
-        return tofSensor.getRange() < RANGE_THRESH;
-    }
-
-    public BooleanSupplier hasGamePieceSupplier() {
-        return this::hasGamePiece;
+        infeedEncoder.setMeasurementPeriod(16);
+        infeedEncoder.setAverageDepth(2);
     }
 
     private void runInfeedMotor(double vBus) {
@@ -80,22 +48,12 @@ public class Infeed extends SubsystemBase {
     }
 
     public void logValues() {
-        // infeedMotorCurrent.append(infeedMotor.getSupplyCurrent().getValueAsDouble());
-
-        // infeedMotorVelocity.append(infeedMotor.getVelocity().getValueAsDouble());
-        // infeedMotorVelocity.append(infeedMotor.getEncoder().getVelocity());
+        infeedMotorCurrent.append(infeedMotor.getOutputCurrent());
+        infeedMotorVelocity.append(infeedEncoder.getVelocity());
     }
-
-    // public Command runMotorWithSensorCommand() {
-    // return runOnce(this::runMotorWithSensor);
-    // }
 
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
-        // SmartDashboard.putNumber("Infeed TOF", tofSensor.getRange());
-        // SmartDashboard.putNumber("Infeed Current", infeedMotor.getOutputCurrent());
-        SmartDashboard.putNumber("Infeed RPM", infeedEncoder.getVelocity());
     }
 
     public static Infeed getInstance() {

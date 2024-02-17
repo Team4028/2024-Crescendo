@@ -18,11 +18,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.Feeder;
+import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Shooter;
 
@@ -35,23 +34,19 @@ public class RobotContainer {
         private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
         private final Infeed infeed = Infeed.getInstance();
         public final Shooter shooter = new Shooter();
-        private final Feeder feeder = new Feeder();
+        private final Conveyor conveyor = new Conveyor();
         private final Command smartInfeedCommand;
-        SendableChooser<Command> autonChooser;
+        private SendableChooser<Command> autonChooser;
 
-        SlewRateLimiter xLimiter = new SlewRateLimiter(4.);
-        SlewRateLimiter yLimiter = new SlewRateLimiter(4.);
-        SlewRateLimiter thetaLimiter = new SlewRateLimiter(4.);
-        SlewRateLimiter xLAquireLimiter = new SlewRateLimiter(4.);
+        private final SlewRateLimiter xLimiter = new SlewRateLimiter(4.);
+        private final SlewRateLimiter yLimiter = new SlewRateLimiter(4.);
+        private final SlewRateLimiter thetaLimiter = new SlewRateLimiter(4.);
+        private final SlewRateLimiter xLimeAquireLimiter = new SlewRateLimiter(4.);
 
         private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
                         .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
                         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                                  // driving in open loop
-        // private final SwerveRequest.SwerveDriveBrake brake = new
-        // SwerveRequest.SwerveDriveBrake();
-        // private final SwerveRequest.PointWheelsAt point = new
-        // SwerveRequest.PointWheelsAt();
         private final Telemetry logger = new Telemetry(MaxSpeed);
 
         private void initAutonChooser() {
@@ -61,9 +56,7 @@ public class RobotContainer {
 
         private void initNamedCommands() {
                 NamedCommands.registerCommand("startShooter", shooter.setSlot(2).andThen(shooter.runVelocityCommand()));
-                NamedCommands.registerCommand("infeed", infeed.runInfeedMotorCommand(.8)
-                                .alongWith(feeder.runFeederMotorCommand(.8)).repeatedly().withTimeout(1.)
-                                .andThen(infeed.runInfeedMotorCommand(0.).alongWith(feeder.runFeederMotorCommand(0.))));
+                NamedCommands.registerCommand("infeed", smartInfeedCommand);
                 // NamedCommands.registerCommand("shoot", feeder.runXRotations(10));
         }
 
@@ -81,24 +74,17 @@ public class RobotContainer {
                                                                                 thetaLimiter, .4) *
                                                                                 MaxSpeed)));
 
-                feeder.setDefaultCommand(feeder.runFeederMotorCommand(0.));
+                conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
                 infeed.setDefaultCommand(infeed.runInfeedMotorCommand(0.));
-
-                // driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
-                // driverController.b().whileTrue(drivetrain
-                // .applyRequest(() -> point
-                // .withModuleDirection(new Rotation2d(-driverController.getLeftY(),
-                // -driverController.getLeftX()))));
 
                 driverController.leftTrigger().onTrue(
                                 infeed.runInfeedMotorCommand(.8).alongWith(
-                                                feeder.runFeederMotorCommand(0.8)).repeatedly())
+                                                conveyor.runMotorCommand(0.8)).repeatedly())
                                 .onFalse(infeed.runInfeedMotorCommand(0.).alongWith(
-                                                feeder.runFeederMotorCommand(0.)));
+                                                conveyor.runMotorCommand(0.)));
 
-                driverController.a().toggleOnTrue(feeder.runXRotations(10));
+                driverController.a().toggleOnTrue(conveyor.runXRotations(10));
 
-                // driverController.a().whileTrue(feeder.runFeederMotorCommand(0.8));
                 driverController.b().toggleOnTrue(smartInfeedCommand);
 
                 driverController.x().and(driverController.povCenter())
@@ -110,14 +96,10 @@ public class RobotContainer {
 
                 driverController.y().onTrue(shooter.pivotZeroCommand());
 
-                driverController.povLeft().onTrue(feeder.runXRotations(10));
+                driverController.povLeft().onTrue(conveyor.runXRotations(10));
 
                 // reset the field-centric heading on start
                 driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
-                // driverController.back().onTrue(
-                // drivetrain
-                // .runOnce(() -> drivetrain.seedFieldRelative(new Pose2d(0., 0.,
-                // Rotation2d.fromDegrees(180)))));
 
                 driverController.rightBumper().onTrue(shooter.runPivotCommand(0.5))
                                 .onFalse(shooter.runPivotCommand(0.0));
@@ -127,6 +109,7 @@ public class RobotContainer {
                 if (Utils.isSimulation()) {
                         drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
                 }
+
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
 
@@ -137,14 +120,14 @@ public class RobotContainer {
         }
 
         public RobotContainer() {
-                smartInfeedCommand = infeed.runInfeedMotorCommand(.9).alongWith(feeder.runFeederMotorCommand(.65))
+                smartInfeedCommand = infeed.runInfeedMotorCommand(.9).alongWith(conveyor.runMotorCommand(.65))
                                 .repeatedly()
-                                .until(feeder.hasGamePieceSupplier())
-                                .andThen(infeed.runInfeedMotorCommand(.8).repeatedly().alongWith(feeder.runXRotations(.25))
-                                                .until(() -> !feeder.hasGamePiece()))
-                                .andThen(feeder.runXRotations(-.25).alongWith(infeed.runInfeedMotorCommand(0.)));
+                                .until(conveyor.hasGamePieceSupplier())
+                                .andThen(infeed.runInfeedMotorCommand(.8).repeatedly()
+                                                .alongWith(conveyor.runXRotations(.25))
+                                                .until(() -> !conveyor.hasGamePiece()))
+                                .andThen(conveyor.runXRotations(-.25).alongWith(infeed.runInfeedMotorCommand(0.)));
 
-                // .andThen(shooter.runVelocityCommand().withTimeout(0.3));
                 initNamedCommands();
                 initAutonChooser();
                 configureBindings();
@@ -157,7 +140,7 @@ public class RobotContainer {
 
         public void logDrivetrainValues() {
                 drivetrain.logValues();
-                feeder.logValues();
+                conveyor.logValues();
                 infeed.logValues();
         }
 }
