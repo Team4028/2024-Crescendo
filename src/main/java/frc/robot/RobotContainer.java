@@ -110,6 +110,8 @@ public class RobotContainer {
 
                 driverController.y().onTrue(shooter.pivotZeroCommand());
 
+                driverController.povLeft().onTrue(feeder.runXRotations(10));
+
                 // reset the field-centric heading on start
                 driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
                 // driverController.back().onTrue(
@@ -138,10 +140,9 @@ public class RobotContainer {
                 smartInfeedCommand = infeed.runInfeedMotorCommand(.9).alongWith(feeder.runFeederMotorCommand(.65))
                                 .repeatedly()
                                 .until(feeder.hasGamePieceSupplier())
-                                .andThen(infeed.runInfeedMotorCommand(.8).alongWith(feeder.runFeederMotorCommand(.5))
-                                                .repeatedly()
+                                .andThen(infeed.runInfeedMotorCommand(.8).repeatedly().alongWith(feeder.runXRotations(.25))
                                                 .until(() -> !feeder.hasGamePiece()))
-                                .andThen(feeder.runXRotationsNoPID(-.25).alongWith(infeed.runInfeedMotorCommand(0.)));
+                                .andThen(feeder.runXRotations(-.25).alongWith(infeed.runInfeedMotorCommand(0.)));
 
                 // .andThen(shooter.runVelocityCommand().withTimeout(0.3));
                 initNamedCommands();

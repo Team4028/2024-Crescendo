@@ -32,16 +32,17 @@ public class Feeder extends SubsystemBase {
     private final DoubleLogEntry fCurrent, fVBus, fPosition, fVelocity;
 
     private final static class PIDConstants {
-        private static final double kP = 0.8;
+        private static final double kP = 0.4;
         private static final double kI = 0.0;
         private static final double kD = 0.0;
     }
 
-    private double m_target;
+    private double target;
 
     public Feeder() {
         feederMotor = new CANSparkFlex(11, MotorType.kBrushless);
         feederMotor.setIdleMode(IdleMode.kBrake);
+        feederMotor.setClosedLoopRampRate(.1);
         feederEncoder = feederMotor.getEncoder();
         tofSensor = new TimeOfFlight(21);
         log = DataLogManager.getLog();
@@ -65,9 +66,9 @@ public class Feeder extends SubsystemBase {
 
     public Command runXRotations(double x) {
         return runOnce(() -> {
-            m_target = feederEncoder.getPosition() + x;
-            pid.setReference(m_target, ControlType.kPosition);
-        }).andThen(Commands.idle(this)).until(() -> Math.abs(m_target - feederEncoder.getPosition()) < 0.06);
+            target = feederEncoder.getPosition() + x;
+            pid.setReference(target, ControlType.kPosition);
+        }).andThen(Commands.idle(this)).until(() -> Math.abs(target - feederEncoder.getPosition()) < 0.06);
     }
 
     public Command runXRotationsNoPID(double x) {
