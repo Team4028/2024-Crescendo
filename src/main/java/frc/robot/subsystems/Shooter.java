@@ -48,6 +48,9 @@ public class Shooter extends SubsystemBase {
         private static final int MEDIUM_SLOT = 1;
         private static final int LONG_SLOT = 0;
 
+        private static final double MAX_LEFT = 2500;
+        private static final double MAX_RIGHT = 3400;
+
         private static class Left {
             private static double kFF = 0.00019;
 
@@ -59,14 +62,14 @@ public class Shooter extends SubsystemBase {
             }
 
             private final class Long {
-                private static double velocity = 2500;
+                private static double velocity = MAX_LEFT * 1.0;;
                 private static double kP = 0.001;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
             }
 
             private final class Medium {
-                private static double velocity = 1250;
+                private static double velocity = MAX_LEFT * 0.2;
                 private static double kP = 0.001;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
@@ -91,21 +94,21 @@ public class Shooter extends SubsystemBase {
             }
 
             private final class Long {
-                private static double velocity = 3400;
+                private static double velocity = MAX_RIGHT * 1.0;
                 private static double kP = 0.002;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
             }
 
             private final class Medium {
-                private static double velocity = 1700;
+                private static double velocity = MAX_RIGHT * 0.2;
                 private static double kP = 0.002;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
             }
 
             private final class Short {
-                private static double velocity = 850;
+                private static double velocity = 1000;
                 private static double kP = 0.002;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
@@ -115,19 +118,19 @@ public class Shooter extends SubsystemBase {
         private static class Pivot {
             private static double kFF = 0.0;
 
-            private static double kP = 0.02;
+            private static double kP = 0.08;
             private static double kI = 0.0;
             private static double kD = 0.0;
 
             //@formatter:off
-            private static double LONG_POSITION = 2.5; // was 10.            ===================================================
-            private static double MEDIUM_POSITION = 26.75; // was 107.     ||  **DIVIDED BY 4 BC TOOK A STAGE OFF OF MPLANETARY ||
+            private static double LONG_POSITION = 5; // was 10.            ===================================================
+            private static double MEDIUM_POSITION = 35; // was 107.     ||  **DIVIDED BY 4 BC TOOK A STAGE OFF OF MPLANETARY ||
                                                            //              ||    (16:1 -> 4:1)**                                ||
-            private static double SHORT_POSITION = 45.; // was 108.          ===================================================
+            private static double SHORT_POSITION = 45.; //was 50 was 108.          ===================================================
             //@formatter:on
 
             private static double MIN_VAL = 0.;
-            private static double MAX_VAL = 55.0;
+            private static double MAX_VAL = 53.0;
         }
     }
 
@@ -142,6 +145,9 @@ public class Shooter extends SubsystemBase {
         leftMotor = new CANSparkFlex(10, MotorType.kBrushless);
 
         rightMotor.setInverted(false);
+
+        rightMotor.setIdleMode(IdleMode.kBrake);
+        leftMotor.setIdleMode(IdleMode.kBrake);
 
         rightEncoder = rightMotor.getEncoder();
         leftEncoder = leftMotor.getEncoder();
@@ -309,7 +315,7 @@ public class Shooter extends SubsystemBase {
                 () -> {
                     setRightToVel(rightTarget);
                     setLeftToVel(leftTarget);
-                    runPivotToPosition(getPivotPosition());
+                    // runPivotToPosition(getPivotPosition());                    
                 },
                 () -> stop());
     }
@@ -538,5 +544,6 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
+        SmartDashboard.putNumber("Pivot pos", pivotEncoder.getPosition());
     }
 }

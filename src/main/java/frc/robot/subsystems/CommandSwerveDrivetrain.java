@@ -60,22 +60,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                     this));
 
     private void logSysIdState(State state) {
-        switch (state) {
-            case kDynamicForward:
-                SignalLogger.writeString("test-mode", "dynamic-forward");
-                break;
-            case kDynamicReverse:
-                SignalLogger.writeString("test-mode", "dynamic-reverse");
-                break;
-            case kQuasistaticForward:
-                SignalLogger.writeString("test-mode", "quasistatic-forward");
-                break;
-            case kQuasistaticReverse:
-                SignalLogger.writeString("test-mode", "quasistatic-reverse");
-                break;
-            case kNone:
-                break;
-        }
+        SignalLogger.writeString("test-mode", state.toString());
     }
 
     {

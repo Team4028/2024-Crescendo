@@ -17,6 +17,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
@@ -55,8 +56,9 @@ public class RobotContainer {
         }
 
         private void initNamedCommands() {
-                NamedCommands.registerCommand("startShooter", shooter.setSlot(2).andThen(shooter.runVelocityCommand()));
-                NamedCommands.registerCommand("infeed", smartInfeedCommand);
+                // NamedCommands.registerCommand("startShooter",
+                // shooter.setSlot(2).andThen(shooter.runVelocityCommand()));
+                // NamedCommands.registerCommand("infeed", smartInfeedCommand);
                 // NamedCommands.registerCommand("shoot", feeder.runXRotations(10));
         }
 
@@ -79,11 +81,12 @@ public class RobotContainer {
 
                 driverController.leftTrigger().onTrue(
                                 infeed.runInfeedMotorCommand(.8).alongWith(
-                                                conveyor.runMotorCommand(0.8)).repeatedly())
+                                                conveyor.runMotorCommand(0.5)).repeatedly())
                                 .onFalse(infeed.runInfeedMotorCommand(0.).alongWith(
                                                 conveyor.runMotorCommand(0.)));
 
-                driverController.a().toggleOnTrue(conveyor.runXRotations(10));
+                driverController.a().onTrue(conveyor.runXRotations(10).alongWith(infeed.runInfeedMotorCommand(0.5)))
+                                .onFalse(infeed.runInfeedMotorCommand(0.5));
 
                 driverController.b().toggleOnTrue(smartInfeedCommand);
 
@@ -96,8 +99,6 @@ public class RobotContainer {
 
                 driverController.y().onTrue(shooter.pivotZeroCommand());
 
-                driverController.povLeft().onTrue(conveyor.runXRotations(10));
-
                 // reset the field-centric heading on start
                 driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
 
@@ -105,6 +106,8 @@ public class RobotContainer {
                                 .onFalse(shooter.runPivotCommand(0.0));
                 driverController.leftBumper().onTrue(shooter.runPivotCommand(-0.5))
                                 .onFalse(shooter.runPivotCommand(0.0));
+
+                driverController.povRight().onTrue(shooter.run(() -> shooter.runPivotToPosition(shooter.getPivotPosition())));
 
                 if (Utils.isSimulation()) {
                         drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -120,13 +123,16 @@ public class RobotContainer {
         }
 
         public RobotContainer() {
-                smartInfeedCommand = infeed.runInfeedMotorCommand(.9).alongWith(conveyor.runMotorCommand(.65))
-                                .repeatedly()
-                                .until(conveyor.hasGamePieceSupplier())
-                                .andThen(infeed.runInfeedMotorCommand(.8).repeatedly()
-                                                .alongWith(conveyor.runXRotations(.25))
-                                                .until(() -> !conveyor.hasGamePiece()))
-                                .andThen(conveyor.runXRotations(-.25).alongWith(infeed.runInfeedMotorCommand(0.)));
+                smartInfeedCommand = infeed.runInfeedMotorCommand(0.8).alongWith(conveyor.runMotorCommand(0.5))
+                                .repeatedly().until(conveyor.hasInfedSupplier())
+                                .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
+                                                .repeatedly().withTimeout(0.1))
+                                .andThen(shooter.spinMotorRightCommand(-0.4).repeatedly()
+                                                .raceWith(conveyor.runXRotations(-.5).withTimeout(0.25)
+                                                                .alongWith(infeed.runInfeedMotorCommand(0.))))
+                                .andThen(shooter.spinMotorRightCommand(0.));
+                // .until(() -> !conveyor.hasGamePiece()))
+                // .andThen(conveyor.runXRotations(0.).alongWith(infeed.runInfeedMotorCommand(0.)));
 
                 initNamedCommands();
                 initAutonChooser();

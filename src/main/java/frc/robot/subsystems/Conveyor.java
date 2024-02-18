@@ -19,6 +19,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import java.util.function.BooleanSupplier;
+
 import com.playingwithfusion.TimeOfFlight;
 
 public class Conveyor extends SubsystemBase {
@@ -30,19 +31,22 @@ public class Conveyor extends SubsystemBase {
     private final DoubleLogEntry current, vBus, position, velocity;
 
     private final static class PIDConstants {
-        private static final double kP = 0.4;
+        private static final double kP = 0.8;
         private static final double kI = 0.0;
         private static final double kD = 0.0;
     }
 
-    private final double RANGE_THRESH = 65;
+    private final double RANGE_THRESH = 100;
+    private final double OTHER_RANGE_THRESH = 75;
+    private final double TOLERANCE = 10;
+    private boolean infedFlag = false;
 
     private double target;
     private double setPos = 0;
 
     public Conveyor() {
         motor = new CANSparkFlex(11, MotorType.kBrushless);
-        motor.setIdleMode(IdleMode.kBrake);
+        motor.setIdleMode(IdleMode.kCoast);
         motor.setClosedLoopRampRate(.1);
         encoder = motor.getEncoder();
         tofSensor = new TimeOfFlight(21);
@@ -58,7 +62,26 @@ public class Conveyor extends SubsystemBase {
         pid.setI(PIDConstants.kI);
         pid.setD(PIDConstants.kD);
         pid.setIZone(0);
-        pid.setOutputRange(-.4, .8);
+        pid.setOutputRange(-.3, .3);
+
+        tofSensor.setRangeOfInterest(4, 4, 11, 11);
+    }
+
+    public boolean hasInfed() {
+        if (tofSensor.getRange() < OTHER_RANGE_THRESH) {
+            infedFlag = true;
+        }
+
+        if (infedFlag && Math.abs(tofSensor.getRange() - RANGE_THRESH) <= TOLERANCE) {
+            infedFlag = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    public BooleanSupplier hasInfedSupplier() {
+        return this::hasInfed;
     }
 
     public boolean hasGamePiece() {
