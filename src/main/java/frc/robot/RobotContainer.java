@@ -17,7 +17,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
@@ -56,9 +56,12 @@ public class RobotContainer {
         }
 
         private void initNamedCommands() {
-                // NamedCommands.registerCommand("startShooter",
-                // shooter.setSlot(2).andThen(shooter.runVelocityCommand()));
-                // NamedCommands.registerCommand("infeed", smartInfeedCommand);
+                NamedCommands.registerCommand("startShooter",
+                                shooter.setSlot(1).andThen(() -> shooter.runPivotToPosition(shooter.getPivotPosition()))
+                                                .andThen(shooter.runVelocityCommand()));
+                NamedCommands.registerCommand("4pinfeed", infeed.runInfeedMotorCommand(0.8)
+                                .alongWith(conveyor.runMotorCommand(0.85)).repeatedly());//.withTimeout(1.5));
+                                NamedCommands.registerCommand("farShot", Commands.runOnce(() -> shooter.runPivotToPosition(14.25)));
                 // NamedCommands.registerCommand("shoot", feeder.runXRotations(10));
         }
 
@@ -73,7 +76,7 @@ public class RobotContainer {
                                                                 .25) * MaxSpeed)
                                                 .withRotationalRate(
                                                                 scaleDriverController(-driverController.getRightX(),
-                                                                                thetaLimiter, .4) *
+                                                                                thetaLimiter, .25) *
                                                                                 MaxSpeed)));
 
                 conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
@@ -102,12 +105,13 @@ public class RobotContainer {
                 // reset the field-centric heading on start
                 driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
 
-                driverController.rightBumper().onTrue(shooter.runPivotCommand(0.5))
+                driverController.rightBumper().onTrue(shooter.runPivotCommand(0.3))
                                 .onFalse(shooter.runPivotCommand(0.0));
-                driverController.leftBumper().onTrue(shooter.runPivotCommand(-0.5))
+                driverController.leftBumper().onTrue(shooter.runPivotCommand(-0.3))
                                 .onFalse(shooter.runPivotCommand(0.0));
 
-                driverController.povRight().onTrue(shooter.run(() -> shooter.runPivotToPosition(shooter.getPivotPosition())));
+                driverController.povRight()
+                                .onTrue(shooter.run(() -> shooter.runPivotToPosition(shooter.getPivotPosition())));
 
                 if (Utils.isSimulation()) {
                         drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));

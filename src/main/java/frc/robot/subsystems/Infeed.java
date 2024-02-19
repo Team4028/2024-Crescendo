@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 import java.util.function.BooleanSupplier;
 
 import com.playingwithfusion.TimeOfFlight;
+import com.playingwithfusion.TimeOfFlight.RangingMode;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
@@ -43,6 +44,7 @@ public class Infeed extends SubsystemBase {
         infeedEncoder.setMeasurementPeriod(16);
         infeedEncoder.setAverageDepth(2);
 
+        tofSensor.setRangingMode(RangingMode.Short, 24.0);
         tofSensor.setRangeOfInterest(4, 4, 11, 11);
     }
 

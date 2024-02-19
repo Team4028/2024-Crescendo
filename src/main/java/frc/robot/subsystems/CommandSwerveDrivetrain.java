@@ -20,6 +20,7 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.units.*;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
@@ -79,6 +80,23 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         super(driveTrainConstants, modules);
         if (Utils.isSimulation()) {
             startSimThread();
+        }
+    }
+
+    @Override
+    public void seedFieldRelative(Pose2d location) {
+        getPigeon2().setYaw(0);
+        super.seedFieldRelative(location);
+    }
+
+    @Override
+    public void seedFieldRelative() {
+        getPigeon2().setYaw(0);
+        try {
+            m_stateLock.writeLock().lock();
+            m_fieldRelativeOffset = getState().Pose.getRotation();
+        } finally {
+            m_stateLock.writeLock().unlock();
         }
     }
 

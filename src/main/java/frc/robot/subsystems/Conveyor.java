@@ -21,6 +21,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import java.util.function.BooleanSupplier;
 
 import com.playingwithfusion.TimeOfFlight;
+import com.playingwithfusion.TimeOfFlight.RangingMode;
 
 public class Conveyor extends SubsystemBase {
     private final CANSparkFlex motor;
@@ -39,7 +40,7 @@ public class Conveyor extends SubsystemBase {
     private final double RANGE_THRESH = 100;
     private final double OTHER_RANGE_THRESH = 75;
     private final double TOLERANCE = 10;
-    private boolean infedFlag = false;
+    private boolean hasInfed = false;
 
     private double target;
     private double setPos = 0;
@@ -64,16 +65,17 @@ public class Conveyor extends SubsystemBase {
         pid.setIZone(0);
         pid.setOutputRange(-.3, .3);
 
+        tofSensor.setRangingMode(RangingMode.Short, 24.0);
         tofSensor.setRangeOfInterest(4, 4, 11, 11);
     }
 
-    public boolean hasInfed() {
+    public boolean getHasInfed() {
         if (tofSensor.getRange() < OTHER_RANGE_THRESH) {
-            infedFlag = true;
+            hasInfed = true;
         }
 
-        if (infedFlag && Math.abs(tofSensor.getRange() - RANGE_THRESH) <= TOLERANCE) {
-            infedFlag = false;
+        if (hasInfed && Math.abs(tofSensor.getRange() - RANGE_THRESH) <= TOLERANCE) {
+            hasInfed = false;
             return true;
         }
 
@@ -81,7 +83,7 @@ public class Conveyor extends SubsystemBase {
     }
 
     public BooleanSupplier hasInfedSupplier() {
-        return this::hasInfed;
+        return this::getHasInfed;
     }
 
     public boolean hasGamePiece() {

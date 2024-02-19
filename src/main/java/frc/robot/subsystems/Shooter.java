@@ -69,15 +69,15 @@ public class Shooter extends SubsystemBase {
             }
 
             private final class Medium {
-                private static double velocity = MAX_LEFT * 0.2;
+                private static double velocity = MAX_LEFT * 0.8;
                 private static double kP = 0.001;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
             }
 
             private final class Short {
-                private static double velocity = 625;
-                private static double kP = 0.001;
+                private static double velocity = 1000;
+                private static double kP = 0.000125;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
             }
@@ -101,15 +101,15 @@ public class Shooter extends SubsystemBase {
             }
 
             private final class Medium {
-                private static double velocity = MAX_RIGHT * 0.2;
+                private static double velocity = MAX_RIGHT * 0.8;
                 private static double kP = 0.002;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
             }
 
             private final class Short {
-                private static double velocity = 1000;
-                private static double kP = 0.002;
+                private static double velocity = 100;
+                private static double kP = 0.0000625;
                 private static double kI = 0.0;
                 private static double kD = 0.0;
             }
@@ -118,13 +118,14 @@ public class Shooter extends SubsystemBase {
         private static class Pivot {
             private static double kFF = 0.0;
 
-            private static double kP = 0.08;
+            private static double kP = 0.16;
             private static double kI = 0.0;
             private static double kD = 0.0;
 
             //@formatter:off
             private static double LONG_POSITION = 5; // was 10.            ===================================================
-            private static double MEDIUM_POSITION = 35; // was 107.     ||  **DIVIDED BY 4 BC TOOK A STAGE OFF OF MPLANETARY ||
+            // private static double MEDIUM_POSITION = 26.75; // was 107.     ||  **DIVIDED BY 4 BC TOOK A STAGE OFF OF MPLANETARY ||
+            private static double MEDIUM_POSITION = 16.;
                                                            //              ||    (16:1 -> 4:1)**                                ||
             private static double SHORT_POSITION = 45.; //was 50 was 108.          ===================================================
             //@formatter:on
