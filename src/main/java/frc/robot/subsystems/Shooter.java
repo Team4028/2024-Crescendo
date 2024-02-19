@@ -42,12 +42,14 @@ public class Shooter extends SubsystemBase {
     private final double ZERO_TIMER_THRESHOLD = 0.06; // 3 scans
     private final double ZERO_VELOCITY_THRESHOLD = 0.2;
 
-    private final class PIDConstants {
-        private static final int TRAP_SLOT = 3;
-        private static final int SHORT_SLOT = 2;
-        private static final int MEDIUM_SLOT = 1;
-        private static final int LONG_SLOT = 0;
+    private final class Slots {
+        private static final int TRAP = 3;
+        private static final int SHORT = 2;
+        private static final int MEDIUM = 1;
+        private static final int LONG = 0;
+    }
 
+    private final class PIDConstants {
         private static final double MAX_LEFT = 2500;
         private static final double MAX_RIGHT = 3400;
 
@@ -123,11 +125,10 @@ public class Shooter extends SubsystemBase {
             private static double kD = 0.0;
 
             //@formatter:off
-            private static double LONG_POSITION = 5; // was 10.            ===================================================
-            // private static double MEDIUM_POSITION = 26.75; // was 107.     ||  **DIVIDED BY 4 BC TOOK A STAGE OFF OF MPLANETARY ||
-            private static double MEDIUM_POSITION = 16.;
+            private static double LONG_POSITION = 2.5; // was 10.            ===================================================
+            private static double MEDIUM_POSITION = 26.75; // was 107.     ||  **DIVIDED BY 4 BC TOOK A STAGE OFF OF MPLANETARY ||
                                                            //              ||    (16:1 -> 4:1)**                                ||
-            private static double SHORT_POSITION = 45.; //was 50 was 108.          ===================================================
+            private static double SHORT_POSITION = 45.; // was 108.          ===================================================
             //@formatter:on
 
             private static double MIN_VAL = 0.;
@@ -173,64 +174,32 @@ public class Shooter extends SubsystemBase {
         // ==================================
         // SHOOTER PID
         // ==================================
-        // int slot = PIDConstants.TRAP_SLOT;
-
-        rightPid.setP(PIDConstants.Right.Long.kP, PIDConstants.LONG_SLOT);
-        rightPid.setI(PIDConstants.Right.Long.kI, PIDConstants.LONG_SLOT);
-        rightPid.setD(PIDConstants.Right.Long.kD, PIDConstants.LONG_SLOT);
-        rightPid.setFF(PIDConstants.Right.kFF, PIDConstants.LONG_SLOT);
-
-        // slot = PIDConstants.MEDIUM_SLOT;
-
-        rightPid.setP(PIDConstants.Right.Medium.kP, PIDConstants.MEDIUM_SLOT);
-        rightPid.setI(PIDConstants.Right.Medium.kI, PIDConstants.MEDIUM_SLOT);
-        rightPid.setD(PIDConstants.Right.Medium.kD, PIDConstants.MEDIUM_SLOT);
-        rightPid.setFF(PIDConstants.Right.kFF, PIDConstants.MEDIUM_SLOT);
-
-        // slot = PIDConstants.SHORT_SLOT;
-
-        rightPid.setP(PIDConstants.Right.Short.kP, PIDConstants.SHORT_SLOT);
-        rightPid.setI(PIDConstants.Right.Short.kI, PIDConstants.SHORT_SLOT);
-        rightPid.setD(PIDConstants.Right.Short.kD, PIDConstants.SHORT_SLOT);
-        rightPid.setFF(PIDConstants.Right.kFF, PIDConstants.SHORT_SLOT);
-
-        rightPid.setP(PIDConstants.Right.Trap.kP, PIDConstants.TRAP_SLOT);
-        rightPid.setI(PIDConstants.Right.Trap.kI, PIDConstants.TRAP_SLOT);
-        rightPid.setD(PIDConstants.Right.Trap.kD, PIDConstants.TRAP_SLOT);
-        rightPid.setFF(PIDConstants.Right.kFF, PIDConstants.TRAP_SLOT);
-
         rightPid.setOutputRange(-1, 1);
-
-        // LEFT
-        // slot = PIDConstants.LONG_SLOT;
-
-        leftPid.setP(PIDConstants.Left.Long.kP, PIDConstants.LONG_SLOT);
-        leftPid.setI(PIDConstants.Left.Long.kI, PIDConstants.LONG_SLOT);
-        leftPid.setD(PIDConstants.Left.Long.kD, PIDConstants.LONG_SLOT);
-        leftPid.setFF(PIDConstants.Left.kFF, PIDConstants.LONG_SLOT);
-
-        // slot = PIDConstants.MEDIUM_SLOT;
-
-        leftPid.setP(PIDConstants.Left.Medium.kP, PIDConstants.MEDIUM_SLOT);
-        leftPid.setI(PIDConstants.Left.Medium.kI, PIDConstants.MEDIUM_SLOT);
-        leftPid.setD(PIDConstants.Left.Medium.kD, PIDConstants.MEDIUM_SLOT);
-        leftPid.setFF(PIDConstants.Left.kFF, PIDConstants.MEDIUM_SLOT);
-
-        // slot = PIDConstants.SHORT_SLOT;
-
-        leftPid.setP(PIDConstants.Left.Short.kP, PIDConstants.SHORT_SLOT);
-        leftPid.setI(PIDConstants.Left.Short.kI, PIDConstants.SHORT_SLOT);
-        leftPid.setD(PIDConstants.Left.Short.kD, PIDConstants.SHORT_SLOT);
-        leftPid.setFF(PIDConstants.Left.kFF, PIDConstants.SHORT_SLOT);
-
-        // slot = PIDConstants.TRAP_SLOT;
-
-        leftPid.setP(PIDConstants.Left.Trap.kP, PIDConstants.TRAP_SLOT);
-        leftPid.setI(PIDConstants.Left.Trap.kI, PIDConstants.TRAP_SLOT);
-        leftPid.setD(PIDConstants.Left.Trap.kD, PIDConstants.TRAP_SLOT);
-        leftPid.setFF(PIDConstants.Left.kFF, PIDConstants.TRAP_SLOT);
-
         leftPid.setOutputRange(-1, 1);
+
+        // TRAP //
+        int slot = Slots.TRAP;
+
+        configPid(rightPid, slot, PIDConstants.Right.Trap.class, PIDConstants.Right.kFF);
+        configPid(leftPid, slot, PIDConstants.Left.Trap.class, PIDConstants.Left.kFF);
+
+        // SHORT //
+        slot = Slots.SHORT;
+
+        configPid(rightPid, slot, PIDConstants.Right.Short.class, PIDConstants.Right.kFF);
+        configPid(leftPid, slot, PIDConstants.Left.Short.class, PIDConstants.Left.kFF);
+
+        // MEDIUM //
+        slot = Slots.MEDIUM;
+
+        configPid(rightPid, slot, PIDConstants.Right.Medium.class, PIDConstants.Right.kFF);
+        configPid(leftPid, slot, PIDConstants.Left.Medium.class, PIDConstants.Left.kFF);
+
+        // SHORT //
+        slot = Slots.SHORT;
+
+        configPid(rightPid, slot, PIDConstants.Right.Long.class, PIDConstants.Right.kFF);
+        configPid(leftPid, slot, PIDConstants.Left.Long.class, PIDConstants.Left.kFF);
 
         longMode();
 
@@ -248,15 +217,26 @@ public class Shooter extends SubsystemBase {
         // ==================================
         // PIVOT PID
         // ==================================
-        pivotPid.setP(PIDConstants.Pivot.kP);
-        pivotPid.setI(PIDConstants.Pivot.kI);
-        pivotPid.setD(PIDConstants.Pivot.kD);
-        pivotPid.setFF(PIDConstants.Pivot.kFF);
+        configPid(pivotPid, 0, PIDConstants.Pivot.class, PIDConstants.Pivot.kFF);
 
         // ==================================
         // TIMER
         // ==================================
         zeroTimer = new Timer();
+    }
+
+    // ==================================
+    // FUNNY PID THING
+    // ==================================
+    private void configPid(SparkPIDController controller, int slot, Class constants, double kFF) {
+        try {
+            controller.setP(constants.getField("kP").getDouble(constants), slot);
+            controller.setI(constants.getField("kI").getDouble(constants), slot);
+            controller.setD(constants.getField("kD").getDouble(constants), slot);
+            controller.setFF(kFF, slot);
+        } catch (Throwable e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     // ==================================
@@ -289,12 +269,12 @@ public class Shooter extends SubsystemBase {
 
     public double getPivotPosition() {
         switch (slot) {
-            case PIDConstants.TRAP_SLOT:
-            case PIDConstants.SHORT_SLOT:
+            case Slots.TRAP:
+            case Slots.SHORT:
                 return PIDConstants.Pivot.SHORT_POSITION;
-            case PIDConstants.MEDIUM_SLOT:
+            case Slots.MEDIUM:
                 return PIDConstants.Pivot.MEDIUM_POSITION;
-            case PIDConstants.LONG_SLOT:
+            case Slots.LONG:
                 return PIDConstants.Pivot.LONG_POSITION;
             default:
                 return PIDConstants.Pivot.MEDIUM_POSITION;
@@ -316,7 +296,7 @@ public class Shooter extends SubsystemBase {
                 () -> {
                     setRightToVel(rightTarget);
                     setLeftToVel(leftTarget);
-                    // runPivotToPosition(getPivotPosition());                    
+                    // runPivotToPosition(getPivotPosition());
                 },
                 () -> stop());
     }
@@ -332,16 +312,16 @@ public class Shooter extends SubsystemBase {
 
     public void setMode() {
         switch (slot) {
-            case PIDConstants.TRAP_SLOT:
+            case Slots.TRAP:
                 trapMode();
                 break;
-            case PIDConstants.SHORT_SLOT:
+            case Slots.SHORT:
                 shortMode();
                 break;
-            case PIDConstants.MEDIUM_SLOT:
+            case Slots.MEDIUM:
                 mediumMode();
                 break;
-            case PIDConstants.LONG_SLOT:
+            case Slots.LONG:
                 longMode();
                 break;
             default:
@@ -379,7 +359,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void trapMode() {
-        slot = PIDConstants.TRAP_SLOT;
+        slot = Slots.TRAP;
 
         SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Trap.kP);
         SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Trap.kI);
@@ -401,7 +381,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void longMode() {
-        slot = PIDConstants.LONG_SLOT;
+        slot = Slots.LONG;
 
         SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Long.kP);
         SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Long.kI);
@@ -423,7 +403,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void mediumMode() {
-        slot = PIDConstants.MEDIUM_SLOT;
+        slot = Slots.MEDIUM;
 
         SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Medium.kP);
         SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Medium.kI);
@@ -445,7 +425,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void shortMode() {
-        slot = PIDConstants.SHORT_SLOT;
+        slot = Slots.SHORT;
 
         SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Short.kP);
         SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Short.kI);
