@@ -36,6 +36,7 @@ import frc.robot.SwerveVoltRequest;
 import frc.robot.generated.TunerConstants;
 
 // FIXME: extract out magic numbers & fixup logging
+// TODO: general clean up
 
 /**
  * Class that extends the Phoenix SwerveDrivetrain class and implements

@@ -250,6 +250,14 @@ public class Shooter extends SubsystemBase {
                 ControlType.kPosition);
     }
 
+    public Command runPivotPositionCommand(double position) {
+        return runOnce(() -> runPivotToPosition(position));
+    }
+
+    public Command setPivotPositionCommand() {
+        return runOnce(() -> runPivotToPosition(getPivotPosition()));
+    }
+
     public Command pivotZeroCommand() {
         return runOnce(() -> {
             zeroTimer.restart();

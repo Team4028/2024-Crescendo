@@ -40,31 +40,9 @@ import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
 public class RobotContainer {
-    /* Setting up bindings for necessary control of the swerve drive platform */
-    private final CommandXboxController driverController = new CommandXboxController(0);
-    private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
-    private final Infeed infeed = Infeed.getInstance();
-    public final Shooter shooter = new Shooter();
-    private final Conveyor conveyor = new Conveyor();
-    private final Climber m_climber = new Climber();
-    // private final Fan m_fan = new Fan();
-
-    private final Vision m_rightVision = new Vision("Right_AprilTag_Camera", Vision.rightCameraToRobot);
-    private final Vision m_leftVision = new Vision("Left_AprilTag_Camera", Vision.leftCameraToRobot);
-
-    private final Command smartInfeedCommand;
-    private SendableChooser<Command> autonChooser;
-
-    private final SlewRateLimiter xLimiter = new SlewRateLimiter(4.);
-    private final SlewRateLimiter yLimiter = new SlewRateLimiter(4.);
-    private final SlewRateLimiter thetaLimiter = new SlewRateLimiter(4.);
-    private final SlewRateLimiter xLimeAquireLimiter = new SlewRateLimiter(4.);
-
-    private static final double MAX_SPEED = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
-    private static final double MAX_ANGULAR_SPEED = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
-    private static final double BASE_SPEED = 0.25;
-
-    // VBUS & OTHER MAGIC #'s
+    // =============================================== //
+    /* Magic numbers, Vbus constants, and OI constants */
+    // =============================================== //
     private static final double CLIMBER_VBUS = 0.7;
     private static final double INFEED_VBUS = 0.8;
     private static final double SLOW_INFEED_VBUS = 0.5;
@@ -74,14 +52,58 @@ public class RobotContainer {
     private static final double FAST_CONVEYOR_VBUS = 0.85;
 
     private static final double FAN_VBUS = 1.0;
+    private static final double SHOOTER_BACKOUT_VBUS = -0.4;
 
-    // SWERVE
+    private static final int OI_DRIVER_CONTROLLER = 0;
+    private static final int OI_OPERATOR_CONTROLLER = 1;
+
+    // ======================== //
+    /* Controllers & Subsystems */
+    // ======================== //
+    private final CommandXboxController driverController = new CommandXboxController(OI_DRIVER_CONTROLLER);
+    // private final CommandXboxController operaterController = new
+    // CommandXboxController(OI_OPERATOR_CONTROLLER);
+
+    private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
+    private final Infeed infeed = new Infeed();
+    private final Shooter shooter = new Shooter();
+    private final Conveyor conveyor = new Conveyor();
+    private final Climber m_climber = new Climber();
+    // private final Fan m_fan = new Fan();
+
+    private final Vision m_rightVision = new Vision("Right_AprilTag_Camera", Vision.rightCameraToRobot);
+    private final Vision m_leftVision = new Vision("Left_AprilTag_Camera", Vision.leftCameraToRobot);
+
+    // ====================== //
+    /* Auton & Other Commands */
+    // ====================== //
+    private final Command smartInfeedCommand;
+    private SendableChooser<Command> autonChooser;
+
+    // ====================================================== //
+    /* Drivetrain Constants, Magic numbers, and Slew Limiters */
+    // ====================================================== //
+    private final SlewRateLimiter xLimiter = new SlewRateLimiter(4.);
+    private final SlewRateLimiter yLimiter = new SlewRateLimiter(4.);
+    private final SlewRateLimiter thetaLimiter = new SlewRateLimiter(4.);
+    private final SlewRateLimiter xLimeAquireLimiter = new SlewRateLimiter(4.);
+
+    private static final double MAX_SPEED = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
+    private static final double MAX_ANGULAR_SPEED = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
+    private static final double BASE_SPEED = 0.25;
+
+    // ======================== //
+    /* Swerve Control & Logging */
+    // ======================== //
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MAX_SPEED * 0.1).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                      // driving in open loop
     private final Telemetry logger = new Telemetry(MAX_SPEED);
 
+    // ====================== //
+    /* Auton & Named Commands */
+    // ====================== //
     private void initAutonChooser() {
         autonChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autonChooser);
@@ -89,13 +111,20 @@ public class RobotContainer {
 
     private void initNamedCommands() {
         NamedCommands.registerCommand("startShooter",
-                shooter.setSlotComand(1).andThen(() -> shooter.runPivotToPosition(shooter.getPivotPosition()))
+                shooter.setSlotComand(1).andThen(shooter.setPivotPositionCommand())
                         .andThen(shooter.runVelocityCommand()));
         NamedCommands.registerCommand("4pinfeed", infeed.runInfeedMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
         NamedCommands.registerCommand("farShot", Commands.runOnce(() -> shooter.runPivotToPosition(14.25)));
     }
 
+    // TODO: this stuff needs cleaned up
+    // Likely time for a operator controller,
+    // or at least getting rid of useless stuff
+
+    // =========================== //
+    /* Bindings & Default Commands */
+    // =========================== //
     private void configureBindings() {
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(() -> drive
@@ -113,52 +142,87 @@ public class RobotContainer {
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runInfeedMotorCommand(0.));
 
+        // ========================== //
+        /* Infeed & Conveyor Control */
+        // ========================== //
+
+        /* Dumb Infeed */
         driverController.leftTrigger().onTrue(
                 infeed.runInfeedMotorCommand(INFEED_VBUS).alongWith(
                         conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS)).repeatedly())
                 .onFalse(infeed.runInfeedMotorCommand(0.).alongWith(
                         conveyor.runMotorCommand(0.)));
 
+        /* Conveyance */
         driverController.a()
                 .onTrue(conveyor.runXRotations(10).alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
                 .onFalse(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS));
 
+        /* Smart Infeed */
         driverController.b().toggleOnTrue(smartInfeedCommand);
 
+        // ======================= //
+        /* Shooter & Pivot Control */
+        // ======================= //
+
+        /* Run Shooter */
         driverController.x().and(driverController.povCenter())
                 .toggleOnTrue(shooter.runVelocityCommand());
+
+        /* Cycle Down (Trap -> Long) */
         driverController.x().and(driverController.povDown())
                 .onTrue(shooter.cycleDownCommand());
+
+        /* Cycle Up (Long -> Trap) */
         driverController.x().and(driverController.povUp())
                 .onTrue(shooter.cycleUpCommand());
 
-        // driverController.y().and(driverController.povCenter()).onTrue(shooter.pivotZeroCommand());
-        // driverController.y().toggleOnTrue(m_fan.runMotorCommand(1.0));
+        /* Run Pivot */
+        driverController.x().and(driverController.povLeft().or(driverController.povRight()))
+                .onTrue(shooter.runPivotPositionCommand(shooter.getPivotPosition()));
 
-        driverController.y().and(driverController.povCenter()).onTrue(m_climber.zeroCommand());
-        driverController.y().and(driverController.povDown()).whileTrue(m_climber.runMotorCommand(-CLIMBER_VBUS));
-        driverController.y().and(driverController.povUp()).whileTrue(m_climber.runMotorCommand(CLIMBER_VBUS));
-        driverController.y().and(driverController.povRight())
+        // driverController.y().and(driverController.povCenter()).onTrue(shooter.pivotZeroCommand());
+        // driverController.y().toggleOnTrue(m_fan.runMotorCommand(FAN_VBUS));
+
+        // ========================= //
+        /* Climber & Zeroing Control */
+        // ========================= //
+
+        /* Zero Climber & Pivot */
+        driverController.y().and(driverController.povCenter()).onTrue(zeroCommand());
+
+        /* Run Climber to "Home" */
+        driverController.y().and(driverController.povDown())
                 .onTrue(m_climber.runToPositionCommand(Climber.ClimberPositions.HOME));
-        driverController.y().and(driverController.povLeft())
+
+        /* Run Climber to "Ready" */
+        driverController.y().and(driverController.povUp())
                 .onTrue(m_climber.runToPositionCommand(Climber.ClimberPositions.READY));
 
-        // reset the field-centric heading on start
+        // ========================== //
+        /* Drivetain & Vision Control */
+        // ========================== //
+
+        /* Reset Field-Centric Heading */
         driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
 
-        // VISION
+        /* Add Vision Measurement */
         driverController.back().and(driverController.povCenter())
                 .onTrue(drivetrain.addMeasurementCommand(() -> getBestPose()));
+
+        /* Reset Pose & Test ShooterTable */
         driverController.back().and(driverController.povDown()).onTrue(Commands.runOnce(() -> {
             var pose = getBestPose();
             if (pose.isPresent())
                 drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
+
+            printSTVals();
         }));
 
-        driverController.rightBumper().onTrue(shooter.runPivotCommand(PIVOT_VBUS))
-                .onFalse(shooter.runPivotCommand(0.0));
-        driverController.leftBumper().onTrue(shooter.runPivotCommand(-PIVOT_VBUS))
-                .onFalse(shooter.runPivotCommand(0.0));
+        // driverController.rightBumper().onTrue(shooter.runPivotCommand(PIVOT_VBUS))
+        // .onFalse(shooter.runPivotCommand(0.0));
+        // driverController.leftBumper().onTrue(shooter.runPivotCommand(-PIVOT_VBUS))
+        // .onFalse(shooter.runPivotCommand(0.0));
 
         // driverController.povRight()
         // .onTrue(shooter.run(() ->
@@ -171,19 +235,17 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
-    private double scaleDriverController(double controllerInput, SlewRateLimiter limiter, double baseSpeedPercent) {
-        return limiter.calculate(
-                controllerInput * (baseSpeedPercent
-                        + driverController.getRightTriggerAxis() * (1 - baseSpeedPercent)));
-    }
-
     public RobotContainer() {
+        // better solution:
+        // run fast until infeed tripped
+        // run slow until conveyor tripped
+        // run for like 0.5 more seconds and stop
         smartInfeedCommand = infeed.runInfeedMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
                 .repeatedly().until(conveyor.hasInfedSupplier())
                 .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
                         .repeatedly().withTimeout(0.1))
-                .andThen(shooter.spinMotorRightCommand(-0.4).repeatedly()
+                .andThen(shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
                         .raceWith(conveyor.runXRotations(-.5).withTimeout(0.25)
                                 .alongWith(infeed.runInfeedMotorCommand(0.))))
                 .andThen(shooter.spinMotorRightCommand(0.));
@@ -195,19 +257,50 @@ public class RobotContainer {
         configureBindings();
     }
 
+    // =========================================== //
+    /* Additional Commands, Getters, and Utilities */
+    // =========================================== //
+
+    /* Auton Command */
     public Command getAutonomousCommand() {
         return new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d()))
                 .alongWith(shooter.pivotZeroCommand()).andThen(autonChooser.getSelected());
     }
 
+    /* Zeroing Command */
+    public Command zeroCommand() {
+        return m_climber.zeroCommand().alongWith(shooter.pivotZeroCommand());
+    }
+
+    /* Asynchronous Zero */
+    public void zero() {
+        zeroCommand().schedule();
+    }
+
+    /* Joystick Scaling */
+    private double scaleDriverController(double controllerInput, SlewRateLimiter limiter, double baseSpeedPercent) {
+        return limiter.calculate(
+                controllerInput * (baseSpeedPercent
+                        + driverController.getRightTriggerAxis() * (1 - baseSpeedPercent)));
+    }
+
+    // ======= //
+    /* Logging */
+    // ======= //
     public void logValues() {
         drivetrain.logValues();
         conveyor.logValues();
         infeed.logValues();
         shooter.logValues();
         m_climber.logValues();
+        // m_fan.logValues();
     }
 
+    // ================ //
+    /* Vision Utilities */
+    // ================ //
+
+    /* Return Approx. 2d yaw */
     public double getBestYaw(int tagID) {
         Optional<Double> leftYaw = m_leftVision.getTagYaw(tagID);
         Optional<Double> rightYaw = m_rightVision.getTagYaw(tagID);
@@ -227,6 +320,7 @@ public class RobotContainer {
         }
     }
 
+    /* Return approx. 2d distance */
     public double getBestDistance(int tagID) {
         Optional<Double> leftDistance = m_leftVision.getTagDistance(tagID);
         Optional<Double> rightDistance = m_rightVision.getTagDistance(tagID);
@@ -246,6 +340,7 @@ public class RobotContainer {
         }
     }
 
+    /* Return approx. 3d pose */
     public Optional<EstimatedRobotPose> getBestPose() {
         Pose2d drivetrainPose = drivetrain.getState().Pose;
 
@@ -290,12 +385,13 @@ public class RobotContainer {
         return Optional.empty();
     }
 
+    /* Test Shooter Table */
     public void printSTVals() {
         Optional<EstimatedRobotPose> pose = getBestPose();
         if (pose.isEmpty())
             return;
 
-        Transform2d dist = pose.get().estimatedPose.toPose2d().minus(Constants.SPEAKER_TARGET);
+        Transform2d dist = pose.get().estimatedPose.toPose2d().minus(Constants.SPEAKER_DISTANCE_TARGET);
 
         ShooterTableEntry entryPicked = ShooterTable.calcShooterTableEntry(dist.getTranslation().getNorm());
 
@@ -303,8 +399,8 @@ public class RobotContainer {
         SmartDashboard.putNumberArray("Shooter Table recommended value",
                 new Double[] {
                         entryPicked.angle,
-                        entryPicked.leftSpeed,
-                        entryPicked.rightSpeed
+                        entryPicked.LeftSpeed,
+                        entryPicked.RightSpeed
                 });
     }
 }

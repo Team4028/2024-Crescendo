@@ -21,6 +21,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
  */
 public final class Constants {
     public static final Pose2d SPEAKER_TARGET = new Pose2d(1.37, 5.56, new Rotation2d(Math.PI));
+    public static final Pose2d SPEAKER_DISTANCE_TARGET = new Pose2d(0.2, 5.52, new Rotation2d(Math.PI));
     public static final Pose2d AMP_TARGET = new Pose2d(1.83, 7.27, new Rotation2d(Math.PI / 2.));
-
 }

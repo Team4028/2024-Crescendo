@@ -22,10 +22,6 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-        // var entry = ShooterTable.calcShooterTableEntry(2);
-        // SmartDashboard.putNumber("leftShooterSpeed", entry.leftSpeed);
-        // SmartDashboard.putNumber("rightShooterSpeed", entry.rightSpeed);
-
     }
 
     @Override
@@ -44,18 +40,17 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-        // DataLogManager.start();
 
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
         }
 
-        // m_robotContainer.shooter.pivotZeroCommand().schedule();
+        m_robotContainer.zero();
     }
 
     @Override
     public void autonomousPeriodic() {
-        // m_robotContainer.logDrivetrainValues();
+        m_robotContainer.logValues();
     }
 
     @Override
@@ -68,9 +63,8 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             m_autonomousCommand.cancel();
         }
-        // SignalLogger.start();
 
-        // m_robotContainer.shooter.pivotZeroCommand().schedule();
+        m_robotContainer.zero();
     }
 
     @Override

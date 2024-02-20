@@ -86,7 +86,7 @@ public class Climber extends SubsystemBase {
     }
 
     public Command runMotorCommand(double vBus) {
-        return startEnd(() -> runMotor(vBus), () -> runMotor(0));
+        return runOnce(() -> runMotor(vBus));
     }
 
     public Command zeroCommand() {
@@ -96,17 +96,12 @@ public class Climber extends SubsystemBase {
                 .andThen(runMotorCommand(-0.1).repeatedly()
                         .until(() -> m_zeroTimer.get() >= ZERO_TIMER_THRESHOLD
                                 && Math.abs(m_encoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
-                .andThen(runMotorCommand(0.).raceWith(
+                .andThen(runMotorCommand(0.),
                         Commands.runOnce(() -> m_zeroTimer.stop()),
-                        Commands.runOnce(() -> {
-                            m_encoder.setPosition(0.);
-                            System.out.println("bruh");
-                        })));
+                        Commands.runOnce(() -> m_encoder.setPosition(0.)));
     }
 
-    // TODO: velocity PID
     public void runToPosition(double position) {
-        System.out.println("hello " + position);
         m_pid.setReference(position, ControlType.kPosition);
     }
 

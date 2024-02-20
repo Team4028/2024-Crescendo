@@ -21,30 +21,30 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Infeed extends SubsystemBase {
-    private static Infeed instance;
     private final TimeOfFlight tofSensor;
-    private final CANSparkFlex infeedMotor;
-    private final RelativeEncoder infeedEncoder;
+    private final CANSparkFlex motor;
+    private final RelativeEncoder encoder;
 
     private final DataLog log;
-    private final DoubleLogEntry infeedMotorCurrent, infeedMotorVelocity;
+    private final DoubleLogEntry currentLog, velocityLog;
 
-    private final double RANGE_THRESH = 200;
+    private static final double RANGE_THRESHOLD = 200;
     private static final int CAN_ID = 18;
     private static final int TOF_CAN_ID = 1;
+    private static final int CURRENT_LIMIT = 60;
 
     /** Creates a new SensorMotor. */
-    private Infeed() {
-        infeedMotor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
-        infeedMotor.setInverted(true);
-        infeedMotor.setSmartCurrentLimit(60);
-        infeedMotor.setIdleMode(IdleMode.kBrake);
+    public Infeed() {
+        motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
+        motor.setInverted(true);
+        motor.setSmartCurrentLimit(CURRENT_LIMIT);
+        motor.setIdleMode(IdleMode.kBrake);
 
-        infeedEncoder = infeedMotor.getEncoder();
-        infeedEncoder.setMeasurementPeriod(16);
-        infeedEncoder.setAverageDepth(2);
+        encoder = motor.getEncoder();
+        encoder.setMeasurementPeriod(16);
+        encoder.setAverageDepth(2);
 
-        infeedMotor.burnFlash();
+        motor.burnFlash();
 
         tofSensor = new TimeOfFlight(TOF_CAN_ID);
 
@@ -52,12 +52,12 @@ public class Infeed extends SubsystemBase {
         tofSensor.setRangeOfInterest(4, 4, 11, 11);
 
         log = DataLogManager.getLog();
-        infeedMotorCurrent = new DoubleLogEntry(log, "Current");
-        infeedMotorVelocity = new DoubleLogEntry(log, "Velocity");
+        currentLog = new DoubleLogEntry(log, "/Infeed/Current");
+        velocityLog = new DoubleLogEntry(log, "/Infeed/Velocity");
     }
 
     public boolean hasGamePiece() {
-        return tofSensor.getRange() < RANGE_THRESH;
+        return tofSensor.getRange() < RANGE_THRESHOLD;
     }
 
     public BooleanSupplier hasGamePieceSupplier() {
@@ -65,7 +65,7 @@ public class Infeed extends SubsystemBase {
     }
 
     private void runInfeedMotor(double vBus) {
-        infeedMotor.set(vBus);
+        motor.set(vBus);
     }
 
     public Command runInfeedMotorCommand(double vBus) {
@@ -73,18 +73,12 @@ public class Infeed extends SubsystemBase {
     }
 
     public void logValues() {
-        infeedMotorCurrent.append(infeedMotor.getOutputCurrent());
-        infeedMotorVelocity.append(infeedEncoder.getVelocity());
+        currentLog.append(motor.getOutputCurrent());
+        velocityLog.append(encoder.getVelocity());
     }
 
     @Override
     public void periodic() {
         SmartDashboard.putNumber("Infeed Tof", tofSensor.getRange());
-    }
-
-    public static Infeed getInstance() {
-        if (instance == null)
-            instance = new Infeed();
-        return instance;
     }
 }

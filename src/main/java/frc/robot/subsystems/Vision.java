@@ -11,14 +11,9 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -29,7 +24,6 @@ public class Vision extends SubsystemBase {
     private final Transform3d m_offset;
 
     private PhotonPoseEstimator m_estimator;
-    private Field2d m_field = new Field2d();
 
     // TODO: check coordinate systems
     public static final Transform3d leftCameraToRobot = new Transform3d(Units.inchesToMeters(-10.),
@@ -101,11 +95,7 @@ public class Vision extends SubsystemBase {
     public Optional<EstimatedRobotPose> getCameraResult(Pose2d prevPose) {
         m_estimator.setReferencePose(prevPose);
         Optional<EstimatedRobotPose> pose = m_estimator.update();
-        if (pose.isPresent()) {
-            return pose;
-        } else {
-            return Optional.empty();
-        }
+        return pose;
     }
 
     public PhotonTrackedTarget getBestTarget() {
@@ -124,27 +114,5 @@ public class Vision extends SubsystemBase {
         }
 
         return null;
-    }
-
-    public void publishResults() {
-        PhotonTrackedTarget target = getBestTarget();
-        if (target == null)
-            return;
-
-        double yaw = target.getYaw();
-        double pitch = target.getPitch();
-        double Area = target.getArea();
-        double Skew = target.getSkew();
-
-        Transform3d threeDt = target.getBestCameraToTarget();
-        Transform2d pose = new Transform2d(new Translation2d(threeDt.getX(), threeDt.getY()), new Rotation2d());
-
-        SmartDashboard.putNumber(m_camera.getName() + " X distance", pose.getX());
-        SmartDashboard.putNumber(m_camera.getName() + " Y distance", pose.getY());
-        SmartDashboard.putNumber(m_camera.getName() + " yaw", yaw);
-        SmartDashboard.putNumber(m_camera.getName() + " pitch", pitch);
-        SmartDashboard.putNumber(m_camera.getName() + " area", Area);
-        SmartDashboard.putNumber(m_camera.getName() + " skew", Skew);
-        m_field.setRobotPose(getCameraResult(new Pose2d()).get().estimatedPose.toPose2d());
     }
 }

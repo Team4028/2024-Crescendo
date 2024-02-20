@@ -4,19 +4,25 @@ import java.util.ArrayList;
 
 public class ShooterTable {
     public static final class ShooterTableEntry {
+        public double Distance;
         public double angle;
-        public double leftSpeed;
-        public double rightSpeed;
-        public double distance;
+        public double LeftSpeed;
+        public double RightSpeed;
 
-        public ShooterTableEntry(double angle, double leftSpeed, double distance, double rightSpeed) {
+        /**
+         * Construct a shooter table entry.
+         * 
+         * @param distance   Distance from the target, in feet (?)
+         * @param angle      Angle of the shooter pivot, in rotations.
+         * @param leftSpeed  Speed of the left shooter motor, in RPM.
+         * @param rightSpeed Speed of the right shooter motor, in RPM.
+         */
+        public ShooterTableEntry(double distance, double angle, double leftSpeed, double rightSpeed) {
             this.angle = angle;
-            this.leftSpeed = leftSpeed;
-            this.rightSpeed = rightSpeed;
-            this.distance = distance;
-
+            this.LeftSpeed = leftSpeed;
+            this.RightSpeed = rightSpeed;
+            this.Distance = distance;
         }
-
     }
 
     private static ArrayList<ShooterTableEntry> table = new ArrayList<>();
@@ -24,11 +30,9 @@ public class ShooterTable {
     private static void fillInTable() {
         // put entries here
         // Distances must go from top to bottom: shortest to longest
-        table.add(new ShooterTableEntry(0, 6, 0, 3));
-        table.add(new ShooterTableEntry(0, 2, 1, 0));
-        table.add(new ShooterTableEntry(0, 5, 4, 2));
-        table.add(new ShooterTableEntry(0, 7, 5, 3));
-        table.add(new ShooterTableEntry(0, 5, 3, 6));
+        table.add(new ShooterTableEntry(4., 40., 1500., 1500.));
+        table.add(new ShooterTableEntry(9., 15., 2000., 2820.));
+        table.add(new ShooterTableEntry(19., 2, 2500, 3400.));
     }
 
     static {
@@ -41,25 +45,25 @@ public class ShooterTable {
 
         // loop thru all of the entrys of the shootertable
         for (ShooterTableEntry entry : table) {
-            if (entry.distance < distance
-                    && (Math.abs(distance - closestLower.distance) > Math.abs(distance - entry.distance))) {
+            if (entry.Distance < distance
+                    && (Math.abs(distance - closestLower.Distance) > Math.abs(distance - entry.Distance))) {
                 closestLower = entry;
-            } else if (entry.distance > distance
-                    && (Math.abs(closestHigher.distance - distance) > Math.abs(entry.distance - distance))) {
+            } else if (entry.Distance > distance
+                    && (Math.abs(closestHigher.Distance - distance) > Math.abs(entry.Distance - distance))) {
                 closestHigher = entry;
-            } else if (entry.distance == distance) {
+            } else if (entry.Distance == distance) {
                 closestHigher = entry;
                 closestLower = entry;
                 break;
             }
         }
 
-        double scaleFactor = (distance - closestLower.distance) / (closestHigher.distance - closestLower.distance);
+        double scaleFactor = (distance - closestLower.Distance) / (closestHigher.Distance - closestLower.Distance);
 
-        double calculatedLeftSpeed = scaleFactor * (closestHigher.leftSpeed - closestLower.leftSpeed)
-                + closestLower.leftSpeed;
-        double calculatedRightSpeed = scaleFactor * (closestHigher.rightSpeed - closestLower.rightSpeed)
-                + closestLower.rightSpeed;
+        double calculatedLeftSpeed = scaleFactor * (closestHigher.LeftSpeed - closestLower.LeftSpeed)
+                + closestLower.LeftSpeed;
+        double calculatedRightSpeed = scaleFactor * (closestHigher.RightSpeed - closestLower.RightSpeed)
+                + closestLower.RightSpeed;
 
         double calculatedAngle = scaleFactor * (closestHigher.angle - closestLower.angle) + closestLower.angle;
 

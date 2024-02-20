@@ -29,7 +29,7 @@ public class Conveyor extends SubsystemBase {
     private final TimeOfFlight tofSensor;
     private final SparkPIDController pid;
     private final DataLog log;
-    private final DoubleLogEntry current, vBus, position, velocity;
+    private final DoubleLogEntry currentLog, vbusLog, positionLog, velocityLog;
 
     private final static class PIDConstants {
         private static final double kP = 0.8;
@@ -37,8 +37,8 @@ public class Conveyor extends SubsystemBase {
         private static final double kD = 0.0;
     }
 
-    private static final double RANGE_THRESH = 100;
-    private static final double OTHER_RANGE_THRESH = 75;
+    private static final double RANGE_THRESHOLD = 100;
+    private static final double OTHER_RANGE_THRESHOLD = 75;
     private static final double TOLERANCE = 10;
 
     private static final int CAN_ID = 11;
@@ -69,19 +69,18 @@ public class Conveyor extends SubsystemBase {
 
         log = DataLogManager.getLog();
 
-        current = new DoubleLogEntry(log, "/Conveyor/Current");
-        vBus = new DoubleLogEntry(log, "/Conveyor/vBus");
-        position = new DoubleLogEntry(log, "/Conveyor/Position");
-        velocity = new DoubleLogEntry(log, "/Conveyor/Velocity");
-
+        currentLog = new DoubleLogEntry(log, "/Conveyor/Current");
+        vbusLog = new DoubleLogEntry(log, "/Conveyor/Vbus");
+        positionLog = new DoubleLogEntry(log, "/Conveyor/Position");
+        velocityLog = new DoubleLogEntry(log, "/Conveyor/Velocity");
     }
 
     public boolean getHasInfed() {
-        if (tofSensor.getRange() < OTHER_RANGE_THRESH) {
+        if (tofSensor.getRange() < OTHER_RANGE_THRESHOLD) {
             hasInfed = true;
         }
 
-        if (hasInfed && Math.abs(tofSensor.getRange() - RANGE_THRESH) <= TOLERANCE) {
+        if (hasInfed && Math.abs(tofSensor.getRange() - RANGE_THRESHOLD) <= TOLERANCE) {
             hasInfed = false;
             return true;
         }
@@ -94,7 +93,7 @@ public class Conveyor extends SubsystemBase {
     }
 
     public boolean hasGamePiece() {
-        return tofSensor.getRange() < RANGE_THRESH;
+        return tofSensor.getRange() < RANGE_THRESHOLD;
     }
 
     public Command runXRotations(double x) {
@@ -124,10 +123,10 @@ public class Conveyor extends SubsystemBase {
     }
 
     public void logValues() {
-        current.append(motor.getOutputCurrent());
-        vBus.append(motor.getAppliedOutput());
-        position.append(encoder.getPosition());
-        velocity.append(encoder.getVelocity());
+        currentLog.append(motor.getOutputCurrent());
+        vbusLog.append(motor.getAppliedOutput());
+        positionLog.append(encoder.getPosition());
+        velocityLog.append(encoder.getVelocity());
     }
 
     @Override
