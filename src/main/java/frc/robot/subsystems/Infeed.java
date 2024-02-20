@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
+
 import java.util.function.BooleanSupplier;
 
 import com.playingwithfusion.TimeOfFlight;
@@ -26,26 +27,33 @@ public class Infeed extends SubsystemBase {
     private final RelativeEncoder infeedEncoder;
 
     private final DataLog log;
-    public DoubleLogEntry infeedMotorCurrent, infeedMotorVelocity;
+    private final DoubleLogEntry infeedMotorCurrent, infeedMotorVelocity;
 
     private final double RANGE_THRESH = 200;
+    private static final int CAN_ID = 18;
+    private static final int TOF_CAN_ID = 1;
 
     /** Creates a new SensorMotor. */
     private Infeed() {
-        log = DataLogManager.getLog();
-        configureLogs();
-        tofSensor = new TimeOfFlight(1);
-        infeedMotor = new CANSparkFlex(18, MotorType.kBrushless);
-        infeedEncoder = infeedMotor.getEncoder();
+        infeedMotor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
         infeedMotor.setInverted(true);
         infeedMotor.setSmartCurrentLimit(60);
         infeedMotor.setIdleMode(IdleMode.kBrake);
 
+        infeedEncoder = infeedMotor.getEncoder();
         infeedEncoder.setMeasurementPeriod(16);
         infeedEncoder.setAverageDepth(2);
 
+        infeedMotor.burnFlash();
+
+        tofSensor = new TimeOfFlight(TOF_CAN_ID);
+
         tofSensor.setRangingMode(RangingMode.Short, 24.0);
         tofSensor.setRangeOfInterest(4, 4, 11, 11);
+
+        log = DataLogManager.getLog();
+        infeedMotorCurrent = new DoubleLogEntry(log, "Current");
+        infeedMotorVelocity = new DoubleLogEntry(log, "Velocity");
     }
 
     public boolean hasGamePiece() {
@@ -62,11 +70,6 @@ public class Infeed extends SubsystemBase {
 
     public Command runInfeedMotorCommand(double vBus) {
         return runOnce(() -> runInfeedMotor(vBus));
-    }
-
-    private void configureLogs() {
-        infeedMotorCurrent = new DoubleLogEntry(log, "Current");
-        infeedMotorVelocity = new DoubleLogEntry(log, "Velocity");
     }
 
     public void logValues() {

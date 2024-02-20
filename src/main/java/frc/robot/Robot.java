@@ -70,12 +70,12 @@ public class Robot extends TimedRobot {
         }
         // SignalLogger.start();
 
-        m_robotContainer.shooter.pivotZeroCommand().schedule();
+        // m_robotContainer.shooter.pivotZeroCommand().schedule();
     }
 
     @Override
     public void teleopPeriodic() {
-        m_robotContainer.logDrivetrainValues();
+        m_robotContainer.logValues();
     }
 
     @Override

@@ -28,9 +28,6 @@ import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
-    private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
-    private double MaxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
-
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final CommandXboxController driverController = new CommandXboxController(0);
     private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
@@ -47,11 +44,23 @@ public class RobotContainer {
     private final SlewRateLimiter thetaLimiter = new SlewRateLimiter(4.);
     private final SlewRateLimiter xLimeAquireLimiter = new SlewRateLimiter(4.);
 
+    private static final double MAX_SPEED = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
+    private static final double MAX_ANGULAR_SPEED = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
+    private static final double BASE_SPEED = 0.25;
+
+    // VBUS & OTHER MAGIC #'s
+    private static final double CLIMBER_VBUS = 0.7;
+    private static final double INFEED_VBUS = 0.8;
+    private static final double SLOW_INFEED_VBUS = 0.5;
+
+    private static final double PIVOT_VBUS = 0.3;
+    private static final double SLOW_CONVEYOR_VBUS = 0.5;
+
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+            .withDeadband(MAX_SPEED * 0.1).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                      // driving in open loop
-    private final Telemetry logger = new Telemetry(MaxSpeed);
+    private final Telemetry logger = new Telemetry(MAX_SPEED);
 
     private void initAutonChooser() {
         autonChooser = AutoBuilder.buildAutoChooser();
@@ -62,10 +71,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("startShooter",
                 shooter.setSlot(1).andThen(() -> shooter.runPivotToPosition(shooter.getPivotPosition()))
                         .andThen(shooter.runVelocityCommand()));
-        NamedCommands.registerCommand("4pinfeed", infeed.runInfeedMotorCommand(0.8)
+        NamedCommands.registerCommand("4pinfeed", infeed.runInfeedMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(0.85)).repeatedly());// .withTimeout(1.5));
         NamedCommands.registerCommand("farShot", Commands.runOnce(() -> shooter.runPivotToPosition(14.25)));
-        // NamedCommands.registerCommand("shoot", feeder.runXRotations(10));
     }
 
     private void configureBindings() {
@@ -73,26 +81,27 @@ public class RobotContainer {
                 drivetrain.applyRequest(() -> drive
                         .withVelocityX(scaleDriverController(-driverController.getLeftY(),
                                 xLimiter,
-                                .25) * MaxSpeed)
+                                BASE_SPEED) * MAX_SPEED)
                         .withVelocityY(scaleDriverController(-driverController.getLeftX(),
                                 yLimiter,
-                                .25) * MaxSpeed)
+                                BASE_SPEED) * MAX_SPEED)
                         .withRotationalRate(
                                 scaleDriverController(-driverController.getRightX(),
-                                        thetaLimiter, .25) *
-                                        MaxSpeed)));
+                                        thetaLimiter, BASE_SPEED) *
+                                        MAX_SPEED)));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runInfeedMotorCommand(0.));
 
         driverController.leftTrigger().onTrue(
-                infeed.runInfeedMotorCommand(.8).alongWith(
-                        conveyor.runMotorCommand(0.5)).repeatedly())
+                infeed.runInfeedMotorCommand(INFEED_VBUS).alongWith(
+                        conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS)).repeatedly())
                 .onFalse(infeed.runInfeedMotorCommand(0.).alongWith(
                         conveyor.runMotorCommand(0.)));
 
-        driverController.a().onTrue(conveyor.runXRotations(10).alongWith(infeed.runInfeedMotorCommand(0.5)))
-                .onFalse(infeed.runInfeedMotorCommand(0.5));
+        driverController.a()
+                .onTrue(conveyor.runXRotations(10).alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
+                .onFalse(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS));
 
         driverController.b().toggleOnTrue(smartInfeedCommand);
 
@@ -103,18 +112,26 @@ public class RobotContainer {
         driverController.x().and(driverController.povUp())
                 .onTrue(shooter.cycleUpCommand());
 
-        driverController.y().onTrue(shooter.pivotZeroCommand());
+        // driverController.y().and(driverController.povCenter()).onTrue(shooter.pivotZeroCommand());
+        driverController.y().and(driverController.povCenter()).onTrue(m_climber.zeroCommand());
+        driverController.y().and(driverController.povDown()).whileTrue(m_climber.runMotorCommand(-CLIMBER_VBUS));
+        driverController.y().and(driverController.povUp()).whileTrue(m_climber.runMotorCommand(CLIMBER_VBUS));
+        driverController.y().and(driverController.povRight())
+                .onTrue(m_climber.runToPositionCommand(Climber.ClimberPositions.HOME));
+        driverController.y().and(driverController.povLeft())
+                .onTrue(m_climber.runToPositionCommand(Climber.ClimberPositions.READY));
 
         // reset the field-centric heading on start
         driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
 
-        driverController.rightBumper().onTrue(shooter.runPivotCommand(0.3))
+        driverController.rightBumper().onTrue(shooter.runPivotCommand(PIVOT_VBUS))
                 .onFalse(shooter.runPivotCommand(0.0));
-        driverController.leftBumper().onTrue(shooter.runPivotCommand(-0.3))
+        driverController.leftBumper().onTrue(shooter.runPivotCommand(-PIVOT_VBUS))
                 .onFalse(shooter.runPivotCommand(0.0));
 
-        driverController.povRight()
-                .onTrue(shooter.run(() -> shooter.runPivotToPosition(shooter.getPivotPosition())));
+        // driverController.povRight()
+        // .onTrue(shooter.run(() ->
+        // shooter.runPivotToPosition(shooter.getPivotPosition())));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -130,7 +147,8 @@ public class RobotContainer {
     }
 
     public RobotContainer() {
-        smartInfeedCommand = infeed.runInfeedMotorCommand(0.8).alongWith(conveyor.runMotorCommand(0.5))
+        smartInfeedCommand = infeed.runInfeedMotorCommand(INFEED_VBUS)
+                .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
                 .repeatedly().until(conveyor.hasInfedSupplier())
                 .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
                         .repeatedly().withTimeout(0.1))
@@ -151,9 +169,11 @@ public class RobotContainer {
                 .alongWith(shooter.pivotZeroCommand()).andThen(autonChooser.getSelected());
     }
 
-    public void logDrivetrainValues() {
+    public void logValues() {
         drivetrain.logValues();
         conveyor.logValues();
         infeed.logValues();
+        shooter.logValues();
+        m_climber.logValues();
     }
 }
