@@ -7,6 +7,8 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 
@@ -31,6 +33,24 @@ public class Climber extends SubsystemBase {
 
         encoderA = climberMotorA.getEncoder();
         encoderB = climberMotorB.getEncoder();
+        controllerA = climberMotorA.getPIDController();
+        controllerB = climberMotorB.getPIDController();
+
+        controllerA.setP(0);
+        controllerA.setI(0);
+        controllerA.setD(0);
+
+        controllerB.setP(0);
+        controllerB.setI(0);
+        controllerB.setD(0);
+
+    }
+
+    private void spinClimberMotorA(double vBus) {
+        climberMotorA.set(vBus);
+    }>>>>>>>
+
+    fe6a770 (Climber Pid additions commit)
 
         log = DataLogManager.getLog();
         aVBus = new DoubleLogEntry(log, "A/VBus");
@@ -83,5 +103,34 @@ public class Climber extends SubsystemBase {
         // This method will be called once per scheduler run
         SmartDashboard.putNumber("Climber Motor A Position", encoderA.getPosition());
         SmartDashboard.putNumber("Climber Motor B Position", encoderB.getPosition());
+    }=======
+
+    public Command climberRunToPositionCommand20() {
+        return run(() -> climberRunToPosition(20));
     }
+
+    public void climberRunToPosition(double positionInInches) {
+        controllerA.setReference(inchesToNativeUnits(positionInInches), ControlType.kPosition);
+    }
+
+    // May need these two for setting positions, just keep them for now
+    // Native units are inches
+    private static int inchesToNativeUnits(double positionInInches) {
+        int nativeUnits = (int) (positionInInches * NATIVE_UNITS_PER_INCH_CONVERSION);
+        return nativeUnits;
+    }
+
+    private static double nativeUnitsToInches(double nativeUnitsMeasure) {
+        double positionInInches = nativeUnitsMeasure / NATIVE_UNITS_PER_INCH_CONVERSION;
+        return positionInInches;
+    }
+
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+    SmartDashboard.putNumber("Climber Motor A Position", encoderA.getPosition());
+    SmartDashboard.putNumber("Climber Motor B Position", encoderB.getPosition());
+  }>>>>>>>
+
+    fe6a770 (Climber Pid additions commit)
 }
