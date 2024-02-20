@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import java.util.Optional;
+
+import org.photonvision.EstimatedRobotPose;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
@@ -12,8 +16,12 @@ import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,8 +32,12 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
+// import frc.robot.subsystems.Fan;
 import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Vision;
+import frc.robot.utils.ShooterTable;
+import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
 public class RobotContainer {
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -35,6 +47,9 @@ public class RobotContainer {
     public final Shooter shooter = new Shooter();
     private final Conveyor conveyor = new Conveyor();
     private final Climber m_climber = new Climber();
+
+    private final Vision m_rightVision = new Vision("Right_AprilTag_Camera", Vision.rightCameraToRobot);
+    private final Vision m_leftVision = new Vision("Left_AprilTag_Camera", Vision.leftCameraToRobot);
 
     private final Command smartInfeedCommand;
     private SendableChooser<Command> autonChooser;
@@ -55,6 +70,7 @@ public class RobotContainer {
 
     private static final double PIVOT_VBUS = 0.3;
     private static final double SLOW_CONVEYOR_VBUS = 0.5;
+    private static final double FAST_CONVEYOR_VBUS = 0.85;
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MAX_SPEED * 0.1).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.1) // Add a 10% deadband
@@ -72,7 +88,7 @@ public class RobotContainer {
                 shooter.setSlotComand(1).andThen(() -> shooter.runPivotToPosition(shooter.getPivotPosition()))
                         .andThen(shooter.runVelocityCommand()));
         NamedCommands.registerCommand("4pinfeed", infeed.runInfeedMotorCommand(INFEED_VBUS)
-                .alongWith(conveyor.runMotorCommand(0.85)).repeatedly());// .withTimeout(1.5));
+                .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
         NamedCommands.registerCommand("farShot", Commands.runOnce(() -> shooter.runPivotToPosition(14.25)));
     }
 
@@ -123,6 +139,15 @@ public class RobotContainer {
 
         // reset the field-centric heading on start
         driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
+
+        // VISION
+        driverController.back().and(driverController.povCenter())
+                .onTrue(drivetrain.addMeasurementCommand(() -> getBestPose()));
+        driverController.back().and(driverController.povDown()).onTrue(Commands.runOnce(() -> {
+            var pose = getBestPose();
+            if (pose.isPresent())
+                drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
+        }));
 
         driverController.rightBumper().onTrue(shooter.runPivotCommand(PIVOT_VBUS))
                 .onFalse(shooter.runPivotCommand(0.0));
@@ -175,5 +200,105 @@ public class RobotContainer {
         infeed.logValues();
         shooter.logValues();
         m_climber.logValues();
+    }
+
+    public double getBestYaw(int tagID) {
+        Optional<Double> leftYaw = m_leftVision.getTagYaw(tagID);
+        Optional<Double> rightYaw = m_rightVision.getTagYaw(tagID);
+
+        int numYaws = 0;
+        numYaws += leftYaw.isPresent() ? 1 : 0;
+        numYaws += rightYaw.isPresent() ? 1 : 0;
+
+        switch (numYaws) {
+            case 1:
+                return (leftYaw.isPresent() ? leftYaw : rightYaw).get();
+            case 2:
+                return (leftYaw.get() + rightYaw.get()) / 2.;
+            case 0:
+            default:
+                return 0.;
+        }
+    }
+
+    public double getBestDistance(int tagID) {
+        Optional<Double> leftDistance = m_leftVision.getTagDistance(tagID);
+        Optional<Double> rightDistance = m_rightVision.getTagDistance(tagID);
+
+        int numDistances = 0;
+        numDistances += leftDistance.isPresent() ? 1 : 0;
+        numDistances += rightDistance.isPresent() ? 1 : 0;
+
+        switch (numDistances) {
+            case 1:
+                return (leftDistance.isPresent() ? leftDistance : rightDistance).get();
+            case 2:
+                return (leftDistance.get() + rightDistance.get()) / 2.;
+            case 0:
+            default:
+                return 0.;
+        }
+    }
+
+    public Optional<EstimatedRobotPose> getBestPose() {
+        Pose2d drivetrainPose = drivetrain.getState().Pose;
+
+        Optional<EstimatedRobotPose> front = m_rightVision.getCameraResult(drivetrainPose);
+        Optional<EstimatedRobotPose> back = m_leftVision.getCameraResult(drivetrainPose);
+
+        int numPoses = 0;
+
+        numPoses += front.isPresent() ? 1 : 0;
+        numPoses += back.isPresent() ? 1 : 0;
+
+        Optional<Pose2d> pose = Optional.empty();
+        SmartDashboard.putNumber("nuMPoses", numPoses);
+
+        if (numPoses == 1) {
+            pose = Optional
+                    .of(new Pose2d((front.isEmpty() ? back : front).get().estimatedPose.toPose2d().getTranslation(),
+                            drivetrainPose.getRotation()));
+        } else if (numPoses == 2) {
+            // average the poses
+            Pose3d frontP = front.get().estimatedPose;
+            Pose3d backP = back.get().estimatedPose;
+
+            Translation3d frontT = frontP.getTranslation();
+            Translation3d backT = backP.getTranslation();
+
+            Pose3d dPose = new Pose3d(drivetrainPose);
+            Rotation3d bruh = (dPose.getRotation());
+
+            pose = Optional.of(
+                    new Pose3d(frontT.plus(backT),
+                            bruh.times(2.)).toPose2d().div(2.));
+        }
+
+        if (pose.isPresent()) {
+            return Optional.of(new EstimatedRobotPose(
+                    new Pose3d(pose.get()),
+                    (front.isEmpty() ? back : front).get().timestampSeconds,
+                    null, null));
+        }
+
+        return Optional.empty();
+    }
+
+    public void printSTVals() {
+        Optional<EstimatedRobotPose> pose = getBestPose();
+        if (pose.isEmpty())
+            return;
+
+        Transform2d dist = pose.get().estimatedPose.toPose2d().minus(Constants.SPEAKER_TARGET);
+
+        ShooterTableEntry entryPicked = ShooterTable.calcShooterTableEntry(dist.getTranslation().getNorm());
+
+        SmartDashboard.putNumber("Distance", dist.getTranslation().getNorm());
+        SmartDashboard.putNumberArray("Shooter Table recommended value",
+                new Double[] {
+                        entryPicked.angle,
+                        entryPicked.leftSpeed,
+                        entryPicked.rightSpeed
+                });
     }
 }

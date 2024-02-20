@@ -41,7 +41,7 @@ public class Shooter extends SubsystemBase {
 
     private final Timer zeroTimer;
 
-    private final double ZERO_TIMER_THRESHOLD = 0.06; // 3 scans
+    private final double ZERO_TIMER_THRESHOLD = 0.14; // 7 scans
     private final double ZERO_VELOCITY_THRESHOLD = 0.2;
 
     private static final int RIGHT_CAN_ID = 9;
@@ -76,11 +76,11 @@ public class Shooter extends SubsystemBase {
     }
 
     private final class PIDConstants {
-        private static final double MAX_LEFT = 2500;
-        private static final double MAX_RIGHT = 3400;
+        public static final double MAX_LEFT = 2500;
+        public static final double MAX_RIGHT = 3400;
 
         private static class Left {
-            private static double kFF = 0.00019;
+            public static double kFF = 0.00019;
 
             private static final PIDVFConstants Trap = new PIDVFConstants(0.0002, kFF, 1300);
             private static final PIDVFConstants Long = new PIDVFConstants(0.001, kFF, MAX_LEFT);
@@ -89,7 +89,7 @@ public class Shooter extends SubsystemBase {
         }
 
         private static class Right {
-            private static double kFF = 0.00022;
+            public static double kFF = 0.00022;
 
             private static final PIDVFConstants Trap = new PIDVFConstants(0.001, kFF, 1300);
             private static final PIDVFConstants Long = new PIDVFConstants(0.002, kFF, MAX_RIGHT);
@@ -98,7 +98,7 @@ public class Shooter extends SubsystemBase {
         }
 
         private static class Pivot {
-            private static double kFF = 0.0;
+            public static double kFF = 0.0;
 
             private static final PIDVFConstants PID = new PIDVFConstants(0.16, kFF, 0.);
 
@@ -112,8 +112,8 @@ public class Shooter extends SubsystemBase {
                     Slots.SHORT, SHORT_POSITION,
                     Slots.TRAP, SHORT_POSITION);
 
-            private static double MIN_VAL = 0.;
-            private static double MAX_VAL = 53.0;
+            public static double MIN_VAL = 0.;
+            public static double MAX_VAL = 53.0;
         }
     }
 
