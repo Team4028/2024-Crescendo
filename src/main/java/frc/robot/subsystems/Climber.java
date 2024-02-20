@@ -10,42 +10,78 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Climber extends SubsystemBase {
-  /** Creates a new Climber. */
-  CANSparkMax climberMotorA, climberMotorB;
-  RelativeEncoder encoderA, encoderB;
+    /** Creates a new Climber. */
+    private static Climber instance;
+    CANSparkMax climberMotorA, climberMotorB;
+    RelativeEncoder encoderA, encoderB;
+    DataLog log;
+    DoubleLogEntry aVBus, bVBus, aCurrent, bCurrent, aPos, bPos, aVel, bVel;
 
-  public Climber() {
-    climberMotorA = new CANSparkMax(0, MotorType.kBrushless);
-    climberMotorB = new CANSparkMax(1, MotorType.kBrushless);
+    public Climber() {
+        climberMotorA = new CANSparkMax(0, MotorType.kBrushless);
+        climberMotorB = new CANSparkMax(1, MotorType.kBrushless);
 
-    encoderA = climberMotorA.getEncoder();
-    encoderB = climberMotorB.getEncoder();
-  }
-  private void spinClimberMotorA(double vBus) {
-    climberMotorA.set(vBus);
-  }
+        encoderA = climberMotorA.getEncoder();
+        encoderB = climberMotorB.getEncoder();
 
-  private void spinClimberMotorB(double vBus) {
-    climberMotorB.set(vBus);
-  }
+        log = DataLogManager.getLog();
+        aVBus = new DoubleLogEntry(log, "A/VBus");
+        bVBus = new DoubleLogEntry(log, "B/VBus");
+        aCurrent = new DoubleLogEntry(log, "A/Current");
+        bCurrent = new DoubleLogEntry(log, "B/Current");
+        aPos = new DoubleLogEntry(log, "A/Pos");
+        bPos = new DoubleLogEntry(log, "B/Pos");
+        aVel = new DoubleLogEntry(log, "A/Vel");
+        bVel = new DoubleLogEntry(log, "B/Vel");
 
-  public Command spinClimberMotorACommand(double vBus) {
-    return runOnce(() -> spinClimberMotorA(vBus));
-  }
+    }
 
-  public Command spinClimberMotorBCommand(double vBus) {
-    return runOnce(() -> spinClimberMotorB(vBus));
-  }
+    private void spinClimberMotorA(double vBus) {
+        climberMotorA.set(vBus);
+    }
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-    SmartDashboard.putNumber("Climber Motor A Position", encoderA.getPosition());
-    SmartDashboard.putNumber("Climber Motor B Position", encoderB.getPosition());
-  }
+    private void spinClimberMotorB(double vBus) {
+        climberMotorB.set(vBus);
+    }
+
+    public Command spinClimberMotorACommand(double vBus) {
+        return runOnce(() -> spinClimberMotorA(vBus));
+    }
+
+    public Command spinClimberMotorBCommand(double vBus) {
+        return runOnce(() -> spinClimberMotorB(vBus));
+    }
+
+    public void logMotorValues() {
+        aVBus.append(climberMotorA.get());
+        bVBus.append(climberMotorB.get());
+        aCurrent.append(climberMotorA.getOutputCurrent());
+        bCurrent.append(climberMotorB.getOutputCurrent());
+        aPos.append(encoderA.getPosition());
+        bPos.append(encoderB.getPosition());
+        aVel.append(encoderA.getVelocity());
+        bVel.append(encoderB.getVelocity());
+    }
+
+    public static Climber getInstance() {
+        if (instance == null) {
+            instance = new Climber();
+        }
+        return instance;
+    }
+
+    @Override
+    public void periodic() {
+        // This method will be called once per scheduler run
+        SmartDashboard.putNumber("Climber Motor A Position", encoderA.getPosition());
+        SmartDashboard.putNumber("Climber Motor B Position", encoderB.getPosition());
+    }
 }
