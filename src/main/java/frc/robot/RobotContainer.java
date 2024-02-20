@@ -47,6 +47,7 @@ public class RobotContainer {
     public final Shooter shooter = new Shooter();
     private final Conveyor conveyor = new Conveyor();
     private final Climber m_climber = new Climber();
+    // private final Fan m_fan = new Fan();
 
     private final Vision m_rightVision = new Vision("Right_AprilTag_Camera", Vision.rightCameraToRobot);
     private final Vision m_leftVision = new Vision("Left_AprilTag_Camera", Vision.leftCameraToRobot);
@@ -72,6 +73,9 @@ public class RobotContainer {
     private static final double SLOW_CONVEYOR_VBUS = 0.5;
     private static final double FAST_CONVEYOR_VBUS = 0.85;
 
+    private static final double FAN_VBUS = 1.0;
+
+    // SWERVE
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MAX_SPEED * 0.1).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
@@ -129,6 +133,8 @@ public class RobotContainer {
                 .onTrue(shooter.cycleUpCommand());
 
         // driverController.y().and(driverController.povCenter()).onTrue(shooter.pivotZeroCommand());
+        // driverController.y().toggleOnTrue(m_fan.runMotorCommand(1.0));
+
         driverController.y().and(driverController.povCenter()).onTrue(m_climber.zeroCommand());
         driverController.y().and(driverController.povDown()).whileTrue(m_climber.runMotorCommand(-CLIMBER_VBUS));
         driverController.y().and(driverController.povUp()).whileTrue(m_climber.runMotorCommand(CLIMBER_VBUS));
