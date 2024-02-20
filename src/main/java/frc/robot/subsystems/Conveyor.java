@@ -37,26 +37,22 @@ public class Conveyor extends SubsystemBase {
         private static final double kD = 0.0;
     }
 
-    private final double RANGE_THRESH = 100;
-    private final double OTHER_RANGE_THRESH = 75;
-    private final double TOLERANCE = 10;
-    private boolean hasInfed = false;
+    private static final double RANGE_THRESH = 100;
+    private static final double OTHER_RANGE_THRESH = 75;
+    private static final double TOLERANCE = 10;
 
+    private static final int CAN_ID = 11;
+    private static final int TOF_CAN_ID = 21;
+
+    private boolean hasInfed = false;
     private double target;
     private double setPos = 0;
 
     public Conveyor() {
-        motor = new CANSparkFlex(11, MotorType.kBrushless);
+        motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
         motor.setIdleMode(IdleMode.kCoast);
         motor.setClosedLoopRampRate(.1);
         encoder = motor.getEncoder();
-        tofSensor = new TimeOfFlight(21);
-        log = DataLogManager.getLog();
-
-        current = new DoubleLogEntry(log, "/Conveyor/Current");
-        vBus = new DoubleLogEntry(log, "/Conveyor/vBus");
-        position = new DoubleLogEntry(log, "/Conveyor/Position");
-        velocity = new DoubleLogEntry(log, "/Conveyor/Velocity");
 
         pid = motor.getPIDController();
         pid.setP(PIDConstants.kP);
@@ -65,8 +61,19 @@ public class Conveyor extends SubsystemBase {
         pid.setIZone(0);
         pid.setOutputRange(-.3, .3);
 
+        motor.burnFlash();
+
+        tofSensor = new TimeOfFlight(TOF_CAN_ID);
         tofSensor.setRangingMode(RangingMode.Short, 24.0);
         tofSensor.setRangeOfInterest(4, 4, 11, 11);
+
+        log = DataLogManager.getLog();
+
+        current = new DoubleLogEntry(log, "/Conveyor/Current");
+        vBus = new DoubleLogEntry(log, "/Conveyor/vBus");
+        position = new DoubleLogEntry(log, "/Conveyor/Position");
+        velocity = new DoubleLogEntry(log, "/Conveyor/Velocity");
+
     }
 
     public boolean getHasInfed() {

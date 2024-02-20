@@ -30,8 +30,8 @@ public class Shooter extends SubsystemBase {
     private RelativeEncoder rightEncoder, leftEncoder, pivotEncoder;
     private SparkPIDController rightPid, leftPid, pivotPid;
 
-    private DataLog log;
-    private DoubleLogEntry rightCurrent, leftCurrent,
+    private final DataLog log;
+    private final DoubleLogEntry rightCurrent, leftCurrent,
             rightVelocity, leftVelocity, leftVoltage,
             rightVoltage, pivotCurrent, pivotVelocity, pivotVoltage;
 
@@ -43,6 +43,10 @@ public class Shooter extends SubsystemBase {
 
     private final double ZERO_TIMER_THRESHOLD = 0.06; // 3 scans
     private final double ZERO_VELOCITY_THRESHOLD = 0.2;
+
+    private static final int RIGHT_CAN_ID = 9;
+    private static final int LEFT_CAN_ID = 10;
+    private static final int PIVOT_CAN_ID = 13;
 
     private final class Slots {
         private static final int TRAP = 3;
@@ -114,14 +118,11 @@ public class Shooter extends SubsystemBase {
     }
 
     public Shooter() {
-        log = DataLogManager.getLog();
-        initLogs();
-
         // ==================================
         // SHOOTER WHEELS
         // ==================================
-        rightMotor = new CANSparkFlex(9, MotorType.kBrushless);
-        leftMotor = new CANSparkFlex(10, MotorType.kBrushless);
+        rightMotor = new CANSparkFlex(RIGHT_CAN_ID, MotorType.kBrushless);
+        leftMotor = new CANSparkFlex(LEFT_CAN_ID, MotorType.kBrushless);
 
         rightMotor.setInverted(false);
 
@@ -180,10 +181,13 @@ public class Shooter extends SubsystemBase {
 
         longMode();
 
+        leftMotor.burnFlash();
+        rightMotor.burnFlash();
+
         // ==================================
         // PIVOT
         // ==================================
-        pivotMotor = new CANSparkMax(13, MotorType.kBrushless);
+        pivotMotor = new CANSparkMax(PIVOT_CAN_ID, MotorType.kBrushless);
 
         pivotMotor.setInverted(true);
         pivotMotor.setIdleMode(IdleMode.kBrake);
@@ -196,10 +200,27 @@ public class Shooter extends SubsystemBase {
         // ==================================
         configPid(pivotPid, 0, PIDConstants.Pivot.PID);
 
+        pivotMotor.burnFlash();
+
         // ==================================
         // TIMER
         // ==================================
         zeroTimer = new Timer();
+
+        // ==================================
+        // LOGS
+        // ==================================
+        log = DataLogManager.getLog();
+        rightCurrent = new DoubleLogEntry(log, "/Shooter/right/Current");
+        leftCurrent = new DoubleLogEntry(log, "/Shooter/left/Current");
+        rightVelocity = new DoubleLogEntry(log, "/Shooter/right/Velocity");
+        leftVelocity = new DoubleLogEntry(log, "/Shooter/left/Velocity");
+        rightVoltage = new DoubleLogEntry(log, "/Shooter/right/Voltage");
+        leftVoltage = new DoubleLogEntry(log, "/Shooter/left/Voltage");
+        pivotCurrent = new DoubleLogEntry(log, "/Pivot/Current");
+        pivotVoltage = new DoubleLogEntry(log, "/Pivot/Voltage");
+        pivotVelocity = new DoubleLogEntry(log, "/Pivot/Velocity");
+
     }
 
     // ==================================
@@ -368,18 +389,6 @@ public class Shooter extends SubsystemBase {
 
     public Command spinMotorLeftCommand(double vBus) {
         return runOnce(() -> spinMotorLeft(vBus));
-    }
-
-    private void initLogs() {
-        rightCurrent = new DoubleLogEntry(log, "/Shooter/right/Current");
-        leftCurrent = new DoubleLogEntry(log, "/Shooter/left/Current");
-        rightVelocity = new DoubleLogEntry(log, "/Shooter/right/Velocity");
-        leftVelocity = new DoubleLogEntry(log, "/Shooter/left/Velocity");
-        rightVoltage = new DoubleLogEntry(log, "/Shooter/right/Voltage");
-        leftVoltage = new DoubleLogEntry(log, "/Shooter/left/Voltage");
-        pivotCurrent = new DoubleLogEntry(log, "/Pivot/Current");
-        pivotVoltage = new DoubleLogEntry(log, "/Pivot/Voltage");
-        pivotVelocity = new DoubleLogEntry(log, "/Pivot/Velocity");
     }
 
     public void logValues() {

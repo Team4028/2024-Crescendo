@@ -31,11 +31,11 @@ public class Vision extends SubsystemBase {
     private final PhotonPoseEstimator m_estimator;
     private Field2d m_field = new Field2d();
 
-    public static final Transform3d leftCameraToRobot = new Transform3d(Units.inchesToMeters(10.5),
+    public static final Transform3d LEFT_ROBOT_TO_CAM = new Transform3d(Units.inchesToMeters(10.5),
             Units.inchesToMeters(10.0), Units.inchesToMeters(10.0),
             new Rotation3d(0., Units.degreesToRadians(28.125), Units.degreesToRadians(-22.)));
 
-    public static final Transform3d rightCameraToRobot = new Transform3d(Units.inchesToMeters(10.5),
+    public static final Transform3d RIGHT_ROBOT_TO_CAM = new Transform3d(Units.inchesToMeters(10.5),
             Units.inchesToMeters(-10.0), Units.inchesToMeters(10.0),
             new Rotation3d(0., Units.degreesToRadians(28.125),
                     Units.degreesToRadians(22.)));
@@ -44,17 +44,17 @@ public class Vision extends SubsystemBase {
      * Subsystem that handles a PhotonVision attached camera.
      * 
      * @param cameraName    The name of the camera, in the UI.
-     * @param cameraToRobot The transformation from the camera to the center of the
-     *                      robot.
+     * @param robotToCamera The transformation from the center of the robot to the
+     *                      center of the camera lens.
      */
-    public Vision(String cameraName, Transform3d cameraToRobot) throws IOException {
+    public Vision(String cameraName, Transform3d robotToCamera) throws IOException {
         m_camera = new PhotonCamera(cameraName);
-        m_offset = cameraToRobot;
+        m_offset = robotToCamera;
 
         m_layout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
 
         m_estimator = new PhotonPoseEstimator(m_layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, m_camera,
-                cameraToRobot);
+                robotToCamera);
         m_estimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
     }
 
