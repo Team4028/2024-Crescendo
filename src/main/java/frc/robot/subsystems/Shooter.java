@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.Map;
+
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -49,6 +51,26 @@ public class Shooter extends SubsystemBase {
         private static final int LONG = 0;
     }
 
+    private static class PIDVFConstants {
+        public final double kP;
+        public final double kI;
+        public final double kD;
+        public final double kFF;
+        public final double Velocity;
+
+        public PIDVFConstants(double kP, double kI, double kD, double kFF, double velocity) {
+            this.kP = kP;
+            this.kI = kI;
+            this.kD = kD;
+            this.kFF = kFF;
+            this.Velocity = velocity;
+        }
+
+        public PIDVFConstants(double kP, double kFF, double velocity) {
+            this(kP, 0., 0., kFF, velocity);
+        }
+    }
+
     private final class PIDConstants {
         private static final double MAX_LEFT = 2500;
         private static final double MAX_RIGHT = 3400;
@@ -56,80 +78,35 @@ public class Shooter extends SubsystemBase {
         private static class Left {
             private static double kFF = 0.00019;
 
-            private final class Trap {
-                private static double velocity = 1300;
-                private static double kP = 0.0002;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
-            }
-
-            private final class Long {
-                private static double velocity = MAX_LEFT * 1.0;;
-                private static double kP = 0.001;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
-            }
-
-            private final class Medium {
-                private static double velocity = MAX_LEFT * 0.8;
-                private static double kP = 0.001;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
-            }
-
-            private final class Short {
-                private static double velocity = 1000;
-                private static double kP = 0.000125;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
-            }
+            private static final PIDVFConstants Trap = new PIDVFConstants(0.0002, kFF, 1300);
+            private static final PIDVFConstants Long = new PIDVFConstants(0.001, kFF, MAX_LEFT);
+            private static final PIDVFConstants Medium = new PIDVFConstants(0.001, kFF, MAX_LEFT * 0.8);
+            private static final PIDVFConstants Short = new PIDVFConstants(0.000125, kFF, 1000.);
         }
 
         private static class Right {
             private static double kFF = 0.00022;
 
-            private final class Trap {
-                private static double velocity = 1300;
-                private static double kP = 0.001;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
-            }
-
-            private final class Long {
-                private static double velocity = MAX_RIGHT * 1.0;
-                private static double kP = 0.002;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
-            }
-
-            private final class Medium {
-                private static double velocity = MAX_RIGHT * 0.8;
-                private static double kP = 0.002;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
-            }
-
-            private final class Short {
-                private static double velocity = 100;
-                private static double kP = 0.0000625;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
-            }
+            private static final PIDVFConstants Trap = new PIDVFConstants(0.001, kFF, 1300);
+            private static final PIDVFConstants Long = new PIDVFConstants(0.002, kFF, MAX_RIGHT);
+            private static final PIDVFConstants Medium = new PIDVFConstants(0.002, kFF, MAX_RIGHT * 0.8);
+            private static final PIDVFConstants Short = new PIDVFConstants(0.0000625, kFF, 100.);
         }
 
         private static class Pivot {
             private static double kFF = 0.0;
 
-            private static double kP = 0.16;
-            private static double kI = 0.0;
-            private static double kD = 0.0;
+            private static final PIDVFConstants PID = new PIDVFConstants(0.16, kFF, 0.);
 
-            //@formatter:off
-            private static double LONG_POSITION = 2.5; // was 10.            ===================================================
-            private static double MEDIUM_POSITION = 26.75; // was 107.     ||  **DIVIDED BY 4 BC TOOK A STAGE OFF OF MPLANETARY ||
-                                                           //              ||    (16:1 -> 4:1)**                                ||
-            private static double SHORT_POSITION = 45.; // was 108.          ===================================================
-            //@formatter:on
+            private static double LONG_POSITION = 2.5;
+            private static double MEDIUM_POSITION = 26.75;
+            private static double SHORT_POSITION = 45.;
+
+            private static final Map<Integer, Double> POSITION_MAP = Map.of(
+                    Slots.LONG, LONG_POSITION,
+                    Slots.MEDIUM, MEDIUM_POSITION,
+                    Slots.SHORT, SHORT_POSITION,
+                    Slots.TRAP, SHORT_POSITION);
 
             private static double MIN_VAL = 0.;
             private static double MAX_VAL = 53.0;
@@ -180,26 +157,26 @@ public class Shooter extends SubsystemBase {
         // TRAP //
         int slot = Slots.TRAP;
 
-        configPid(rightPid, slot, PIDConstants.Right.Trap.class, PIDConstants.Right.kFF);
-        configPid(leftPid, slot, PIDConstants.Left.Trap.class, PIDConstants.Left.kFF);
+        configPid(rightPid, slot, PIDConstants.Right.Trap);
+        configPid(leftPid, slot, PIDConstants.Left.Trap);
 
         // SHORT //
         slot = Slots.SHORT;
 
-        configPid(rightPid, slot, PIDConstants.Right.Short.class, PIDConstants.Right.kFF);
-        configPid(leftPid, slot, PIDConstants.Left.Short.class, PIDConstants.Left.kFF);
+        configPid(rightPid, slot, PIDConstants.Right.Short);
+        configPid(leftPid, slot, PIDConstants.Left.Short);
 
         // MEDIUM //
         slot = Slots.MEDIUM;
 
-        configPid(rightPid, slot, PIDConstants.Right.Medium.class, PIDConstants.Right.kFF);
-        configPid(leftPid, slot, PIDConstants.Left.Medium.class, PIDConstants.Left.kFF);
+        configPid(rightPid, slot, PIDConstants.Right.Medium);
+        configPid(leftPid, slot, PIDConstants.Left.Medium);
 
         // SHORT //
         slot = Slots.SHORT;
 
-        configPid(rightPid, slot, PIDConstants.Right.Long.class, PIDConstants.Right.kFF);
-        configPid(leftPid, slot, PIDConstants.Left.Long.class, PIDConstants.Left.kFF);
+        configPid(rightPid, slot, PIDConstants.Right.Long);
+        configPid(leftPid, slot, PIDConstants.Left.Long);
 
         longMode();
 
@@ -217,7 +194,7 @@ public class Shooter extends SubsystemBase {
         // ==================================
         // PIVOT PID
         // ==================================
-        configPid(pivotPid, 0, PIDConstants.Pivot.class, PIDConstants.Pivot.kFF);
+        configPid(pivotPid, 0, PIDConstants.Pivot.PID);
 
         // ==================================
         // TIMER
@@ -228,15 +205,11 @@ public class Shooter extends SubsystemBase {
     // ==================================
     // FUNNY PID THING
     // ==================================
-    private void configPid(SparkPIDController controller, int slot, Class constants, double kFF) {
-        try {
-            controller.setP(constants.getField("kP").getDouble(constants), slot);
-            controller.setI(constants.getField("kI").getDouble(constants), slot);
-            controller.setD(constants.getField("kD").getDouble(constants), slot);
-            controller.setFF(kFF, slot);
-        } catch (Throwable e) {
-            System.err.println(e.getMessage());
-        }
+    private void configPid(SparkPIDController controller, int slot, PIDVFConstants constants) {
+        controller.setP(constants.kP, slot);
+        controller.setI(constants.kI, slot);
+        controller.setD(constants.kD, slot);
+        controller.setFF(constants.kFF, slot);
     }
 
     // ==================================
@@ -268,17 +241,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public double getPivotPosition() {
-        switch (slot) {
-            case Slots.TRAP:
-            case Slots.SHORT:
-                return PIDConstants.Pivot.SHORT_POSITION;
-            case Slots.MEDIUM:
-                return PIDConstants.Pivot.MEDIUM_POSITION;
-            case Slots.LONG:
-                return PIDConstants.Pivot.LONG_POSITION;
-            default:
-                return PIDConstants.Pivot.MEDIUM_POSITION;
-        }
+        return PIDConstants.Pivot.POSITION_MAP.getOrDefault(slot, PIDConstants.Pivot.MEDIUM_POSITION);
     }
 
     // ==================================
@@ -296,7 +259,6 @@ public class Shooter extends SubsystemBase {
                 () -> {
                     setRightToVel(rightTarget);
                     setLeftToVel(leftTarget);
-                    // runPivotToPosition(getPivotPosition());
                 },
                 () -> stop());
     }
@@ -310,7 +272,17 @@ public class Shooter extends SubsystemBase {
         return runOnce(this::stop);
     }
 
-    public void setMode() {
+    public Command cycleUpCommand() {
+        return runOnce(() -> setSlot(slot + 1));
+    }
+
+    public Command cycleDownCommand() {
+        return runOnce(() -> setSlot(slot - 1));
+    }
+
+    public void setSlot(int slot) {
+        this.slot = MathUtil.clamp(slot, 0, 3);
+
         switch (slot) {
             case Slots.TRAP:
                 trapMode();
@@ -329,137 +301,49 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    public Command cycleUpCommand() {
-        return runOnce(() -> {
-            slot += 1;
-
-            if (slot > 3)
-                slot = 3;
-
-            setMode();
-        });
+    public Command setSlotComand(int slot) {
+        return runOnce(() -> setSlot(slot));
     }
 
-    public Command cycleDownCommand() {
-        return runOnce(() -> {
-            slot -= 1;
+    // =============================
+    // MODES
+    // =============================
 
-            if (slot < 0)
-                slot = 0;
+    private void putConstants(PIDVFConstants right, PIDVFConstants left, String modeString) {
+        SmartDashboard.putNumber("Left P Gain", right.kP);
+        SmartDashboard.putNumber("Left I Gain", right.kI);
+        SmartDashboard.putNumber("Left D Gain", right.kD);
+        SmartDashboard.putNumber("Left Feed Forward", left.kFF);
 
-            setMode();
-        });
-    }
+        SmartDashboard.putNumber("Right P Gain", right.kP);
+        SmartDashboard.putNumber("Right I Gain", right.kI);
+        SmartDashboard.putNumber("Right D Gain", right.kD);
+        SmartDashboard.putNumber("Right Feed Forward", right.kFF);
 
-    public Command setSlot(int slot) {
-        return runOnce(() -> {
-            this.slot = MathUtil.clamp(slot, 0, 3);
-            setMode();
-        });
+        SmartDashboard.putNumber("Left Velocity", right.Velocity);
+        SmartDashboard.putNumber("Right Velocity", right.Velocity);
+
+        SmartDashboard.putString("Shooter Mode", modeString);
+
+        leftTarget = right.Velocity;
+        rightTarget = right.Velocity;
+
     }
 
     public void trapMode() {
-        slot = Slots.TRAP;
-
-        SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Trap.kP);
-        SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Trap.kI);
-        SmartDashboard.putNumber("Left D Gain", PIDConstants.Left.Trap.kD);
-        SmartDashboard.putNumber("Left Feed Forward", PIDConstants.Left.kFF);
-
-        SmartDashboard.putNumber("Right P Gain", PIDConstants.Right.Trap.kP);
-        SmartDashboard.putNumber("Right I Gain", PIDConstants.Right.Trap.kI);
-        SmartDashboard.putNumber("Right D Gain", PIDConstants.Right.Trap.kD);
-        SmartDashboard.putNumber("Right Feed Forward", PIDConstants.Right.kFF);
-
-        SmartDashboard.putNumber("Left Velocity", PIDConstants.Left.Trap.velocity);
-        SmartDashboard.putNumber("Right Velocity", PIDConstants.Right.Trap.velocity);
-
-        SmartDashboard.putString("Shooter Mode", "Trap");
-
-        leftTarget = PIDConstants.Left.Trap.velocity;
-        rightTarget = PIDConstants.Right.Trap.velocity;
+        putConstants(PIDConstants.Right.Trap, PIDConstants.Left.Trap, "Trap");
     }
 
     public void longMode() {
-        slot = Slots.LONG;
-
-        SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Long.kP);
-        SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Long.kI);
-        SmartDashboard.putNumber("Left D Gain", PIDConstants.Left.Long.kD);
-        SmartDashboard.putNumber("Left Feed Forward", PIDConstants.Left.kFF);
-
-        SmartDashboard.putNumber("Right P Gain", PIDConstants.Right.Long.kP);
-        SmartDashboard.putNumber("Right I Gain", PIDConstants.Right.Long.kI);
-        SmartDashboard.putNumber("Right D Gain", PIDConstants.Right.Long.kD);
-        SmartDashboard.putNumber("Right Feed Forward", PIDConstants.Right.kFF);
-
-        SmartDashboard.putNumber("Left Velocity", PIDConstants.Left.Long.velocity);
-        SmartDashboard.putNumber("Right Velocity", PIDConstants.Right.Long.velocity);
-
-        SmartDashboard.putString("Shooter Mode", "Long");
-
-        leftTarget = PIDConstants.Left.Long.velocity;
-        rightTarget = PIDConstants.Right.Long.velocity;
+        putConstants(PIDConstants.Right.Long, PIDConstants.Left.Long, "Long");
     }
 
     public void mediumMode() {
-        slot = Slots.MEDIUM;
-
-        SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Medium.kP);
-        SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Medium.kI);
-        SmartDashboard.putNumber("Left D Gain", PIDConstants.Left.Medium.kD);
-        SmartDashboard.putNumber("Left Feed Forward", PIDConstants.Left.kFF);
-
-        SmartDashboard.putNumber("Right P Gain", PIDConstants.Right.Medium.kP);
-        SmartDashboard.putNumber("Right I Gain", PIDConstants.Right.Medium.kI);
-        SmartDashboard.putNumber("Right D Gain", PIDConstants.Right.Medium.kD);
-        SmartDashboard.putNumber("Right Feed Forward", PIDConstants.Right.kFF);
-
-        SmartDashboard.putNumber("Left Velocity", PIDConstants.Left.Medium.velocity);
-        SmartDashboard.putNumber("Right Velocity", PIDConstants.Right.Medium.velocity);
-
-        SmartDashboard.putString("Shooter Mode", "Medium");
-
-        leftTarget = PIDConstants.Left.Medium.velocity;
-        rightTarget = PIDConstants.Right.Medium.velocity;
+        putConstants(PIDConstants.Right.Medium, PIDConstants.Left.Medium, "Medium");
     }
 
     public void shortMode() {
-        slot = Slots.SHORT;
-
-        SmartDashboard.putNumber("Left P Gain", PIDConstants.Left.Short.kP);
-        SmartDashboard.putNumber("Left I Gain", PIDConstants.Left.Short.kI);
-        SmartDashboard.putNumber("Left D Gain", PIDConstants.Left.Short.kD);
-        SmartDashboard.putNumber("Left Feed Forward", PIDConstants.Left.kFF);
-
-        SmartDashboard.putNumber("Right P Gain", PIDConstants.Right.Short.kP);
-        SmartDashboard.putNumber("Right I Gain", PIDConstants.Right.Short.kI);
-        SmartDashboard.putNumber("Right D Gain", PIDConstants.Right.Short.kD);
-        SmartDashboard.putNumber("Right Feed Forward", PIDConstants.Right.kFF);
-
-        SmartDashboard.putNumber("Left Velocity", PIDConstants.Left.Short.velocity);
-        SmartDashboard.putNumber("Right Velocity", PIDConstants.Right.Short.velocity);
-
-        SmartDashboard.putString("Shooter Mode", "Short");
-
-        leftTarget = PIDConstants.Left.Short.velocity;
-        rightTarget = PIDConstants.Right.Short.velocity;
-    }
-
-    public Command trapCommand() {
-        return runOnce(this::trapMode);
-    }
-
-    public Command longCommand() {
-        return runOnce(this::longMode);
-    }
-
-    public Command mediumCommand() {
-        return runOnce(this::mediumMode);
-    }
-
-    public Command shortCommand() {
-        return runOnce(this::shortMode);
+        putConstants(PIDConstants.Right.Short, PIDConstants.Left.Short, "Short");
     }
 
     public void setRightToVel(double velRPM) {
@@ -468,14 +352,6 @@ public class Shooter extends SubsystemBase {
 
     public void setLeftToVel(double velRPM) {
         leftPid.setReference(velRPM, ControlType.kVelocity);
-    }
-
-    public Command setRightToVelCommand(double velRPM) {
-        return runOnce(() -> setRightToVel(velRPM));
-    }
-
-    public Command setLeftToVelCommand(double velRPM) {
-        return runOnce(() -> setLeftToVel(velRPM));
     }
 
     public void spinMotorRight(double vBus) {
