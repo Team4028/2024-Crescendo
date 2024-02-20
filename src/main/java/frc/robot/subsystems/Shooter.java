@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
 public class Shooter extends SubsystemBase {
     private CANSparkFlex rightMotor, leftMotor;
@@ -76,11 +77,11 @@ public class Shooter extends SubsystemBase {
     }
 
     private final class PIDConstants {
-        public static final double MAX_LEFT = 2500;
-        public static final double MAX_RIGHT = 3400;
+        private static final double MAX_LEFT = 2500;
+        private static final double MAX_RIGHT = 3400;
 
         private static class Left {
-            public static double kFF = 0.00019;
+            private static double kFF = 0.00019;
 
             private static final PIDVFConstants Trap = new PIDVFConstants(0.0002, kFF, 1300);
             private static final PIDVFConstants Long = new PIDVFConstants(0.001, kFF, MAX_LEFT);
@@ -89,7 +90,7 @@ public class Shooter extends SubsystemBase {
         }
 
         private static class Right {
-            public static double kFF = 0.00022;
+            private static double kFF = 0.00022;
 
             private static final PIDVFConstants Trap = new PIDVFConstants(0.001, kFF, 1300);
             private static final PIDVFConstants Long = new PIDVFConstants(0.002, kFF, MAX_RIGHT);
@@ -98,7 +99,7 @@ public class Shooter extends SubsystemBase {
         }
 
         private static class Pivot {
-            public static double kFF = 0.0;
+            private static double kFF = 0.0;
 
             private static final PIDVFConstants PID = new PIDVFConstants(0.16, kFF, 0.);
 
@@ -112,8 +113,8 @@ public class Shooter extends SubsystemBase {
                     Slots.SHORT, SHORT_POSITION,
                     Slots.TRAP, SHORT_POSITION);
 
-            public static double MIN_VAL = 0.;
-            public static double MAX_VAL = 53.0;
+            private static double MIN_VAL = 0.;
+            private static double MAX_VAL = 53.0;
         }
     }
 
@@ -292,6 +293,20 @@ public class Shooter extends SubsystemBase {
                 () -> stop());
     }
 
+    /* Run Based on Shooter Table Entry */
+    public void runEntry(ShooterTableEntry entry) {
+        setRightToVel(entry.RightSpeed);
+        setLeftToVel(entry.LeftSpeed);
+        runPivotToPosition(entry.Angle);
+    }
+
+    public Command runEntryCommand(ShooterTableEntry entry) {
+        return startEnd(
+                () -> runEntry(entry),
+                () -> stop());
+
+    }
+
     public void stop() {
         rightMotor.stopMotor();
         leftMotor.stopMotor();
@@ -330,7 +345,7 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    public Command setSlotComand(int slot) {
+    public Command setSlotCommand(int slot) {
         return runOnce(() -> setSlot(slot));
     }
 
@@ -359,19 +374,19 @@ public class Shooter extends SubsystemBase {
 
     }
 
-    public void trapMode() {
+    private void trapMode() {
         putConstants(PIDConstants.Right.Trap, PIDConstants.Left.Trap, "Trap");
     }
 
-    public void longMode() {
+    private void longMode() {
         putConstants(PIDConstants.Right.Long, PIDConstants.Left.Long, "Long");
     }
 
-    public void mediumMode() {
+    private void mediumMode() {
         putConstants(PIDConstants.Right.Medium, PIDConstants.Left.Medium, "Medium");
     }
 
-    public void shortMode() {
+    private void shortMode() {
         putConstants(PIDConstants.Right.Short, PIDConstants.Left.Short, "Short");
     }
 

@@ -71,8 +71,8 @@ public class RobotContainer {
     private final Climber m_climber = new Climber();
     // private final Fan m_fan = new Fan();
 
-    private final Vision m_rightVision = new Vision("Right_AprilTag_Camera", Vision.rightCameraToRobot);
-    private final Vision m_leftVision = new Vision("Left_AprilTag_Camera", Vision.leftCameraToRobot);
+    private final Vision m_rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
+    private final Vision m_leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
 
     // ====================== //
     /* Auton & Other Commands */
@@ -111,7 +111,7 @@ public class RobotContainer {
 
     private void initNamedCommands() {
         NamedCommands.registerCommand("startShooter",
-                shooter.setSlotComand(1).andThen(shooter.setPivotPositionCommand())
+                shooter.setSlotCommand(1).andThen(shooter.setPivotPositionCommand())
                         .andThen(shooter.runVelocityCommand()));
         NamedCommands.registerCommand("4pinfeed", infeed.runInfeedMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
@@ -142,9 +142,9 @@ public class RobotContainer {
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runInfeedMotorCommand(0.));
 
-        // ========================== //
+        // ========================= //
         /* Infeed & Conveyor Control */
-        // ========================== //
+        // ========================= //
 
         /* Dumb Infeed */
         driverController.leftTrigger().onTrue(
@@ -301,7 +301,7 @@ public class RobotContainer {
     // ================ //
 
     /* Return Approx. 2d yaw */
-    public double getBestYaw(int tagID) {
+    private double getBestYaw(int tagID) {
         Optional<Double> leftYaw = m_leftVision.getTagYaw(tagID);
         Optional<Double> rightYaw = m_rightVision.getTagYaw(tagID);
 
@@ -321,7 +321,7 @@ public class RobotContainer {
     }
 
     /* Return approx. 2d distance */
-    public double getBestDistance(int tagID) {
+    private double getBestDistance(int tagID) {
         Optional<Double> leftDistance = m_leftVision.getTagDistance(tagID);
         Optional<Double> rightDistance = m_rightVision.getTagDistance(tagID);
 
@@ -341,7 +341,7 @@ public class RobotContainer {
     }
 
     /* Return approx. 3d pose */
-    public Optional<EstimatedRobotPose> getBestPose() {
+    private Optional<EstimatedRobotPose> getBestPose() {
         Pose2d drivetrainPose = drivetrain.getState().Pose;
 
         Optional<EstimatedRobotPose> front = m_rightVision.getCameraResult(drivetrainPose);
@@ -386,7 +386,7 @@ public class RobotContainer {
     }
 
     /* Test Shooter Table */
-    public void printSTVals() {
+    private void printSTVals() {
         Optional<EstimatedRobotPose> pose = getBestPose();
         if (pose.isEmpty())
             return;
@@ -398,7 +398,7 @@ public class RobotContainer {
         SmartDashboard.putNumber("Distance", dist.getTranslation().getNorm());
         SmartDashboard.putNumberArray("Shooter Table recommended value",
                 new Double[] {
-                        entryPicked.angle,
+                        entryPicked.Angle,
                         entryPicked.LeftSpeed,
                         entryPicked.RightSpeed
                 });

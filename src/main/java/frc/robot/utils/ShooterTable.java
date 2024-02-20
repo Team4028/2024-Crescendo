@@ -3,9 +3,10 @@ package frc.robot.utils;
 import java.util.ArrayList;
 
 public class ShooterTable {
+    // TODO: We may want P values here, or just tune kF
     public static final class ShooterTableEntry {
         public double Distance;
-        public double angle;
+        public double Angle;
         public double LeftSpeed;
         public double RightSpeed;
 
@@ -18,7 +19,7 @@ public class ShooterTable {
          * @param rightSpeed Speed of the right shooter motor, in RPM.
          */
         public ShooterTableEntry(double distance, double angle, double leftSpeed, double rightSpeed) {
-            this.angle = angle;
+            this.Angle = angle;
             this.LeftSpeed = leftSpeed;
             this.RightSpeed = rightSpeed;
             this.Distance = distance;
@@ -65,9 +66,9 @@ public class ShooterTable {
         double calculatedRightSpeed = scaleFactor * (closestHigher.RightSpeed - closestLower.RightSpeed)
                 + closestLower.RightSpeed;
 
-        double calculatedAngle = scaleFactor * (closestHigher.angle - closestLower.angle) + closestLower.angle;
+        double calculatedAngle = scaleFactor * (closestHigher.Angle - closestLower.Angle) + closestLower.Angle;
 
-        return new ShooterTableEntry(calculatedAngle, calculatedLeftSpeed, calculatedRightSpeed, distance);
+        return new ShooterTableEntry(distance, calculatedAngle, calculatedLeftSpeed, calculatedRightSpeed);
     }
 
 }

@@ -26,11 +26,11 @@ public class Vision extends SubsystemBase {
     private PhotonPoseEstimator m_estimator;
 
     // TODO: check coordinate systems
-    public static final Transform3d leftCameraToRobot = new Transform3d(Units.inchesToMeters(-10.),
+    public static final Transform3d LEFT_ROBOT_TO_CAMERA = new Transform3d(Units.inchesToMeters(-10.),
             Units.inchesToMeters(-11.5), Units.inchesToMeters(10.),
             new Rotation3d(0., Units.degreesToRadians(28.125), Units.degreesToRadians(300.)));
 
-    public static final Transform3d rightCameraToRobot = new Transform3d(Units.inchesToMeters(-10.),
+    public static final Transform3d RIGHT_ROBOT_TO_CAMERA = new Transform3d(Units.inchesToMeters(-10.),
             Units.inchesToMeters(+11.5), Units.inchesToMeters(10.),
             new Rotation3d(0., Units.degreesToRadians(28.125),
                     Units.degreesToRadians(240.)));
@@ -42,14 +42,14 @@ public class Vision extends SubsystemBase {
      * @param robotToCamera The transformation from the center of the robot to the
      *                      center of the camera lens.
      */
-    public Vision(String cameraName, Transform3d cameraToRobot) {
+    public Vision(String cameraName, Transform3d robotToCamera) {
         m_camera = new PhotonCamera(cameraName);
-        m_offset = cameraToRobot;
+        m_offset = robotToCamera;
 
         try {
             m_layout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
             m_estimator = new PhotonPoseEstimator(m_layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, m_camera,
-                    cameraToRobot);
+                    robotToCamera);
             m_estimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
         } catch (IOException e) {
             System.err.println(e.getMessage());
