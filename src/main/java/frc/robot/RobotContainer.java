@@ -133,7 +133,7 @@ public class RobotContainer {
         driverController.back().and(driverController.povDown()).onTrue(Commands.runOnce(() -> {
             var pose = getBestPose();
             if (pose.isPresent())
-                m_drivetrain.seedFieldRelative();
+                m_drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
         }));
 
         driverController.rightBumper().onTrue(shooter.runPivotCommand(0.3))

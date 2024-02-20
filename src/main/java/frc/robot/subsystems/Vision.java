@@ -31,14 +31,14 @@ public class Vision extends SubsystemBase {
     private PhotonPoseEstimator m_estimator;
     private Field2d m_field = new Field2d();
 
-    public static final Transform3d leftCameraToRobot = new Transform3d(Units.inchesToMeters(10.5),
-            Units.inchesToMeters(10.0), Units.inchesToMeters(10.0),
-            new Rotation3d(0., Units.degreesToRadians(28.125), Units.degreesToRadians(-22.)));
+    public static final Transform3d leftCameraToRobot = new Transform3d(Units.inchesToMeters(-10.),
+            Units.inchesToMeters(-11.5), Units.inchesToMeters(10.),
+            new Rotation3d(0., Units.degreesToRadians(28.125), Units.degreesToRadians(300.)));
 
-    public static final Transform3d rightCameraToRobot = new Transform3d(Units.inchesToMeters(10.5),
-            Units.inchesToMeters(-10.0), Units.inchesToMeters(10.0),
+    public static final Transform3d rightCameraToRobot = new Transform3d(Units.inchesToMeters(-10.),
+            Units.inchesToMeters(+11.5), Units.inchesToMeters(10.),
             new Rotation3d(0., Units.degreesToRadians(28.125),
-                    Units.degreesToRadians(22.)));
+                    Units.degreesToRadians(240.)));
 
     /**
      * Subsystem that handles a PhotonVision attached camera.
