@@ -25,10 +25,10 @@ import edu.wpi.first.apriltag.AprilTagFields;
 
 public class Vision extends SubsystemBase {
     private final PhotonCamera m_camera;
-    private final AprilTagFieldLayout m_layout;
+    private AprilTagFieldLayout m_layout;
     private final Transform3d m_offset;
 
-    private final PhotonPoseEstimator m_estimator;
+    private PhotonPoseEstimator m_estimator;
     private Field2d m_field = new Field2d();
 
     public static final Transform3d leftCameraToRobot = new Transform3d(Units.inchesToMeters(10.5),
@@ -47,15 +47,19 @@ public class Vision extends SubsystemBase {
      * @param cameraToRobot The transformation from the camera to the center of the
      *                      robot.
      */
-    public Vision(String cameraName, Transform3d cameraToRobot) throws IOException {
+    public Vision(String cameraName, Transform3d cameraToRobot) {
         m_camera = new PhotonCamera(cameraName);
         m_offset = cameraToRobot;
 
-        m_layout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
-
-        m_estimator = new PhotonPoseEstimator(m_layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, m_camera,
-                cameraToRobot);
-        m_estimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
+        try {
+            m_layout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
+            m_estimator = new PhotonPoseEstimator(m_layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, m_camera,
+                    cameraToRobot);
+            m_estimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
     }
 
     public Optional<PhotonTrackedTarget> getTag(int tagID) {

@@ -39,7 +39,7 @@ public class Shooter extends SubsystemBase {
 
     private final Timer zeroTimer;
 
-    private final double ZERO_TIMER_THRESHOLD = 0.06; // 3 scans
+    private final double ZERO_TIMER_THRESHOLD = 0.14; // 7 scans
     private final double ZERO_VELOCITY_THRESHOLD = 0.2;
 
     private final class Slots {
@@ -50,89 +50,89 @@ public class Shooter extends SubsystemBase {
     }
 
     private final class PIDConstants {
-        private static final double MAX_LEFT = 2500;
-        private static final double MAX_RIGHT = 3400;
+        public static final double MAX_LEFT = 2500;
+        public static final double MAX_RIGHT = 3400;
 
         private static class Left {
-            private static double kFF = 0.00019;
+            public static double kFF = 0.00019;
 
             private final class Trap {
-                private static double velocity = 1300;
-                private static double kP = 0.0002;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
+                public static double velocity = 1300;
+                public static double kP = 0.0002;
+                public static double kI = 0.0;
+                public static double kD = 0.0;
             }
 
             private final class Long {
-                private static double velocity = MAX_LEFT * 1.0;;
-                private static double kP = 0.001;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
+                public static double velocity = MAX_LEFT * 1.0;;
+                public static double kP = 0.001;
+                public static double kI = 0.0;
+                public static double kD = 0.0;
             }
 
             private final class Medium {
-                private static double velocity = MAX_LEFT * 0.8;
-                private static double kP = 0.001;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
+                public static double velocity = MAX_LEFT * 0.8;
+                public static double kP = 0.001;
+                public static double kI = 0.0;
+                public static double kD = 0.0;
             }
 
             private final class Short {
-                private static double velocity = 1000;
-                private static double kP = 0.000125;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
+                public static double velocity = 1000;
+                public static double kP = 0.000125;
+                public static double kI = 0.0;
+                public static double kD = 0.0;
             }
         }
 
         private static class Right {
-            private static double kFF = 0.00022;
+            public static double kFF = 0.00022;
 
             private final class Trap {
-                private static double velocity = 1300;
-                private static double kP = 0.001;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
+                public static double velocity = 1300;
+                public static double kP = 0.001;
+                public static double kI = 0.0;
+                public static double kD = 0.0;
             }
 
             private final class Long {
-                private static double velocity = MAX_RIGHT * 1.0;
-                private static double kP = 0.002;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
+                public static double velocity = MAX_RIGHT * 1.0;
+                public static double kP = 0.002;
+                public static double kI = 0.0;
+                public static double kD = 0.0;
             }
 
             private final class Medium {
-                private static double velocity = MAX_RIGHT * 0.8;
-                private static double kP = 0.002;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
+                public static double velocity = MAX_RIGHT * 0.8;
+                public static double kP = 0.002;
+                public static double kI = 0.0;
+                public static double kD = 0.0;
             }
 
             private final class Short {
-                private static double velocity = 100;
-                private static double kP = 0.0000625;
-                private static double kI = 0.0;
-                private static double kD = 0.0;
+                public static double velocity = 100;
+                public static double kP = 0.0000625;
+                public static double kI = 0.0;
+                public static double kD = 0.0;
             }
         }
 
         private static class Pivot {
-            private static double kFF = 0.0;
+            public static double kFF = 0.0;
 
-            private static double kP = 0.16;
-            private static double kI = 0.0;
-            private static double kD = 0.0;
+            public static double kP = 0.16;
+            public static double kI = 0.0;
+            public static double kD = 0.0;
 
             //@formatter:off
-            private static double LONG_POSITION = 2.5; // was 10.            ===================================================
-            private static double MEDIUM_POSITION = 26.75; // was 107.     ||  **DIVIDED BY 4 BC TOOK A STAGE OFF OF MPLANETARY ||
+            public static double LONG_POSITION = 2.5; // was 10.            ===================================================
+            public static double MEDIUM_POSITION = 26.75; // was 107.     ||  **DIVIDED BY 4 BC TOOK A STAGE OFF OF MPLANETARY ||
                                                            //              ||    (16:1 -> 4:1)**                                ||
-            private static double SHORT_POSITION = 45.; // was 108.          ===================================================
+            public static double SHORT_POSITION = 45.; // was 108.          ===================================================
             //@formatter:on
 
-            private static double MIN_VAL = 0.;
-            private static double MAX_VAL = 53.0;
+            public static double MIN_VAL = 0.;
+            public static double MAX_VAL = 53.0;
         }
     }
 
@@ -228,13 +228,14 @@ public class Shooter extends SubsystemBase {
     // ==================================
     // FUNNY PID THING
     // ==================================
-    private void configPid(SparkPIDController controller, int slot, Class constants, double kFF) {
+    private void configPid(SparkPIDController controller, int slot, Class<?> constants, double kFF) {
         try {
-            controller.setP(constants.getField("kP").getDouble(constants), slot);
-            controller.setI(constants.getField("kI").getDouble(constants), slot);
-            controller.setD(constants.getField("kD").getDouble(constants), slot);
+            controller.setP(constants.getField("kP").getDouble(null), slot);
+            controller.setI(constants.getField("kI").getDouble(null), slot);
+            controller.setD(constants.getField("kD").getDouble(null), slot);
             controller.setFF(kFF, slot);
         } catch (Throwable e) {
+            System.err.println(constants.getName());
             System.err.println(e.getMessage());
         }
     }
