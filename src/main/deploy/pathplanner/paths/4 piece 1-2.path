@@ -3,37 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.4483665125048377,
-        "y": 6.037364604091624
-      },
-      "prevControl": null,
-      "nextControl": {
-        "x": 2.012360951596886,
-        "y": 6.242084590104827
-      },
-      "isLocked": false,
-      "linkedName": "4pdr start"
-    },
-    {
-      "anchor": {
         "x": 2.60221165235483,
         "y": 6.885971888919526
       },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.7413865700214626,
+        "y": 6.0238596400011595
+      },
+      "isLocked": false,
+      "linkedName": "4pdr 1"
+    },
+    {
+      "anchor": {
+        "x": 2.5,
+        "y": 5.41
+      },
       "prevControl": {
-        "x": 2.5522116523548304,
-        "y": 6.885971888919526
+        "x": 1.5,
+        "y": 5.41
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "4pdr 1"
+      "linkedName": "4pdr 2"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "4pinfeed",
-      "waypointRelativePos": 0.5,
+      "name": "infeed",
+      "waypointRelativePos": 0.55,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,7 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "4pinfeed"
+                "name": "shortInfeed"
               }
             }
           ]
@@ -56,14 +56,14 @@
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 1.5,
-    "rotation": 35.0,
+    "velocity": 0,
+    "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 46.66591058775336,
     "velocity": 0
   },
   "useDefaultConstraints": true

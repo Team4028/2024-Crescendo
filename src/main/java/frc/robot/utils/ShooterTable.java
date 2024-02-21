@@ -31,9 +31,10 @@ public class ShooterTable {
     private static void fillInTable() {
         // put entries here
         // Distances must go from top to bottom: shortest to longest
-        table.add(new ShooterTableEntry(4., 40., 1500., 1500.));
-        table.add(new ShooterTableEntry(9., 15., 2000., 2820.));
-        table.add(new ShooterTableEntry(19., 2, 2500, 3400.));
+        table.add(new ShooterTableEntry(2.5, 32., 1800., 2300.));
+        table.add(new ShooterTableEntry(5.75, 19.5, 2000., 2720.));
+        table.add(new ShooterTableEntry(10., 9., 2500, 3400.));
+        table.add(new ShooterTableEntry(16.5, 5.5, 2500, 3400.));
     }
 
     static {

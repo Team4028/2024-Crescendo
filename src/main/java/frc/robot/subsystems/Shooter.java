@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkMax;
@@ -147,6 +148,7 @@ public class Shooter extends SubsystemBase {
 
         rightPid = rightMotor.getPIDController();
         leftPid = leftMotor.getPIDController();
+
         rightPid.setFeedbackDevice(rightEncoder);
         leftPid.setFeedbackDevice(leftEncoder);
 
@@ -175,7 +177,7 @@ public class Shooter extends SubsystemBase {
         configPid(leftPid, slot, PIDConstants.Left.Medium);
 
         // SHORT //
-        slot = Slots.SHORT;
+        slot = Slots.LONG;
 
         configPid(rightPid, slot, PIDConstants.Right.Long);
         configPid(leftPid, slot, PIDConstants.Left.Long);
@@ -228,6 +230,7 @@ public class Shooter extends SubsystemBase {
     // FUNNY PID THING
     // ==================================
     private void configPid(SparkPIDController controller, int slot, PIDVFConstants constants) {
+        System.out.println(slot + " " + constants.kFF);
         controller.setP(constants.kP, slot);
         controller.setI(constants.kI, slot);
         controller.setD(constants.kD, slot);
@@ -287,6 +290,8 @@ public class Shooter extends SubsystemBase {
     public Command runVelocityCommand() {
         return startEnd(
                 () -> {
+                    System.out.println(rightTarget);
+                    System.out.println(leftTarget);
                     setRightToVel(rightTarget);
                     setLeftToVel(leftTarget);
                 },
@@ -300,9 +305,9 @@ public class Shooter extends SubsystemBase {
         runPivotToPosition(entry.Angle);
     }
 
-    public Command runEntryCommand(ShooterTableEntry entry) {
+    public Command runEntryCommand(Supplier<ShooterTableEntry> entry) {
         return startEnd(
-                () -> runEntry(entry),
+                () -> runEntry(entry.get()),
                 () -> stop());
 
     }
@@ -310,6 +315,8 @@ public class Shooter extends SubsystemBase {
     public void stop() {
         rightMotor.stopMotor();
         leftMotor.stopMotor();
+
+        System.out.println("Stop");
     }
 
     public Command stopCommand() {
@@ -364,12 +371,12 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("Right D Gain", right.kD);
         SmartDashboard.putNumber("Right Feed Forward", right.kFF);
 
-        SmartDashboard.putNumber("Left Velocity", right.Velocity);
+        SmartDashboard.putNumber("Left Velocity", left.Velocity);
         SmartDashboard.putNumber("Right Velocity", right.Velocity);
 
         SmartDashboard.putString("Shooter Mode", modeString);
 
-        leftTarget = right.Velocity;
+        leftTarget = left.Velocity;
         rightTarget = right.Velocity;
 
     }

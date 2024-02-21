@@ -37,6 +37,7 @@ public class Climber extends SubsystemBase {
 
     public enum ClimberPositions {
         HOME(1.),
+        CATCH(50.),
         READY(65.);
 
         double Position;

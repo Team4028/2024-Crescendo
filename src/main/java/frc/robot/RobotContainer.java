@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
@@ -46,8 +47,10 @@ public class RobotContainer {
     private static final double CLIMBER_VBUS = 0.7;
     private static final double INFEED_VBUS = 0.8;
     private static final double SLOW_INFEED_VBUS = 0.5;
+    private static final double VERY_SLOW_INFEED_VBUS = 0.15;
 
     private static final double PIVOT_VBUS = 0.3;
+    private static final double VERY_SLOW_CONVEYOR_VBUS = 0.15;
     private static final double SLOW_CONVEYOR_VBUS = 0.5;
     private static final double FAST_CONVEYOR_VBUS = 0.85;
 
@@ -178,8 +181,10 @@ public class RobotContainer {
                 .onTrue(shooter.cycleUpCommand());
 
         /* Run Pivot */
-        driverController.x().and(driverController.povLeft().or(driverController.povRight()))
-                .onTrue(shooter.runPivotPositionCommand(shooter.getPivotPosition()));
+        // driverController.x().and(driverController.povLeft().or(driverController.povRight()))
+        // .onTrue(shooter.runPivotPositionCommand(shooter.getPivotPosition()));
+        driverController.x().and(driverController.povRight())
+                .toggleOnTrue(shooter.runEntryCommand(() -> printSTVals()));
 
         // driverController.y().and(driverController.povCenter()).onTrue(shooter.pivotZeroCommand());
         // driverController.y().toggleOnTrue(m_fan.runMotorCommand(FAN_VBUS));
@@ -194,6 +199,10 @@ public class RobotContainer {
         /* Run Climber to "Home" */
         driverController.y().and(driverController.povDown())
                 .onTrue(m_climber.runToPositionCommand(Climber.ClimberPositions.HOME));
+
+        /* Run Climber to "Catch" */
+        driverController.y().and(driverController.povLeft().or(driverController.povRight()))
+                .onTrue(m_climber.runToPositionCommand(Climber.ClimberPositions.CATCH));
 
         /* Run Climber to "Ready" */
         driverController.y().and(driverController.povUp())
@@ -219,10 +228,10 @@ public class RobotContainer {
             printSTVals();
         }));
 
-        // driverController.rightBumper().onTrue(shooter.runPivotCommand(PIVOT_VBUS))
-        // .onFalse(shooter.runPivotCommand(0.0));
-        // driverController.leftBumper().onTrue(shooter.runPivotCommand(-PIVOT_VBUS))
-        // .onFalse(shooter.runPivotCommand(0.0));
+        driverController.rightBumper().onTrue(shooter.runPivotCommand(PIVOT_VBUS))
+                .onFalse(shooter.runPivotCommand(0.0));
+        driverController.leftBumper().onTrue(shooter.runPivotCommand(-PIVOT_VBUS))
+                .onFalse(shooter.runPivotCommand(0.0));
 
         // driverController.povRight()
         // .onTrue(shooter.run(() ->
@@ -241,14 +250,23 @@ public class RobotContainer {
         // run slow until conveyor tripped
         // run for like 0.5 more seconds and stop
         smartInfeedCommand = infeed.runInfeedMotorCommand(INFEED_VBUS)
-                .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
-                .repeatedly().until(conveyor.hasInfedSupplier())
-                .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
-                        .repeatedly().withTimeout(0.1))
-                .andThen(shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-                        .raceWith(conveyor.runXRotations(-.5).withTimeout(0.25)
-                                .alongWith(infeed.runInfeedMotorCommand(0.))))
-                .andThen(shooter.spinMotorRightCommand(0.));
+        .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
+        .repeatedly().until(conveyor.hasInfedSupplier())
+        .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
+        .repeatedly().withTimeout(0.1))
+        .andThen(shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
+        .raceWith(conveyor.runXRotations(-1.).withTimeout(0.5)
+        .alongWith(infeed.runInfeedMotorCommand(0.))))
+        .andThen(shooter.spinMotorRightCommand(0.).raceWith(new WaitCommand(0.1)));
+
+        // smartInfeedCommand = runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS)
+        //         .repeatedly().until(infeed.hasGamePieceSupplier())
+        //         .andThen(runBoth(SLOW_CONVEYOR_VBUS, SLOW_INFEED_VBUS).repeatedly())
+        //         .until(conveyor.hasGamePieceSupplier())
+        //         .andThen(runBoth(VERY_SLOW_CONVEYOR_VBUS, SLOW_INFEED_VBUS).repeatedly().withTimeout(0.35))
+        //         .andThen(shooter.spinMotorRightCommand(-0.4).alongWith(runBoth(-VERY_SLOW_CONVEYOR_VBUS, -VERY_SLOW_INFEED_VBUS)).repeatedly());
+        // .alongWith(shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS)).repeatedly().withTimeout(0.5))
+        // .andThen(shooter.spinMotorRightCommand(0.));
         // .until(() -> !conveyor.hasGamePiece()))
         // .andThen(conveyor.runXRotations(0.).alongWith(infeed.runInfeedMotorCommand(0.)));
 
@@ -261,6 +279,11 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
+    /* Run both Conveyor and Infeed */
+    private Command runBoth(double conveyorVbus, double infeedVbus) {
+        return infeed.runInfeedMotorCommand(conveyorVbus).alongWith(conveyor.runMotorCommand(conveyorVbus));
+    }
+
     /* Auton Command */
     public Command getAutonomousCommand() {
         return new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d()))
@@ -269,7 +292,7 @@ public class RobotContainer {
 
     /* Zeroing Command */
     public Command zeroCommand() {
-        return m_climber.zeroCommand().alongWith(shooter.pivotZeroCommand());
+        return m_climber.zeroCommand().andThen(shooter.pivotZeroCommand());
     }
 
     /* Asynchronous Zero */
@@ -386,21 +409,20 @@ public class RobotContainer {
     }
 
     /* Test Shooter Table */
-    private void printSTVals() {
-        Optional<EstimatedRobotPose> pose = getBestPose();
-        if (pose.isEmpty())
-            return;
+    private ShooterTableEntry printSTVals() {
+        Pose2d pose = drivetrain.getState().Pose;
 
-        Transform2d dist = pose.get().estimatedPose.toPose2d().minus(Constants.SPEAKER_DISTANCE_TARGET);
+        Transform2d dist = pose.minus(Constants.SPEAKER_DISTANCE_TARGET);
+        Translation2d translation = dist.getTranslation().div(12.).div(0.0254); // get everything in feet
 
-        ShooterTableEntry entryPicked = ShooterTable.calcShooterTableEntry(dist.getTranslation().getNorm());
+        ShooterTableEntry entryPicked = ShooterTable.calcShooterTableEntry(translation.getNorm());
 
-        SmartDashboard.putNumber("Distance", dist.getTranslation().getNorm());
-        SmartDashboard.putNumberArray("Shooter Table recommended value",
-                new Double[] {
-                        entryPicked.Angle,
-                        entryPicked.LeftSpeed,
-                        entryPicked.RightSpeed
-                });
+        SmartDashboard.putNumber("Distance", translation.getNorm());
+
+        SmartDashboard.putNumber("ST Angle", entryPicked.Angle);
+        SmartDashboard.putNumber("ST Left", entryPicked.LeftSpeed);
+        SmartDashboard.putNumber("ST Right", entryPicked.RightSpeed);
+
+        return entryPicked;
     }
 }
