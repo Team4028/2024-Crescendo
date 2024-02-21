@@ -13,6 +13,7 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -26,6 +27,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -91,9 +93,11 @@ public class RobotContainer {
     private final SlewRateLimiter thetaLimiter = new SlewRateLimiter(4.);
     private final SlewRateLimiter xLimeAquireLimiter = new SlewRateLimiter(4.);
 
-    private static final double MAX_SPEED = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
-    private static final double MAX_ANGULAR_SPEED = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
-    private static final double BASE_SPEED = 0.25;
+        private static final double MAX_SPEED = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top
+                                                                                   // speed
+        private static final double MAX_ANGULAR_SPEED = 1.5 * Math.PI; // 3/4 of a rotation per second max angular
+                                                                       // velocity
+        private static final double BASE_SPEED = 0.25;
 
     // ======================== //
     /* Swerve Control & Logging */
@@ -112,14 +116,21 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Chooser", autonChooser);
     }
 
-    private void initNamedCommands() {
-        NamedCommands.registerCommand("startShooter",
-                shooter.setSlotCommand(1).andThen(shooter.setPivotPositionCommand())
-                        .andThen(shooter.runVelocityCommand()));
-        NamedCommands.registerCommand("4pinfeed", infeed.runInfeedMotorCommand(INFEED_VBUS)
-                .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
-        NamedCommands.registerCommand("farShot", Commands.runOnce(() -> shooter.runPivotToPosition(14.25)));
-    }
+        private void initNamedCommands() {
+                NamedCommands.registerCommand("follow2pchoice",
+                                new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
+                                                AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pright")),
+                                                () -> true));
+                NamedCommands.registerCommand("startShooter",
+                                shooter.setSlotCommand(1)
+                                                .andThen(() -> shooter.runPivotToPosition(shooter.getPivotPosition()))
+                                                .andThen(shooter.runVelocityCommand()));
+                NamedCommands.registerCommand("runShooter", shooter.runVelocityCommand());
+                NamedCommands.registerCommand("4pinfeed", infeed.runInfeedMotorCommand(INFEED_VBUS)
+                                .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
+                NamedCommands.registerCommand("smartInfeed", smartInfeedCommand);
+                NamedCommands.registerCommand("farShot", Commands.runOnce(() -> shooter.runPivotToPosition(14.25)));
+        }
 
     // TODO: this stuff needs cleaned up
     // Likely time for a operator controller,
@@ -142,8 +153,8 @@ public class RobotContainer {
                                         thetaLimiter, BASE_SPEED) *
                                         MAX_SPEED)));
 
-        conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
-        infeed.setDefaultCommand(infeed.runInfeedMotorCommand(0.));
+                conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
+                infeed.setDefaultCommand(infeed.runInfeedMotorCommand(0.));
 
         // ========================= //
         /* Infeed & Conveyor Control */
@@ -228,18 +239,18 @@ public class RobotContainer {
             printSTVals();
         }));
 
-        driverController.rightBumper().onTrue(shooter.runPivotCommand(PIVOT_VBUS))
-                .onFalse(shooter.runPivotCommand(0.0));
-        driverController.leftBumper().onTrue(shooter.runPivotCommand(-PIVOT_VBUS))
-                .onFalse(shooter.runPivotCommand(0.0));
+                driverController.rightBumper().onTrue(shooter.runPivotCommand(PIVOT_VBUS))
+                                .onFalse(shooter.runPivotCommand(0.0));
+                driverController.leftBumper().onTrue(shooter.runPivotCommand(-PIVOT_VBUS))
+                                .onFalse(shooter.runPivotCommand(0.0));
 
-        // driverController.povRight()
-        // .onTrue(shooter.run(() ->
-        // shooter.runPivotToPosition(shooter.getPivotPosition())));
+                // driverController.povRight()
+                // .onTrue(shooter.run(() ->
+                // shooter.runPivotToPosition(shooter.getPivotPosition())));
 
-        if (Utils.isSimulation()) {
-            drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
-        }
+                if (Utils.isSimulation()) {
+                        drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
+                }
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
@@ -270,10 +281,10 @@ public class RobotContainer {
         // .until(() -> !conveyor.hasGamePiece()))
         // .andThen(conveyor.runXRotations(0.).alongWith(infeed.runInfeedMotorCommand(0.)));
 
-        initNamedCommands();
-        initAutonChooser();
-        configureBindings();
-    }
+                initNamedCommands();
+                initAutonChooser();
+                configureBindings();
+        }
 
     // =========================================== //
     /* Additional Commands, Getters, and Utilities */
@@ -328,85 +339,86 @@ public class RobotContainer {
         Optional<Double> leftYaw = m_leftVision.getTagYaw(tagID);
         Optional<Double> rightYaw = m_rightVision.getTagYaw(tagID);
 
-        int numYaws = 0;
-        numYaws += leftYaw.isPresent() ? 1 : 0;
-        numYaws += rightYaw.isPresent() ? 1 : 0;
+                int numYaws = 0;
+                numYaws += leftYaw.isPresent() ? 1 : 0;
+                numYaws += rightYaw.isPresent() ? 1 : 0;
 
-        switch (numYaws) {
-            case 1:
-                return (leftYaw.isPresent() ? leftYaw : rightYaw).get();
-            case 2:
-                return (leftYaw.get() + rightYaw.get()) / 2.;
-            case 0:
-            default:
-                return 0.;
+                switch (numYaws) {
+                        case 1:
+                                return (leftYaw.isPresent() ? leftYaw : rightYaw).get();
+                        case 2:
+                                return (leftYaw.get() + rightYaw.get()) / 2.;
+                        case 0:
+                        default:
+                                return 0.;
+                }
         }
-    }
 
     /* Return approx. 2d distance */
     private double getBestDistance(int tagID) {
         Optional<Double> leftDistance = m_leftVision.getTagDistance(tagID);
         Optional<Double> rightDistance = m_rightVision.getTagDistance(tagID);
 
-        int numDistances = 0;
-        numDistances += leftDistance.isPresent() ? 1 : 0;
-        numDistances += rightDistance.isPresent() ? 1 : 0;
+                int numDistances = 0;
+                numDistances += leftDistance.isPresent() ? 1 : 0;
+                numDistances += rightDistance.isPresent() ? 1 : 0;
 
-        switch (numDistances) {
-            case 1:
-                return (leftDistance.isPresent() ? leftDistance : rightDistance).get();
-            case 2:
-                return (leftDistance.get() + rightDistance.get()) / 2.;
-            case 0:
-            default:
-                return 0.;
+                switch (numDistances) {
+                        case 1:
+                                return (leftDistance.isPresent() ? leftDistance : rightDistance).get();
+                        case 2:
+                                return (leftDistance.get() + rightDistance.get()) / 2.;
+                        case 0:
+                        default:
+                                return 0.;
+                }
         }
-    }
 
     /* Return approx. 3d pose */
     private Optional<EstimatedRobotPose> getBestPose() {
         Pose2d drivetrainPose = drivetrain.getState().Pose;
 
-        Optional<EstimatedRobotPose> front = m_rightVision.getCameraResult(drivetrainPose);
-        Optional<EstimatedRobotPose> back = m_leftVision.getCameraResult(drivetrainPose);
+                Optional<EstimatedRobotPose> front = m_rightVision.getCameraResult(drivetrainPose);
+                Optional<EstimatedRobotPose> back = m_leftVision.getCameraResult(drivetrainPose);
 
-        int numPoses = 0;
+                int numPoses = 0;
 
-        numPoses += front.isPresent() ? 1 : 0;
-        numPoses += back.isPresent() ? 1 : 0;
+                numPoses += front.isPresent() ? 1 : 0;
+                numPoses += back.isPresent() ? 1 : 0;
 
-        Optional<Pose2d> pose = Optional.empty();
-        SmartDashboard.putNumber("nuMPoses", numPoses);
+                Optional<Pose2d> pose = Optional.empty();
+                SmartDashboard.putNumber("nuMPoses", numPoses);
 
-        if (numPoses == 1) {
-            pose = Optional
-                    .of(new Pose2d((front.isEmpty() ? back : front).get().estimatedPose.toPose2d().getTranslation(),
-                            drivetrainPose.getRotation()));
-        } else if (numPoses == 2) {
-            // average the poses
-            Pose3d frontP = front.get().estimatedPose;
-            Pose3d backP = back.get().estimatedPose;
+                if (numPoses == 1) {
+                        pose = Optional
+                                        .of(new Pose2d((front.isEmpty() ? back : front).get().estimatedPose.toPose2d()
+                                                        .getTranslation(),
+                                                        drivetrainPose.getRotation()));
+                } else if (numPoses == 2) {
+                        // average the poses
+                        Pose3d frontP = front.get().estimatedPose;
+                        Pose3d backP = back.get().estimatedPose;
 
-            Translation3d frontT = frontP.getTranslation();
-            Translation3d backT = backP.getTranslation();
+                        Translation3d frontT = frontP.getTranslation();
+                        Translation3d backT = backP.getTranslation();
 
-            Pose3d dPose = new Pose3d(drivetrainPose);
-            Rotation3d bruh = (dPose.getRotation());
+                        Pose3d dPose = new Pose3d(drivetrainPose);
+                        Rotation3d bruh = (dPose.getRotation());
 
-            pose = Optional.of(
-                    new Pose3d(frontT.plus(backT),
-                            bruh.times(2.)).toPose2d().div(2.));
+                        pose = Optional.of(
+                                        new Pose3d(frontT.plus(backT),
+                                                        bruh.times(2.)).toPose2d().div(2.));
+                }
+
+                if (pose.isPresent()) {
+                        return Optional.of(new EstimatedRobotPose(
+                                        new Pose3d(pose.get()),
+                                        (front.isEmpty() ? back : front).get().timestampSeconds,
+                                        null, null));
+                }
+
+                return Optional.empty();
         }
-
-        if (pose.isPresent()) {
-            return Optional.of(new EstimatedRobotPose(
-                    new Pose3d(pose.get()),
-                    (front.isEmpty() ? back : front).get().timestampSeconds,
-                    null, null));
-        }
-
-        return Optional.empty();
-    }
 
     /* Test Shooter Table */
     private ShooterTableEntry printSTVals() {
