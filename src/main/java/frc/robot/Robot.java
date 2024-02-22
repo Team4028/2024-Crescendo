@@ -56,7 +56,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousExit() {
-        DataLogManager.stop();
     }
 
     @Override
