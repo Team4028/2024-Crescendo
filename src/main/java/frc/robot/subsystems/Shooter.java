@@ -87,7 +87,7 @@ public class Shooter extends SubsystemBase {
             private static final PIDVFConstants Trap = new PIDVFConstants(0.0002, kFF, 1300);
             private static final PIDVFConstants Long = new PIDVFConstants(0.001, kFF, MAX_LEFT);
             private static final PIDVFConstants Medium = new PIDVFConstants(0.001, kFF, MAX_LEFT * 0.8);
-            private static final PIDVFConstants Short = new PIDVFConstants(0.000125, kFF, 1000.);
+            private static final PIDVFConstants Short = new PIDVFConstants(0.00025, kFF, 677.);
         }
 
         private static class Right {
@@ -96,13 +96,13 @@ public class Shooter extends SubsystemBase {
             private static final PIDVFConstants Trap = new PIDVFConstants(0.001, kFF, 1300);
             private static final PIDVFConstants Long = new PIDVFConstants(0.002, kFF, MAX_RIGHT);
             private static final PIDVFConstants Medium = new PIDVFConstants(0.002, kFF, MAX_RIGHT * 0.8);
-            private static final PIDVFConstants Short = new PIDVFConstants(0.0000625, kFF, 100.);
+            private static final PIDVFConstants Short = new PIDVFConstants(0.0005, kFF, 677.);
         }
 
         private static class Pivot {
             private static double kFF = 0.0;
 
-            private static final PIDVFConstants PID = new PIDVFConstants(0.16, kFF, 0.);
+            private static final PIDVFConstants PID = new PIDVFConstants(0.08, kFF, 0.);
 
             private static double LONG_POSITION = 2.5;
             private static double MEDIUM_POSITION = 26.75;
@@ -115,7 +115,7 @@ public class Shooter extends SubsystemBase {
                     Slots.TRAP, SHORT_POSITION);
 
             private static double MIN_VAL = 0.;
-            private static double MAX_VAL = 53.0;
+            private static double MAX_VAL = 70.0;
         }
     }
 
@@ -398,11 +398,11 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setRightToVel(double velRPM) {
-        rightPid.setReference(velRPM, ControlType.kVelocity);
+        rightPid.setReference(velRPM, ControlType.kVelocity, slot);
     }
 
     public void setLeftToVel(double velRPM) {
-        leftPid.setReference(velRPM, ControlType.kVelocity);
+        leftPid.setReference(velRPM, ControlType.kVelocity, slot);
     }
 
     public void spinMotorRight(double vBus) {

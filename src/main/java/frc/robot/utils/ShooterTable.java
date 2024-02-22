@@ -45,6 +45,11 @@ public class ShooterTable {
         ShooterTableEntry closestLower = table.get(0);
         ShooterTableEntry closestHigher = table.get(table.size() - 1);
 
+        if (distance < closestLower.Distance)
+            return closestLower;
+        if (distance > closestHigher.Distance)
+            return closestHigher;
+
         // loop thru all of the entrys of the shootertable
         for (ShooterTableEntry entry : table) {
             if (entry.Distance < distance
