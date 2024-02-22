@@ -29,6 +29,7 @@ public class Climber extends SubsystemBase {
 
     private final Timer m_zeroTimer;
 
+    private final double ZERO_VBUS = -0.1;
     private final double ZERO_TIMER_THRESHOLD = 0.1; // 5 scans
     private final double ZERO_VELOCITY_THRESHOLD = 5;
 
@@ -94,7 +95,7 @@ public class Climber extends SubsystemBase {
         return runOnce(() -> {
             m_zeroTimer.restart();
         })
-                .andThen(runMotorCommand(-0.1).repeatedly()
+                .andThen(runMotorCommand(ZERO_VBUS).repeatedly()
                         .until(() -> m_zeroTimer.get() >= ZERO_TIMER_THRESHOLD
                                 && Math.abs(m_encoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
                 .andThen(runMotorCommand(0.),

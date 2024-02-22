@@ -48,6 +48,17 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
     private DataLog log;
+
+    private static final PIDConstants AUTON_LINEAR_PID = new PIDConstants(10, 0, 0);
+    private static final PIDConstants AUTON_ANGULAR_PID = new PIDConstants(10, 0, 0);
+
+    private static final class PathFindPlannerConstants {
+        private static final double kMaxSpeed = TunerConstants.kSpeedAt12VoltsMps;
+        private static final double kMaxAccel = TunerConstants.kSpeedAt12VoltsMps;
+        private static final double kMaxAngSpeed = 1.5 * Math.PI;
+        private static final double kMaxAngAccel = 1.5 * Math.PI;
+    }
+
     public DoubleLogEntry currentFL, currentFR, currentBL, currentBR, velFL, velFR, velBL, velBR, vbFL, vbFR, vbBL,
             vbBR;
 
@@ -104,10 +115,10 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
 
     public Command pathFindCommand(Pose2d desiredPose, double scale, double endVel) {
         PathConstraints constraints = new PathConstraints(
-                TunerConstants.kSpeedAt12VoltsMps * scale,
-                TunerConstants.kSpeedAt12VoltsMps * scale,
-                1.5 * Math.PI,
-                1.5 * Math.PI);
+                PathFindPlannerConstants.kMaxSpeed * scale,
+                PathFindPlannerConstants.kMaxAccel * scale,
+                PathFindPlannerConstants.kMaxAngSpeed,
+                PathFindPlannerConstants.kMaxAngAccel);
 
         return AutoBuilder.pathfindToPose(
                 desiredPose,
@@ -260,8 +271,8 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 this::getCurrentRobotChassisSpeeds,
                 (speeds) -> this.setControl(autoRequest.withSpeeds(speeds)),
                 new HolonomicPathFollowerConfig(
-                        new PIDConstants(10, 0, 0),
-                        new PIDConstants(10, 0, 0),
+                        AUTON_LINEAR_PID,
+                        AUTON_ANGULAR_PID,
                         TunerConstants.kSpeedAt12VoltsMps,
                         driveBaseRadius,
                         new ReplanningConfig()),

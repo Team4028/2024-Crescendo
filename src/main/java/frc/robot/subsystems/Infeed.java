@@ -33,6 +33,12 @@ public class Infeed extends SubsystemBase {
     private static final int TOF_CAN_ID = 1;
     private static final int CURRENT_LIMIT = 60;
 
+    private static final int ENCODER_MESURMENT_PERIOD = 16;
+    private static final int ENCODER_AVG_DEPTH = 2;
+
+    private static final double TOF_SAMPLE_TIME = 24.0;
+    private static final int[] TOF_ROI = new int[] {4, 4, 11, 11};
+
     /** Creates a new SensorMotor. */
     public Infeed() {
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
@@ -41,15 +47,15 @@ public class Infeed extends SubsystemBase {
         motor.setIdleMode(IdleMode.kBrake);
 
         encoder = motor.getEncoder();
-        encoder.setMeasurementPeriod(16);
-        encoder.setAverageDepth(2);
+        encoder.setMeasurementPeriod(ENCODER_MESURMENT_PERIOD);
+        encoder.setAverageDepth(ENCODER_AVG_DEPTH);
 
         motor.burnFlash();
 
         tofSensor = new TimeOfFlight(TOF_CAN_ID);
 
-        tofSensor.setRangingMode(RangingMode.Short, 24.0);
-        tofSensor.setRangeOfInterest(4, 4, 11, 11);
+        tofSensor.setRangingMode(RangingMode.Short, TOF_SAMPLE_TIME);
+        tofSensor.setRangeOfInterest(TOF_ROI[0], TOF_ROI[1], TOF_ROI[2], TOF_ROI[3]);
 
         log = DataLogManager.getLog();
         currentLog = new DoubleLogEntry(log, "/Infeed/Current");
