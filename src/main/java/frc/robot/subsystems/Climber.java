@@ -33,7 +33,7 @@ public class Climber extends SubsystemBase {
     private static final int CURRENT_LIMIT = 100;
 
     private static final Slot0Configs pid = new Slot0Configs()
-            .withKP(0.045)
+            .withKP(0.01)
             .withKI(0.0)
             .withKD(0.0); // needs tuning
 
