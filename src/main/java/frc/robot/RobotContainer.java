@@ -224,7 +224,7 @@ public class RobotContainer {
 
         /* Run Climber to "Home" */
         driverController.y().and(driverController.povDown())
-                .onTrue(m_climber.runToPositionCommand(Climber.ClimberPositions.HOME));
+                .onTrue(m_climber.climbCommand());
 
         /* Run Climber to "Down One" */
         driverController.y().and(driverController.povLeft())

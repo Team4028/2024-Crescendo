@@ -5,7 +5,9 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -30,16 +32,32 @@ public class Climber extends SubsystemBase {
     private static final double ZERO_VELOCITY_THRESHOLD = 5;
 
     private static final int CAN_ID = 15;
-    private static final int CURRENT_LIMIT = 100;
-    // private static final double RAMP_RATE = 0.5;
+    private static final int SUPPLY_CURRENT_LIMIT = 80;
+    private static final int STATOR_CURRENT_LIMIT = 100;
 
-    private static final Slot0Configs pid = new Slot0Configs()
-            .withKP(0.01)
+    // ====================== //
+    /* MOTION MAGIC CONSTANTS */
+    // ====================== //
+    private static final double CRUISE_VELOCITY = 10.;
+    private static final double ACCELERATION = 20.;
+    private static final double JERK = 200.;
+
+    private final Slot0Configs pid = new Slot0Configs()
+            .withKP(1)
             .withKI(0.0)
             .withKD(0.0); // needs tuning
 
-    private final PositionVoltage posRequest = new PositionVoltage(
+    private final PositionVoltage positionRequest = new PositionVoltage(
             0,
+            0.,
+            true,
+            0,
+            0,
+            true,
+            false,
+            false);
+
+    private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(
             0,
             true,
             0,
@@ -54,10 +72,10 @@ public class Climber extends SubsystemBase {
         DOWN_TWO(40.),
         READY(65.);
 
-        public double position;
+        public double Position;
 
         private ClimberPositions(double position) {
-            this.position = position;
+            this.Position = position;
         }
     }
 
@@ -68,7 +86,16 @@ public class Climber extends SubsystemBase {
 
         // current limits
         motor.getConfigurator().apply(
-                new CurrentLimitsConfigs().withSupplyCurrentLimit(CURRENT_LIMIT).withStatorCurrentLimit(CURRENT_LIMIT));
+                new CurrentLimitsConfigs().withSupplyCurrentLimit(SUPPLY_CURRENT_LIMIT)
+                        .withStatorCurrentLimit(STATOR_CURRENT_LIMIT));
+
+        /* Motion Magic */
+        MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+        motionMagicConfigs.MotionMagicCruiseVelocity = CRUISE_VELOCITY;
+        motionMagicConfigs.MotionMagicAcceleration = ACCELERATION;
+        motionMagicConfigs.MotionMagicJerk = JERK;
+
+        motor.getConfigurator().apply(motionMagicConfigs);
 
         // pid config
         motor.getConfigurator().apply(pid);
@@ -103,15 +130,23 @@ public class Climber extends SubsystemBase {
     }
 
     public void runToPosition(double position) {
-        motor.setControl(posRequest.withPosition(position));
+        motor.setControl(positionRequest.withPosition(position));
     }
 
     public Command runToPositionCommand(double position) {
         return runOnce(() -> runToPosition(position));
     }
 
+    public void climb() {
+        motor.setControl(motionMagicRequest.withPosition(ClimberPositions.HOME.Position));
+    }
+
+    public Command climbCommand() {
+        return runOnce(this::climb);
+    }
+
     public Command runToPositionCommand(ClimberPositions position) {
-        return runToPositionCommand(position.position);
+        return runToPositionCommand(position.Position);
     }
 
     public void logValues() {
