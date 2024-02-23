@@ -34,6 +34,7 @@ public class Climber extends SubsystemBase {
 
     private static final int CAN_ID = 15;
     private static final int CURRENT_LIMIT = 100;
+    private static final double RAMP_RATE = 0.5;
 
     public enum ClimberPositions {
         HOME(1.),
@@ -60,6 +61,7 @@ public class Climber extends SubsystemBase {
         m_motor.setIdleMode(IdleMode.kBrake);
         m_motor.setInverted(false);
         m_motor.setSmartCurrentLimit(CURRENT_LIMIT);
+        m_motor.setClosedLoopRampRate(RAMP_RATE);
 
         m_encoder = m_motor.getEncoder();
 

@@ -261,19 +261,16 @@ public class RobotContainer {
     }
 
     public RobotContainer() {
-        // better solution:
-        // run fast until infeed tripped
-        // run slow until conveyor tripped
-        // run for like 0.5 more seconds and stop
+        // TODO: Failsafe timer based on Infeed ToF
         smartInfeedCommand = infeed.runInfeedMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
                 .repeatedly().until(conveyor.hasInfedSupplier())
                 .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
                         .repeatedly().withTimeout(0.1))
                 .andThen(shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-                        .raceWith(conveyor.runXRotations(-1.).withTimeout(0.5)
+                        .raceWith(conveyor.runXRotations(-1.5).withTimeout(0.5)
                                 .alongWith(infeed.runInfeedMotorCommand(0.))))
-                .andThen(shooter.spinMotorRightCommand(0.).raceWith(new WaitCommand(0.1)));
+                .andThen(shooter.spinMotorRightCommand(0.));
 
         // smartInfeedCommand = runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS)
         // .repeatedly().until(infeed.hasGamePieceSupplier())

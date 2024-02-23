@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
 public class Shooter extends SubsystemBase {
@@ -102,9 +103,9 @@ public class Shooter extends SubsystemBase {
         private static class Pivot {
             private static double kFF = 0.0;
 
-            private static final PIDVFConstants PID = new PIDVFConstants(0.08, kFF, 0.);
+            private static final PIDVFConstants PID = new PIDVFConstants(0.03, kFF, 0.);
 
-            private static double LONG_POSITION = 2.5;
+            private static double LONG_POSITION = 4.;
             private static double MEDIUM_POSITION = 26.75;
             private static double SHORT_POSITION = 45.;
 
@@ -114,7 +115,7 @@ public class Shooter extends SubsystemBase {
                     Slots.SHORT, SHORT_POSITION,
                     Slots.TRAP, SHORT_POSITION);
 
-            private static double MIN_VAL = 0.;
+            private static double MIN_VAL = 4.;
             private static double MAX_VAL = 70.0;
         }
     }
@@ -270,7 +271,8 @@ public class Shooter extends SubsystemBase {
                         .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
                                 && Math.abs(pivotEncoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
                 .andThen(runPivotCommand(0.).alongWith(Commands.runOnce(() -> zeroTimer.stop())))
-                .andThen(runOnce(() -> pivotEncoder.setPosition(0.)));
+                .andThen(runOnce(() -> pivotEncoder.setPosition(0.)))
+                .andThen(new WaitCommand(0.5).andThen(runPivotPositionCommand(PIDConstants.Pivot.MIN_VAL)));
     }
 
     public double getPivotPosition() {
@@ -407,6 +409,8 @@ public class Shooter extends SubsystemBase {
 
     public void spinMotorRight(double vBus) {
         rightMotor.set(vBus);
+        if (vBus < 0.)
+            System.out.println("shootrer backup");
     }
 
     public void spinMotorLeft(double vBus) {

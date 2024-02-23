@@ -37,8 +37,8 @@ public class Conveyor extends SubsystemBase {
         private static final double kD = 0.0;
     }
 
-    private static final double RANGE_THRESHOLD = 100;
-    private static final double OTHER_RANGE_THRESHOLD = 75;
+    private static final double RANGE_THRESHOLD = 110;
+    private static final double OTHER_RANGE_THRESHOLD = 80.;
     private static final double TOLERANCE = 10;
 
     private static final int CAN_ID = 11;
@@ -80,7 +80,7 @@ public class Conveyor extends SubsystemBase {
             hasInfed = true;
         }
 
-        if (hasInfed && Math.abs(tofSensor.getRange() - RANGE_THRESHOLD) <= TOLERANCE) {
+        if (hasInfed && tofSensor.getRange() >= RANGE_THRESHOLD) {
             hasInfed = false;
             return true;
         }
@@ -100,6 +100,7 @@ public class Conveyor extends SubsystemBase {
         return runOnce(() -> {
             target = encoder.getPosition() + x;
             pid.setReference(target, ControlType.kPosition);
+            System.out.println("backout");
         }).andThen(Commands.idle(this)).until(() -> Math.abs(target - encoder.getPosition()) < 0.06);
     }
 
