@@ -46,7 +46,7 @@ public class RobotContainer {
     // =============================================== //
     /* Magic numbers, Vbus constants, and OI constants */
     // =============================================== //
-    private static final double CLIMBER_VBUS = 0.7;
+    private static final double CLIMBER_VBUS = 0.1;
     private static final double INFEED_VBUS = 0.8;
     private static final double SLOW_INFEED_VBUS = 0.5;
 
@@ -64,8 +64,7 @@ public class RobotContainer {
     /* Controllers & Subsystems */
     // ======================== //
     private final CommandXboxController driverController = new CommandXboxController(OI_DRIVER_CONTROLLER);
-    // private final CommandXboxController operaterController = new
-    // CommandXboxController(OI_OPERATOR_CONTROLLER);
+    private final CommandXboxController operatorController = new CommandXboxController(OI_OPERATOR_CONTROLLER);
 
     private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
     private final Infeed infeed = new Infeed();
@@ -143,6 +142,10 @@ public class RobotContainer {
     /* Bindings & Default Commands */
     // =========================== //
     private void configureBindings() {
+        // ================ //
+        /* Default Commands */
+        // ================ //
+
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(() -> drive
                         .withVelocityX(scaleDriverController(-driverController.getLeftY(),
@@ -158,6 +161,10 @@ public class RobotContainer {
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runInfeedMotorCommand(0.));
+
+        // ========================= //
+        /* DRIVER CONTROLLER */
+        // ========================= //
 
         // ========================= //
         /* Infeed & Conveyor Control */
@@ -252,14 +259,26 @@ public class RobotContainer {
             printSTVals();
         }));
 
+        // ==================== //
+        /* PIVOT MANUAL CONTROL */
+        // ==================== //
+
         driverController.rightBumper().onTrue(pivot.runMotorCommand(PIVOT_VBUS))
                 .onFalse(pivot.runMotorCommand(0.0));
         driverController.leftBumper().onTrue(pivot.runMotorCommand(-PIVOT_VBUS))
                 .onFalse(pivot.runMotorCommand(0.0));
 
-        // driverController.povRight()
-        // .onTrue(shooter.run(() ->
-        // shooter.runPivotToPosition(shooter.getPivotPosition())));
+        // TODO: Port some stuff over
+
+        // =================== //
+        /* OPERATOR CONTROLLER */
+        // =================== //
+
+        /* Manual Climber Control */
+        operatorController.rightBumper().onTrue(m_climber.runMotorCommand(CLIMBER_VBUS))
+                .onFalse(m_climber.runMotorCommand(0.0));
+        operatorController.leftBumper().onTrue(m_climber.runMotorCommand(-CLIMBER_VBUS))
+                .onFalse(m_climber.runMotorCommand(0.0));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -279,19 +298,6 @@ public class RobotContainer {
                         .raceWith(conveyor.runXRotations(-1.5).withTimeout(0.5)
                                 .alongWith(infeed.runInfeedMotorCommand(0.))))
                 .andThen(shooter.spinMotorRightCommand(0.));
-
-        // smartInfeedCommand = runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS)
-        // .repeatedly().until(infeed.hasGamePieceSupplier())
-        // .andThen(runBoth(SLOW_CONVEYOR_VBUS, SLOW_INFEED_VBUS).repeatedly())
-        // .until(conveyor.hasGamePieceSupplier())
-        // .andThen(runBoth(VERY_SLOW_CONVEYOR_VBUS,
-        // SLOW_INFEED_VBUS).repeatedly().withTimeout(0.35))
-        // .andThen(shooter.spinMotorRightCommand(-0.4).alongWith(runBoth(-VERY_SLOW_CONVEYOR_VBUS,
-        // -VERY_SLOW_INFEED_VBUS)).repeatedly());
-        // .alongWith(shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS)).repeatedly().withTimeout(0.5))
-        // .andThen(shooter.spinMotorRightCommand(0.));
-        // .until(() -> !conveyor.hasGamePiece()))
-        // .andThen(conveyor.runXRotations(0.).alongWith(infeed.runInfeedMotorCommand(0.)));
 
         initNamedCommands();
         initAutonChooser();
