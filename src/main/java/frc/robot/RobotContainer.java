@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
@@ -37,6 +36,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
 // import frc.robot.subsystems.Fan;
 import frc.robot.subsystems.Infeed;
+import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Vision;
 import frc.robot.utils.ShooterTable;
@@ -49,10 +49,8 @@ public class RobotContainer {
     private static final double CLIMBER_VBUS = 0.7;
     private static final double INFEED_VBUS = 0.8;
     private static final double SLOW_INFEED_VBUS = 0.5;
-    private static final double VERY_SLOW_INFEED_VBUS = 0.15;
 
     private static final double PIVOT_VBUS = 0.3;
-    private static final double VERY_SLOW_CONVEYOR_VBUS = 0.15;
     private static final double SLOW_CONVEYOR_VBUS = 0.5;
     private static final double FAST_CONVEYOR_VBUS = 0.85;
 
@@ -74,6 +72,7 @@ public class RobotContainer {
     private final Shooter shooter = new Shooter();
     private final Conveyor conveyor = new Conveyor();
     private final Climber m_climber = new Climber();
+    private final Pivot pivot = new Pivot();
     // private final Fan m_fan = new Fan();
 
     private final Vision m_rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
@@ -103,7 +102,8 @@ public class RobotContainer {
     /* Swerve Control & Logging */
     // ======================== //
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MAX_SPEED * 0.1).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.1) // Add a 10% deadband
+            .withDeadband(MAX_SPEED * 0.1).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.1) // Add a 10%
+                                                                                           // deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                      // driving in open loop
     private final Telemetry logger = new Telemetry(MAX_SPEED);
@@ -121,15 +121,18 @@ public class RobotContainer {
                 new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
                         AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pright")),
                         () -> true));
-        NamedCommands.registerCommand("startShooter",
-                shooter.setSlotCommand(1)
-                        .andThen(() -> shooter.runPivotToPosition(shooter.getPivotPosition()))
-                        .andThen(shooter.runVelocityCommand()));
+
+        // TODO: change this stuff for shootertable
+        // NamedCommands.registerCommand("startShooter",
+        // shooter.setSlotCommand(1)
+        // .andThen(() -> shooter.runPivotToPosition(shooter.getPivotPosition()))
+        // .andThen(shooter.runVelocityCommand()));
         NamedCommands.registerCommand("runShooter", shooter.runVelocityCommand());
         NamedCommands.registerCommand("4pinfeed", infeed.runInfeedMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
         NamedCommands.registerCommand("smartInfeed", smartInfeedCommand);
-        NamedCommands.registerCommand("farShot", Commands.runOnce(() -> shooter.runPivotToPosition(14.25)));
+        // NamedCommands.registerCommand("farShot", Commands.runOnce(() ->
+        // shooter.runPivotToPosition(14.25)));
     }
 
     // TODO: this stuff needs cleaned up
@@ -169,7 +172,8 @@ public class RobotContainer {
 
         /* Conveyance */
         driverController.a()
-                .onTrue(conveyor.runXRotations(10).alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
+                .onTrue(conveyor.runXRotations(10)
+                        .alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
                 .onFalse(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS));
 
         /* Smart Infeed */
@@ -195,7 +199,11 @@ public class RobotContainer {
         // driverController.x().and(driverController.povLeft().or(driverController.povRight()))
         // .onTrue(shooter.runPivotPositionCommand(shooter.getPivotPosition()));
         driverController.x().and(driverController.povRight())
-                .toggleOnTrue(shooter.runEntryCommand(() -> printSTVals()));
+                .toggleOnTrue(Commands.runOnce(() -> {
+                    ShooterTableEntry entry = printSTVals();
+                    shooter.runEntry(entry);
+                    pivot.runToPosition(entry.Angle);
+                }, shooter, pivot));
 
         // driverController.y().and(driverController.povCenter()).onTrue(shooter.pivotZeroCommand());
         // driverController.y().toggleOnTrue(m_fan.runMotorCommand(FAN_VBUS));
@@ -222,7 +230,7 @@ public class RobotContainer {
         /* Run Climber to "Ready" */
         driverController.y().and(driverController.povUp())
                 .onTrue(m_climber.runToPositionCommand(Climber.ClimberPositions.READY)
-                        .alongWith(shooter.runPivotPositionCommand(65.5)));
+                        .alongWith(pivot.runToPositionCommand(65.5)));
 
         // ========================== //
         /* Drivetain & Vision Control */
@@ -244,10 +252,10 @@ public class RobotContainer {
             printSTVals();
         }));
 
-        driverController.rightBumper().onTrue(shooter.runPivotCommand(PIVOT_VBUS))
-                .onFalse(shooter.runPivotCommand(0.0));
-        driverController.leftBumper().onTrue(shooter.runPivotCommand(-PIVOT_VBUS))
-                .onFalse(shooter.runPivotCommand(0.0));
+        driverController.rightBumper().onTrue(pivot.runMotorCommand(PIVOT_VBUS))
+                .onFalse(pivot.runMotorCommand(0.0));
+        driverController.leftBumper().onTrue(pivot.runMotorCommand(-PIVOT_VBUS))
+                .onFalse(pivot.runMotorCommand(0.0));
 
         // driverController.povRight()
         // .onTrue(shooter.run(() ->
@@ -302,12 +310,12 @@ public class RobotContainer {
     /* Auton Command */
     public Command getAutonomousCommand() {
         return new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d()))
-                .alongWith(shooter.pivotZeroCommand()).andThen(autonChooser.getSelected());
+                .alongWith(pivot.zeroCommand()).andThen(autonChooser.getSelected());
     }
 
     /* Zeroing Command */
     public Command zeroCommand() {
-        return m_climber.zeroCommand().andThen(shooter.pivotZeroCommand());
+        return m_climber.zeroCommand().andThen(pivot.zeroCommand());
     }
 
     /* Asynchronous Zero */

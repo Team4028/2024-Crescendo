@@ -4,11 +4,10 @@
 
 package frc.robot.subsystems;
 
-import java.util.Map;
 import java.util.function.Supplier;
 
 import com.revrobotics.CANSparkFlex;
-import com.revrobotics.CANSparkMax;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
@@ -19,37 +18,27 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
 public class Shooter extends SubsystemBase {
     private CANSparkFlex rightMotor, leftMotor;
-    private CANSparkMax pivotMotor;
-    private RelativeEncoder rightEncoder, leftEncoder, pivotEncoder;
-    private SparkPIDController rightPid, leftPid, pivotPid;
+
+    private RelativeEncoder rightEncoder, leftEncoder;
+    private SparkPIDController rightPid, leftPid;
 
     private final DataLog log;
     private final DoubleLogEntry rightCurrent, leftCurrent,
             rightVelocity, leftVelocity, leftVoltage,
-            rightVoltage, pivotCurrent, pivotVelocity, pivotVoltage;
-
+            rightVoltage;
     private int slot = 0;
 
     private double leftTarget, rightTarget;
 
-    private final Timer zeroTimer;
-
-    private final double ZERO_TIMER_THRESHOLD = 0.14; // 7 scans
-    private final double ZERO_VELOCITY_THRESHOLD = 0.2;
-
     private static final int RIGHT_CAN_ID = 9;
     private static final int LEFT_CAN_ID = 10;
-    private static final int PIVOT_CAN_ID = 13;
 
     private final class Slots {
         private static final int TRAP = 3;
@@ -98,25 +87,6 @@ public class Shooter extends SubsystemBase {
             private static final PIDVFConstants Long = new PIDVFConstants(0.002, kFF, MAX_RIGHT);
             private static final PIDVFConstants Medium = new PIDVFConstants(0.002, kFF, MAX_RIGHT * 0.8);
             private static final PIDVFConstants Short = new PIDVFConstants(0.0005, kFF, 677.);
-        }
-
-        private static class Pivot {
-            private static double kFF = 0.0;
-
-            private static final PIDVFConstants PID = new PIDVFConstants(0.03, kFF, 0.);
-
-            private static double LONG_POSITION = 4.;
-            private static double MEDIUM_POSITION = 26.75;
-            private static double SHORT_POSITION = 45.;
-
-            private static final Map<Integer, Double> POSITION_MAP = Map.of(
-                    Slots.LONG, LONG_POSITION,
-                    Slots.MEDIUM, MEDIUM_POSITION,
-                    Slots.SHORT, SHORT_POSITION,
-                    Slots.TRAP, SHORT_POSITION);
-
-            private static double MIN_VAL = 4.;
-            private static double MAX_VAL = 70.0;
         }
     }
 
@@ -189,29 +159,6 @@ public class Shooter extends SubsystemBase {
         rightMotor.burnFlash();
 
         // ==================================
-        // PIVOT
-        // ==================================
-        pivotMotor = new CANSparkMax(PIVOT_CAN_ID, MotorType.kBrushless);
-
-        pivotMotor.setInverted(true);
-        pivotMotor.setIdleMode(IdleMode.kBrake);
-
-        pivotEncoder = pivotMotor.getEncoder();
-        pivotPid = pivotMotor.getPIDController();
-
-        // ==================================
-        // PIVOT PID
-        // ==================================
-        configPid(pivotPid, 0, PIDConstants.Pivot.PID);
-
-        pivotMotor.burnFlash();
-
-        // ==================================
-        // TIMER
-        // ==================================
-        zeroTimer = new Timer();
-
-        // ==================================
         // LOGS
         // ==================================
         log = DataLogManager.getLog();
@@ -221,9 +168,7 @@ public class Shooter extends SubsystemBase {
         leftVelocity = new DoubleLogEntry(log, "/Shooter/left/Velocity");
         rightVoltage = new DoubleLogEntry(log, "/Shooter/right/Voltage");
         leftVoltage = new DoubleLogEntry(log, "/Shooter/left/Voltage");
-        pivotCurrent = new DoubleLogEntry(log, "/Pivot/Current");
-        pivotVoltage = new DoubleLogEntry(log, "/Pivot/Voltage");
-        pivotVelocity = new DoubleLogEntry(log, "/Pivot/Velocity");
+      
 
     }
 
@@ -236,47 +181,6 @@ public class Shooter extends SubsystemBase {
         controller.setI(constants.kI, slot);
         controller.setD(constants.kD, slot);
         controller.setFF(constants.kFF, slot);
-    }
-
-    // ==================================
-    // PIVOT COMMANDS
-    // ==================================
-
-    public void runPivotMotor(double vBus) {
-        pivotMotor.set(vBus);
-    }
-
-    public Command runPivotCommand(double vBus) {
-        return runOnce(() -> runPivotMotor(vBus));
-    }
-
-    public void runPivotToPosition(double position) {
-        pivotPid.setReference(MathUtil.clamp(position, PIDConstants.Pivot.MIN_VAL, PIDConstants.Pivot.MAX_VAL),
-                ControlType.kPosition);
-    }
-
-    public Command runPivotPositionCommand(double position) {
-        return runOnce(() -> runPivotToPosition(position));
-    }
-
-    public Command setPivotPositionCommand() {
-        return runOnce(() -> runPivotToPosition(getPivotPosition()));
-    }
-
-    public Command pivotZeroCommand() {
-        return runOnce(() -> {
-            zeroTimer.restart();
-        })
-                .andThen(runPivotCommand(-0.1).repeatedly()
-                        .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
-                                && Math.abs(pivotEncoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
-                .andThen(runPivotCommand(0.).alongWith(Commands.runOnce(() -> zeroTimer.stop())))
-                .andThen(runOnce(() -> pivotEncoder.setPosition(0.)))
-                .andThen(new WaitCommand(0.5).andThen(runPivotPositionCommand(PIDConstants.Pivot.MIN_VAL)));
-    }
-
-    public double getPivotPosition() {
-        return PIDConstants.Pivot.POSITION_MAP.getOrDefault(slot, PIDConstants.Pivot.MEDIUM_POSITION);
     }
 
     // ==================================
@@ -304,7 +208,6 @@ public class Shooter extends SubsystemBase {
     public void runEntry(ShooterTableEntry entry) {
         setRightToVel(entry.RightSpeed);
         setLeftToVel(entry.LeftSpeed);
-        runPivotToPosition(entry.Angle);
     }
 
     public Command runEntryCommand(Supplier<ShooterTableEntry> entry) {
@@ -437,13 +340,10 @@ public class Shooter extends SubsystemBase {
         leftVoltage.append(leftMotor.getAppliedOutput() *
                 leftMotor.getBusVoltage());
 
-        pivotCurrent.append(pivotMotor.getOutputCurrent());
-        pivotVoltage.append(pivotMotor.getBusVoltage() * pivotMotor.getAppliedOutput());
-        pivotVelocity.append(pivotEncoder.getVelocity());
+       
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Pivot pos", pivotEncoder.getPosition());
     }
 }
