@@ -38,9 +38,9 @@ public class Climber extends SubsystemBase {
     // ====================== //
     /* MOTION MAGIC CONSTANTS */
     // ====================== //
-    private static final double CRUISE_VELOCITY = 10.;
-    private static final double ACCELERATION = 20.;
-    private static final double JERK = 200.;
+    private static final double CRUISE_VELOCITY = 20.;
+    private static final double ACCELERATION = 40.;
+    private static final double JERK = 400.;
 
     private final Slot0Configs pid = new Slot0Configs()
             .withKP(1)
