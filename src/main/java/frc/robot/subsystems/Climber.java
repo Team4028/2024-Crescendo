@@ -4,12 +4,13 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
-import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -21,70 +22,95 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Climber extends SubsystemBase {
     /** Creates a new Climber. */
-    private final CANSparkMax m_motor;
-    private final RelativeEncoder m_encoder;
-    private final SparkPIDController m_pid;
-    private final DataLog m_log;
-    private final DoubleLogEntry m_vbusLog, m_currentLog, m_positionLog, m_velocityLog;
+    private final TalonFX motor;
+    private final DataLog log;
+    private final DoubleLogEntry vbusLog, currentLog, positionLog, velocityLog;
 
-    private final Timer m_zeroTimer;
+    private final Timer zeroTimer;
 
-    private final double ZERO_VBUS = -0.1;
-    private final double ZERO_TIMER_THRESHOLD = 0.1; // 5 scans
-    private final double ZERO_VELOCITY_THRESHOLD = 5;
+    private static final double ZERO_TIMER_THRESHOLD = 0.1; // 5 scans
+    private static final double ZERO_VELOCITY_THRESHOLD = 5;
 
     private static final int CAN_ID = 15;
-    private static final int CURRENT_LIMIT = 100;
+    private static final int SUPPLY_CURRENT_LIMIT = 80;
+    private static final int STATOR_CURRENT_LIMIT = 100;
+
+    // ====================== //
+    /* MOTION MAGIC CONSTANTS */
+    // ====================== //
+    private static final double CRUISE_VELOCITY = 20.;
+    private static final double ACCELERATION = 40.;
+    private static final double JERK = 400.;
+
+    private final Slot0Configs pid = new Slot0Configs()
+            .withKP(1)
+            .withKI(0.0)
+            .withKD(0.0); // needs tuning
+
+    private final PositionVoltage positionRequest = new PositionVoltage(
+            0,
+            0.,
+            true,
+            0,
+            0,
+            true,
+            false,
+            false);
+
+    private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(
+            0,
+            true,
+            0,
+            0,
+            true,
+            false,
+            false);
 
     public enum ClimberPositions {
         HOME(1.),
-        CATCH(50.),
+        DOWN_ONE(50.),
+        DOWN_TWO(40.),
         READY(65.);
 
-        double Position;
+        public double Position;
 
         private ClimberPositions(double position) {
-            Position = position;
+            this.Position = position;
         }
     }
 
-    private final class PIDConstants {
-        private static final double kP = 0.045;
-        private static final double kI = 0.0;
-        private static final double kD = 0.0;
-        private static final double MAX_OUTPUT = 0.95;
-    }
-
     public Climber() {
-        m_motor = new CANSparkMax(CAN_ID, MotorType.kBrushless);
-        m_motor.setIdleMode(IdleMode.kBrake);
-        m_motor.setInverted(false);
-        m_motor.setSmartCurrentLimit(CURRENT_LIMIT);
+        motor = new TalonFX(CAN_ID);
+        motor.setNeutralMode(NeutralModeValue.Brake);
+        motor.setInverted(false);
 
-        m_encoder = m_motor.getEncoder();
+        // current limits
+        motor.getConfigurator().apply(
+                new CurrentLimitsConfigs().withSupplyCurrentLimit(SUPPLY_CURRENT_LIMIT)
+                        .withStatorCurrentLimit(STATOR_CURRENT_LIMIT));
 
-        // PID
-        m_pid = m_motor.getPIDController();
-        m_pid.setFeedbackDevice(m_encoder);
+        /* Motion Magic */
+        MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+        motionMagicConfigs.MotionMagicCruiseVelocity = CRUISE_VELOCITY;
+        motionMagicConfigs.MotionMagicAcceleration = ACCELERATION;
+        motionMagicConfigs.MotionMagicJerk = JERK;
 
-        m_pid.setP(PIDConstants.kP);
-        m_pid.setI(PIDConstants.kI);
-        m_pid.setD(PIDConstants.kD);
-        m_pid.setOutputRange(-PIDConstants.MAX_OUTPUT, PIDConstants.MAX_OUTPUT);
+        motor.getConfigurator().apply(motionMagicConfigs);
 
-        m_motor.burnFlash();
+        // pid config
+        motor.getConfigurator().apply(pid);
 
-        m_zeroTimer = new Timer();
+        zeroTimer = new Timer();
 
-        m_log = DataLogManager.getLog();
-        m_vbusLog = new DoubleLogEntry(m_log, "/Climber/Vbus");
-        m_currentLog = new DoubleLogEntry(m_log, "/Climber/Current");
-        m_positionLog = new DoubleLogEntry(m_log, "/Climber/Position");
-        m_velocityLog = new DoubleLogEntry(m_log, "/Climber/Velocity");
+        log = DataLogManager.getLog();
+        vbusLog = new DoubleLogEntry(log, "/Climber/Vbus");
+        currentLog = new DoubleLogEntry(log, "/Climber/Current");
+        positionLog = new DoubleLogEntry(log, "/Climber/Position");
+        velocityLog = new DoubleLogEntry(log, "/Climber/Velocity");
     }
 
     public void runMotor(double vBus) {
-        m_motor.set(vBus);
+        motor.set(vBus);
     }
 
     public Command runMotorCommand(double vBus) {
@@ -93,22 +119,30 @@ public class Climber extends SubsystemBase {
 
     public Command zeroCommand() {
         return runOnce(() -> {
-            m_zeroTimer.restart();
+            zeroTimer.restart();
         })
-                .andThen(runMotorCommand(ZERO_VBUS).repeatedly()
-                        .until(() -> m_zeroTimer.get() >= ZERO_TIMER_THRESHOLD
-                                && Math.abs(m_encoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
+                .andThen(runMotorCommand(-0.1).repeatedly()
+                        .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
+                                && Math.abs(motor.getVelocity().getValueAsDouble()) < ZERO_VELOCITY_THRESHOLD))
                 .andThen(runMotorCommand(0.),
-                        Commands.runOnce(() -> m_zeroTimer.stop()),
-                        Commands.runOnce(() -> m_encoder.setPosition(0.)));
+                        Commands.runOnce(() -> zeroTimer.stop()),
+                        Commands.runOnce(() -> motor.setPosition(0.0)));
     }
 
     public void runToPosition(double position) {
-        m_pid.setReference(position, ControlType.kPosition);
+        motor.setControl(positionRequest.withPosition(position));
     }
 
     public Command runToPositionCommand(double position) {
         return runOnce(() -> runToPosition(position));
+    }
+
+    public void climb() {
+        motor.setControl(motionMagicRequest.withPosition(ClimberPositions.HOME.Position));
+    }
+
+    public Command climbCommand() {
+        return runOnce(this::climb);
     }
 
     public Command runToPositionCommand(ClimberPositions position) {
@@ -116,16 +150,16 @@ public class Climber extends SubsystemBase {
     }
 
     public void logValues() {
-        m_vbusLog.append(m_motor.get());
-        m_currentLog.append(m_motor.getOutputCurrent());
-        m_positionLog.append(m_encoder.getPosition());
-        m_velocityLog.append(m_encoder.getVelocity());
+        vbusLog.append(motor.get());
+        currentLog.append(motor.getStatorCurrent().getValueAsDouble());
+        positionLog.append(motor.getPosition().getValueAsDouble());
+        velocityLog.append(motor.getVelocity().getValueAsDouble());
     }
 
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        SmartDashboard.putNumber("Climber Position", m_encoder.getPosition());
-        SmartDashboard.putNumber("Climber Current", m_motor.getOutputCurrent());
+        SmartDashboard.putNumber("Climber Position", motor.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Climber Current", motor.getStatorCurrent().getValueAsDouble());
     }
 }

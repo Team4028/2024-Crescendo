@@ -40,8 +40,8 @@ public class Conveyor extends SubsystemBase {
         private static final double COMMAND_ESCAPE_THRESHOLD = 0.06;
     }
 
-    private static final double RANGE_THRESHOLD = 100;
-    private static final double OTHER_RANGE_THRESHOLD = 75;
+    private static final double RANGE_THRESHOLD = 110;
+    private static final double OTHER_RANGE_THRESHOLD = 80.;
     private static final double TOLERANCE = 10;
     private static final double NO_PID_ROT_VBUS = 0.2;
 
@@ -84,7 +84,7 @@ public class Conveyor extends SubsystemBase {
             hasInfed = true;
         }
 
-        if (hasInfed && Math.abs(tofSensor.getRange() - RANGE_THRESHOLD) <= TOLERANCE) {
+        if (hasInfed && tofSensor.getRange() >= RANGE_THRESHOLD) {
             hasInfed = false;
             return true;
         }
@@ -104,8 +104,7 @@ public class Conveyor extends SubsystemBase {
         return runOnce(() -> {
             target = encoder.getPosition() + x;
             pid.setReference(target, ControlType.kPosition);
-        }).andThen(Commands.idle(this))
-                .until(() -> Math.abs(target - encoder.getPosition()) < PIDConstants.COMMAND_ESCAPE_THRESHOLD);
+        }).andThen(Commands.idle(this)).until(() -> Math.abs(target - encoder.getPosition()) < 0.06);
     }
 
     public Command runXRotationsNoPID(double x) {
