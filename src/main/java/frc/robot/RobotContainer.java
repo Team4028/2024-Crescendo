@@ -191,21 +191,21 @@ public class RobotContainer {
         // ======================= //
 
         /* Run Shooter */
-        driverController.x().and(driverController.povCenter())
+        operatorController.x()
                 .toggleOnTrue(shooter.runVelocityCommand());
 
         /* Cycle Down (Trap -> Long) */
-        driverController.x().and(driverController.povDown())
+        operatorController.y().and(operatorController.povCenter())
                 .onTrue(shooter.cycleDownCommand());
 
         /* Cycle Up (Long -> Trap) */
-        driverController.x().and(driverController.povUp())
+        operatorController.a()
                 .onTrue(shooter.cycleUpCommand());
 
         /* Run Pivot */
         // driverController.x().and(driverController.povLeft().or(driverController.povRight()))
         // .onTrue(shooter.runPivotPositionCommand(shooter.getPivotPosition()));
-        driverController.x().and(driverController.povRight())
+        operatorController.b()
                 .toggleOnTrue(Commands.runOnce(() -> {
                     ShooterTableEntry entry = printSTVals();
                     shooter.runEntry(entry);
@@ -219,23 +219,23 @@ public class RobotContainer {
         /* Climber & Zeroing Control */
         // ========================= //
 
-        /* Zero Climber & Pivot */
-        driverController.y().and(driverController.povCenter()).onTrue(zeroCommand());
+        /* Zero Climber & Pivot */ //do I need the second "operatorController" for just the direction button
+        operatorController.start().onTrue(zeroCommand());
 
         /* Run Climber to "Home" */
-        driverController.y().and(driverController.povDown())
+        operatorController.y().and(operatorController.povDown())
                 .onTrue(m_climber.climbCommand());
 
         /* Run Climber to "Down One" */
-        driverController.y().and(driverController.povLeft())
+        operatorController.povLeft()
                 .onTrue(m_climber.runToPositionCommand(Climber.ClimberPositions.DOWN_ONE));
 
         /* Run Climber to "Down One" */
-        driverController.y().and(driverController.povRight())
+        operatorController.povRight()
                 .onTrue(m_climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
 
         /* Run Climber to "Ready" */
-        driverController.y().and(driverController.povUp())
+        operatorController.y().and(operatorController.povUp())
                 .onTrue(m_climber.runToPositionCommand(Climber.ClimberPositions.READY)
                         .alongWith(pivot.runToPositionCommand(65.5)));
 
@@ -251,7 +251,7 @@ public class RobotContainer {
                 .onTrue(drivetrain.addMeasurementCommand(() -> getBestPose()));
 
         /* Reset Pose & Test ShooterTable */
-        driverController.back().and(driverController.povDown()).onTrue(Commands.runOnce(() -> {
+        operatorController.back().and(operatorController.povDown()).onTrue(Commands.runOnce(() -> {
             var pose = getBestPose();
             if (pose.isPresent())
                 drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
@@ -263,9 +263,9 @@ public class RobotContainer {
         /* PIVOT MANUAL CONTROL */
         // ==================== //
 
-        driverController.rightBumper().onTrue(pivot.runMotorCommand(PIVOT_VBUS))
+        operatorController.rightTrigger().onTrue(pivot.runMotorCommand(PIVOT_VBUS))
                 .onFalse(pivot.runMotorCommand(0.0));
-        driverController.leftBumper().onTrue(pivot.runMotorCommand(-PIVOT_VBUS))
+        operatorController.leftTrigger().onTrue(pivot.runMotorCommand(-PIVOT_VBUS))
                 .onFalse(pivot.runMotorCommand(0.0));
 
         // TODO: Port some stuff over
