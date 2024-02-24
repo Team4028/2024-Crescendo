@@ -12,6 +12,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "pivotZero"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
