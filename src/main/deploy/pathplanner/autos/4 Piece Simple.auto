@@ -3,36 +3,50 @@
   "startingPose": {
     "position": {
       "x": 1.45,
-      "y": 6.04
+      "y": 6.0
     },
-    "rotation": 46.0
+    "rotation": 0.0
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "startShooter"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "4 piece 0-1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "4 piece 1-2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "4 piece 2-3"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "startShooter"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "4 piece 0-1"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "4 piece 1-2"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "4 piece 2-3"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
           }
         }
       ]

@@ -30,11 +30,6 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.0,
-      "rotationDegrees": 45.0,
-      "rotateFast": false
-    },
-    {
       "waypointRelativePos": 0.0,
       "rotationDegrees": 46.0,
       "rotateFast": false
@@ -52,7 +47,7 @@
             {
               "type": "named",
               "data": {
-                "name": "shortInfeed"
+                "name": "4pinfeed"
               }
             }
           ]
@@ -74,7 +69,7 @@
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 53.09901730669836,
+    "rotation": 0.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

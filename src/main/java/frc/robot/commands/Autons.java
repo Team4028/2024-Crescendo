@@ -3,6 +3,7 @@ package frc.robot.commands;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -53,14 +54,16 @@ public class Autons { // TODO: Add vision later
     public Command twoPieceAutonDynamic(StartPoses startPos, double scale, Notes... notesToVisit) {
         SequentialCommandGroup cmd = new SequentialCommandGroup(
                 drive.runOnce(() -> drive.seedFieldRelative(startPos.pose)),
-                drive.pathFindCommand(startPos == StartPoses.TOP ? SAFE_TOP : SAFE_BTM, scale, 0));
+                drive.pathFindCommand(startPos == StartPoses.TOP ? SAFE_TOP : SAFE_BTM, scale, 3));
 
         for (var note : notesToVisit) {
             Pose2d poseToShoot = note.pose.getTranslation().getY() > 4 ? SHOOT_TOP : SHOOT_BTM;
 
             // @formatter:off <- this is so stupid
+            try {
             cmd.addCommands(
-                    drive.pathFindCommand(note.pose, scale, 0).alongWith(smartInfeedCommand),
+                    drive.pathFindCommand(note.pose, scale, 0).alongWith(new InstantCommand(
+                        smartInfeedCommand::schedule, infeed, conveyor, shooter)),
                     drive.pathFindCommand(poseToShoot, scale, 0)
                             .alongWith(shooter.run(
                                 () -> shooter.runEntry(ShooterTable.calcShooterTableEntry(
@@ -73,6 +76,7 @@ public class Autons { // TODO: Add vision later
                     infeed.runInfeedMotorCommand(0.)
                             .alongWith(conveyor.runMotorCommand(0.).alongWith(shooter.stopCommand()))
             );
+            } catch (Exception e) { e.printStackTrace(); }
             // @formatter:on
         }
 
