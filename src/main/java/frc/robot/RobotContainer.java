@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.RotateToSpeaker;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -66,7 +68,7 @@ public class RobotContainer {
     private final CommandXboxController driverController = new CommandXboxController(OI_DRIVER_CONTROLLER);
     private final CommandXboxController operatorController = new CommandXboxController(OI_OPERATOR_CONTROLLER);
 
-    private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
+    public final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
     private final Infeed infeed = new Infeed();
     private final Shooter shooter = new Shooter();
     private final Conveyor conveyor = new Conveyor();
@@ -80,7 +82,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command smartInfeedCommand;
+    private final Command smartInfeedCommand, magicShootCommand;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -205,12 +207,6 @@ public class RobotContainer {
         /* Run Pivot */
         // driverController.x().and(driverController.povLeft().or(driverController.povRight()))
         // .onTrue(shooter.runPivotPositionCommand(shooter.getPivotPosition()));
-        driverController.x().and(driverController.povRight())
-                .toggleOnTrue(Commands.runOnce(() -> {
-                    ShooterTableEntry entry = printSTVals();
-                    shooter.runEntry(entry);
-                    pivot.runToPosition(entry.Angle);
-                }, shooter, pivot));
 
         // driverController.y().and(driverController.povCenter()).onTrue(shooter.pivotZeroCommand());
         // driverController.y().toggleOnTrue(m_fan.runMotorCommand(FAN_VBUS));
@@ -280,11 +276,23 @@ public class RobotContainer {
         operatorController.leftBumper().onTrue(m_climber.runMotorCommand(-CLIMBER_VBUS))
                 .onFalse(m_climber.runMotorCommand(0.0));
 
+        operatorController.a().toggleOnTrue(new RotateToSpeaker(drivetrain));
+
+        operatorController.x()
+                .toggleOnTrue(Commands.runOnce(() -> {
+                    ShooterTableEntry entry = printSTVals();
+                    shooter.runEntry(entry);
+                    pivot.runToPosition(entry.Angle);
+                }, shooter, pivot));
+
+        operatorController.b().onTrue(magicShootCommand);
+
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
         }
 
         drivetrain.registerTelemetry(logger::telemeterize);
+
     }
 
     public RobotContainer() {
@@ -298,6 +306,14 @@ public class RobotContainer {
                         .raceWith(conveyor.runXRotations(-1.5).withTimeout(0.5)
                                 .alongWith(infeed.runInfeedMotorCommand(0.))))
                 .andThen(shooter.spinMotorRightCommand(0.));
+
+        magicShootCommand = new RotateToSpeaker(drivetrain).andThen(Commands.runOnce(() -> {
+            ShooterTableEntry entry = printSTVals();
+            shooter.runEntry(entry);
+            pivot.runToPosition(entry.Angle);
+        }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReady())).andThen(conveyor.runXRotations(10)
+                .alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS))).andThen(shooter.stopCommand())
+                .andThen(pivot.runToPositionCommand(4));
 
         initNamedCommands();
         initAutonChooser();
@@ -393,7 +409,7 @@ public class RobotContainer {
     }
 
     /* Return approx. 3d pose */
-    private Optional<EstimatedRobotPose> getBestPose() {
+    public Optional<EstimatedRobotPose> getBestPose() {
         Pose2d drivetrainPose = drivetrain.getState().Pose;
 
         Optional<EstimatedRobotPose> front = m_rightVision.getCameraResult(drivetrainPose);
@@ -417,20 +433,17 @@ public class RobotContainer {
             Pose3d frontP = front.get().estimatedPose;
             Pose3d backP = back.get().estimatedPose;
 
-            Translation3d frontT = frontP.getTranslation();
-            Translation3d backT = backP.getTranslation();
-
-            Pose3d dPose = new Pose3d(drivetrainPose);
-            Rotation3d bruh = (dPose.getRotation());
+            Translation2d frontT = frontP.getTranslation().toTranslation2d();
+            Translation2d backT = backP.getTranslation().toTranslation2d();
 
             pose = Optional.of(
-                    new Pose3d(frontT.plus(backT),
-                            bruh.times(2.)).toPose2d().div(2.));
+                    new Pose2d(frontT.plus(backT).div(2.),
+                            drivetrainPose.getRotation()));
         }
 
         if (pose.isPresent()) {
             return Optional.of(new EstimatedRobotPose(
-                    new Pose3d(pose.get()),
+                    new Pose3d(pose.get().plus(new Transform2d(Units.inchesToMeters(9.), 0., new Rotation2d()))),
                     (front.isEmpty() ? back : front).get().timestampSeconds,
                     null, null));
         }

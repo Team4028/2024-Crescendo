@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import com.revrobotics.CANSparkFlex;
@@ -168,7 +169,6 @@ public class Shooter extends SubsystemBase {
         leftVelocity = new DoubleLogEntry(log, "/Shooter/left/Velocity");
         rightVoltage = new DoubleLogEntry(log, "/Shooter/right/Voltage");
         leftVoltage = new DoubleLogEntry(log, "/Shooter/left/Voltage");
-      
 
     }
 
@@ -186,6 +186,12 @@ public class Shooter extends SubsystemBase {
     // ==================================
     // SHOOTER COMMANDS
     // ==================================
+
+    /* Check if shooter is spinned up :) */
+    public BooleanSupplier isReady() {
+        return () -> Math.abs(rightEncoder.getVelocity() - rightTarget) < 200.
+                && Math.abs(leftEncoder.getVelocity() - leftTarget) < 200.;
+    }
 
     /**
      * Run motors at the velocity input from the dashboard.
@@ -214,7 +220,6 @@ public class Shooter extends SubsystemBase {
         return startEnd(
                 () -> runEntry(entry.get()),
                 () -> stop());
-
     }
 
     public void stop() {
@@ -303,10 +308,12 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setRightToVel(double velRPM) {
+        rightTarget = velRPM;
         rightPid.setReference(velRPM, ControlType.kVelocity, slot);
     }
 
     public void setLeftToVel(double velRPM) {
+        leftTarget = velRPM;
         leftPid.setReference(velRPM, ControlType.kVelocity, slot);
     }
 
@@ -340,7 +347,6 @@ public class Shooter extends SubsystemBase {
         leftVoltage.append(leftMotor.getAppliedOutput() *
                 leftMotor.getBusVoltage());
 
-       
     }
 
     @Override
