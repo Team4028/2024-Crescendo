@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -19,10 +21,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 public class Pivot extends SubsystemBase {
-    private final CANSparkMax pivotMotor;
-
-    private final RelativeEncoder pivotEncoder;
-    private final SparkPIDController pivotPid;
+    private final TalonFX motor;
 
     private final DataLog log;
     private final DoubleLogEntry pivotCurrent, pivotVelocity, pivotVoltage;
@@ -31,33 +30,46 @@ public class Pivot extends SubsystemBase {
     private final double ZERO_TIMER_THRESHOLD = 0.14; // 7 scans
     private final double ZERO_VELOCITY_THRESHOLD = 0.2;
 
+    private final PositionVoltage positionRequest = new PositionVoltage(
+        0.,
+        0.,
+        true,
+        0.,
+        0,
+        false,
+        false,
+        false
+    );
+
+    
+
     private static final int PIVOT_CAN_ID = 13;
 
     private static class PIDConstants {
-        private static final double kP = 0.03;
+        private static final double kP = 0.12;
         
-        private static double MIN_VAL = 4.;
-        private static double MAX_VAL = 70.0;
+        private static double MIN_VAL = 1.;
+        private static double MAX_VAL = 17.5;
     }
 
     public Pivot() {
         // ==================================
         // PIVOT
         // ==================================
-        pivotMotor = new CANSparkMax(PIVOT_CAN_ID, MotorType.kBrushless);
+        motor = new TalonFX(PIVOT_CAN_ID);
 
-        pivotMotor.setInverted(true);
-        pivotMotor.setIdleMode(IdleMode.kBrake);
+        motor.setInverted(true);
+        motor.setIdleMode(IdleMode.kBrake);
 
-        pivotEncoder = pivotMotor.getEncoder();
-        pivotPid = pivotMotor.getPIDController();
+        pivotEncoder = motor.getEncoder();
+        pivotPid = motor.getPIDController();
 
         // ==================================
         // PIVOT PID
         // ==================================
         pivotPid.setP(PIDConstants.kP);
 
-        pivotMotor.burnFlash();
+        motor.burnFlash();
 
         // ==================================
         // TIMER
@@ -75,7 +87,7 @@ public class Pivot extends SubsystemBase {
     // ==================================
 
     public void runMotor(double vBus) {
-        pivotMotor.set(vBus);
+        motor.set(vBus);
     }
 
     public Command runMotorCommand(double vBus) {
@@ -105,8 +117,8 @@ public class Pivot extends SubsystemBase {
     }
 
     public void logValues() {
-        pivotCurrent.append(pivotMotor.getOutputCurrent());
-        pivotVoltage.append(pivotMotor.getBusVoltage() * pivotMotor.getAppliedOutput());
+        pivotCurrent.append(motor.getOutputCurrent());
+        pivotVoltage.append(motor.getBusVoltage() * motor.getAppliedOutput());
         pivotVelocity.append(pivotEncoder.getVelocity());
     }
 
