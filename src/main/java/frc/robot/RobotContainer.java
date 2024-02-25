@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
@@ -57,7 +58,7 @@ public class RobotContainer {
     private static final double INFEED_VBUS = 0.8;
     private static final double SLOW_INFEED_VBUS = 0.5;
 
-    private static final double PIVOT_VBUS = 0.1;
+    private static final double PIVOT_VBUS = 0.15;
     private static final double SLOW_CONVEYOR_VBUS = 0.5;
     private static final double FAST_CONVEYOR_VBUS = 0.85;
 
@@ -211,7 +212,7 @@ public class RobotContainer {
         driverController.b().toggleOnTrue(smartInfeedCommand);
 
         // ======================= //
-        /* Shooter & Pivot Control */
+        /* Shooter Control */
         // ======================= //
 
         /* Run Shooter */
@@ -246,10 +247,15 @@ public class RobotContainer {
                 .onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
 
         /* Run Climber to "Ready" */
-        driverController.y().and(driverController.povUp())
-                .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL).andThen(
-                        climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+        // driverController.y().and(driverController.povUp())
+        //         .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL).alongWith(new WaitCommand(3.0)).until(pivot.inPosition()).andThen(
+        //                 climber.runToPositionCommand(Climber.ClimberPositions.READY)));
 
+                        //TODO -- this wait ^ doesn't work, climber needs to wait to move until pivot in position
+
+
+        driverController.y().and(driverController.povUp())
+                .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL));
         // ========================== //
         /* Drivetain & Vision Control */
         // ========================== //
@@ -381,6 +387,7 @@ public class RobotContainer {
         infeed.logValues();
         shooter.logValues();
         climber.logValues();
+        pivot.logValues();
         // m_fan.logValues();
     }
 

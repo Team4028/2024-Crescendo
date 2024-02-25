@@ -1,8 +1,12 @@
 package frc.robot.subsystems;
 
+import java.util.function.BooleanSupplier;
+
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
@@ -20,25 +24,33 @@ public class Pivot extends SubsystemBase {
     private final TalonFX motor;
 
     private final DataLog log;
-    private final DoubleLogEntry pivotCurrent, pivotVelocity, pivotVoltage;
+    private final DoubleLogEntry pivotCurrent, pivotVelocity, pivotVoltage, pivotVolt2, pivotPosition;
 
     private final Timer zeroTimer;
     private final double ZERO_TIMER_THRESHOLD = 0.14; // 7 scans
     private final double ZERO_VELOCITY_THRESHOLD = 0.2;
 
-    private final MotionMagicTorqueCurrentFOC motionMagicRequest = new MotionMagicTorqueCurrentFOC(
-            0.);
+    // private final MotionMagicTorqueCurrentFOC motionMagicRequest = new MotionMagicTorqueCurrentFOC(0.);
+    private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0.);
 
-    private final Slot0Configs pidConfigs = new Slot0Configs().withKP(320.);
+    // private final Slot0Configs pidConfigs = new Slot0Configs().withKP(320.);
+    private final Slot0Configs pidConfigs = new Slot0Configs()
+        .withKP(14.0)
+        .withKS(0.12);
+    
+    private static final int SUPPLY_CURRENT_LIMIT = 80;
+    private static final int STATOR_CURRENT_LIMIT = 100;
 
     private static final int PIVOT_CAN_ID = 13;
 
-    private static final double CRUISE_VELOCITY = 4.;
-    private static final double ACCELERATION = 8.;
-    private static final double JERK = 80.;
+    private static final double CRUISE_VELOCITY = 24.;
+    private static final double ACCELERATION = 36.;
+    private static final double JERK = 360.;
 
     public static final double MIN_VAL = 1.;
     public static final double MAX_VAL = 12.5;
+
+    private double targetPosition;
 
     public Pivot() {
         /* ======== */
@@ -55,6 +67,12 @@ public class Pivot extends SubsystemBase {
 
         motor.getConfigurator().apply(pidConfigs);
 
+        // current limits
+        motor.getConfigurator().apply(
+                new CurrentLimitsConfigs().withSupplyCurrentLimit(SUPPLY_CURRENT_LIMIT)
+                        .withStatorCurrentLimit(STATOR_CURRENT_LIMIT));
+    
+
         /* ============ */
         /* MOTION MAGIC */
         /* ============ */
@@ -64,6 +82,8 @@ public class Pivot extends SubsystemBase {
         motionMagicConfigs.MotionMagicJerk = JERK;
 
         motor.getConfigurator().apply(motionMagicConfigs);
+
+        targetPosition = MIN_VAL;
 
         /* ===== */
         /* TIMER */
@@ -75,6 +95,8 @@ public class Pivot extends SubsystemBase {
         pivotCurrent = new DoubleLogEntry(log, "/Pivot/Current");
         pivotVoltage = new DoubleLogEntry(log, "/Pivot/Voltage");
         pivotVelocity = new DoubleLogEntry(log, "/Pivot/Velocity");
+        pivotVolt2 = new DoubleLogEntry(log, "/Pivot/Voltage2");
+        pivotPosition = new DoubleLogEntry(log, "/Pivot/Position");
     }
     // ==================================
     // PIVOT COMMANDS
@@ -89,6 +111,7 @@ public class Pivot extends SubsystemBase {
     }
 
     public void runToPosition(double position) {
+        targetPosition = position;
         motor.setControl(
                 motionMagicRequest.withPosition(MathUtil.clamp(position, MIN_VAL, MAX_VAL)));
     }
@@ -110,10 +133,20 @@ public class Pivot extends SubsystemBase {
 
     }
 
+    // public boolean inPosition() {
+    //     return Math.abs(motor.getPosition() - targetPosition) < 1.0;
+    // }
+
+    public BooleanSupplier inPosition() {
+        return () -> (Math.abs(motor.getPosition().getValueAsDouble() - targetPosition) < 1.0);
+    }
+
     public void logValues() {
         pivotCurrent.append(motor.getStatorCurrent().getValueAsDouble());
-        pivotVoltage.append(motor.getDutyCycle().getValueAsDouble());
+        pivotVoltage.append(motor.getMotorVoltage().getValueAsDouble());
         pivotVelocity.append(motor.getVelocity().getValueAsDouble());
+        pivotVolt2.append(motor.getSupplyVoltage().getValueAsDouble());
+        pivotPosition.append(motor.getPosition().getValueAsDouble());
     }
 
     @Override

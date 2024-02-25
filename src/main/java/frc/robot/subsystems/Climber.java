@@ -138,7 +138,7 @@ public class Climber extends SubsystemBase {
     }
 
     public void climb() {
-        motor.setControl(motionMagicRequest.withPosition(ClimberPositions.HOME.Position));
+        motor.setControl(motionMagicRequest.withPosition(ClimberPositions.HOME.Position - 2.0)); //subtract 5 from this probably
     }
 
     public Command climbCommand() {
