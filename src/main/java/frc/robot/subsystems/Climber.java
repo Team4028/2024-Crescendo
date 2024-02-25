@@ -43,7 +43,7 @@ public class Climber extends SubsystemBase {
     private static final double JERK = 400.;
 
     private final Slot0Configs pid = new Slot0Configs()
-            .withKP(1)
+            .withKP(2.)
             .withKI(0.0)
             .withKD(0.0); // needs tuning
 

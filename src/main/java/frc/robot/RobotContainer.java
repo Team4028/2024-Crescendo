@@ -231,7 +231,7 @@ public class RobotContainer {
         // ========================= //
 
         /* Zero Climber & Pivot */
-        driverController.y().and(driverController.povCenter()).onTrue(zeroCommand());
+        driverController.y().and(driverController.povCenter()).onTrue(climber.zeroCommand());
 
         /* Run Climber to "Home" */
         driverController.y().and(driverController.povDown())
@@ -247,7 +247,7 @@ public class RobotContainer {
 
         /* Run Climber to "Ready" */
         driverController.y().and(driverController.povUp())
-                .onTrue(pivot.runToPositionCommand(65.5).andThen(
+                .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL).andThen(
                         climber.runToPositionCommand(Climber.ClimberPositions.READY)));
 
         // ========================== //

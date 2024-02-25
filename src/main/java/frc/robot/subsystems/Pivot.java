@@ -29,16 +29,16 @@ public class Pivot extends SubsystemBase {
     private final MotionMagicTorqueCurrentFOC motionMagicRequest = new MotionMagicTorqueCurrentFOC(
             0.);
 
-    private final Slot0Configs pidConfigs = new Slot0Configs().withKP(0.01);
+    private final Slot0Configs pidConfigs = new Slot0Configs().withKP(320.);
 
     private static final int PIVOT_CAN_ID = 13;
 
-    private static final double CRUISE_VELOCITY = 2.;
-    private static final double ACCELERATION = 4.;
-    private static final double JERK = 40.;
+    private static final double CRUISE_VELOCITY = 4.;
+    private static final double ACCELERATION = 8.;
+    private static final double JERK = 80.;
 
     public static final double MIN_VAL = 1.;
-    public static final double MAX_VAL = 17.5;
+    public static final double MAX_VAL = 12.5;
 
     public Pivot() {
         /* ======== */
@@ -101,7 +101,7 @@ public class Pivot extends SubsystemBase {
         return runOnce(() -> {
             zeroTimer.restart();
         })
-                .andThen(runMotorCommand(-0.1).repeatedly()
+                .andThen(runMotorCommand(-0.025).repeatedly()
                         .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
                                 && Math.abs(motor.getVelocity().getValueAsDouble()) < ZERO_VELOCITY_THRESHOLD))
                 .andThen(runMotorCommand(0.).alongWith(Commands.runOnce(() -> zeroTimer.stop())))
@@ -119,5 +119,6 @@ public class Pivot extends SubsystemBase {
     @Override
     public void periodic() {
         SmartDashboard.putNumber("Pivot pos", motor.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Pivot Current", motor.getStatorCurrent().getValueAsDouble());
     }
 }
