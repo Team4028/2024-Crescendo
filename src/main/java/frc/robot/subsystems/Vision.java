@@ -122,5 +122,4 @@ public class Vision extends SubsystemBase {
         return null;
     }
 
-    
 }

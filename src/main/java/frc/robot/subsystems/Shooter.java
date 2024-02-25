@@ -86,7 +86,7 @@ public class Shooter extends SubsystemBase {
         private static class Left {
             private static double kFF = 0.00019;
 
-            private static final PIDVFConstants Trap = new PIDVFConstants(0.0002, kFF); //1300
+            private static final PIDVFConstants Trap = new PIDVFConstants(0.0002, kFF); // 1300
             private static final PIDVFConstants Long = new PIDVFConstants(0.001, kFF); // 100%
             private static final PIDVFConstants Medium = new PIDVFConstants(0.001, kFF); // 80%
             private static final PIDVFConstants Amp = new PIDVFConstants(0.00025, kFF); // 690
@@ -96,7 +96,7 @@ public class Shooter extends SubsystemBase {
             private static double kFF = 0.00022;
 
             private static final PIDVFConstants Trap = new PIDVFConstants(0.001, kFF); // 1300
-            private static final PIDVFConstants Long = new PIDVFConstants(0.002, kFF); //100%
+            private static final PIDVFConstants Long = new PIDVFConstants(0.002, kFF); // 100%
             private static final PIDVFConstants Medium = new PIDVFConstants(0.002, kFF); // 80%
             private static final PIDVFConstants Amp = new PIDVFConstants(0.0005, kFF); // 690
         }

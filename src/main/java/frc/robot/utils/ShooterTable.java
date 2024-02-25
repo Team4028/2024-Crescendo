@@ -65,7 +65,6 @@ public class ShooterTable {
             }
         }
 
-        
         double scaleFactor = (distance.magnitude() - closestLower.distance.magnitude())
                 / (closestHigher.distance.magnitude() - closestLower.distance.magnitude());
 

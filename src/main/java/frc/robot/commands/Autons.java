@@ -1,7 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.Units;
+import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -61,26 +61,25 @@ public class Autons { // TODO: Add vision later
         for (var note : notesToVisit) {
             Pose2d poseToShoot = note.pose.getTranslation().getY() > 4 ? SHOOT_TOP : SHOOT_BTM;
 
-            // @formatter:off <- this is so stupid
             try {
-            cmd.addCommands(
-                    drive.pathFindCommand(note.pose, scale, 0).alongWith(new InstantCommand(
-                        smartInfeedCommand::schedule, infeed, conveyor, shooter)),
-                    drive.pathFindCommand(poseToShoot, scale, 0)
-                            .alongWith(shooter.run(
-                                () -> shooter.runEntry(ShooterTable.calcShooterTableEntry(
-                                        Units.Meters.of(poseToShoot.minus(Constants.SPEAKER_DISTANCE_TARGET).getTranslation()
-                                                .getNorm())
-                                    ), ShotSpeeds.FAST)
-                            ),
-                    infeed.runInfeedMotorCommand(0.8).alongWith(conveyor.runMotorCommand(0.85))
-                            .repeatedly()
-                            .withTimeout(0.5)),
-                    infeed.runInfeedMotorCommand(0.)
-                            .alongWith(conveyor.runMotorCommand(0.).alongWith(shooter.stopCommand()))
-            );
-            } catch (Exception e) { e.printStackTrace(); }
-            // @formatter:on
+                cmd.addCommands(
+                        drive.pathFindCommand(note.pose, scale, 0).alongWith(new InstantCommand(
+                                smartInfeedCommand::schedule, infeed, conveyor, shooter)),
+                        drive.pathFindCommand(poseToShoot, scale, 0)
+                                .alongWith(shooter.run(
+                                        () -> shooter.runEntry(ShooterTable.calcShooterTableEntry(
+                                                Meters.of(poseToShoot.minus(Constants.SPEAKER_DISTANCE_TARGET)
+                                                        .getTranslation()
+                                                        .getNorm())),
+                                                ShotSpeeds.FAST)),
+                                        infeed.runInfeedMotorCommand(0.8).alongWith(conveyor.runMotorCommand(0.85))
+                                                .repeatedly()
+                                                .withTimeout(0.5)),
+                        infeed.runInfeedMotorCommand(0.)
+                                .alongWith(conveyor.runMotorCommand(0.).alongWith(shooter.stopCommand())));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         return cmd;

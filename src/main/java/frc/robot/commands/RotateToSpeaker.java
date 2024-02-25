@@ -27,7 +27,6 @@ public class RotateToSpeaker extends ProfiledPIDCommand {
     Field2d bruh = new Field2d();
 
     private static Rotation2d target = new Rotation2d();
-    private static Translation2d dist;
 
     /** Creates a new RotateToSpeaker. */
     public RotateToSpeaker(CommandSwerveDrivetrain drivetrain) {
@@ -65,30 +64,18 @@ public class RotateToSpeaker extends ProfiledPIDCommand {
         Pose2d pose = drivetrain.getState().Pose;
         Pose2d target = Constants.SPEAKER_DISTANCE_TARGET;
 
-        Translation2d dist = new Translation2d(
+        Translation2d distance = new Translation2d(
                 pose.getX() - target.getX(),
                 pose.getY() - target.getY());
 
-        Rotation2d angle = dist.getAngle();
-        RotateToSpeaker.dist = dist;
+        Rotation2d angle = distance.getAngle();
         RotateToSpeaker.target = angle;
-
-        field.setRobotPose(new Pose2d(dist, dist.getAngle()));
-        SmartDashboard.putData("distnace", field);
-
-        bruh.setRobotPose(Constants.SPEAKER_DISTANCE_TARGET);
-        SmartDashboard.putData("speaker", bruh);
     }
 
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        // SmartDashboard.putNumber("target", target.getRadians());
-        // SmartDashboard.putNumber("heading", drivetrain.getState().Pose.getRotation().getRadians());
-        // SmartDashboard.putNumber("measuremtn", Math
-        //         .abs(target.getRadians() - drivetrain.getRotation3d().toRotation2d().getRadians()));
-
         return Math.abs(
-            target.getRadians() - drivetrain.getState().Pose.getRotation().getRadians()) < 0.1;
+                target.getRadians() - drivetrain.getState().Pose.getRotation().getRadians()) < 0.1;
     }
 }

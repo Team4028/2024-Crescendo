@@ -37,7 +37,7 @@ public class Infeed extends SubsystemBase {
     private static final int ENCODER_AVG_DEPTH = 2;
 
     private static final double TOF_SAMPLE_TIME = 24.0;
-    private static final int[] TOF_ROI = new int[] {4, 4, 11, 11};
+    private static final int[] TOF_ROI = new int[] { 4, 4, 11, 11 };
 
     /** Creates a new SensorMotor. */
     public Infeed() {

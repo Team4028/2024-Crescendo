@@ -1,14 +1,10 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
-import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
@@ -30,50 +26,48 @@ public class Pivot extends SubsystemBase {
     private final double ZERO_TIMER_THRESHOLD = 0.14; // 7 scans
     private final double ZERO_VELOCITY_THRESHOLD = 0.2;
 
-    private final PositionVoltage positionRequest = new PositionVoltage(
-        0.,
-        0.,
-        true,
-        0.,
-        0,
-        false,
-        false,
-        false
-    );
+    private final MotionMagicTorqueCurrentFOC motionMagicRequest = new MotionMagicTorqueCurrentFOC(
+            0.);
 
-    
+    private final Slot0Configs pidConfigs = new Slot0Configs().withKP(0.01);
 
     private static final int PIVOT_CAN_ID = 13;
 
-    private static class PIDConstants {
-        private static final double kP = 0.12;
-        
-        private static double MIN_VAL = 1.;
-        private static double MAX_VAL = 17.5;
-    }
+    private static final double CRUISE_VELOCITY = 2.;
+    private static final double ACCELERATION = 4.;
+    private static final double JERK = 40.;
+
+    public static final double MIN_VAL = 1.;
+    public static final double MAX_VAL = 17.5;
 
     public Pivot() {
-        // ==================================
-        // PIVOT
-        // ==================================
+        /* ======== */
+        /* MOTAHHHH */
+        /* ======== */
         motor = new TalonFX(PIVOT_CAN_ID);
 
         motor.setInverted(true);
-        motor.setIdleMode(IdleMode.kBrake);
+        motor.setNeutralMode(NeutralModeValue.Brake);
 
-        pivotEncoder = motor.getEncoder();
-        pivotPid = motor.getPIDController();
+        /* === */
+        /* PID */
+        /* === */
 
-        // ==================================
-        // PIVOT PID
-        // ==================================
-        pivotPid.setP(PIDConstants.kP);
+        motor.getConfigurator().apply(pidConfigs);
 
-        motor.burnFlash();
+        /* ============ */
+        /* MOTION MAGIC */
+        /* ============ */
+        MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+        motionMagicConfigs.MotionMagicCruiseVelocity = CRUISE_VELOCITY;
+        motionMagicConfigs.MotionMagicAcceleration = ACCELERATION;
+        motionMagicConfigs.MotionMagicJerk = JERK;
 
-        // ==================================
-        // TIMER
-        // ==================================
+        motor.getConfigurator().apply(motionMagicConfigs);
+
+        /* ===== */
+        /* TIMER */
+        /* ===== */
         zeroTimer = new Timer();
 
         // Logging *Wo-HO!!
@@ -95,8 +89,8 @@ public class Pivot extends SubsystemBase {
     }
 
     public void runToPosition(double position) {
-        pivotPid.setReference(MathUtil.clamp(position, PIDConstants.MIN_VAL, PIDConstants.MAX_VAL),
-                ControlType.kPosition);
+        motor.setControl(
+                motionMagicRequest.withPosition(MathUtil.clamp(position, MIN_VAL, MAX_VAL)));
     }
 
     public Command runToPositionCommand(double position) {
@@ -109,21 +103,21 @@ public class Pivot extends SubsystemBase {
         })
                 .andThen(runMotorCommand(-0.1).repeatedly()
                         .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
-                                && Math.abs(pivotEncoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
+                                && Math.abs(motor.getVelocity().getValueAsDouble()) < ZERO_VELOCITY_THRESHOLD))
                 .andThen(runMotorCommand(0.).alongWith(Commands.runOnce(() -> zeroTimer.stop())))
-                .andThen(runOnce(() -> pivotEncoder.setPosition(0.)))
-                .andThen(new WaitCommand(0.5).andThen(runToPositionCommand(PIDConstants.MIN_VAL)));
+                .andThen(runOnce(() -> motor.setPosition(0.)))
+                .andThen(new WaitCommand(0.25).andThen(runToPositionCommand(MIN_VAL)));
 
     }
 
     public void logValues() {
-        pivotCurrent.append(motor.getOutputCurrent());
-        pivotVoltage.append(motor.getBusVoltage() * motor.getAppliedOutput());
-        pivotVelocity.append(pivotEncoder.getVelocity());
+        pivotCurrent.append(motor.getStatorCurrent().getValueAsDouble());
+        pivotVoltage.append(motor.getDutyCycle().getValueAsDouble());
+        pivotVelocity.append(motor.getVelocity().getValueAsDouble());
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Pivot pos", pivotEncoder.getPosition());
+        SmartDashboard.putNumber("Pivot pos", motor.getPosition().getValueAsDouble());
     }
 }
