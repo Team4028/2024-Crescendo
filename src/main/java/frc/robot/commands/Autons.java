@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -10,6 +11,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Shooter.ShootType;
 import frc.robot.utils.ShooterTable;
 
 public class Autons { // TODO: Add vision later
@@ -67,8 +69,9 @@ public class Autons { // TODO: Add vision later
                     drive.pathFindCommand(poseToShoot, scale, 0)
                             .alongWith(shooter.run(
                                 () -> shooter.runEntry(ShooterTable.calcShooterTableEntry(
-                                        poseToShoot.minus(Constants.SPEAKER_DISTANCE_TARGET).getTranslation().getNorm()
-                                    ))
+                                        Units.Meters.of(poseToShoot.minus(Constants.SPEAKER_DISTANCE_TARGET).getTranslation()
+                                                .getNorm())
+                                    ), ShootType.STD_SPIN)
                             ),
                     infeed.runInfeedMotorCommand(0.8).alongWith(conveyor.runMotorCommand(0.85))
                             .repeatedly()
