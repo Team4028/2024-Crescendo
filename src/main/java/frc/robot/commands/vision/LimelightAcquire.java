@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.utils.LimelightHelpers;
 
-public class LimelightAquire extends Command {
+public class LimelightAcquire extends Command {
     private PIDController controller;
 
     private CommandSwerveDrivetrain drivetrain;
@@ -29,7 +29,7 @@ public class LimelightAquire extends Command {
     private static final double NOTE_ANGLE_THRESH = 1.;
 
     /** Creates a new LimelightDrive. */
-    public LimelightAquire(DoubleSupplier xSpeed, CommandSwerveDrivetrain drivetrain) {
+    public LimelightAcquire(DoubleSupplier xSpeed, CommandSwerveDrivetrain drivetrain) {
         this.xSpeed = xSpeed;
         addRequirements(this.drivetrain = drivetrain);
     }
