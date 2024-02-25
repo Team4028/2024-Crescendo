@@ -51,12 +51,12 @@ public class ShooterTable {
         // loop thru all of the entrys of the shootertable
         for (ShooterTableEntry entry : table) {
             if (entry.distance.lt(distance)
-                    && (Math.abs(distance.baseUnitMagnitude() - closestLower.distance.baseUnitMagnitude()) > Math
-                            .abs(distance.baseUnitMagnitude() - entry.distance.baseUnitMagnitude()))) {
+                    && (Math.abs(distance.minus(closestLower.distance).baseUnitMagnitude()) > Math
+                            .abs(distance.minus(entry.distance).baseUnitMagnitude()))) {
                 closestLower = entry;
             } else if (entry.distance.gt(distance)
-                    && (Math.abs(closestHigher.distance.baseUnitMagnitude() - distance.baseUnitMagnitude()) > Math
-                            .abs(entry.distance.baseUnitMagnitude() - distance.baseUnitMagnitude()))) {
+                    && (Math.abs(closestHigher.distance.minus(distance).baseUnitMagnitude()) > Math
+                            .abs(entry.distance.minus(distance).baseUnitMagnitude()))) {
                 closestHigher = entry;
             } else if (entry.distance.isEquivalent(distance)) {
                 closestHigher = entry;

@@ -41,27 +41,25 @@ public class Shooter extends SubsystemBase {
     private static final int RIGHT_CAN_ID = 9;
     private static final int LEFT_CAN_ID = 10;
 
-    public static class ShootType {
+    public enum ShotSpeeds {
 
-        public static final ShootType STD_SPIN = new ShootType(3400, 2500);
-        public static final ShootType NO_SPIN = new ShootType(1300, 1300);
+        FAST(3400, 2500),
+        MEDIUM(2700, 2000),
+        TRAP(1300, 1300),
+        AMP(677., 677.);
 
-        public final double lrpms;
-        public final double rrpms;
+        public final double LeftRPM;
+        public final double RightRPM;
 
-        private ShootType(double lrpms, double rrpms) {
-            this.lrpms = lrpms;
-            this.rrpms = rrpms;
-        }
-
-        public ShootType scale(double scale) {
-            return new ShootType(this.lrpms * scale, this.rrpms * scale);
+        private ShotSpeeds(double leftRPM, double rightRPM) {
+            this.LeftRPM = leftRPM;
+            this.RightRPM = rightRPM;
         }
     }
 
     private final class Slots {
         private static final int TRAP = 3;
-        private static final int SHORT = 2;
+        private static final int AMP = 2;
         private static final int MEDIUM = 1;
         private static final int LONG = 0;
     }
@@ -85,21 +83,13 @@ public class Shooter extends SubsystemBase {
     }
 
     private final class PIDConstants {
-
-        private static class Rpms {
-            private static final ShootType Trap = ShootType.NO_SPIN; // 1300 x 1300
-            private static final ShootType Long = ShootType.STD_SPIN; // 3400 x 2500
-            private static final ShootType Medium = ShootType.STD_SPIN.scale(0.8);
-            private static final ShootType Short = ShootType.NO_SPIN.scale(0.530769); // ~690
-        }
-
         private static class Left {
             private static double kFF = 0.00019;
 
             private static final PIDVFConstants Trap = new PIDVFConstants(0.0002, kFF); //1300
             private static final PIDVFConstants Long = new PIDVFConstants(0.001, kFF); // 100%
             private static final PIDVFConstants Medium = new PIDVFConstants(0.001, kFF); // 80%
-            private static final PIDVFConstants Short = new PIDVFConstants(0.00025, kFF); // 690
+            private static final PIDVFConstants Amp = new PIDVFConstants(0.00025, kFF); // 690
         }
 
         private static class Right {
@@ -108,7 +98,7 @@ public class Shooter extends SubsystemBase {
             private static final PIDVFConstants Trap = new PIDVFConstants(0.001, kFF); // 1300
             private static final PIDVFConstants Long = new PIDVFConstants(0.002, kFF); //100%
             private static final PIDVFConstants Medium = new PIDVFConstants(0.002, kFF); // 80%
-            private static final PIDVFConstants Short = new PIDVFConstants(0.0005, kFF); // 690
+            private static final PIDVFConstants Amp = new PIDVFConstants(0.0005, kFF); // 690
         }
     }
 
@@ -158,10 +148,10 @@ public class Shooter extends SubsystemBase {
         configPid(leftPid, slot, PIDConstants.Left.Trap);
 
         // SHORT //
-        slot = Slots.SHORT;
+        slot = Slots.AMP;
 
-        configPid(rightPid, slot, PIDConstants.Right.Short);
-        configPid(leftPid, slot, PIDConstants.Left.Short);
+        configPid(rightPid, slot, PIDConstants.Right.Amp);
+        configPid(leftPid, slot, PIDConstants.Left.Amp);
 
         // MEDIUM //
         slot = Slots.MEDIUM;
@@ -177,8 +167,8 @@ public class Shooter extends SubsystemBase {
 
         longMode();
 
-        leftMotor.burnFlash();
-        rightMotor.burnFlash();
+        // leftMotor.burnFlash();
+        // rightMotor.burnFlash();
 
         // ==================================
         // LOGS
@@ -197,7 +187,6 @@ public class Shooter extends SubsystemBase {
     // FUNNY PID THING
     // ==================================
     private void configPid(SparkPIDController controller, int slot, PIDVFConstants constants) {
-        System.out.println(slot + " " + constants.kFF);
         controller.setP(constants.kP, slot);
         controller.setI(constants.kI, slot);
         controller.setD(constants.kD, slot);
@@ -208,10 +197,10 @@ public class Shooter extends SubsystemBase {
     // SHOOTER COMMANDS
     // ==================================
 
-    /* Check if shooter is spinned up :) */
+    /* Check if shooter is spinned up */
     public BooleanSupplier isReady() {
-        return () -> Math.abs(rightEncoder.getVelocity() - rightTarget) < 200.
-                && Math.abs(leftEncoder.getVelocity() - leftTarget) < 200.;
+        return () -> Math.abs(rightEncoder.getVelocity() - rightTarget) < 50.
+                && Math.abs(leftEncoder.getVelocity() - leftTarget) < 50.;
     }
 
     /**
@@ -232,22 +221,20 @@ public class Shooter extends SubsystemBase {
     }
 
     /* Run Based on Shooter Table Entry */
-    public void runEntry(ShooterTableEntry entry, ShootType typeOfShot) {
-        setRightToVel(entry.percent * typeOfShot.rrpms);
-        setLeftToVel(entry.percent * typeOfShot.lrpms);
+    public void runEntry(ShooterTableEntry entry, ShotSpeeds shotSpeed) {
+        setRightToVel(entry.percent * shotSpeed.RightRPM);
+        setLeftToVel(entry.percent * shotSpeed.LeftRPM);
     }
 
-    public Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShootType> typeOfShot) {
+    public Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShotSpeeds> shotSpeed) {
         return startEnd(
-                () -> runEntry(entry.get(), typeOfShot.get()),
+                () -> runEntry(entry.get(), shotSpeed.get()),
                 () -> stop());
     }
 
     public void stop() {
         rightMotor.stopMotor();
         leftMotor.stopMotor();
-
-        System.out.println("Stop");
     }
 
     public Command stopCommand() {
@@ -269,8 +256,8 @@ public class Shooter extends SubsystemBase {
             case Slots.TRAP:
                 trapMode();
                 break;
-            case Slots.SHORT:
-                shortMode();
+            case Slots.AMP:
+                ampMode();
                 break;
             case Slots.MEDIUM:
                 mediumMode();
@@ -291,10 +278,10 @@ public class Shooter extends SubsystemBase {
     // MODES
     // =============================
 
-    private void putConstants(PIDVFConstants right, PIDVFConstants left, ShootType speeds, String modeString) {
-        SmartDashboard.putNumber("Left P Gain", right.kP);
-        SmartDashboard.putNumber("Left I Gain", right.kI);
-        SmartDashboard.putNumber("Left D Gain", right.kD);
+    private void putConstants(PIDVFConstants right, PIDVFConstants left, ShotSpeeds speeds, String modeString) {
+        SmartDashboard.putNumber("Left P Gain", left.kP);
+        SmartDashboard.putNumber("Left I Gain", left.kI);
+        SmartDashboard.putNumber("Left D Gain", left.kD);
         SmartDashboard.putNumber("Left Feed Forward", left.kFF);
 
         SmartDashboard.putNumber("Right P Gain", right.kP);
@@ -302,30 +289,29 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("Right D Gain", right.kD);
         SmartDashboard.putNumber("Right Feed Forward", right.kFF);
 
-        SmartDashboard.putNumber("Left Velocity", speeds.lrpms);
-        SmartDashboard.putNumber("Right Velocity", speeds.rrpms);
+        SmartDashboard.putNumber("Left Velocity", speeds.LeftRPM);
+        SmartDashboard.putNumber("Right Velocity", speeds.RightRPM);
 
         SmartDashboard.putString("Shooter Mode", modeString);
 
-        leftTarget = speeds.lrpms;
-        rightTarget = speeds.rrpms;
-
+        leftTarget = speeds.LeftRPM;
+        rightTarget = speeds.RightRPM;
     }
 
     private void trapMode() {
-        putConstants(PIDConstants.Right.Trap, PIDConstants.Left.Trap, PIDConstants.Rpms.Trap, "Trap");
+        putConstants(PIDConstants.Right.Trap, PIDConstants.Left.Trap, ShotSpeeds.TRAP, "Trap");
     }
 
     private void longMode() {
-        putConstants(PIDConstants.Right.Long, PIDConstants.Left.Long, PIDConstants.Rpms.Long, "Long");
+        putConstants(PIDConstants.Right.Long, PIDConstants.Left.Long, ShotSpeeds.FAST, "Long");
     }
 
     private void mediumMode() {
-        putConstants(PIDConstants.Right.Medium, PIDConstants.Left.Medium, PIDConstants.Rpms.Medium, "Medium");
+        putConstants(PIDConstants.Right.Medium, PIDConstants.Left.Medium, ShotSpeeds.MEDIUM, "Medium");
     }
 
-    private void shortMode() {
-        putConstants(PIDConstants.Right.Short, PIDConstants.Left.Short, PIDConstants.Rpms.Short, "Short");
+    private void ampMode() {
+        putConstants(PIDConstants.Right.Amp, PIDConstants.Left.Amp, ShotSpeeds.AMP, "Amp");
     }
 
     public void setRightToVel(double velRPM) {
@@ -340,8 +326,6 @@ public class Shooter extends SubsystemBase {
 
     public void spinMotorRight(double vBus) {
         rightMotor.set(vBus);
-        if (vBus < 0.)
-            System.out.println("shootrer backup");
     }
 
     public void spinMotorLeft(double vBus) {

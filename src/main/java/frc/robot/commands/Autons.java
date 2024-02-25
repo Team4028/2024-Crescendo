@@ -11,7 +11,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.Shooter.ShootType;
+import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.utils.ShooterTable;
 
 public class Autons { // TODO: Add vision later
@@ -71,7 +71,7 @@ public class Autons { // TODO: Add vision later
                                 () -> shooter.runEntry(ShooterTable.calcShooterTableEntry(
                                         Units.Meters.of(poseToShoot.minus(Constants.SPEAKER_DISTANCE_TARGET).getTranslation()
                                                 .getNorm())
-                                    ), ShootType.STD_SPIN)
+                                    ), ShotSpeeds.FAST)
                             ),
                     infeed.runInfeedMotorCommand(0.8).alongWith(conveyor.runMotorCommand(0.85))
                             .repeatedly()

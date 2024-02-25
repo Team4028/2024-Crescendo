@@ -43,9 +43,11 @@ import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Vision;
-import frc.robot.subsystems.Shooter.ShootType;
+import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
+
+import static edu.wpi.first.units.Units.*;
 
 public class RobotContainer {
         // =============================================== //
@@ -148,10 +150,10 @@ public class RobotContainer {
                 // NamedCommands.registerCommand("farShot", Commands.runOnce(() ->
                 // shooter.runPivotToPosition(14.25)));
 
-                ShooterTableEntry aentry = new ShooterTableEntry(edu.wpi.first.units.Units.Feet.of(0),
+                ShooterTableEntry aentry = new ShooterTableEntry(Feet.of(0),
                                 0, 1.0);
                 NamedCommands.registerCommand("startShooter",
-                                shooter.runEntryCommand(() -> aentry, () -> ShootType.STD_SPIN)
+                                shooter.runEntryCommand(() -> aentry, () -> ShotSpeeds.FAST)
                                                 .alongWith(pivot.runToPositionCommand(
                                                                 aentry.angle)));
         }
@@ -224,13 +226,6 @@ public class RobotContainer {
                 driverController.x().and(driverController.povUp())
                                 .onTrue(shooter.cycleUpCommand());
 
-                /* Run Pivot */
-                // driverController.x().and(driverController.povLeft().or(driverController.povRight()))
-                // .onTrue(shooter.runPivotPositionCommand(shooter.getPivotPosition()));
-
-                // driverController.y().and(driverController.povCenter()).onTrue(shooter.pivotZeroCommand());
-                // driverController.y().toggleOnTrue(m_fan.runMotorCommand(FAN_VBUS));
-
                 // ========================= //
                 /* Climber & Zeroing Control */
                 // ========================= //
@@ -301,7 +296,7 @@ public class RobotContainer {
                 operatorController.x()
                                 .toggleOnTrue(Commands.runOnce(() -> {
                                         ShooterTableEntry entry = printSTVals();
-                                        shooter.runEntry(entry, ShootType.STD_SPIN);
+                                        shooter.runEntry(entry, ShotSpeeds.FAST);
                                         pivot.runToPosition(entry.angle);
                                 }, shooter, pivot));
 
@@ -335,7 +330,7 @@ public class RobotContainer {
 
                 magicShootCommand = new RotateToSpeaker(drivetrain).andThen(Commands.runOnce(() -> {
                         ShooterTableEntry entry = printSTVals();
-                        shooter.runEntry(entry, ShootType.STD_SPIN);
+                        shooter.runEntry(entry, ShotSpeeds.FAST);
                         pivot.runToPosition(entry.angle);
                 }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReady())).andThen(conveyor.runXRotations(10)
                                 .alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
