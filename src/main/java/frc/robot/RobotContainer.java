@@ -130,11 +130,6 @@ public class RobotContainer {
         DriverStation.reportWarning("INIT BNAMING CMANDSSS", false);
         NamedCommands.registerCommand("pivotZero", pivot.zeroCommand());
 
-        NamedCommands.registerCommand("follow2pchoice",
-                new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
-                        AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pright")),
-                        () -> true));
-
         // TODO: change this stuff for shootertable
         NamedCommands.registerCommand("runShooter", shooter.runVelocityCommand());
         NamedCommands.registerCommand("4pinfeed", infeed.runInfeedMotorCommand(INFEED_VBUS)
@@ -148,8 +143,8 @@ public class RobotContainer {
                         .raceWith(conveyor.runXRotations(-1.5).withTimeout(0.5)
                                 .alongWith(infeed.runInfeedMotorCommand(0.))))
                 .andThen(shooter.spinMotorRightCommand(0.)));
-        // NamedCommands.registerCommand("farShot", Commands.runOnce(() ->
-        // shooter.runPivotToPosition(14.25)));
+        NamedCommands.registerCommand("farShot", Commands.runOnce(() ->
+        pivot.runToPosition(14.25)));
 
         ShooterTableEntry aentry = new ShooterTableEntry(Feet.of(0),
                 0, 1.0);
@@ -157,6 +152,11 @@ public class RobotContainer {
                 shooter.runEntryCommand(() -> aentry, () -> ShotSpeeds.FAST)
                         .alongWith(pivot.runToPositionCommand(
                                 aentry.angle)));
+
+        NamedCommands.registerCommand("follow2pchoice",
+        new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
+                AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pright")),
+                () -> true));
     }
 
     // TODO: this stuff needs cleaned up
