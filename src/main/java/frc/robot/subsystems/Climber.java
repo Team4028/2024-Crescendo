@@ -32,41 +32,33 @@ public class Climber extends SubsystemBase {
     private static final double ZERO_VELOCITY_THRESHOLD = 5;
 
     private static final int CAN_ID = 15;
-    private static final int SUPPLY_CURRENT_LIMIT = 80;
-    private static final int STATOR_CURRENT_LIMIT = 100;
 
-    // ====================== //
-    /* MOTION MAGIC CONSTANTS */
-    // ====================== //
-    private static final double CRUISE_VELOCITY = 20.;
-    private static final double ACCELERATION = 40.;
-    private static final double JERK = 400.;
-
-    private final Slot0Configs pid = new Slot0Configs()
+    /* Configs */
+    private final Slot0Configs pidConfigs = new Slot0Configs()
             .withKP(2.)
             .withKI(0.0)
             .withKD(0.0); // needs tuning
 
-    private final PositionVoltage positionRequest = new PositionVoltage(
-            0,
-            0.,
-            true,
-            0,
-            0,
-            true,
-            false,
-            false);
+    private final MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
+            .withMotionMagicCruiseVelocity(20.)
+            .withMotionMagicAcceleration(40.)
+            .withMotionMagicJerk(400.);
 
-    private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(
-            0,
-            true,
-            0,
-            0,
-            true,
-            false,
-            false);
+    private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(100.)
+            .withSupplyCurrentLimit(80.);
+
+    /* Requests */
+    private final PositionVoltage positionRequest = new PositionVoltage(0.)
+            .withEnableFOC(true)
+            .withOverrideBrakeDurNeutral(true);
+
+    private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0.)
+            .withEnableFOC(true)
+            .withOverrideBrakeDurNeutral(true);
 
     public enum ClimberPositions {
+        CLIMB(-1.),
         HOME(1.),
         DOWN_ONE(50.),
         DOWN_TWO(40.),
@@ -84,21 +76,12 @@ public class Climber extends SubsystemBase {
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setInverted(false);
 
-        // current limits
-        motor.getConfigurator().apply(
-                new CurrentLimitsConfigs().withSupplyCurrentLimit(SUPPLY_CURRENT_LIMIT)
-                        .withStatorCurrentLimit(STATOR_CURRENT_LIMIT));
-
-        /* Motion Magic */
-        MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-        motionMagicConfigs.MotionMagicCruiseVelocity = CRUISE_VELOCITY;
-        motionMagicConfigs.MotionMagicAcceleration = ACCELERATION;
-        motionMagicConfigs.MotionMagicJerk = JERK;
-
+        /* ======= */
+        /* CONFIGS */
+        /* ======= */
         motor.getConfigurator().apply(motionMagicConfigs);
-
-        // pid config
-        motor.getConfigurator().apply(pid);
+        motor.getConfigurator().apply(pidConfigs);
+        motor.getConfigurator().apply(currentConfigs);
 
         zeroTimer = new Timer();
 
@@ -138,7 +121,7 @@ public class Climber extends SubsystemBase {
     }
 
     public void climb() {
-        motor.setControl(motionMagicRequest.withPosition(ClimberPositions.HOME.Position - 2.0)); //subtract 5 from this probably
+        motor.setControl(motionMagicRequest.withPosition(ClimberPositions.CLIMB.Position ));
     }
 
     public Command climbCommand() {

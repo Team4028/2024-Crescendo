@@ -59,8 +59,8 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         private static final double kMaxAngAccel = 1.5 * Math.PI;
     }
 
-    public DoubleLogEntry currentFL, currentFR, currentBL, currentBR, velFL, velFR, velBL, velBR, vbFL, vbFR, vbBL,
-            vbBR;
+    public DoubleLogEntry currentFL, currentFR, currentBL, currentBR, velocityFL, velocityFR, velocityBL, velocityBR, vBusFL, vBusFR, vBusBL,
+            vBusBR;
 
     private final SwerveRequest.ApplyChassisSpeeds autoRequest = new SwerveRequest.ApplyChassisSpeeds();
 
@@ -194,23 +194,23 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
             switch (motor.getDeviceID()) {
                 case TunerConstants.kFrontLeftDriveMotorId:
                     currentFL.append(motor.getSupplyCurrent().getValueAsDouble());
-                    velFL.append(motor.getVelocity().getValueAsDouble());
-                    vbFL.append(motor.getMotorVoltage().getValueAsDouble() / RobotController.getBatteryVoltage());
+                    velocityFL.append(motor.getVelocity().getValueAsDouble());
+                    vBusFL.append(motor.getMotorVoltage().getValueAsDouble() / RobotController.getBatteryVoltage());
                     break;
                 case TunerConstants.kFrontRightDriveMotorId:
                     currentFR.append(motor.getSupplyCurrent().getValueAsDouble());
-                    velFR.append(motor.getVelocity().getValueAsDouble());
-                    vbFR.append(motor.getMotorVoltage().getValueAsDouble() / RobotController.getBatteryVoltage());
+                    velocityFR.append(motor.getVelocity().getValueAsDouble());
+                    vBusFR.append(motor.getMotorVoltage().getValueAsDouble() / RobotController.getBatteryVoltage());
                     break;
                 case TunerConstants.kBackLeftDriveMotorId:
                     currentBL.append(motor.getSupplyCurrent().getValueAsDouble());
-                    velBL.append(motor.getVelocity().getValueAsDouble());
-                    vbBL.append(motor.getMotorVoltage().getValueAsDouble() / RobotController.getBatteryVoltage());
+                    velocityBL.append(motor.getVelocity().getValueAsDouble());
+                    vBusBL.append(motor.getMotorVoltage().getValueAsDouble() / RobotController.getBatteryVoltage());
                     break;
                 case TunerConstants.kBackRightDriveMotorId:
                     currentBR.append(motor.getSupplyCurrent().getValueAsDouble());
-                    velBR.append(motor.getVelocity().getValueAsDouble());
-                    vbBR.append(motor.getMotorVoltage().getValueAsDouble() / RobotController.getBatteryVoltage());
+                    velocityBR.append(motor.getVelocity().getValueAsDouble());
+                    vBusBR.append(motor.getMotorVoltage().getValueAsDouble() / RobotController.getBatteryVoltage());
                     break;
             }
         }

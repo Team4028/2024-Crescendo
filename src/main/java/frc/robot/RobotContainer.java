@@ -22,20 +22,19 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
 import frc.robot.generated.TunerConstants;
+
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
@@ -44,6 +43,7 @@ import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Vision;
+
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
@@ -89,7 +89,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private Command smartInfeedCommand, magicShootCommand;
+    private final Command smartInfeedCommand, magicShootCommand;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -110,8 +110,8 @@ public class RobotContainer {
     /* Swerve Control & Logging */
     // ======================== //
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MAX_SPEED * 0.1).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.1) // Add a 10%
-                                                                                           // deadband
+            .withDeadband(MAX_SPEED * 0.05).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.05) // Add a 50%
+                                                                                             // deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                      // driving in open loop
     private final Telemetry logger = new Telemetry(MAX_SPEED);
@@ -120,14 +120,12 @@ public class RobotContainer {
     /* Auton & Named Commands */
     // ====================== //
     private void initAutonChooser() {
-        DriverStation.reportWarning("INIT A CMANDSSS", false);
         autonChooser = AutoBuilder.buildAutoChooser();
         autonChooser.addOption("2pdyn", autons.twoPieceAutonDynamic(StartPoses.TOP, 1, Notes.ONE, Notes.TWO));
         SmartDashboard.putData("Auto Chooser", autonChooser);
     }
 
     private void initNamedCommands() {
-        DriverStation.reportWarning("INIT BNAMING CMANDSSS", false);
         NamedCommands.registerCommand("pivotZero", pivot.zeroCommand());
 
         // TODO: change this stuff for shootertable
@@ -143,8 +141,7 @@ public class RobotContainer {
                         .raceWith(conveyor.runXRotations(-1.5).withTimeout(0.5)
                                 .alongWith(infeed.runInfeedMotorCommand(0.))))
                 .andThen(shooter.spinMotorRightCommand(0.)));
-        NamedCommands.registerCommand("farShot", Commands.runOnce(() ->
-        pivot.runToPosition(14.25)));
+        // NamedCommands.registerCommand("farShot", Commands.runOnce(() -> pivot.runToPosition(Pivot)));
 
         ShooterTableEntry aentry = new ShooterTableEntry(Feet.of(0),
                 0, 1.0);
@@ -154,9 +151,9 @@ public class RobotContainer {
                                 aentry.angle)));
 
         NamedCommands.registerCommand("follow2pchoice",
-        new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
-                AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pright")),
-                () -> true));
+                new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
+                        AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pright")),
+                        () -> true));
     }
 
     // TODO: this stuff needs cleaned up
@@ -248,9 +245,9 @@ public class RobotContainer {
 
         /* Run Climber to "Ready" */
         driverController.y().and(driverController.povUp())
-                .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL).andThen(
-                    Commands.waitUntil(pivot.inPositionSupplier()),
-                    climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+                .onTrue(pivot.runToPositionCommand(Pivot.CLIMB_POSITION).andThen(
+                        Commands.waitUntil(pivot.inPositionSupplier()),
+                        climber.runToPositionCommand(Climber.ClimberPositions.READY)));
 
         // ========================== //
         /* Drivetain & Vision Control */
@@ -337,7 +334,7 @@ public class RobotContainer {
         }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReady())).andThen(conveyor.runXRotations(10)
                 .alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
                 .andThen(shooter.stopCommand())
-                .andThen(pivot.runToPositionCommand(Pivot.MIN_VAL));
+                .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
 
         configureBindings();
     }
