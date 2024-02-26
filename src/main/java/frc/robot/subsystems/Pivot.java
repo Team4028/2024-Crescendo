@@ -5,7 +5,6 @@ import java.util.function.BooleanSupplier;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -137,8 +136,8 @@ public class Pivot extends SubsystemBase {
     //     return Math.abs(motor.getPosition() - targetPosition) < 1.0;
     // }
 
-    public BooleanSupplier inPosition() {
-        return () -> (Math.abs(motor.getPosition().getValueAsDouble() - targetPosition) < 1.0);
+    public BooleanSupplier inPositionSupplier() {
+        return () -> (Math.abs(motor.getPosition().getValueAsDouble() - targetPosition) < 2.0);
     }
 
     public void logValues() {
@@ -151,7 +150,7 @@ public class Pivot extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Pivot pos", motor.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Pivot Position", motor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Pivot Current", motor.getStatorCurrent().getValueAsDouble());
     }
 }

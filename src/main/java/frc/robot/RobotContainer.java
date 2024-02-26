@@ -247,15 +247,11 @@ public class RobotContainer {
                 .onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
 
         /* Run Climber to "Ready" */
-        // driverController.y().and(driverController.povUp())
-        //         .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL).alongWith(new WaitCommand(3.0)).until(pivot.inPosition()).andThen(
-        //                 climber.runToPositionCommand(Climber.ClimberPositions.READY)));
-
-                        //TODO -- this wait ^ doesn't work, climber needs to wait to move until pivot in position
-
-
         driverController.y().and(driverController.povUp())
-                .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL));
+                .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL).andThen(
+                    Commands.waitUntil(pivot.inPositionSupplier()),
+                    climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+
         // ========================== //
         /* Drivetain & Vision Control */
         // ========================== //
