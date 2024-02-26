@@ -57,7 +57,8 @@ public class Pivot extends SubsystemBase {
             .withDutyCycleClosedLoopRampPeriod(1.0);
 
     private final SoftwareLimitSwitchConfigs limitConfigs = new SoftwareLimitSwitchConfigs()
-            .withForwardSoftLimitThreshold(12.5);
+            .withForwardSoftLimitThreshold(12.5)
+            .withForwardSoftLimitEnable(true);
 
     private double targetPosition;
 
