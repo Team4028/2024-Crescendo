@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
 
 public class ShooterTable {
     // TODO: We may want P values here, or just tune kF
@@ -32,7 +33,10 @@ public class ShooterTable {
     private static void fillInTable() {
         // put entries here
         // Distances must go from top to bottom: shortest to longest
-        // table.add(new ShooterTableEntry(2, 3, 4));
+        table.add(new ShooterTableEntry(Units.Feet.of(3.), 4.9, .7));
+        table.add(new ShooterTableEntry(Units.Feet.of(6.), 1.8, 1.0));
+        table.add(new ShooterTableEntry(Units.Feet.of(9.), 1.8, 1.0));
+        table.add(new ShooterTableEntry(Units.Feet.of(15.), 0.5, 1.0));
     }
 
     static {

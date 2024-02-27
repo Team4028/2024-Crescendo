@@ -199,8 +199,8 @@ public class Shooter extends SubsystemBase {
 
     /* Check if shooter is spinned up */
     public BooleanSupplier isReady() {
-        return () -> Math.abs(rightEncoder.getVelocity() - rightTarget) < 50.
-                && Math.abs(leftEncoder.getVelocity() - leftTarget) < 50.;
+        return () -> Math.abs(rightEncoder.getVelocity() - rightTarget) < 20.
+                && Math.abs(leftEncoder.getVelocity() - leftTarget) < 20.;
     }
 
     /**
@@ -212,8 +212,6 @@ public class Shooter extends SubsystemBase {
     public Command runVelocityCommand() {
         return startEnd(
                 () -> {
-                    System.out.println(rightTarget);
-                    System.out.println(leftTarget);
                     setRightToVel(rightTarget);
                     setLeftToVel(leftTarget);
                 },
@@ -338,6 +336,10 @@ public class Shooter extends SubsystemBase {
 
     public Command spinMotorLeftCommand(double vBus) {
         return runOnce(() -> spinMotorLeft(vBus));
+    }
+
+    public Command spinBothCommand(double vBus) {
+        return spinMotorLeftCommand(vBus).andThen(spinMotorRightCommand(vBus));
     }
 
     public void logValues() {

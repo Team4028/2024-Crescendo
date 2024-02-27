@@ -47,8 +47,10 @@ public class Pivot extends SubsystemBase {
     private static final double ACCELERATION = 36.;
     private static final double JERK = 360.;
 
-    public static final double MIN_VAL = 1.;
+    public static final double MIN_VAL = 0.5;
+    
     public static final double MAX_VAL = 12.5;
+    public static final double TRAP_POSITION = 7.3;
 
     private double targetPosition;
 
@@ -102,6 +104,10 @@ public class Pivot extends SubsystemBase {
     // PIVOT COMMANDS
     // ==================================
 
+    public double getPosition() {
+        return motor.getPosition().getValueAsDouble();
+    }
+
     public void runMotor(double vBus) {
         motor.set(vBus);
     }
@@ -118,6 +124,14 @@ public class Pivot extends SubsystemBase {
 
     public Command runToPositionCommand(double position) {
         return runOnce(() -> runToPosition(position));
+    }
+
+    public void holdPosition() {
+        runToPosition(motor.getPosition().getValueAsDouble());
+    }
+
+    public Command holdPositionCommand() {
+        return runOnce(this::holdPosition).andThen(Commands.idle());
     }
 
     public Command zeroCommand() {

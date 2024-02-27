@@ -34,7 +34,7 @@ public class RotateToSpeaker extends ProfiledPIDCommand {
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
                         // The PID gains
-                        2,
+                        4.,
                         0,
                         0,
                         // The motion profile constraints

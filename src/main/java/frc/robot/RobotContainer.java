@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
@@ -143,8 +142,7 @@ public class RobotContainer {
                         .raceWith(conveyor.runXRotations(-1.5).withTimeout(0.5)
                                 .alongWith(infeed.runInfeedMotorCommand(0.))))
                 .andThen(shooter.spinMotorRightCommand(0.)));
-        NamedCommands.registerCommand("farShot", Commands.runOnce(() ->
-        pivot.runToPosition(14.25)));
+        NamedCommands.registerCommand("farShot", Commands.runOnce(() -> pivot.runToPosition(14.25)));
 
         ShooterTableEntry aentry = new ShooterTableEntry(Feet.of(0),
                 0, 1.0);
@@ -154,9 +152,9 @@ public class RobotContainer {
                                 aentry.angle)));
 
         NamedCommands.registerCommand("follow2pchoice",
-        new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
-                AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pright")),
-                () -> true));
+                new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
+                        AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pright")),
+                        () -> true));
     }
 
     // TODO: this stuff needs cleaned up
@@ -248,11 +246,12 @@ public class RobotContainer {
 
         /* Run Climber to "Ready" */
         // driverController.y().and(driverController.povUp())
-        //         .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL).alongWith(new WaitCommand(3.0)).until(pivot.inPosition()).andThen(
-        //                 climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+        // .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL).alongWith(new
+        // WaitCommand(3.0)).until(pivot.inPosition()).andThen(
+        // climber.runToPositionCommand(Climber.ClimberPositions.READY)));
 
-                        //TODO -- this wait ^ doesn't work, climber needs to wait to move until pivot in position
-
+        // TODO -- this wait ^ doesn't work, climber needs to wait to move until pivot
+        // in position
 
         driverController.y().and(driverController.povUp())
                 .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL));
@@ -280,10 +279,8 @@ public class RobotContainer {
         /* PIVOT MANUAL CONTROL */
         // ==================== //
 
-        driverController.rightBumper().onTrue(pivot.runMotorCommand(PIVOT_VBUS))
-                .onFalse(pivot.runMotorCommand(0.0));
-        driverController.leftBumper().onTrue(pivot.runMotorCommand(-PIVOT_VBUS))
-                .onFalse(pivot.runMotorCommand(0.0));
+        driverController.rightBumper().onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 0.2)));
+        driverController.leftBumper().onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 0.2)));
 
         // TODO: Port some stuff over
 
@@ -307,6 +304,10 @@ public class RobotContainer {
                 }, shooter, pivot));
 
         operatorController.b().onTrue(magicShootCommand);
+
+        operatorController.y().onTrue(pivot.runToPositionCommand(Pivot.TRAP_POSITION));
+
+        operatorController.start().onTrue(Commands.runOnce(() -> printSTVals()));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -338,8 +339,11 @@ public class RobotContainer {
             ShooterTableEntry entry = printSTVals();
             shooter.runEntry(entry, ShotSpeeds.FAST);
             pivot.runToPosition(entry.angle);
-        }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReady())).andThen(conveyor.runXRotations(10)
-                .alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
+        }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReady()))
+                .andThen(Commands.waitSeconds(0.5))
+                .andThen(conveyor.runXRotations(10)
+                        .alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
+                .andThen(Commands.waitSeconds(0.2))
                 .andThen(shooter.stopCommand())
                 .andThen(pivot.runToPositionCommand(Pivot.MIN_VAL));
 
@@ -495,7 +499,7 @@ public class RobotContainer {
         ShooterTableEntry entryPicked = ShooterTable
                 .calcShooterTableEntry(Meters.of(translation.getNorm()));
 
-        SmartDashboard.putNumber("Distance", translation.getNorm());
+        SmartDashboard.putNumber("Distance", Units.metersToFeet(translation.getNorm()));
 
         SmartDashboard.putNumber("ST Angle", entryPicked.angle);
         SmartDashboard.putNumber("ST Left", entryPicked.percent);
