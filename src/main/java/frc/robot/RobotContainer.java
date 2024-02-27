@@ -119,15 +119,14 @@ public class RobotContainer {
     /* Auton & Named Commands */
     // ====================== //
     private void initAutonChooser() {
-        DriverStation.reportWarning("INIT A CMANDSSS", false);
         autonChooser = AutoBuilder.buildAutoChooser();
         autonChooser.addOption("2pdyn", autons.twoPieceAutonDynamic(StartPoses.TOP, 1, Notes.ONE, Notes.TWO));
         SmartDashboard.putData("Auto Chooser", autonChooser);
     }
 
     private void initNamedCommands() {
-        DriverStation.reportWarning("INIT BNAMING CMANDSSS", false);
-        NamedCommands.registerCommand("pivotZero", pivot.zeroCommand());
+        NamedCommands.registerCommand("pivotZero",
+                pivot.zeroCommand().andThen(new InstantCommand(() -> System.out.println("All done here!"))));
 
         // TODO: change this stuff for shootertable
         NamedCommands.registerCommand("runShooter", shooter.runVelocityCommand());
@@ -145,11 +144,13 @@ public class RobotContainer {
         NamedCommands.registerCommand("farShot", Commands.runOnce(() -> pivot.runToPosition(14.25)));
 
         ShooterTableEntry aentry = new ShooterTableEntry(Feet.of(0),
-                0, 1.0);
+                3, 1.0);
         NamedCommands.registerCommand("startShooter",
                 shooter.runEntryCommand(() -> aentry, () -> ShotSpeeds.FAST)
                         .alongWith(pivot.runToPositionCommand(
                                 aentry.angle)));
+
+        NamedCommands.registerCommand("stopShooter", shooter.stopCommand());
 
         NamedCommands.registerCommand("follow2pchoice",
                 new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),

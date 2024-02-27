@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.60221165235483,
-        "y": 6.885971888919526
+        "x": 2.65,
+        "y": 6.7
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7413865700214626,
-        "y": 6.0238596400011595
+        "x": 1.7891749176666323,
+        "y": 5.837887751081634
       },
       "isLocked": false,
       "linkedName": "4pdr 1"
     },
     {
       "anchor": {
-        "x": 2.5,
-        "y": 5.41
+        "x": 2.6,
+        "y": 5.45
       },
       "prevControl": {
-        "x": 1.5,
-        "y": 5.41
+        "x": 1.6,
+        "y": 5.45
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,25 +30,7 @@
   ],
   "rotationTargets": [],
   "constraintZones": [],
-  "eventMarkers": [
-    {
-      "name": "infeed",
-      "waypointRelativePos": 0.55,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "4pinfeed"
-              }
-            }
-          ]
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
