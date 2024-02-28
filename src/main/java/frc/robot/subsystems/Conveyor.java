@@ -4,9 +4,11 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.units.Per;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -40,8 +42,8 @@ public class Conveyor extends SubsystemBase {
         private static final double COMMAND_ESCAPE_THRESHOLD = 0.06;
     }
 
-    private static final double RANGE_THRESHOLD = 110;
-    private static final double OTHER_RANGE_THRESHOLD = 80.;
+    private static final double RANGE_THRESHOLD = 70;
+    private static final double OTHER_RANGE_THRESHOLD = 60.;
     private static final double TOLERANCE = 10;
     private static final double NO_PID_ROT_VBUS = 0.2;
 
@@ -50,11 +52,15 @@ public class Conveyor extends SubsystemBase {
 
     private boolean hasInfed = false;
     private double target;
+    private Timer timer;
     private double setPos = 0;
 
     public Conveyor() {
+        timer = new Timer();
+        timer.reset();
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
         motor.setIdleMode(IdleMode.kCoast);
+        motor.setInverted(true);
         motor.setClosedLoopRampRate(.1);
         encoder = motor.getEncoder();
 
@@ -82,10 +88,13 @@ public class Conveyor extends SubsystemBase {
     public boolean getHasInfed() {
         if (tofSensor.getRange() < OTHER_RANGE_THRESHOLD) {
             hasInfed = true;
+            timer.start();
         }
 
-        if (hasInfed && tofSensor.getRange() >= RANGE_THRESHOLD) {
+        if (hasInfed && ((tofSensor.getRange() >= RANGE_THRESHOLD) || (timer.get() >= 0.75))) {
             hasInfed = false;
+            timer.stop();
+            timer.reset();
             return true;
         }
 

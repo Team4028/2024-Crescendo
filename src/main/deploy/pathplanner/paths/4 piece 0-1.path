@@ -3,12 +3,12 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.4483665125048377,
+        "x": 1.45,
         "y": 6.037364604091624
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9605866644619199,
+        "x": 1.962220151957082,
         "y": 6.309293243586486
       },
       "isLocked": false,
@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 2.65,
-        "y": 6.7
+        "x": 2.55,
+        "y": 6.8
       },
       "prevControl": {
-        "x": 2.0725686270164485,
-        "y": 6.423444161653425
+        "x": 1.9725686270164484,
+        "y": 6.5234441616534244
       },
       "nextControl": null,
       "isLocked": false,
@@ -48,6 +48,23 @@
               "type": "named",
               "data": {
                 "name": "4pinfeed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "zeroEnd",
+      "waypointRelativePos": 1.0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "zeroApril"
               }
             }
           ]

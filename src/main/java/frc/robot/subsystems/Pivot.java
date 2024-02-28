@@ -5,7 +5,6 @@ import java.util.function.BooleanSupplier;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -17,7 +16,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
@@ -142,13 +140,9 @@ public class Pivot extends SubsystemBase {
                 .andThen(runMotorCommand(-0.025).repeatedly()
                         .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
                                 && Math.abs(motor.getVelocity().getValueAsDouble()) < ZERO_VELOCITY_THRESHOLD))
-                .andThen(new InstantCommand(() -> System.out.println("THRESH REACHED")))
                 .andThen(runMotorCommand(0.).alongWith(Commands.runOnce(() -> zeroTimer.stop())))
-                .andThen(new InstantCommand(() -> System.out.println("Stopped")))
                 .andThen(runOnce(() -> motor.setPosition(0.)))
-                .andThen(new InstantCommand(() -> System.out.println("Zeroed")))
-                .andThen(new WaitCommand(0.25).andThen(runToPositionCommand(MIN_VAL)))
-                .andThen(new InstantCommand(() -> System.out.println("Done!")));
+                .andThen(new WaitCommand(0.25).andThen(runToPositionCommand(MIN_VAL)));
 
     }
 

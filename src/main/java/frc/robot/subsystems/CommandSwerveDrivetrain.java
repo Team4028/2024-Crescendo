@@ -50,7 +50,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     private DataLog log;
 
     private static final PIDConstants AUTON_LINEAR_PID = new PIDConstants(10, 0, 0);
-    private static final PIDConstants AUTON_ANGULAR_PID = new PIDConstants(10, 0, 0);
+    private static final PIDConstants AUTON_ANGULAR_PID = new PIDConstants(5, 0, 0);
 
     private static final class PathFindPlannerConstants {
         private static final double kMaxSpeed = TunerConstants.kSpeedAt12VoltsMps;
@@ -98,13 +98,13 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
 
     @Override
     public void seedFieldRelative(Pose2d location) {
-        getPigeon2().setYaw(0);
+        // getPigeon2().setYaw(0);
         super.seedFieldRelative(location);
     }
 
     @Override
     public void seedFieldRelative() {
-        getPigeon2().setYaw(0);
+        // getPigeon2().setYaw(0);
         try {
             m_stateLock.writeLock().lock();
             m_fieldRelativeOffset = getState().Pose.getRotation();

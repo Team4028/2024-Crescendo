@@ -24,7 +24,7 @@ public class LimelightAcquire extends Command {
 
     private final DoubleSupplier xSpeed;
 
-    private static final double NOTE_PICKUP_THRESH = -18.5;
+    private static final double NOTE_PICKUP_THRESH = -19;
     // private static final double DRIVE_TO_NOTE_THRESH = 5;
     private static final double NOTE_ANGLE_THRESH = 1.;
 
@@ -45,11 +45,11 @@ public class LimelightAcquire extends Command {
     @Override
     public void execute() {
 
+        System.out.println(LimelightHelpers.getTX(""));
+
         drivetrain.setControl(
                 drive.withSpeeds(new ChassisSpeeds(
-                        /* Math.abs(LimelightHelpers.getTX("")) <= DRIVE_TO_NOTE_THRESH ? */xSpeed.getAsDouble()/*
-                                                                                                                 * : 0
-                                                                                                                 */,
+                        xSpeed.getAsDouble(),
                         0,
                         Math.abs(LimelightHelpers.getTX("")) > NOTE_ANGLE_THRESH
                                 ? controller.calculate(Units.degreesToRadians(LimelightHelpers.getTX("")))

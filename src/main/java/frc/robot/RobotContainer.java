@@ -21,19 +21,21 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
+import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -61,7 +63,7 @@ public class RobotContainer {
     private static final double SLOW_CONVEYOR_VBUS = 0.5;
     private static final double FAST_CONVEYOR_VBUS = 0.85;
 
-    private static final double FAN_VBUS = 1.0;
+    private static final double FAN_VBUS = 1.d;
     private static final double SHOOTER_BACKOUT_VBUS = -0.4;
 
     private static final int OI_DRIVER_CONTROLLER = 0;
@@ -82,8 +84,8 @@ public class RobotContainer {
     private final Pivot pivot = new Pivot();
     // private final Fan m_fan = new Fan();
 
-    private final Vision m_rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
-    private final Vision m_leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
+    private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
+    private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
 
     // ====================== //
     /* Auton & Other Commands */
@@ -125,8 +127,18 @@ public class RobotContainer {
     }
 
     private void initNamedCommands() {
-        NamedCommands.registerCommand("pivotZero",
-                pivot.zeroCommand().andThen(new InstantCommand(() -> System.out.println("All done here!"))));
+        NamedCommands.registerCommand("pivotZero", pivot.zeroCommand());
+
+        NamedCommands.registerCommand("zeroApril", new InstantCommand(() -> {
+            Optional<EstimatedRobotPose> poseOpt = getBestPose();
+            if (poseOpt.isEmpty())
+                return;
+
+            drivetrain.seedFieldRelative(poseOpt.get().estimatedPose.toPose2d());
+        }, leftVision, rightVision));
+
+        NamedCommands.registerCommand("llAquire",
+                new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.8), drivetrain));
 
         // TODO: change this stuff for shootertable
         NamedCommands.registerCommand("runShooter", shooter.runVelocityCommand());
@@ -138,10 +150,10 @@ public class RobotContainer {
                 .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
                         .repeatedly().withTimeout(0.1))
                 .andThen(shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-                        .raceWith(conveyor.runXRotations(-1.5).withTimeout(0.5)
+                        .raceWith(conveyor.runXRotations(-4).withTimeout(0.5)
                                 .alongWith(infeed.runInfeedMotorCommand(0.))))
-                .andThen(shooter.spinMotorRightCommand(0.)));
-        NamedCommands.registerCommand("farShot", Commands.runOnce(() -> pivot.runToPosition(14.25)));
+                .andThen(shooter.spinMotorRightCommand(0.)));//.withTimeout(3));
+        NamedCommands.registerCommand("farShot", Commands.runOnce(() -> pivot.runToPosition(1)));
 
         ShooterTableEntry aentry = new ShooterTableEntry(Feet.of(0),
                 3, 1.0);
@@ -245,6 +257,17 @@ public class RobotContainer {
         driverController.y().and(driverController.povRight())
                 .onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
 
+        // driverController.leftStick()
+        //         .onTrue(new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.8), drivetrain)
+        //                 .andThen(drivetrain.run(() -> drivetrain.setControl(
+        //                         new SwerveRequest.ApplyChassisSpeeds().withSpeeds(
+        //                                 new ChassisSpeeds(
+        //                                         0.8,
+        //                                         0,
+        //                                         0))))
+        //                         .withTimeout(0.5)));
+                        // .alongWith(smartInfeedCommand));
+
         /* Run Climber to "Ready" */
         // driverController.y().and(driverController.povUp())
         // .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL).alongWith(new
@@ -280,8 +303,10 @@ public class RobotContainer {
         /* PIVOT MANUAL CONTROL */
         // ==================== //
 
-        driverController.rightBumper().onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 0.2)));
-        driverController.leftBumper().onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 0.2)));
+        driverController.rightBumper()
+                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 0.2)));
+        driverController.leftBumper()
+                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 0.2)));
 
         // TODO: Port some stuff over
 
@@ -328,9 +353,9 @@ public class RobotContainer {
                 .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
                         .repeatedly().withTimeout(0.1))
                 .andThen(shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-                        .raceWith(conveyor.runXRotations(-1.5).withTimeout(0.5)
+                        .raceWith(conveyor.runXRotations(-4.d).withTimeout(0.5) // -1.5
                                 .alongWith(infeed.runInfeedMotorCommand(0.))))
-                .andThen(shooter.spinMotorRightCommand(0.));
+                .andThen(shooter.spinMotorRightCommand(0.));//.withTimeout(3);
 
         autons = new Autons(drivetrain, shooter, conveyor, infeed, smartInfeedCommand);
 
@@ -363,6 +388,7 @@ public class RobotContainer {
     /* Auton Command */
     public Command getAutonomousCommand() {
         return new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d()))
+                .andThen(NamedCommands.getCommand("zeroApril"))
                 .andThen(autonChooser.getSelected());
     }
 
@@ -402,8 +428,8 @@ public class RobotContainer {
 
     /* Return Approx. 2d yaw */
     private double getBestYaw(int tagID) {
-        Optional<Double> leftYaw = m_leftVision.getTagYaw(tagID);
-        Optional<Double> rightYaw = m_rightVision.getTagYaw(tagID);
+        Optional<Double> leftYaw = leftVision.getTagYaw(tagID);
+        Optional<Double> rightYaw = rightVision.getTagYaw(tagID);
 
         int numYaws = 0;
         numYaws += leftYaw.isPresent() ? 1 : 0;
@@ -413,7 +439,7 @@ public class RobotContainer {
             case 1:
                 return (leftYaw.isPresent() ? leftYaw : rightYaw).get();
             case 2:
-                return (leftYaw.get() + rightYaw.get()) / 2.;
+                return (leftYaw.get() + rightYaw.get()) / 2.d;
             case 0:
             default:
                 return 0.;
@@ -422,8 +448,8 @@ public class RobotContainer {
 
     /* Return approx. 2d distance */
     private double getBestDistance(int tagID) {
-        Optional<Double> leftDistance = m_leftVision.getTagDistance(tagID);
-        Optional<Double> rightDistance = m_rightVision.getTagDistance(tagID);
+        Optional<Double> leftDistance = leftVision.getTagDistance(tagID);
+        Optional<Double> rightDistance = rightVision.getTagDistance(tagID);
 
         int numDistances = 0;
         numDistances += leftDistance.isPresent() ? 1 : 0;
@@ -433,7 +459,7 @@ public class RobotContainer {
             case 1:
                 return (leftDistance.isPresent() ? leftDistance : rightDistance).get();
             case 2:
-                return (leftDistance.get() + rightDistance.get()) / 2.;
+                return (leftDistance.get() + rightDistance.get()) / 2.d;
             case 0:
             default:
                 return 0.;
@@ -444,8 +470,8 @@ public class RobotContainer {
     public Optional<EstimatedRobotPose> getBestPose() {
         Pose2d drivetrainPose = drivetrain.getState().Pose;
 
-        Optional<EstimatedRobotPose> front = m_rightVision.getCameraResult(drivetrainPose);
-        Optional<EstimatedRobotPose> back = m_leftVision.getCameraResult(drivetrainPose);
+        Optional<EstimatedRobotPose> front = rightVision.getCameraResult(drivetrainPose);
+        Optional<EstimatedRobotPose> back = leftVision.getCameraResult(drivetrainPose);
 
         int numPoses = 0;
 
