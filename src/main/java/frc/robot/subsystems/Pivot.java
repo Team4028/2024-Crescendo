@@ -40,8 +40,9 @@ public class Pivot extends SubsystemBase {
 
     /* Configs */
     private final Slot0Configs pidConfigs = new Slot0Configs()
-            .withKP(14.0)
-            .withKS(0.12);
+            .withKP(0.125)
+            .withKD(0.0125);
+            // .withKS(0.012);
 
     private final MotorOutputConfigs outputConfigs = new MotorOutputConfigs()
             // check pls

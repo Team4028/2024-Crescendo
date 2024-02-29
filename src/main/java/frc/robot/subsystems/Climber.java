@@ -28,8 +28,9 @@ public class Climber extends SubsystemBase {
 
     private final Timer zeroTimer;
 
-    private static final double ZERO_TIMER_THRESHOLD = 0.1; // 5 scans
-    private static final double ZERO_VELOCITY_THRESHOLD = 5;
+    private static final double ZERO_TIMER_THRESHOLD = 0.2; // 5 scans
+    private static final double ZERO_CURRENT_THRESHOLD = 3.;
+    private static final double ZERO_VBUS = -0.1;
 
     private static final int CAN_ID = 15;
 
@@ -75,7 +76,7 @@ public class Climber extends SubsystemBase {
         motor = new TalonFX(CAN_ID);
         
         motor.setNeutralMode(NeutralModeValue.Brake);
-        motor.setInverted(false);
+        motor.setInverted(true);
 
         /* ======= */
         /* CONFIGS */
@@ -105,9 +106,9 @@ public class Climber extends SubsystemBase {
         return runOnce(() -> {
             zeroTimer.restart();
         })
-                .andThen(runMotorCommand(-0.1).repeatedly()
+                .andThen(runMotorCommand(ZERO_VBUS).repeatedly()
                         .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
-                                && Math.abs(motor.getVelocity().getValueAsDouble()) < ZERO_VELOCITY_THRESHOLD))
+                                && Math.abs(motor.getStatorCurrent().getValueAsDouble()) < ZERO_CURRENT_THRESHOLD))
                 .andThen(runMotorCommand(0.),
                         Commands.runOnce(() -> zeroTimer.stop()),
                         Commands.runOnce(() -> motor.setPosition(0.0)));
@@ -145,5 +146,6 @@ public class Climber extends SubsystemBase {
         // // This method will be called once per scheduler run
         SmartDashboard.putNumber("Climber Position", motor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Climber Current", motor.getStatorCurrent().getValueAsDouble());
+        SmartDashboard.putNumber("Climber Velocity", motor.getVelocity().getValueAsDouble());
     }
 }

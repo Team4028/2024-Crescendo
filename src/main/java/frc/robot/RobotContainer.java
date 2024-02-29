@@ -56,7 +56,7 @@ public class RobotContainer {
     // =============================================== //
     /* Magic numbers, Vbus constants, and OI constants */
     // =============================================== //
-    private static final double CLIMBER_VBUS = 0.1;
+    private static final double CLIMBER_VBUS = 0.05;
     private static final double INFEED_VBUS = 0.8;
     private static final double SLOW_INFEED_VBUS = 0.5;
 
@@ -244,7 +244,7 @@ public class RobotContainer {
         // ========================= //
 
         /* Zero Climber & Pivot */
-        driverController.y().and(driverController.povCenter()).onTrue(climber.zeroCommand());
+        driverController.y().and(driverController.povCenter()).onTrue(pivot.zeroCommand());
 
         /* Run Climber to "Home" */
         driverController.y().and(driverController.povDown())
@@ -276,8 +276,8 @@ public class RobotContainer {
         /* Run Climber to "Ready" */
         driverController.y().and(driverController.povUp())
                 .onTrue(pivot.runToPositionCommand(Pivot.CLIMB_POSITION).andThen(
-                        Commands.waitUntil(pivot.inPositionSupplier()),
-                        climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+                        Commands.waitUntil(pivot.inPositionSupplier())));
+                        // climber.runToPositionCommand(Climber.ClimberPositions.READY)));
 
         // ========================== //
         /* Drivetain & Vision Control */
