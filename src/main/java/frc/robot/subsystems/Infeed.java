@@ -29,13 +29,14 @@ public class Infeed extends SubsystemBase {
     private final DataLog log;
     private final DoubleLogEntry currentLog, velocityLog;
 
-    private static final double RANGE_THRESHOLD = 200;
-    private static final int CAN_ID = 18;
-    private static final int TOF_CAN_ID = 1;
     private static final int CURRENT_LIMIT = 60;
 
     private static final int ENCODER_MESURMENT_PERIOD = 16;
     private static final int ENCODER_AVG_DEPTH = 2;
+
+    private static final double RANGE_THRESHOLD = 200;
+    private static final int CAN_ID = 18;
+    private static final int TOF_CAN_ID = 1;
 
     private static final double TOF_SAMPLE_TIME = 24.0;
     private static final int[] TOF_ROI = new int[] { 4, 4, 11, 11 };

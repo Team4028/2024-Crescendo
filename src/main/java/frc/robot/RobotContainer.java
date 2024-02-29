@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
@@ -37,6 +36,7 @@ import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.generated.TunerConstants;
+
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
@@ -45,6 +45,7 @@ import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Vision;
+
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
@@ -90,7 +91,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private Command smartInfeedCommand, magicShootCommand;
+    private final Command smartInfeedCommand, magicShootCommand;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -111,8 +112,8 @@ public class RobotContainer {
     /* Swerve Control & Logging */
     // ======================== //
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MAX_SPEED * 0.1).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.1) // Add a 10%
-                                                                                           // deadband
+            .withDeadband(MAX_SPEED * 0.05).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.05) // Add a 50%
+                                                                                             // deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                      // driving in open loop
     private final Telemetry logger = new Telemetry(MAX_SPEED);
@@ -273,16 +274,11 @@ public class RobotContainer {
         //                                 new InstantCommand(smartInfeedCommand::schedule, infeed, conveyor, shooter))));
 
         /* Run Climber to "Ready" */
-        // driverController.y().and(driverController.povUp())
-        // .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL).alongWith(new
-        // WaitCommand(3.0)).until(pivot.inPosition()).andThen(
-        // climber.runToPositionCommand(Climber.ClimberPositions.READY)));
-
-        // TODO -- this wait ^ doesn't work, climber needs to wait to move until pivot
-        // in position
-
         driverController.y().and(driverController.povUp())
-                .onTrue(pivot.runToPositionCommand(Pivot.MAX_VAL));
+                .onTrue(pivot.runToPositionCommand(Pivot.CLIMB_POSITION).andThen(
+                        Commands.waitUntil(pivot.inPositionSupplier()),
+                        climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+
         // ========================== //
         /* Drivetain & Vision Control */
         // ========================== //
@@ -375,7 +371,7 @@ public class RobotContainer {
                         .alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
                 .andThen(Commands.waitSeconds(0.2))
                 .andThen(shooter.stopCommand())
-                .andThen(pivot.runToPositionCommand(Pivot.MIN_VAL));
+                .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
 
         configureBindings();
     }
