@@ -149,10 +149,10 @@ public class RobotContainer {
                 .repeatedly().until(conveyor.hasInfedSupplier())
                 .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
                         .repeatedly().withTimeout(0.1))
-                .andThen(shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
+                .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
                         .raceWith(conveyor.runXRotations(-4).withTimeout(0.5)
                                 .alongWith(infeed.runInfeedMotorCommand(0.))))
-                .andThen(shooter.spinMotorRightCommand(0.)));//.withTimeout(3));
+                .andThen(shooter.spinMotorLeftCommand(0.)));// .withTimeout(3));
         NamedCommands.registerCommand("farShot", Commands.runOnce(() -> pivot.runToPosition(1)));
 
         ShooterTableEntry aentry = new ShooterTableEntry(Feet.of(0),
@@ -215,7 +215,7 @@ public class RobotContainer {
 
         /* Conveyance */
         driverController.a()
-                .onTrue(conveyor.runXRotations(10)
+                .onTrue(conveyor.runXRotations(20.0)
                         .alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
                 .onFalse(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS));
 
@@ -257,16 +257,20 @@ public class RobotContainer {
         driverController.y().and(driverController.povRight())
                 .onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
 
+        // TODO: change this to a toggle that runs forever until you stop, and add a
+        // robot-relative mode
         // driverController.leftStick()
         //         .onTrue(new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.8), drivetrain)
         //                 .andThen(drivetrain.run(() -> drivetrain.setControl(
         //                         new SwerveRequest.ApplyChassisSpeeds().withSpeeds(
         //                                 new ChassisSpeeds(
         //                                         0.8,
+                                                
         //                                         0,
         //                                         0))))
-        //                         .withTimeout(0.5)));
-                        // .alongWith(smartInfeedCommand));
+        //                         .withTimeout(0.5)
+        //                         .alongWith(
+        //                                 new InstantCommand(smartInfeedCommand::schedule, infeed, conveyor, shooter))));
 
         /* Run Climber to "Ready" */
         // driverController.y().and(driverController.povUp())
@@ -352,10 +356,10 @@ public class RobotContainer {
                 .repeatedly().until(conveyor.hasInfedSupplier())
                 .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
                         .repeatedly().withTimeout(0.1))
-                .andThen(shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-                        .raceWith(conveyor.runXRotations(-4.d).withTimeout(0.5) // -1.5
+                .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
+                        .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
                                 .alongWith(infeed.runInfeedMotorCommand(0.))))
-                .andThen(shooter.spinMotorRightCommand(0.));//.withTimeout(3);
+                .andThen(shooter.spinMotorLeftCommand(0.));// .withTimeout(3);
 
         autons = new Autons(drivetrain, shooter, conveyor, infeed, smartInfeedCommand);
 
@@ -417,8 +421,8 @@ public class RobotContainer {
         conveyor.logValues();
         infeed.logValues();
         shooter.logValues();
-        climber.logValues();
-        pivot.logValues();
+        // climber.logValues();
+        // pivot.logValues();
         // m_fan.logValues();
     }
 

@@ -40,13 +40,13 @@ public class Pivot extends SubsystemBase {
     private static final int SUPPLY_CURRENT_LIMIT = 80;
     private static final int STATOR_CURRENT_LIMIT = 100;
 
-    private static final int PIVOT_CAN_ID = 13;
+    private static final int PIVOT_CAN_ID = 130;
 
     private static final double CRUISE_VELOCITY = 24.;
     private static final double ACCELERATION = 36.;
     private static final double JERK = 360.;
 
-    public static final double MIN_VAL = 0.5;
+    public static final double MIN_VAL = 0.1;
     
     public static final double MAX_VAL = 12.5;
     public static final double TRAP_POSITION = 7.3;

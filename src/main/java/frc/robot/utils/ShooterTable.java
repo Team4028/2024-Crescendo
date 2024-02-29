@@ -1,5 +1,7 @@
 package frc.robot.utils;
 
+import static edu.wpi.first.units.Units.Feet;
+
 import java.util.ArrayList;
 
 import edu.wpi.first.units.Distance;
@@ -33,10 +35,11 @@ public class ShooterTable {
     private static void fillInTable() {
         // put entries here
         // Distances must go from top to bottom: shortest to longest
-        table.add(new ShooterTableEntry(Units.Feet.of(3.), 4.9, .7));
-        table.add(new ShooterTableEntry(Units.Feet.of(6.), 1.8, 1.0));
-        table.add(new ShooterTableEntry(Units.Feet.of(9.), 1.8, 1.0));
-        table.add(new ShooterTableEntry(Units.Feet.of(15.), 0.5, 1.0));
+        table.add(new ShooterTableEntry(Feet.of(3.), 4.9, .7));
+        table.add(new ShooterTableEntry(Feet.of(6.d), 3.09, 1.d));
+        table.add(new ShooterTableEntry(Feet.of(9.d), 1.78, 1.d));
+        table.add(new ShooterTableEntry(Feet.of(12.d), 0.79, 1.d));
+        table.add(new ShooterTableEntry(Feet.of(14.d), 0.45, 1.d));
     }
 
     static {

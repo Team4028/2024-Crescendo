@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.units.Per;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -19,6 +18,7 @@ import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 
 import java.util.function.BooleanSupplier;
 
@@ -37,7 +37,7 @@ public class Conveyor extends SubsystemBase {
         private static final double kP = 0.8;
         private static final double kI = 0.0;
         private static final double kD = 0.0;
-        private static final double[] kOutputRange = new double[] { -0.3, 0.3 };
+        private static final double[] kOutputRange = new double[] { -0.3, 0.6 };
 
         private static final double COMMAND_ESCAPE_THRESHOLD = 0.06;
     }
@@ -59,9 +59,22 @@ public class Conveyor extends SubsystemBase {
         timer = new Timer();
         timer.reset();
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
+
+        motor.restoreFactoryDefaults();
+        
         motor.setIdleMode(IdleMode.kCoast);
         motor.setInverted(true);
         motor.setClosedLoopRampRate(.1);
+
+
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 20);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 101);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 102);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 103);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
         encoder = motor.getEncoder();
 
         pid = motor.getPIDController();

@@ -10,6 +10,7 @@ import com.playingwithfusion.TimeOfFlight;
 import com.playingwithfusion.TimeOfFlight.RangingMode;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
 
@@ -42,9 +43,20 @@ public class Infeed extends SubsystemBase {
     /** Creates a new SensorMotor. */
     public Infeed() {
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
+        motor.restoreFactoryDefaults();
+
         motor.setInverted(true);
         motor.setSmartCurrentLimit(CURRENT_LIMIT);
         motor.setIdleMode(IdleMode.kBrake);
+        
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 20);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 101);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 102);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 103);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
 
         encoder = motor.getEncoder();
         encoder.setMeasurementPeriod(ENCODER_MESURMENT_PERIOD);

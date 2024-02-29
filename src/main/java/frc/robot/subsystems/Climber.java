@@ -31,7 +31,7 @@ public class Climber extends SubsystemBase {
     private static final double ZERO_TIMER_THRESHOLD = 0.1; // 5 scans
     private static final double ZERO_VELOCITY_THRESHOLD = 5;
 
-    private static final int CAN_ID = 15;
+    private static final int CAN_ID = 150;
     private static final int SUPPLY_CURRENT_LIMIT = 80;
     private static final int STATOR_CURRENT_LIMIT = 100;
 
@@ -81,6 +81,7 @@ public class Climber extends SubsystemBase {
 
     public Climber() {
         motor = new TalonFX(CAN_ID);
+        
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setInverted(false);
 
@@ -158,8 +159,8 @@ public class Climber extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
-        SmartDashboard.putNumber("Climber Position", motor.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("Climber Current", motor.getStatorCurrent().getValueAsDouble());
+        // // This method will be called once per scheduler run
+        // SmartDashboard.putNumber("Climber Position", motor.getPosition().getValueAsDouble());
+        // SmartDashboard.putNumber("Climber Current", motor.getStatorCurrent().getValueAsDouble());
     }
 }
