@@ -40,7 +40,7 @@ public class Pivot extends SubsystemBase {
     private static final int SUPPLY_CURRENT_LIMIT = 80;
     private static final int STATOR_CURRENT_LIMIT = 100;
 
-    private static final int PIVOT_CAN_ID = 130;
+    private static final int PIVOT_CAN_ID = 13;
 
     private static final double CRUISE_VELOCITY = 24.;
     private static final double ACCELERATION = 36.;
@@ -166,5 +166,6 @@ public class Pivot extends SubsystemBase {
     public void periodic() {
         SmartDashboard.putNumber("Pivot pos", motor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Pivot Current", motor.getStatorCurrent().getValueAsDouble());
+        SmartDashboard.putNumber("Pivot Target", targetPosition);
     }
 }

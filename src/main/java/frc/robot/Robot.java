@@ -71,12 +71,11 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.cancel();
         }
 
-        // m_robotContainer.zero();
+        m_robotContainer.zero();
     }
 
     @Override
     public void teleopPeriodic() {
-        m_robotContainer.logDist();
         m_robotContainer.logValues();
     }
 
