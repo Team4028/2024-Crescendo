@@ -421,8 +421,8 @@ public class RobotContainer {
         conveyor.logValues();
         infeed.logValues();
         shooter.logValues();
-        // climber.logValues();
-        // pivot.logValues();
+        climber.logValues();
+        pivot.logValues();
         // m_fan.logValues();
     }
 
