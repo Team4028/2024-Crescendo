@@ -71,7 +71,7 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.cancel();
         }
 
-        m_robotContainer.zero();
+        // m_robotContainer.zero();
     }
 
     @Override

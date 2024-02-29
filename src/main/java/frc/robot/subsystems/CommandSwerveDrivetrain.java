@@ -97,23 +97,6 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         }
     }
 
-    @Override
-    public void seedFieldRelative(Pose2d location) {
-        // getPigeon2().setYaw(0);
-        super.seedFieldRelative(location);
-    }
-
-    @Override
-    public void seedFieldRelative() {
-        // getPigeon2().setYaw(0);
-        try {
-            m_stateLock.writeLock().lock();
-            m_fieldRelativeOffset = getState().Pose.getRotation();
-        } finally {
-            m_stateLock.writeLock().unlock();
-        }
-    }
-
     public Command pathFindCommand(Pose2d desiredPose, double scale, double endVel) {
         PathConstraints constraints = new PathConstraints(
                 PathFindPlannerConstants.kMaxSpeed * scale,
