@@ -258,17 +258,19 @@ public class RobotContainer {
         // TODO: change this to a toggle that runs forever until you stop, and add a
         // robot-relative mode
         // driverController.leftStick()
-        //         .onTrue(new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.8), drivetrain)
-        //                 .andThen(drivetrain.run(() -> drivetrain.setControl(
-        //                         new SwerveRequest.ApplyChassisSpeeds().withSpeeds(
-        //                                 new ChassisSpeeds(
-        //                                         0.8,
-                                                
-        //                                         0,
-        //                                         0))))
-        //                         .withTimeout(0.5)
-        //                         .alongWith(
-        //                                 new InstantCommand(smartInfeedCommand::schedule, infeed, conveyor, shooter))));
+        // .onTrue(new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.8),
+        // drivetrain)
+        // .andThen(drivetrain.run(() -> drivetrain.setControl(
+        // new SwerveRequest.ApplyChassisSpeeds().withSpeeds(
+        // new ChassisSpeeds(
+        // 0.8,
+
+        // 0,
+        // 0))))
+        // .withTimeout(0.5)
+        // .alongWith(
+        // new InstantCommand(smartInfeedCommand::schedule, infeed, conveyor,
+        // shooter))));
 
         /* Run Climber to "Ready" */
         // driverController.y().and(driverController.povUp())
@@ -346,6 +348,7 @@ public class RobotContainer {
     }
 
     public RobotContainer() {
+        System.err.println("oh rbother");
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
 
@@ -396,7 +399,7 @@ public class RobotContainer {
 
     /* Zeroing Command */
     public Command zeroCommand() {
-        //return climber.zeroCommand().andThen(pivot.zeroCommand());
+        // return climber.zeroCommand().andThen(pivot.zeroCommand());
         return pivot.zeroCommand();
     }
 
@@ -514,13 +517,9 @@ public class RobotContainer {
         return Optional.empty();
     }
 
-    public void logDist() {
-        SmartDashboard.putNumber("Dist to spkr ft", Units.metersToFeet(drivetrain.getState().Pose
-                .minus(Constants.SPEAKER_DISTANCE_TARGET).getTranslation().getNorm()));
-    }
-
     /* Test Shooter Table */
     private ShooterTableEntry printSTVals() {
+        System.err.println("PRINTSTVALS");
         Pose2d pose = drivetrain.getState().Pose;
 
         Transform2d dist = pose.minus(Constants.SPEAKER_DISTANCE_TARGET);
