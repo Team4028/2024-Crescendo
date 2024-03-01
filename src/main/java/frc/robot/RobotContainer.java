@@ -362,6 +362,12 @@ public class RobotContainer {
 
         operatorController.leftStick().toggleOnTrue(drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0));
 
+        operatorController.leftStick().toggleOnTrue(drivetrain.pathFindCommand(Constants.LEFT_TRAP_Target, .2, 0)
+            .andThen(pivot.runToPositionCommand(Pivot.TRAP_POSITION))
+            .andThen(shooter.run(() -> shooter.setLeftToVel(1300)))
+            .andThen(shooter.run(() -> shooter.setRightToVel(1300)))
+            .andThen(conveyor.runXRotations(20)));
+
         operatorController.start().onTrue(Commands.runOnce(() -> printSTVals()));
 
         if (Utils.isSimulation()) {
