@@ -35,6 +35,7 @@ import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
 import frc.robot.commands.vision.LimelightAcquire;
+import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -280,20 +281,25 @@ public class RobotContainer {
         // TODO: change this to a toggle that runs forever until you stop, and add a
         // robot-relative mode
         driverController.leftStick()
-                .toggleOnTrue(new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.8),
+                .toggleOnTrue(new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.5),
                         drivetrain)
-                        .andThen(drivetrain.run(() -> drivetrain.setControl(
-                                new SwerveRequest.ApplyChassisSpeeds().withSpeeds(
-                                        new ChassisSpeeds(
-                                                0.8,
-                                                0,
-                                                0))))
-                                .withTimeout(0.5))
-                                .alongWith(
-                                        new InstantCommand(
-                                                smartInfeedCommand::schedule,
-                                                infeed, conveyor,
-                                                shooter)));
+                        .alongWith(
+                                infeed.runInfeedMotorCommand(INFEED_VBUS)
+                                        .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
+                                        .repeatedly().until(conveyor.hasInfedSupplier())
+                                        .andThen(
+                                                infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
+                                                        .repeatedly().withTimeout(0.1))
+                                        .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
+                                                .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
+                                                        .alongWith(infeed.runInfeedMotorCommand(0.))))
+                                        .andThen(shooter.spinMotorLeftCommand(0.))// .withTimeout(3);
+                        ));
+
+        // driverController.leftStick().toggleOnTrue(new LimelightSquare(true, () -> 0.,
+        // () -> 0., drivetrain));
+        // driverController.leftStick().toggleOnTrue(new LimelightAcquire(
+        // () -> xLimeAquireLimiter.calculate(0.8), drivetrain));
 
         /* Run Climber to "Ready" */
         // driverController.y().and(driverController.povUp())
