@@ -3,37 +3,53 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.55,
-        "y": 6.8
+        "x": 1.4,
+        "y": 6.2
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5302122190549643,
-        "y": 6.230165042355762
+        "x": 2.4,
+        "y": 6.2
       },
       "isLocked": false,
-      "linkedName": "4pdr 1"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.5,
-        "y": 5.55
+        "x": 4.5,
+        "y": 6.2
       },
       "prevControl": {
-        "x": 1.8112722961537204,
-        "y": 5.305008955239023
+        "x": 3.3412811867811545,
+        "y": 6.2
+      },
+      "nextControl": {
+        "x": 5.66,
+        "y": 6.2
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.860377261410728,
+        "y": 7.4598028796628215
+      },
+      "prevControl": {
+        "x": 6.860377261410728,
+        "y": 7.4598028796628215
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "4pdr 2"
+      "linkedName": "3p1"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "zeroEnd",
-      "waypointRelativePos": 1.0,
+      "name": "runThru",
+      "waypointRelativePos": 1.75,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,7 +57,7 @@
             {
               "type": "named",
               "data": {
-                "name": "zeroApril"
+                "name": "runThru"
               }
             }
           ]
@@ -63,7 +79,7 @@
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 46.66591058775336,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true
