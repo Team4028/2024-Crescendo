@@ -5,15 +5,18 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,6 +26,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Climber extends SubsystemBase {
     /** Creates a new Climber. */
     private final TalonFX motor;
+    private final DutyCycleEncoder climberEncoder;
+
     private final DataLog log;
     private final DoubleLogEntry vbusLog, currentLog, positionLog, velocityLog;
 
@@ -31,6 +36,8 @@ public class Climber extends SubsystemBase {
     private static final double ZERO_TIMER_THRESHOLD = 0.2; // 5 scans
     private static final double ZERO_CURRENT_THRESHOLD = 3.;
     private static final double ZERO_VBUS = -0.1;
+    private static final double ZERO_ABSOLUTE_ENCODER_POSITION = 0; // not correct
+    private static final double MOTOR_ROT_TO_ABSOLUTE_ENCODER_ROT = 1;
 
     private static final int CAN_ID = 15;
 
@@ -74,7 +81,8 @@ public class Climber extends SubsystemBase {
 
     public Climber() {
         motor = new TalonFX(CAN_ID);
-        
+        climberEncoder = new DutyCycleEncoder(7);
+
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setInverted(true);
 
@@ -84,6 +92,8 @@ public class Climber extends SubsystemBase {
         motor.getConfigurator().apply(motionMagicConfigs);
         motor.getConfigurator().apply(pidConfigs);
         motor.getConfigurator().apply(currentConfigs);
+
+        motor.setPosition(climberEncoder.get() * MOTOR_ROT_TO_ABSOLUTE_ENCODER_ROT - ZERO_ABSOLUTE_ENCODER_POSITION);
 
         zeroTimer = new Timer();
 
@@ -123,7 +133,7 @@ public class Climber extends SubsystemBase {
     }
 
     public void climb() {
-        motor.setControl(motionMagicRequest.withPosition(ClimberPositions.CLIMB.Position ));
+        motor.setControl(motionMagicRequest.withPosition(ClimberPositions.CLIMB.Position));
     }
 
     public Command climbCommand() {
