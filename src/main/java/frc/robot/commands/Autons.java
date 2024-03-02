@@ -14,7 +14,7 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.utils.ShooterTable;
 
-public class Autons { // TODO: Add vision later
+public class Autons {
 
     private final CommandSwerveDrivetrain drive;
     private final Shooter shooter;

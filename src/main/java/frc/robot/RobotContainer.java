@@ -21,7 +21,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -36,7 +35,6 @@ import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
 import frc.robot.commands.vision.LimelightAcquire;
-import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.generated.TunerConstants;
 
 import frc.robot.subsystems.Climber;
@@ -120,6 +118,42 @@ public class RobotContainer {
                                                                      // driving in open loop
     private final Telemetry logger = new Telemetry(MAX_SPEED);
 
+    
+    public RobotContainer() {
+         
+        // TODO: Failsafe timer based on Infeed ToF
+        smartInfeedCommand = infeed.runInfeedMotorCommand(INFEED_VBUS)
+                .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
+                .repeatedly().until(conveyor.hasInfedSupplier())
+                .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
+                        .repeatedly().withTimeout(0.1))
+                .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
+                        .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
+                                .alongWith(infeed.runInfeedMotorCommand(0.))))
+                .andThen(shooter.spinMotorLeftCommand(0.));// .withTimeout(3);
+
+        initNamedCommands();
+
+        autons = new Autons(drivetrain, shooter, conveyor, infeed, smartInfeedCommand);
+
+        initAutonChooser();
+
+        magicShootCommand = new RotateToSpeaker(drivetrain).andThen(Commands.runOnce(() -> {
+            ShooterTableEntry entry = getBestSTEntry();
+            shooter.runEntry(entry, ShotSpeeds.FAST);
+            pivot.runToPosition(entry.angle);
+        }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReady()))
+                .andThen(Commands.waitSeconds(0.5))
+                .andThen(conveyor.runXRotations(10)
+                        .alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
+                .andThen(Commands.waitSeconds(0.2))
+                .andThen(shooter.stopCommand())
+                .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
+
+        configureBindings();
+    }
+
+
     // ====================== //
     /* Auton & Named Commands */
     // ====================== //
@@ -200,14 +234,15 @@ public class RobotContainer {
                         () -> true));
     }
 
-    // TODO: this stuff needs cleaned up
-    // Likely time for a operator controller,
-    // or at least getting rid of useless stuff
-
     // =========================== //
     /* Bindings & Default Commands */
     // =========================== //
     private void configureBindings() {
+        
+        //TODO: Add reverse infeed in case of jams so driver can spit out note and retry
+        //TODO: Buttons should NOT be toggles. Commands should only be running while buttons are being held
+
+
         // ================ //
         /* Default Commands */
         // ================ //
@@ -333,7 +368,7 @@ public class RobotContainer {
             if (pose.isPresent())
                 drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
 
-            printSTVals();
+            getBestSTEntry();
         }));
 
         // ==================== //
@@ -344,8 +379,6 @@ public class RobotContainer {
                 .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 0.2)));
         driverController.leftBumper()
                 .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 0.2)));
-
-        // TODO: Port some stuff over
 
         // =================== //
         /* OPERATOR CONTROLLER */
@@ -361,7 +394,7 @@ public class RobotContainer {
 
         operatorController.x()
                 .toggleOnTrue(Commands.runOnce(() -> {
-                    ShooterTableEntry entry = printSTVals();
+                    ShooterTableEntry entry = getBestSTEntry();
                     shooter.runEntry(entry, ShotSpeeds.FAST);
                     pivot.runToPosition(entry.angle);
                 }, shooter, pivot));
@@ -386,7 +419,7 @@ public class RobotContainer {
             .andThen(conveyor.runXRotations(20))))
             .andThen(pivot.runToPositionCommand(.5)));
 
-        operatorController.start().onTrue(Commands.runOnce(() -> printSTVals()));
+        operatorController.start().onTrue(Commands.runOnce(() -> getBestSTEntry()));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -396,47 +429,13 @@ public class RobotContainer {
 
     }
 
-    public RobotContainer() {
-        // TODO: Failsafe timer based on Infeed ToF
-
-        smartInfeedCommand = infeed.runInfeedMotorCommand(INFEED_VBUS)
-                .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
-                .repeatedly().until(conveyor.hasInfedSupplier())
-                .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
-                        .repeatedly().withTimeout(0.1))
-                .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-                        .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
-                                .alongWith(infeed.runInfeedMotorCommand(0.))))
-                .andThen(shooter.spinMotorLeftCommand(0.));// .withTimeout(3);
-
-        initNamedCommands();
-
-        autons = new Autons(drivetrain, shooter, conveyor, infeed, smartInfeedCommand);
-
-        initAutonChooser();
-
-        magicShootCommand = new RotateToSpeaker(drivetrain).andThen(Commands.runOnce(() -> {
-            ShooterTableEntry entry = printSTVals();
-            shooter.runEntry(entry, ShotSpeeds.FAST);
-            pivot.runToPosition(entry.angle);
-        }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReady()))
-                .andThen(Commands.waitSeconds(0.5))
-                .andThen(conveyor.runXRotations(10)
-                        .alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
-                .andThen(Commands.waitSeconds(0.2))
-                .andThen(shooter.stopCommand())
-                .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
-
-        configureBindings();
-    }
-
     // =========================================== //
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
     /* Run both Conveyor and Infeed */
     private Command runBoth(double conveyorVbus, double infeedVbus) {
-        return infeed.runInfeedMotorCommand(conveyorVbus).alongWith(conveyor.runMotorCommand(conveyorVbus));
+        return infeed.runInfeedMotorCommand(infeedVbus).alongWith(conveyor.runMotorCommand(conveyorVbus));
     }
 
     /* Auton Command */
@@ -480,47 +479,7 @@ public class RobotContainer {
     // ================ //
     /* Vision Utilities */
     // ================ //
-
-    /* Return Approx. 2d yaw */
-    private double getBestYaw(int tagID) {
-        Optional<Double> leftYaw = leftVision.getTagYaw(tagID);
-        Optional<Double> rightYaw = rightVision.getTagYaw(tagID);
-
-        int numYaws = 0;
-        numYaws += leftYaw.isPresent() ? 1 : 0;
-        numYaws += rightYaw.isPresent() ? 1 : 0;
-
-        switch (numYaws) {
-            case 1:
-                return (leftYaw.isPresent() ? leftYaw : rightYaw).get();
-            case 2:
-                return (leftYaw.get() + rightYaw.get()) / 2.d;
-            case 0:
-            default:
-                return 0.;
-        }
-    }
-
-    /* Return approx. 2d distance */
-    private double getBestDistance(int tagID) {
-        Optional<Double> leftDistance = leftVision.getTagDistance(tagID);
-        Optional<Double> rightDistance = rightVision.getTagDistance(tagID);
-
-        int numDistances = 0;
-        numDistances += leftDistance.isPresent() ? 1 : 0;
-        numDistances += rightDistance.isPresent() ? 1 : 0;
-
-        switch (numDistances) {
-            case 1:
-                return (leftDistance.isPresent() ? leftDistance : rightDistance).get();
-            case 2:
-                return (leftDistance.get() + rightDistance.get()) / 2.d;
-            case 0:
-            default:
-                return 0.;
-        }
-    }
-
+    
     /* Return approx. 3d pose */
     public Optional<EstimatedRobotPose> getBestPose() {
         Pose2d drivetrainPose = drivetrain.getState().Pose;
@@ -567,7 +526,7 @@ public class RobotContainer {
     }
 
     /* Test Shooter Table */
-    private ShooterTableEntry printSTVals() {
+    private ShooterTableEntry getBestSTEntry() {
         Pose2d pose = drivetrain.getState().Pose;
 
         Transform2d dist = pose.minus(Constants.SPEAKER_DISTANCE_TARGET);

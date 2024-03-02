@@ -25,7 +25,6 @@ public class Vision extends SubsystemBase {
 
     private PhotonPoseEstimator m_estimator;
 
-    // TODO: check coordinate systems
     public static final Transform3d LEFT_ROBOT_TO_CAMERA = new Transform3d(Units.inchesToMeters(0.),
             Units.inchesToMeters(-12.5), Units.inchesToMeters(0.),
             new Rotation3d(0., Units.degreesToRadians(28.125), Units.degreesToRadians(-150.)));
