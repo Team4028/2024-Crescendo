@@ -95,7 +95,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command smartInfeedCommand, magicShootCommand, magicTrapCommand, magicAmpCommand;
+    private final Command smartInfeedCommand, magicShootCommand, magicTrapCommand, magicAmpCommand, autoClimbCommand;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -171,6 +171,8 @@ public class RobotContainer {
                 .andThen(conveyor.runXRotations(20.))
                 .andThen(shooter.stopCommand())
                 .andThen(pivot.runToHomeCommand());
+
+        autoClimbCommand = Commands.none();
 
         configureBindings();
     }
