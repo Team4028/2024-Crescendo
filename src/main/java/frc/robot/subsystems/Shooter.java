@@ -7,14 +7,14 @@ package frc.robot.subsystems;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-import com.revrobotics.CANSparkFlex;
-
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
-import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
+import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
+import com.ctre.phoenix6.configs.Slot2Configs;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.util.datalog.DataLog;
@@ -26,10 +26,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
 public class Shooter extends SubsystemBase {
-    private final CANSparkFlex leftMotor, rightMotor;
-
-    private final RelativeEncoder leftEncoder, rightEncoder;
-    private final SparkPIDController leftPid, rightPid;
+    private final TalonFX leftMotor, rightMotor;
 
     private final DataLog log;
     private final DoubleLogEntry rightCurrent, leftCurrent,
@@ -41,6 +38,26 @@ public class Shooter extends SubsystemBase {
 
     private static final int LEFT_CAN_ID = 9;
     private static final int RIGHT_CAN_ID = 10;
+
+    private final VelocityVoltage leftVelocityRequest = new VelocityVoltage(0.)
+            .withEnableFOC(true);
+
+    private final VelocityVoltage rightVelocityRequest = new VelocityVoltage(0.)
+            .withEnableFOC(true);
+
+    private final CurrentLimitsConfigs leftCurrentLimitsConfigs = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(120.)
+            .withSupplyCurrentLimit(80.);
+
+    private final CurrentLimitsConfigs rightCurrentLimitsConfigs = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(100.)
+            .withSupplyCurrentLimit(60.);
+
+    private final ClosedLoopRampsConfigs leftRampConfigs = new ClosedLoopRampsConfigs()
+            .withVoltageClosedLoopRampPeriod(0.1);
+
+    private final ClosedLoopRampsConfigs rightRampConfigs = new ClosedLoopRampsConfigs()
+            .withVoltageClosedLoopRampPeriod(0.1);
 
     public enum ShotSpeeds {
 
@@ -59,47 +76,42 @@ public class Shooter extends SubsystemBase {
     }
 
     private final class Slots {
-        private static final int TRAP = 3;
-        private static final int AMP = 2;
-        private static final int MEDIUM = 1;
-        private static final int LONG = 0;
-    }
-
-    private static class PIDVFConstants {
-        public final double kP;
-        public final double kI;
-        public final double kD;
-        public final double kFF;
-
-        public PIDVFConstants(double kP, double kI, double kD, double kFF) {
-            this.kP = kP;
-            this.kI = kI;
-            this.kD = kD;
-            this.kFF = kFF;
-        }
-
-        public PIDVFConstants(double kP, double kFF) {
-            this(kP, 0., 0., kFF);
-        }
+        private static final int TRAP = 2;
+        private static final int AMP = 1;
+        private static final int FAST = 0;
     }
 
     private final class PIDConstants {
         private static class Right {
             private static double kFF = 0.00019;
 
-            private static final PIDVFConstants Trap = new PIDVFConstants(0.0002, kFF); // 1300
-            private static final PIDVFConstants Long = new PIDVFConstants(0.001, kFF); // 100%
-            private static final PIDVFConstants Medium = new PIDVFConstants(0.001, kFF); // 80%
-            private static final PIDVFConstants Amp = new PIDVFConstants(0.00025, kFF); // 690
+            private static final Slot2Configs Trap = new Slot2Configs()
+                    .withKP(0.0002)
+                    .withKV(kFF); // 1300
+
+            private static final Slot1Configs Amp = new Slot1Configs()
+                    .withKP(0.00025)
+                    .withKV(kFF); // 690
+
+            private static final Slot0Configs Fast = new Slot0Configs()
+                    .withKP(0.001)
+                    .withKV(kFF); // 100%
         }
 
         private static class Left {
             private static double kFF = 0.00022;
 
-            private static final PIDVFConstants Trap = new PIDVFConstants(0.001, kFF); // 1300
-            private static final PIDVFConstants Long = new PIDVFConstants(0.002, kFF); // 100%
-            private static final PIDVFConstants Medium = new PIDVFConstants(0.002, kFF); // 80%
-            private static final PIDVFConstants Amp = new PIDVFConstants(0.0005, kFF); // 690
+            private static final Slot2Configs Trap = new Slot2Configs()
+                    .withKP(0.001)
+                    .withKV(kFF); // 1300
+
+            private static final Slot1Configs Amp = new Slot1Configs()
+                    .withKP(0.0005)
+                    .withKV(kFF); // 690
+
+            private static final Slot0Configs Fast = new Slot0Configs()
+                    .withKP(0.002)
+                    .withKV(kFF); // 100%
         }
     }
 
@@ -107,86 +119,33 @@ public class Shooter extends SubsystemBase {
         // ==================================
         // SHOOTER WHEELS
         // ==================================
-        leftMotor = new CANSparkFlex(LEFT_CAN_ID, MotorType.kBrushless);
-        rightMotor = new CANSparkFlex(RIGHT_CAN_ID, MotorType.kBrushless);
+        leftMotor = new TalonFX(LEFT_CAN_ID);
+        rightMotor = new TalonFX(RIGHT_CAN_ID);
 
         leftMotor.setInverted(false);
 
-        leftMotor.setIdleMode(IdleMode.kBrake);
-        rightMotor.setIdleMode(IdleMode.kBrake);
+        leftMotor.setNeutralMode(NeutralModeValue.Brake);
+        rightMotor.setNeutralMode(NeutralModeValue.Brake);
 
-        leftEncoder = leftMotor.getEncoder();
-        rightEncoder = rightMotor.getEncoder();
+        leftMotor.getConfigurator().apply(leftCurrentLimitsConfigs);
+        rightMotor.getConfigurator().apply(rightCurrentLimitsConfigs);
 
-        leftMotor.setSmartCurrentLimit(80);
-        rightMotor.setSmartCurrentLimit(60);
-
-        leftEncoder.setMeasurementPeriod(16);
-        leftEncoder.setAverageDepth(2);
-
-        rightEncoder.setMeasurementPeriod(16);
-        rightEncoder.setAverageDepth(2);
-
-        leftMotor.setClosedLoopRampRate(0.1);
-        rightMotor.setClosedLoopRampRate(0.1);
-
-        leftPid = leftMotor.getPIDController();
-        rightPid = rightMotor.getPIDController();
-
-        leftPid.setFeedbackDevice(leftEncoder);
-        rightPid.setFeedbackDevice(rightEncoder);
-
-        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 20);
-        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
-        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);
-        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 101);
-        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 102);
-        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 103);
-        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
-        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
-        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 20);
-        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
-        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);
-        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 101);
-        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 102);
-        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 103);
-        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
-        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
+        leftMotor.getConfigurator().apply(leftRampConfigs);
+        rightMotor.getConfigurator().apply(rightRampConfigs);
 
         // ==================================
         // SHOOTER PID
         // ==================================
-        leftPid.setOutputRange(-1, 1);
-        rightPid.setOutputRange(-1, 1);
 
-        // TRAP //
-        int slot = Slots.TRAP;
+        leftMotor.getConfigurator().apply(PIDConstants.Left.Trap);
+        leftMotor.getConfigurator().apply(PIDConstants.Left.Amp);
+        leftMotor.getConfigurator().apply(PIDConstants.Left.Fast);
 
-        configPid(leftPid, slot, PIDConstants.Left.Trap);
-        configPid(rightPid, slot, PIDConstants.Right.Trap);
+        rightMotor.getConfigurator().apply(PIDConstants.Right.Trap);
+        rightMotor.getConfigurator().apply(PIDConstants.Right.Amp);
+        rightMotor.getConfigurator().apply(PIDConstants.Right.Fast);
 
-        // SHORT //
-        slot = Slots.AMP;
-
-        configPid(leftPid, slot, PIDConstants.Left.Amp);
-        configPid(rightPid, slot, PIDConstants.Right.Amp);
-
-        // MEDIUM //
-        slot = Slots.MEDIUM;
-
-        configPid(leftPid, slot, PIDConstants.Left.Medium);
-        configPid(rightPid, slot, PIDConstants.Right.Medium);
-
-        // SHORT //
-        slot = Slots.LONG;
-
-        configPid(leftPid, slot, PIDConstants.Left.Long);
-        configPid(rightPid, slot, PIDConstants.Right.Long);
-
-        longMode();
-
-        // leftMotor.burnFlash();
-        // rightMotor.burnFlash();
+        fastMode();
 
         // ==================================
         // LOGS
@@ -202,23 +161,13 @@ public class Shooter extends SubsystemBase {
     }
 
     // ==================================
-    // FUNNY PID THING
-    // ==================================
-    private void configPid(SparkPIDController controller, int slot, PIDVFConstants constants) {
-        controller.setP(constants.kP, slot);
-        controller.setI(constants.kI, slot);
-        controller.setD(constants.kD, slot);
-        controller.setFF(constants.kFF, slot);
-    }
-
-    // ==================================
     // SHOOTER COMMANDS
     // ==================================
 
     /* Check if shooter is spinned up */
     public BooleanSupplier isReady() {
-        return () -> Math.abs(leftEncoder.getVelocity() - leftTarget) < 20.
-                && Math.abs(rightEncoder.getVelocity() - rightTarget) < 20.;
+        return () -> Math.abs(leftMotor.getVelocity().getValueAsDouble() - leftTarget) < 20.
+                && Math.abs(rightMotor.getVelocity().getValueAsDouble() - rightTarget) < 20.;
     }
 
     /**
@@ -279,11 +228,8 @@ public class Shooter extends SubsystemBase {
             case Slots.AMP:
                 ampMode();
                 break;
-            case Slots.MEDIUM:
-                mediumMode();
-                break;
-            case Slots.LONG:
-                longMode();
+            case Slots.FAST:
+                fastMode();
                 break;
             default:
                 break;
@@ -298,17 +244,7 @@ public class Shooter extends SubsystemBase {
     // MODES
     // =============================
 
-    private void putConstants(PIDVFConstants left, PIDVFConstants right, ShotSpeeds speeds, String modeString) {
-        SmartDashboard.putNumber("Left P Gain", left.kP);
-        SmartDashboard.putNumber("Left I Gain", left.kI);
-        SmartDashboard.putNumber("Left D Gain", left.kD);
-        SmartDashboard.putNumber("Left Feed Forward", left.kFF);
-
-        SmartDashboard.putNumber("Right P Gain", right.kP);
-        SmartDashboard.putNumber("Right I Gain", right.kI);
-        SmartDashboard.putNumber("Right D Gain", right.kD);
-        SmartDashboard.putNumber("Right Feed Forward", right.kFF);
-
+    private void putConstants(ShotSpeeds speeds, String modeString) {
         SmartDashboard.putNumber("Left Velocity Target", speeds.LeftRPM);
         SmartDashboard.putNumber("Right Velocity Target", speeds.RightRPM);
 
@@ -319,29 +255,31 @@ public class Shooter extends SubsystemBase {
     }
 
     private void trapMode() {
-        putConstants(PIDConstants.Left.Trap, PIDConstants.Right.Trap, ShotSpeeds.TRAP, "Trap");
+        putConstants(ShotSpeeds.TRAP, "Trap");
     }
 
-    private void longMode() {
-        putConstants(PIDConstants.Left.Long, PIDConstants.Right.Long, ShotSpeeds.FAST, "Long");
-    }
-
-    private void mediumMode() {
-        putConstants(PIDConstants.Left.Medium, PIDConstants.Right.Medium, ShotSpeeds.MEDIUM, "Medium");
+    private void fastMode() {
+        putConstants(ShotSpeeds.FAST, "Fast");
     }
 
     private void ampMode() {
-        putConstants(PIDConstants.Left.Amp, PIDConstants.Right.Amp, ShotSpeeds.AMP, "Amp");
+        putConstants(ShotSpeeds.AMP, "Amp");
     }
 
     public void setLeftToVel(double velRPM) {
         leftTarget = velRPM;
-        leftPid.setReference(velRPM, ControlType.kVelocity, slot);
+
+        leftMotor.setControl(leftVelocityRequest
+                .withVelocity(velRPM)
+                .withSlot(slot));
     }
 
     public void setRightToVel(double velRPM) {
         rightTarget = velRPM;
-        rightPid.setReference(velRPM, ControlType.kVelocity, slot);
+
+        rightMotor.setControl(rightVelocityRequest
+                .withVelocity(velRPM)
+                .withSlot(slot));
     }
 
     public void spinMotorLeft(double vBus) {
@@ -365,23 +303,20 @@ public class Shooter extends SubsystemBase {
     }
 
     public void logValues() {
-        leftCurrent.append(leftMotor.getOutputCurrent());
-        rightCurrent.append(rightMotor.getOutputCurrent());
+        leftCurrent.append(leftMotor.getStatorCurrent().getValueAsDouble());
+        rightCurrent.append(rightMotor.getStatorCurrent().getValueAsDouble());
 
-        leftVelocity.append(leftMotor.getEncoder().getVelocity());
-        rightVelocity.append(rightMotor.getEncoder().getVelocity());
+        leftVelocity.append(leftMotor.getVelocity().getValueAsDouble());
+        rightVelocity.append(rightMotor.getVelocity().getValueAsDouble());
 
-        leftVoltage.append(leftMotor.getAppliedOutput() *
-                leftMotor.getBusVoltage());
-        rightVoltage.append(rightMotor.getAppliedOutput() *
-                rightMotor.getBusVoltage());
-
+        leftVoltage.append(leftMotor.getDutyCycle().getValueAsDouble());
+        rightVoltage.append(rightMotor.getDutyCycle().getValueAsDouble());
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Left Shooter Speed", leftEncoder.getVelocity());
-        SmartDashboard.putNumber("Right Shooter Speed", rightEncoder.getVelocity());
+        SmartDashboard.putNumber("Left Shooter Speed", leftMotor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("Right Shooter Speed", rightMotor.getVelocity().getValueAsDouble());
 
         SmartDashboard.putNumber("Left Shooter Target", leftTarget);
         SmartDashboard.putNumber("Right Shooter Target", rightTarget);
