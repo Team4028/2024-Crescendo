@@ -95,7 +95,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command smartInfeedCommand, magicShootCommand;
+    private final Command smartInfeedCommand, magicShootCommand, magicTrapCommand, magicAmpCommand;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -123,7 +123,6 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MAX_SPEED);
 
     public RobotContainer() {
-
         // TODO: Failsafe timer based on Infeed ToF
         smartInfeedCommand = infeed.runInfeedMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
@@ -152,6 +151,26 @@ public class RobotContainer {
                 .andThen(Commands.waitSeconds(0.2))
                 .andThen(shooter.stopCommand())
                 .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
+
+        magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2, 0)
+                .andThen(shooter.setSlotCommand(Shooter.Slots.TRAP))
+                .andThen(new WaitCommand(2))
+                .andThen(pivot.runToTrapCommand())
+                .andThen(m_fan.runMotorCommand(FAN_VBUS))
+                .andThen(shooter.runShotCommand(ShotSpeeds.TRAP).repeatedly()
+                        .until(shooterAndPivotReady()).withTimeout(4))
+                .andThen(conveyor.runXRotations(20))
+                .andThen(shooter.stopCommand())
+                .andThen(pivot.runToHomeCommand());
+
+        magicAmpCommand = drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0)
+                .andThen(shooter.setSlotCommand(Shooter.Slots.AMP))
+                .andThen(pivot.runToClimbCommand())
+                .andThen(shooter.runShotCommand(ShotSpeeds.AMP).repeatedly()
+                        .until(shooterAndPivotReady()).withTimeout(4.))
+                .andThen(conveyor.runXRotations(20.))
+                .andThen(shooter.stopCommand())
+                .andThen(pivot.runToHomeCommand());
 
         configureBindings();
     }
@@ -369,25 +388,9 @@ public class RobotContainer {
         /* Amp & Trap Magic */
         // ================ //
 
-        operatorController.b().toggleOnTrue(drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0)
-                .andThen(shooter.setSlotCommand(Shooter.Slots.AMP))
-                .andThen(pivot.runToClimbCommand())
-                .andThen(shooter.runShotCommand(ShotSpeeds.AMP)).repeatedly()
-                .until(shooterAndPivotReady()).withTimeout(4.)
-                .andThen(conveyor.runXRotations(20.))
-                .andThen(shooter.stopCommand())
-                .andThen(pivot.runToHomeCommand()));
+        operatorController.b().toggleOnTrue(magicAmpCommand);
 
-        operatorController.y().toggleOnTrue(drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2, 0)
-                .andThen(shooter.setSlotCommand(Shooter.Slots.TRAP))
-                .andThen(new WaitCommand(2))
-                .andThen(pivot.runToTrapCommand())
-                .andThen(m_fan.runMotorCommand(FAN_VBUS))
-                .andThen(shooter.runShotCommand(ShotSpeeds.TRAP).repeatedly()
-                .until(shooterAndPivotReady()).withTimeout(4))
-                .andThen(conveyor.runXRotations(20))
-                .andThen(shooter.stopCommand())
-                .andThen(pivot.runToHomeCommand()));
+        operatorController.y().toggleOnTrue(magicTrapCommand);
 
         // ==================== //
         /* EMERGENCY CONTROLLER */
