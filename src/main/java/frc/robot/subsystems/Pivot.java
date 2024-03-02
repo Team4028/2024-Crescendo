@@ -133,6 +133,18 @@ public class Pivot extends SubsystemBase {
         return runOnce(() -> runToPosition(position));
     }
 
+    public Command runToHomeCommand() {
+        return runToPositionCommand(HOLD_POSITION);
+    }
+
+    public Command runToTrapCommand() {
+        return runToPositionCommand(TRAP_POSITION);
+    }
+
+    public Command runToClimbCommand() {
+        return runToPositionCommand(CLIMB_POSITION);
+    }
+
     public void holdPosition() {
         runToPosition(encoder.getPosition());
     }
