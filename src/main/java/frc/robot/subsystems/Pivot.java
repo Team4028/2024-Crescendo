@@ -49,7 +49,8 @@ public class Pivot extends SubsystemBase {
     public static final double MIN_VAL = 0.1;
     
     public static final double MAX_VAL = 12.5;
-    public static final double TRAP_POSITION = 7.3;
+    public static final double TRAP_POSITION = 8.77
+    ;
 
     private double targetPosition;
 

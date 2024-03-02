@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
@@ -368,11 +369,19 @@ public class RobotContainer {
 
         operatorController.leftStick().toggleOnTrue(drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0));
 
-        operatorController.leftStick().toggleOnTrue(drivetrain.pathFindCommand(Constants.LEFT_TRAP_Target, .2, 0)
+        operatorController.rightStick().toggleOnTrue(drivetrain.pathFindCommand(Constants.LEFT_TRAP_Target, .2, 0)
+            .andThen(new WaitCommand(2))
             .andThen(pivot.runToPositionCommand(Pivot.TRAP_POSITION))
-            .andThen(shooter.run(() -> shooter.setLeftToVel(1300)))
-            .andThen(shooter.run(() -> shooter.setRightToVel(1300)))
-            .andThen(conveyor.runXRotations(20)));
+            .andThen(shooter.run(() -> {
+                shooter.setLeftToVel(1300);
+                shooter.setRightToVel(1300);
+            }).withTimeout(4)
+            .andThen(shooter.runOnce(() -> {
+                shooter.setLeftToVel(0);
+                shooter.setRightToVel(0);}))
+            .alongWith(new WaitCommand(2)
+            .andThen(conveyor.runXRotations(20))))
+            .andThen(pivot.runToPositionCommand(.5)));
 
         operatorController.start().onTrue(Commands.runOnce(() -> printSTVals()));
 
