@@ -45,6 +45,14 @@ public class Fan extends SubsystemBase {
                 () -> runMotor(0.));
     }
 
+    public void stop() {
+        runMotor(0.);
+    }
+
+    public Command stopCommand() {
+        return runOnce(this::stop);
+    }
+
     public void logValues() {
         m_vbusLog.append(m_motor.getAppliedOutput());
         m_currentLog.append(m_motor.getOutputCurrent());
