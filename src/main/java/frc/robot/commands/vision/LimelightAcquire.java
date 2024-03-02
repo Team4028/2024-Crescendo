@@ -45,9 +45,6 @@ public class LimelightAcquire extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-
-        System.out.println(LimelightHelpers.getTX(""));
-
         drivetrain.setControl(
                 drive.withSpeeds(new ChassisSpeeds(
                         (LimelightHelpers.getTV("") ? xSpeed.getAsDouble() : 0) * TunerConstants.kSpeedAt12VoltsMps,

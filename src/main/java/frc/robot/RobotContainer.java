@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
@@ -396,7 +397,6 @@ public class RobotContainer {
     }
 
     public RobotContainer() {
-        System.err.println("oh rbother");
         // TODO: Failsafe timer based on Infeed ToF
 
         smartInfeedCommand = infeed.runInfeedMotorCommand(INFEED_VBUS)
@@ -568,7 +568,6 @@ public class RobotContainer {
 
     /* Test Shooter Table */
     private ShooterTableEntry printSTVals() {
-        System.err.println("PRINTSTVALS");
         Pose2d pose = drivetrain.getState().Pose;
 
         Transform2d dist = pose.minus(Constants.SPEAKER_DISTANCE_TARGET);
