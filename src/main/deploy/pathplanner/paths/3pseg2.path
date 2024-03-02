@@ -3,37 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.55,
-        "y": 6.8
+        "x": 8.0,
+        "y": 7.35
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5302122190549643,
-        "y": 6.230165042355762
+        "x": 7.579317184311971,
+        "y": 7.113875312201409
       },
       "isLocked": false,
-      "linkedName": "4pdr 1"
+      "linkedName": "3p1"
     },
     {
       "anchor": {
-        "x": 2.5,
-        "y": 5.55
+        "x": 8.0,
+        "y": 5.79
       },
       "prevControl": {
-        "x": 1.8112722961537204,
-        "y": 5.305008955239023
+        "x": 7.087462049389147,
+        "y": 5.679755724704031
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "4pdr 2"
+      "linkedName": "3p2"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "zeroEnd",
-      "waypointRelativePos": 1.0,
+      "name": "stopShooter",
+      "waypointRelativePos": 0.25,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,7 +41,24 @@
             {
               "type": "named",
               "data": {
-                "name": "zeroApril"
+                "name": "stopShooter"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "smartInfeedCmd",
+      "waypointRelativePos": 0.75,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "smartInfeed"
               }
             }
           ]
@@ -63,7 +80,7 @@
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 46.66591058775336,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

@@ -12,6 +12,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.utils.LimelightHelpers;
 
@@ -49,16 +50,23 @@ public class LimelightAcquire extends Command {
 
         drivetrain.setControl(
                 drive.withSpeeds(new ChassisSpeeds(
-                        xSpeed.getAsDouble(),
+                        (LimelightHelpers.getTV("") ? xSpeed.getAsDouble() : 0) * TunerConstants.kSpeedAt12VoltsMps,
                         0,
                         Math.abs(LimelightHelpers.getTX("")) > NOTE_ANGLE_THRESH
                                 ? controller.calculate(Units.degreesToRadians(LimelightHelpers.getTX("")))
                                 : 0.)));
     }
 
+    @Override
+    public void end(boolean interrupted) {
+        drivetrain.setControl(
+            drive.withSpeeds(new ChassisSpeeds())
+        );
+    }
+
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return (LimelightHelpers.getTY("") < NOTE_PICKUP_THRESH) || !LimelightHelpers.getTV("");
+        return (LimelightHelpers.getTY("") < NOTE_PICKUP_THRESH);
     }
 }

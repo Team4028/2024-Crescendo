@@ -3,37 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.55,
-        "y": 6.8
+        "x": 8.0,
+        "y": 5.79
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5302122190549643,
-        "y": 6.230165042355762
+        "x": 6.999999999999999,
+        "y": 5.79
       },
       "isLocked": false,
-      "linkedName": "4pdr 1"
+      "linkedName": "3p2"
     },
     {
       "anchor": {
-        "x": 2.5,
-        "y": 5.55
+        "x": 4.991222307694258,
+        "y": 6.663465994549679
       },
       "prevControl": {
-        "x": 1.8112722961537204,
-        "y": 5.305008955239023
+        "x": 6.759558626107267,
+        "y": 6.335562571267796
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "4pdr 2"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "zeroEnd",
-      "waypointRelativePos": 1.0,
+      "name": "startShooter",
+      "waypointRelativePos": 0,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,7 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "zeroApril"
+                "name": "2.5StartShooter"
               }
             }
           ]
@@ -57,13 +57,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": 13.298570330494222,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 46.66591058775336,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Units;
 
 public class ShooterTable {
     // TODO: We may want P values here, or just tune kF
@@ -35,11 +34,11 @@ public class ShooterTable {
     private static void fillInTable() {
         // put entries here
         // Distances must go from top to bottom: shortest to longest
-        table.add(new ShooterTableEntry(Feet.of(3.), 4.9, .7));
-        table.add(new ShooterTableEntry(Feet.of(6.d), 3.09, 1.d));
-        table.add(new ShooterTableEntry(Feet.of(9.d), 1.78, 1.d));
-        table.add(new ShooterTableEntry(Feet.of(12.d), 0.79, 1.d));
-        table.add(new ShooterTableEntry(Feet.of(14.d), 0.45, 1.d));
+        table.add(new ShooterTableEntry(Feet.of(3.1), 5.3, .8));
+        table.add(new ShooterTableEntry(Feet.of(5.9), 2.82, .8));
+        table.add(new ShooterTableEntry(Feet.of(8.9), 1.63, .8));
+        table.add(new ShooterTableEntry(Feet.of(12.), 0.58, 1.));
+        table.add(new ShooterTableEntry(Feet.of(14.), 0.05, 1.));
     }
 
     static {
@@ -50,9 +49,9 @@ public class ShooterTable {
         ShooterTableEntry closestLower = table.get(0);
         ShooterTableEntry closestHigher = table.get(table.size() - 1);
 
-        if (distance.lt(closestLower.distance))
+        if (distance.lte(closestLower.distance))
             return closestLower;
-        if (distance.gt(closestHigher.distance))
+        if (distance.gte(closestHigher.distance))
             return closestHigher;
 
         // loop thru all of the entrys of the shootertable
@@ -66,19 +65,17 @@ public class ShooterTable {
                             .abs(entry.distance.minus(distance).baseUnitMagnitude()))) {
                 closestHigher = entry;
             } else if (entry.distance.isEquivalent(distance)) {
-                closestHigher = entry;
-                closestLower = entry;
-                break;
+                return entry;
             }
         }
 
-        double scaleFactor = (distance.magnitude() - closestLower.distance.magnitude())
-                / (closestHigher.distance.magnitude() - closestLower.distance.magnitude());
+        double scaleFactor = (distance.minus(closestLower.distance).baseUnitMagnitude())
+                / (closestHigher.distance.minus(closestLower.distance).baseUnitMagnitude());
 
         double calculatedPercent = scaleFactor * (closestHigher.percent - closestLower.percent)
                 + closestLower.percent;
 
-        double calculatedAngle = scaleFactor * (closestHigher.angle - closestLower.angle) + closestLower.angle;
+        double calculatedAngle = scaleFactor * (closestLower.angle - closestHigher.angle) + closestHigher.angle;
 
         return new ShooterTableEntry(distance, calculatedAngle, calculatedPercent);
     }

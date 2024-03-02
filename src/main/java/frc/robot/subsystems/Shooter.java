@@ -17,6 +17,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -238,6 +239,10 @@ public class Shooter extends SubsystemBase {
 
     /* Run Based on Shooter Table Entry */
     public void runEntry(ShooterTableEntry entry, ShotSpeeds shotSpeed) {
+        // SmartDashboard.putNumber("Entry Distance", entry.distance.in(Units.Feet));
+        // SmartDashboard.putNumber("Entry Percent", entry.percent);
+        // SmartDashboard.putNumber("Entry angle", entry.angle);
+
         setLeftToVel(entry.percent * shotSpeed.LeftRPM);
         setRightToVel(entry.percent * shotSpeed.RightRPM);
     }
@@ -378,5 +383,8 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         SmartDashboard.putNumber("Left Shooter Speed", leftEncoder.getVelocity());
         SmartDashboard.putNumber("Right Shooter Speed", rightEncoder.getVelocity());
+
+        SmartDashboard.putNumber("Left Shooter Target", leftTarget);
+        SmartDashboard.putNumber("Right Shooter Target", rightTarget);
     }
 }

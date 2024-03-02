@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -23,4 +24,7 @@ public final class Constants {
     public static final Pose2d SPEAKER_TARGET = new Pose2d(1.37, 5.56, new Rotation2d(Math.PI));
     public static final Pose2d SPEAKER_DISTANCE_TARGET = new Pose2d(0.2, 5.52, new Rotation2d(Math.PI));
     public static final Pose2d AMP_TARGET = new Pose2d(1.83, 7.27, new Rotation2d(Math.PI / 2.));
+    public static final Pose2d LEFT_TRAP_Target = new Pose2d(4.4, 4.62  , new Rotation2d(Units.degreesToRadians(120)));
+    public static final Pose2d MIDDLE_TRAP_Target = new Pose2d(4.4, 3.24, new Rotation2d(Units.degreesToRadians(-120)));
+    public static final Pose2d RIGHT_TRAP_Target = new Pose2d(5.83, 4.11, new Rotation2d(0));
 }

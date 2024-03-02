@@ -32,9 +32,13 @@ public class Pivot extends SubsystemBase {
     private final double ZERO_VELOCITY_THRESHOLD = 0.2;
 
     private static final int CAN_ID = 13;
-    public final static double CLIMB_POSITION = 12.5;
-    public final static double TRAP_POSITION = 7.3;
-    public final static double HOLD_POSITION = 1.;
+
+    public final static double MAX_POSITION = 12.5;
+    public final static double MIN_POSITION = 1.;
+
+    public final static double CLIMB_POSITION = MAX_POSITION;
+    public final static double HOLD_POSITION = MIN_POSITION;
+    public final static double TRAP_POSITION = 8.77;
 
     private final PositionDutyCycle positionRequest = new PositionDutyCycle(0.);
 
@@ -59,7 +63,7 @@ public class Pivot extends SubsystemBase {
             .withDutyCycleClosedLoopRampPeriod(1.0);
 
     private final SoftwareLimitSwitchConfigs limitConfigs = new SoftwareLimitSwitchConfigs()
-            .withForwardSoftLimitThreshold(12.5)
+            .withForwardSoftLimitThreshold(MAX_POSITION)
             .withForwardSoftLimitEnable(true);
 
     private double targetPosition;
@@ -159,5 +163,6 @@ public class Pivot extends SubsystemBase {
     public void periodic() {
         SmartDashboard.putNumber("Pivot Position", motor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Pivot Current", motor.getStatorCurrent().getValueAsDouble());
+        SmartDashboard.putNumber("Pivot Target", targetPosition);
     }
 }
