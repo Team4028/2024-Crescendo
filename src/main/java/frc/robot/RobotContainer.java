@@ -148,23 +148,24 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("runThru", infeed.runInfeedMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
-                .alongWith(shooter.spinBothCommand(0.5))
+                .alongWith(shooter.spinBothCommand(0.15))
                 .repeatedly());
 
         NamedCommands.registerCommand("LLAquire",
-                new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.8), drivetrain)
-                        .andThen(drivetrain.run(() -> drivetrain.setControl(
-                                new SwerveRequest.ApplyChassisSpeeds().withSpeeds(
-                                        new ChassisSpeeds(
-                                                0.8,
-                                                0,
-                                                0))))
-                                .withTimeout(0.2)
-                                .alongWith(
-                                        new InstantCommand(
-                                                smartInfeedCommand::schedule,
-                                                infeed, conveyor,
-                                                shooter))));
+                new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.5),
+                        drivetrain)
+                        .alongWith(
+                                infeed.runInfeedMotorCommand(INFEED_VBUS)
+                                        .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
+                                        .repeatedly().until(conveyor.hasInfedSupplier())
+                                        .andThen(
+                                                infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
+                                                        .repeatedly().withTimeout(0.1))
+                                        .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
+                                                .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
+                                                        .alongWith(infeed.runInfeedMotorCommand(0.))))
+                                        .andThen(shooter.spinMotorLeftCommand(0.))// .withTimeout(3);
+                        ));
 
         NamedCommands.registerCommand("smartInfeed", infeed.runInfeedMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
@@ -184,7 +185,12 @@ public class RobotContainer {
                         .alongWith(pivot.runToPositionCommand(
                                 aentry.angle)));
 
+        NamedCommands.registerCommand("2.5StartShooter", shooter.runEntryCommand(() -> aentry, () -> ShotSpeeds.FAST));
+
         NamedCommands.registerCommand("stopShooter", shooter.stopCommand());
+
+        NamedCommands.registerCommand("goTo2.5Shoot", drivetrain
+                .pathFindCommand(new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.5, 0));
 
         NamedCommands.registerCommand("follow2pchoice",
                 new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
