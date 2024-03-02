@@ -75,10 +75,10 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    private final class Slots {
-        private static final int TRAP = 2;
-        private static final int AMP = 1;
-        private static final int FAST = 0;
+    public final class Slots {
+        public static final int TRAP = 2;
+        public static final int AMP = 1;
+        public static final int FAST = 0;
     }
 
     private final class PIDConstants {
@@ -187,10 +187,6 @@ public class Shooter extends SubsystemBase {
 
     /* Run Based on Shooter Table Entry */
     public void runEntry(ShooterTableEntry entry, ShotSpeeds shotSpeed) {
-        // SmartDashboard.putNumber("Entry Distance", entry.distance.in(Units.Feet));
-        // SmartDashboard.putNumber("Entry Percent", entry.percent);
-        // SmartDashboard.putNumber("Entry angle", entry.angle);
-
         setLeftToVel(entry.percent * shotSpeed.LeftRPM);
         setRightToVel(entry.percent * shotSpeed.RightRPM);
     }
@@ -208,14 +204,6 @@ public class Shooter extends SubsystemBase {
 
     public Command stopCommand() {
         return runOnce(this::stop);
-    }
-
-    public Command cycleUpCommand() {
-        return runOnce(() -> setSlot(slot + 1));
-    }
-
-    public Command cycleDownCommand() {
-        return runOnce(() -> setSlot(slot - 1));
     }
 
     public void setSlot(int slot) {
@@ -264,6 +252,19 @@ public class Shooter extends SubsystemBase {
 
     private void ampMode() {
         putConstants(ShotSpeeds.AMP, "Amp");
+    }
+
+    public void runShot(ShotSpeeds shot, double scale) {
+        setLeftToVel(shot.LeftRPM * scale);
+        setRightToVel(shot.RightRPM * scale);
+    }
+
+    public Command runShotCommand(ShotSpeeds shot, double scale) {
+        return runOnce(() -> runShot(shot, scale));
+    }
+
+    public Command runShotCommand(ShotSpeeds shot) {
+        return runShotCommand(shot, 1.0);
     }
 
     public void setLeftToVel(double velRPM) {
