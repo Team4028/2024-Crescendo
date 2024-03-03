@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.0,
+        "y": 4.1
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 4.270855721198622,
+        "y": 3.6953528038110206
+      },
+      "isLocked": false,
+      "linkedName": "3+p3"
+    },
+    {
+      "anchor": {
+        "x": 4.991222307694258,
+        "y": 6.663465994549679
+      },
+      "prevControl": {
+        "x": 3.522429836882466,
+        "y": 5.157122109116013
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "3pshoot"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 13.3,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

@@ -1,0 +1,74 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.4,
+      "y": 6.2
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3pseg1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3pseg2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3p+seg3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3p+seg4"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "4pinfeed"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.0
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "LLAquire"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "goTo2.5Shoot"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
