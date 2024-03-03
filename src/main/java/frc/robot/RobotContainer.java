@@ -40,7 +40,6 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
-import frc.robot.subsystems.Fan;
 // import frc.robot.subsystems.Fan;
 import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Pivot;
@@ -84,7 +83,7 @@ public class RobotContainer {
     private final Climber climber = new Climber();
     private final Autons autons;
     private final Pivot pivot = new Pivot();
-    private final Fan fan = new Fan();
+    // private final Fan fan = new Fan();
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
@@ -383,9 +382,6 @@ public class RobotContainer {
         driverController.leftBumper()
                 .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 0.2)));
 
-
-        
-
         // =================== //
         /* OPERATOR CONTROLLER */
         // =================== //
@@ -430,7 +426,7 @@ public class RobotContainer {
 
         operatorController.start().onTrue(climber.runToPositionCommand(ClimberPositions.HOME));
 
-        operatorController.povDown().onTrue(fan.runMotorCommand(FAN_VBUS)).onFalse(fan.runMotorCommand(0.0));
+        // operatorController.povDown().onTrue(fan.runMotorCommand(FAN_VBUS)).onFalse(fan.runMotorCommand(0.0));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));

@@ -24,16 +24,9 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "3pseg3"
-                }
-              }
-            ]
+            "pathName": "3pseg3"
           }
         },
         {
