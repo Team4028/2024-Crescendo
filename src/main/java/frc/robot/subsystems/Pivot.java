@@ -38,7 +38,9 @@ public class Pivot extends SubsystemBase {
 
     public final static double CLIMB_POSITION = MAX_POSITION;
     public final static double HOLD_POSITION = MIN_POSITION;
-    public final static double TRAP_POSITION = 8.77;
+    //public final static double TRAP_POSITION = 8.77;
+    public final static double TRAP_POSITION = 12.14;
+
 
     private final PositionDutyCycle positionRequest = new PositionDutyCycle(0.);
 

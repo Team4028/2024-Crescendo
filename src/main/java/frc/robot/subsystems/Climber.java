@@ -5,7 +5,6 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -22,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 public class Climber extends SubsystemBase {
     /** Creates a new Climber. */
@@ -33,24 +33,26 @@ public class Climber extends SubsystemBase {
 
     private final Timer zeroTimer;
 
+    private boolean oneShot;
+
     private static final double ZERO_TIMER_THRESHOLD = 0.2; // 5 scans
     private static final double ZERO_CURRENT_THRESHOLD = 3.;
     private static final double ZERO_VBUS = -0.1;
-    private static final double ZERO_ABSOLUTE_ENCODER_POSITION = 0; // not correct
-    private static final double MOTOR_ROT_TO_ABSOLUTE_ENCODER_ROT = 1;
+    private static final double ZERO_ABSOLUTE_ENCODER_POSITION = .447;
+    private static final double ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT = 390.6;
 
     private static final int CAN_ID = 15;
 
     /* Configs */
     private final Slot0Configs pidConfigs = new Slot0Configs()
-            .withKP(2.)
+            .withKP(0.66)
             .withKI(0.0)
             .withKD(0.0); // needs tuning
 
     private final MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(20.)
-            .withMotionMagicAcceleration(40.)
-            .withMotionMagicJerk(400.);
+            .withMotionMagicCruiseVelocity(40.)
+            .withMotionMagicAcceleration(80.)
+            .withMotionMagicJerk(800.);
 
     private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(100.)
@@ -66,11 +68,11 @@ public class Climber extends SubsystemBase {
             .withOverrideBrakeDurNeutral(true);
 
     public enum ClimberPositions {
-        CLIMB(-1.),
-        HOME(1.),
-        DOWN_ONE(50.),
-        DOWN_TWO(40.),
-        READY(65.);
+        CLIMB(-4.),
+        HOME(0.),
+        DOWN_ONE(156.),
+        DOWN_TWO(125.),
+        READY(175.);
 
         public double Position;
 
@@ -81,7 +83,7 @@ public class Climber extends SubsystemBase {
 
     public Climber() {
         motor = new TalonFX(CAN_ID);
-        climberEncoder = new DutyCycleEncoder(7);
+        climberEncoder = new DutyCycleEncoder(9);
 
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setInverted(true);
@@ -92,8 +94,6 @@ public class Climber extends SubsystemBase {
         motor.getConfigurator().apply(motionMagicConfigs);
         motor.getConfigurator().apply(pidConfigs);
         motor.getConfigurator().apply(currentConfigs);
-
-        motor.setPosition(climberEncoder.get() * MOTOR_ROT_TO_ABSOLUTE_ENCODER_ROT - ZERO_ABSOLUTE_ENCODER_POSITION);
 
         zeroTimer = new Timer();
 
@@ -112,6 +112,10 @@ public class Climber extends SubsystemBase {
         return runOnce(() -> runMotor(vBus));
     }
 
+    public Command setEncoderZeroCmd() {
+        return runOnce(() -> motor.setPosition(0.0));
+    }
+
     public Command zeroCommand() {
         return runOnce(() -> {
             zeroTimer.restart();
@@ -124,6 +128,8 @@ public class Climber extends SubsystemBase {
                         Commands.runOnce(() -> motor.setPosition(0.0)));
     }
 
+
+    
     public void runToPosition(double position) {
         motor.setControl(positionRequest.withPosition(position));
     }
@@ -153,9 +159,16 @@ public class Climber extends SubsystemBase {
 
     @Override
     public void periodic() {
+        if (!oneShot) {
+            motor.setPosition((climberEncoder.getAbsolutePosition() - ZERO_ABSOLUTE_ENCODER_POSITION)
+                    * ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT);
+            oneShot = true;
+        }
+
         // // This method will be called once per scheduler run
         SmartDashboard.putNumber("Climber Position", motor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Climber Current", motor.getStatorCurrent().getValueAsDouble());
         SmartDashboard.putNumber("Climber Velocity", motor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("Abs Endocer Pos", climberEncoder.getAbsolutePosition());
     }
 }

@@ -40,12 +40,13 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
+import frc.robot.subsystems.Fan;
 // import frc.robot.subsystems.Fan;
 import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Vision;
-
+import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
@@ -64,7 +65,7 @@ public class RobotContainer {
     private static final double SLOW_CONVEYOR_VBUS = 0.5;
     private static final double FAST_CONVEYOR_VBUS = 0.85;
 
-    private static final double FAN_VBUS = 1.d;
+    private static final double FAN_VBUS = 1;
     private static final double SHOOTER_BACKOUT_VBUS = -0.4;
 
     private static final int OI_DRIVER_CONTROLLER = 0;
@@ -83,7 +84,7 @@ public class RobotContainer {
     private final Climber climber = new Climber();
     private final Autons autons;
     private final Pivot pivot = new Pivot();
-    // private final Fan m_fan = new Fan();
+    private final Fan fan = new Fan();
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
@@ -308,12 +309,13 @@ public class RobotContainer {
         // ========================= //
 
         /* Zero Climber & Pivot */
-        driverController.y().and(driverController.povCenter()).onTrue(pivot.zeroCommand());
+        // driverController.y().and(driverController.povCenter()).onTrue(pivot.zeroCommand());
 
         /* Run Climber to "Home" */
         driverController.y().and(driverController.povDown())
                 .onTrue(climber.climbCommand());
 
+        
         /* Run Climber to "Down One" */
         driverController.y().and(driverController.povLeft())
                 .onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_ONE));
@@ -348,8 +350,9 @@ public class RobotContainer {
         /* Run Climber to "Ready" */
         driverController.y().and(driverController.povUp())
                 .onTrue(pivot.runToPositionCommand(Pivot.CLIMB_POSITION).andThen(
-                        Commands.waitUntil(pivot.inPositionSupplier())));
-                        // climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+                        Commands.waitUntil(pivot.inPositionSupplier()))
+                        .andThen(climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+                
 
         // ========================== //
         /* Drivetain & Vision Control */
@@ -380,6 +383,9 @@ public class RobotContainer {
         driverController.leftBumper()
                 .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 0.2)));
 
+
+        
+
         // =================== //
         /* OPERATOR CONTROLLER */
         // =================== //
@@ -402,6 +408,7 @@ public class RobotContainer {
         operatorController.b().onTrue(magicShootCommand);
 
         operatorController.y().onTrue(pivot.runToPositionCommand(Pivot.TRAP_POSITION));
+        //TODO: Go to trap also runs a shuffle routine in conveyor
 
         operatorController.leftStick().toggleOnTrue(drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0));
 
@@ -419,7 +426,11 @@ public class RobotContainer {
             .andThen(conveyor.runXRotations(20))))
             .andThen(pivot.runToPositionCommand(.5)));
 
-        operatorController.start().onTrue(Commands.runOnce(() -> getBestSTEntry()));
+        operatorController.back().onTrue(Commands.runOnce(() -> getBestSTEntry()));
+
+        operatorController.start().onTrue(climber.runToPositionCommand(ClimberPositions.HOME));
+
+        operatorController.povDown().onTrue(fan.runMotorCommand(FAN_VBUS)).onFalse(fan.runMotorCommand(0.0));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
