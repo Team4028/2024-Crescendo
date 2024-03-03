@@ -38,9 +38,8 @@ public class Pivot extends SubsystemBase {
 
     public final static double CLIMB_POSITION = MAX_POSITION;
     public final static double HOLD_POSITION = MIN_POSITION;
-    //public final static double TRAP_POSITION = 8.77;
+    // public final static double TRAP_POSITION = 8.77;
     public final static double TRAP_POSITION = 12.14;
-
 
     private final PositionDutyCycle positionRequest = new PositionDutyCycle(0.);
 
@@ -48,7 +47,7 @@ public class Pivot extends SubsystemBase {
     private final Slot0Configs pidConfigs = new Slot0Configs()
             .withKP(0.125)
             .withKD(0.0125);
-            // .withKS(0.012);
+    // .withKS(0.012);
 
     private final MotorOutputConfigs outputConfigs = new MotorOutputConfigs()
             // check pls
@@ -146,12 +145,12 @@ public class Pivot extends SubsystemBase {
 
     }
 
-    // public boolean inPosition() {
-    // return Math.abs(motor.getPosition() - targetPosition) < 1.0;
-    // }
+    public boolean inPosition() {
+        return Math.abs(motor.getPosition().getValueAsDouble() - targetPosition) < 1.0;
+    }
 
     public BooleanSupplier inPositionSupplier() {
-        return () -> (Math.abs(motor.getPosition().getValueAsDouble() - targetPosition) < 1.0);
+        return this::inPosition;
     }
 
     public void logValues() {

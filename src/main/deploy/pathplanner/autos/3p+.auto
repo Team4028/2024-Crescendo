@@ -24,6 +24,12 @@
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.1
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "3p+seg3"
@@ -36,53 +42,57 @@
           }
         },
         {
-          "type": "race",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "4pinfeed"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 1.0
-                }
-              }
-            ]
+            "name": "2.5 Stationary Shot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "LLAquire"
+            "name": "Limelight Acquire"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "goTo2.5Shoot"
+            "name": "Center Pathfinding Shot"
           }
         },
         {
-          "type": "sequential",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "LLAquire"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "goTo2.5Shoot"
-                }
-              }
-            ]
+            "name": "Note 3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Limelight Acquire"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Center Pathfinding Shot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Note 4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Limelight Acquire"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Center Pathfinding Shot"
           }
         }
       ]

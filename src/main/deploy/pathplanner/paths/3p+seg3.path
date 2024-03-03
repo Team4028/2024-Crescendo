@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 8.0,
-        "y": 5.917242147874609
+        "y": 5.88
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.720631281718403,
-        "y": 5.207422712566223
+        "x": 7.720631281718404,
+        "y": 5.170180564691614
       },
       "isLocked": false,
       "linkedName": "3p2"
@@ -17,23 +17,53 @@
     {
       "anchor": {
         "x": 8.0,
-        "y": 4.1
+        "y": 4.05
       },
       "prevControl": {
         "x": 7.0,
-        "y": 4.1
+        "y": 4.05
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "3+p3"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.2,
+      "rotationDegrees": -33.04704371738193,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Smart Infeed",
+      "waypointRelativePos": 0.25,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Stop Shooter"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Smart Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 5.0,
-    "maxAcceleration": 5.5,
+    "maxAcceleration": 4.25,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },

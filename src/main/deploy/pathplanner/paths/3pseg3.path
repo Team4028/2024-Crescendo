@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 8.0,
-        "y": 5.917242147874609
+        "y": 5.88
       },
       "prevControl": null,
       "nextControl": {
         "x": 6.999999999999999,
-        "y": 5.917242147874609
+        "y": 5.88
       },
       "isLocked": false,
       "linkedName": "3p2"
@@ -32,16 +32,22 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "startShooter",
-      "waypointRelativePos": 0.5,
+      "name": "Fix Note And Spin Shooter",
+      "waypointRelativePos": 0,
       "command": {
-        "type": "parallel",
+        "type": "sequential",
         "data": {
           "commands": [
             {
               "type": "named",
               "data": {
-                "name": "2.5StartShooter"
+                "name": "Smart Infeed"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Start Shooter"
               }
             }
           ]
@@ -63,7 +69,7 @@
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -30.0,
     "velocity": 0
   },
   "useDefaultConstraints": false

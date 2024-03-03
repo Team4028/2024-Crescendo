@@ -11,7 +11,7 @@ public class ShooterTable {
     // TODO: We may want P values here, or just tune kF
     public static final class ShooterTableEntry {
         public Measure<Distance> distance;
-        public double angle;
+        public double Angle;
         public double percent;
 
         /**
@@ -23,7 +23,7 @@ public class ShooterTable {
          * @param rightSpeed Speed of the right shooter motor, in RPM.
          */
         public ShooterTableEntry(Measure<Distance> distance, double angle, double percent) {
-            this.angle = angle;
+            this.Angle = angle;
             this.percent = percent;
             this.distance = distance;
         }
@@ -75,7 +75,7 @@ public class ShooterTable {
         double calculatedPercent = scaleFactor * (closestHigher.percent - closestLower.percent)
                 + closestLower.percent;
 
-        double calculatedAngle = scaleFactor * (closestLower.angle - closestHigher.angle) + closestHigher.angle;
+        double calculatedAngle = scaleFactor * (closestLower.Angle - closestHigher.Angle) + closestHigher.Angle;
 
         return new ShooterTableEntry(distance, calculatedAngle, calculatedPercent);
     }

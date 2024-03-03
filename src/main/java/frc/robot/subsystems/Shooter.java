@@ -94,7 +94,7 @@ public class Shooter extends SubsystemBase {
         }
 
         private static class Left {
-            private static double kFF = 0.00022;
+            private static double kFF = 0.00022;// 0.00022;
 
             private static final PIDVFConstants Trap = new PIDVFConstants(0.001, kFF); // 1300
             private static final PIDVFConstants Long = new PIDVFConstants(0.002, kFF); // 100%
@@ -216,9 +216,14 @@ public class Shooter extends SubsystemBase {
     // ==================================
 
     /* Check if shooter is spinned up */
-    public BooleanSupplier isReady() {
-        return () -> Math.abs(leftEncoder.getVelocity() - leftTarget) < 20.
-                && Math.abs(rightEncoder.getVelocity() - rightTarget) < 20.;
+    public boolean isReady() {
+        return Math.abs(leftEncoder.getVelocity() - leftTarget) < 100.
+        && Math.abs(rightEncoder.getVelocity() - rightTarget) < 100.;
+    }
+
+    /* Supplier to check if shooter is spinned up */
+    public BooleanSupplier isReadySupplier() {
+        return this::isReady;
     }
 
     /**
@@ -238,18 +243,14 @@ public class Shooter extends SubsystemBase {
 
     /* Run Based on Shooter Table Entry */
     public void runEntry(ShooterTableEntry entry, ShotSpeeds shotSpeed) {
-        // SmartDashboard.putNumber("Entry Distance", entry.distance.in(Units.Feet));
-        // SmartDashboard.putNumber("Entry Percent", entry.percent);
-        // SmartDashboard.putNumber("Entry angle", entry.angle);
-
         setLeftToVel(entry.percent * shotSpeed.LeftRPM);
         setRightToVel(entry.percent * shotSpeed.RightRPM);
     }
 
     public Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShotSpeeds> shotSpeed) {
-        return startEnd(
-                () -> runEntry(entry.get(), shotSpeed.get()),
-                () -> stop());
+        // return startEnd(
+        return runOnce(() -> runEntry(entry.get(), shotSpeed.get()));
+        // () -> stop());
     }
 
     public void stop() {
