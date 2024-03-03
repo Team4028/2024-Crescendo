@@ -20,7 +20,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "3pseg2"
+            "pathName": "3p+seg2"
           }
         },
         {
@@ -64,6 +64,25 @@
           "type": "named",
           "data": {
             "name": "goTo2.5Shoot"
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "LLAquire"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goTo2.5Shoot"
+                }
+              }
+            ]
           }
         }
       ]

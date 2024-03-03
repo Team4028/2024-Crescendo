@@ -226,7 +226,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("stopShooter", shooter.stopCommand());
 
         NamedCommands.registerCommand("goTo2.5Shoot", drivetrain
-                .pathFindCommand(new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.5, 0));
+                .pathFindCommand(new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.75, 0)
+                .alongWith(shooter.runEntryCommand(() -> aentry, () -> ShotSpeeds.FAST))
+                .andThen(conveyor.runXRotations(20.).alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS))));
 
         NamedCommands.registerCommand("follow2pchoice",
                 new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),

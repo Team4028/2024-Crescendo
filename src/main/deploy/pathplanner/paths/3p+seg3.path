@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 8.0,
-        "y": 5.75
+        "y": 5.917242147874609
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.931126061682322,
-        "y": 5.035263028018934
+        "x": 7.720631281718403,
+        "y": 5.207422712566223
       },
       "isLocked": false,
       "linkedName": "3p2"
@@ -32,8 +32,8 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 5.0,
+    "maxAcceleration": 5.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
@@ -48,5 +48,5 @@
     "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

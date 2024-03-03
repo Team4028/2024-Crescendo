@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.579317184311971,
-        "y": 7.223875312201409
+        "x": 7.229476795135926,
+        "y": 7.191904982100564
       },
       "isLocked": false,
       "linkedName": "3p1"
@@ -20,8 +20,8 @@
         "y": 5.917242147874609
       },
       "prevControl": {
-        "x": 5.861260725370453,
-        "y": 6.184814149058498
+        "x": 7.042370324056887,
+        "y": 6.4902557155541665
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,24 +32,7 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "stopShooter",
-      "waypointRelativePos": 0.25,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "stopShooter"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "smartInfeedCmd",
+      "name": "runThrough",
       "waypointRelativePos": 0.75,
       "command": {
         "type": "parallel",
@@ -58,7 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "smartInfeed"
+                "name": "runThru"
               }
             }
           ]
@@ -74,7 +57,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -29.680135491700533,
     "rotateFast": false
   },
   "reversed": false,
