@@ -15,6 +15,7 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -163,6 +164,9 @@ public class RobotContainer {
             drivetrain.seedFieldRelative(poseOpt.get().estimatedPose.toPose2d());
         }, leftVision, rightVision));
 
+        NamedCommands.registerCommand("Go to 4 piece path",
+                drivetrain.pathFindCommand(PathPlannerAuto.getStaringPoseFromAutoFile("4 Piece Simple"), 1., 0.));
+
         // TODO: change this stuff for shooter table
         NamedCommands.registerCommand("4pinfeed", infeed.runInfeedMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
@@ -205,7 +209,8 @@ public class RobotContainer {
                 .pathFindCommand(new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.75, 0)
                 .alongWith(runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST).repeatedly()
                         .until(shooterAndPivotReady()))
-                .andThen(conveyor.runXRotations(20.).alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)).withTimeout(1.0))
+                .andThen(conveyor.runXRotations(20.).alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS))
+                        .withTimeout(1.0))
                 .andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("Note 3",

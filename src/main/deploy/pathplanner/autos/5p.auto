@@ -1,0 +1,85 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.4,
+      "y": 6.2
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "zeroApril"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5pseg1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5pseg2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5psesg3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "zeroApril"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Start Shooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Go to 4 piece path"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4 piece 0-1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4 piece 1-2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4 piece 2-3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Shooter"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
