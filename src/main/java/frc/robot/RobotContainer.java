@@ -11,6 +11,7 @@ import org.photonvision.EstimatedRobotPose;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -120,6 +121,8 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                      // driving in open loop
     private final Telemetry logger = new Telemetry(MAX_SPEED);
+
+    private final SwerveRequest.SwerveDriveBrake xDrive = new SwerveDriveBrake();
 
     public RobotContainer() {
 
@@ -287,6 +290,9 @@ public class RobotContainer {
         // ========================== //
         /* Drivetain & Vision Control */
         // ========================== //
+        
+        /* X-Drive */
+        driverController.x().whileTrue(drivetrain.applyRequest(() ->xDrive));
 
         /* Reset Field-Centric Heading */
         driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
