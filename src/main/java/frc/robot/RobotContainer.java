@@ -40,6 +40,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
+import frc.robot.subsystems.Fan;
 // import frc.robot.subsystems.Fan;
 import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Pivot;
@@ -69,12 +70,14 @@ public class RobotContainer {
 
     private static final int OI_DRIVER_CONTROLLER = 0;
     private static final int OI_OPERATOR_CONTROLLER = 1;
+    private static final int OI_EMERGENCY_CONTROLLER = 2;
 
     // ======================== //
     /* Controllers & Subsystems */
     // ======================== //
     private final CommandXboxController driverController = new CommandXboxController(OI_DRIVER_CONTROLLER);
     private final CommandXboxController operatorController = new CommandXboxController(OI_OPERATOR_CONTROLLER);
+    private final CommandXboxController emergencyController = new CommandXboxController(OI_EMERGENCY_CONTROLLER);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
     private final Infeed infeed = new Infeed();
@@ -83,7 +86,7 @@ public class RobotContainer {
     private final Climber climber = new Climber();
     private final Autons autons;
     private final Pivot pivot = new Pivot();
-    // private final Fan m_fan = new Fan();
+    private final Fan m_fan = new Fan();
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
@@ -118,9 +121,8 @@ public class RobotContainer {
                                                                      // driving in open loop
     private final Telemetry logger = new Telemetry(MAX_SPEED);
 
-    
     public RobotContainer() {
-         
+
         // TODO: Failsafe timer based on Infeed ToF
         smartInfeedCommand = infeed.runInfeedMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
@@ -152,7 +154,6 @@ public class RobotContainer {
 
         configureBindings();
     }
-
 
     // ====================== //
     /* Auton & Named Commands */
@@ -238,10 +239,11 @@ public class RobotContainer {
     /* Bindings & Default Commands */
     // =========================== //
     private void configureBindings() {
-        
-        //TODO: Add reverse infeed in case of jams so driver can spit out note and retry
-        //TODO: Buttons should NOT be toggles. Commands should only be running while buttons are being held
 
+        // TODO: Add reverse infeed in case of jams so driver can spit out note and
+        // retry
+        // TODO: Buttons should NOT be toggles. Commands should only be running while
+        // buttons are being held
 
         // ================ //
         /* Default Commands */
@@ -262,10 +264,11 @@ public class RobotContainer {
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runInfeedMotorCommand(0.));
+        m_fan.setDefaultCommand(m_fan.stopCommand());
 
-        // ========================= //
+        // ================= //
         /* DRIVER CONTROLLER */
-        // ========================= //
+        // ================= //
 
         // ========================= //
         /* Infeed & Conveyor Control */
@@ -278,78 +281,8 @@ public class RobotContainer {
                 .onFalse(infeed.runInfeedMotorCommand(0.).alongWith(
                         conveyor.runMotorCommand(0.)));
 
-        /* Conveyance */
-        driverController.a()
-                .onTrue(conveyor.runXRotations(20.0)
-                        .alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
-                .onFalse(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS));
-
         /* Smart Infeed */
-        driverController.b().toggleOnTrue(smartInfeedCommand);
-
-        // ======================= //
-        /* Shooter Control */
-        // ======================= //
-
-        /* Run Shooter */
-        driverController.x().and(driverController.povCenter())
-                .toggleOnTrue(shooter.runVelocityCommand());
-
-        /* Cycle Down (Trap -> Long) */
-        driverController.x().and(driverController.povDown())
-                .onTrue(shooter.cycleDownCommand());
-
-        /* Cycle Up (Long -> Trap) */
-        driverController.x().and(driverController.povUp())
-                .onTrue(shooter.cycleUpCommand());
-
-        // ========================= //
-        /* Climber & Zeroing Control */
-        // ========================= //
-
-        /* Zero Climber & Pivot */
-        driverController.y().and(driverController.povCenter()).onTrue(pivot.zeroCommand());
-
-        /* Run Climber to "Home" */
-        driverController.y().and(driverController.povDown())
-                .onTrue(climber.climbCommand());
-
-        /* Run Climber to "Down One" */
-        driverController.y().and(driverController.povLeft())
-                .onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_ONE));
-
-        /* Run Climber to "Down One" */
-        driverController.y().and(driverController.povRight())
-                .onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
-
-        // TODO: change this to a toggle that runs forever until you stop, and add a
-        // robot-relative mode
-        driverController.leftStick()
-                .toggleOnTrue(new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.5),
-                        drivetrain)
-                        .alongWith(
-                                infeed.runInfeedMotorCommand(INFEED_VBUS)
-                                        .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
-                                        .repeatedly().until(conveyor.hasInfedSupplier())
-                                        .andThen(
-                                                infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
-                                                        .repeatedly().withTimeout(0.1))
-                                        .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-                                                .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
-                                                        .alongWith(infeed.runInfeedMotorCommand(0.))))
-                                        .andThen(shooter.spinMotorLeftCommand(0.))// .withTimeout(3);
-                        ));
-
-        // driverController.leftStick().toggleOnTrue(new LimelightSquare(true, () -> 0.,
-        // () -> 0., drivetrain));
-        // driverController.leftStick().toggleOnTrue(new LimelightAcquire(
-        // () -> xLimeAquireLimiter.calculate(0.8), drivetrain));
-
-        /* Run Climber to "Ready" */
-        driverController.y().and(driverController.povUp())
-                .onTrue(pivot.runToPositionCommand(Pivot.CLIMB_POSITION).andThen(
-                        Commands.waitUntil(pivot.inPositionSupplier())));
-                        // climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+        driverController.leftBumper().onTrue(smartInfeedCommand);
 
         // ========================== //
         /* Drivetain & Vision Control */
@@ -371,55 +304,122 @@ public class RobotContainer {
             getBestSTEntry();
         }));
 
-        // ==================== //
-        /* PIVOT MANUAL CONTROL */
-        // ==================== //
-
-        driverController.rightBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 0.2)));
-        driverController.leftBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 0.2)));
+        // TODO: Limelight squaring
+        // toggle that runs forever, goes to robot relative mode, no infeed/whatever
+        // control
+        driverController.leftStick().onTrue(Commands.none());
 
         // =================== //
         /* OPERATOR CONTROLLER */
         // =================== //
 
-        /* Manual Climber Control */
-        operatorController.rightBumper().onTrue(climber.runMotorCommand(CLIMBER_VBUS))
-                .onFalse(climber.runMotorCommand(0.0));
-        operatorController.leftBumper().onTrue(climber.runMotorCommand(-CLIMBER_VBUS))
-                .onFalse(climber.runMotorCommand(0.0));
+        // ======================= //
+        /* Shooter Control */
+        // ======================= //
 
-        operatorController.a().toggleOnTrue(new RotateToSpeaker(drivetrain));
-
-        operatorController.x()
-                .toggleOnTrue(Commands.runOnce(() -> {
+        /* Spin Up Shooter */
+        operatorController.leftBumper()
+                .onTrue(Commands.runOnce(() -> {
                     ShooterTableEntry entry = getBestSTEntry();
                     shooter.runEntry(entry, ShotSpeeds.FAST);
                     pivot.runToPosition(entry.angle);
-                }, shooter, pivot));
+                }, shooter, pivot))
+                .onFalse(shooter.stopCommand());
 
+        /* Convey Note */
+        operatorController.rightBumper()
+                .whileTrue(runBoth(SLOW_CONVEYOR_VBUS, SLOW_INFEED_VBUS));
+
+        /* Magic Shoot */
         operatorController.b().onTrue(magicShootCommand);
 
-        operatorController.y().onTrue(pivot.runToPositionCommand(Pivot.TRAP_POSITION));
+        // TODO: bind these to ST index up/down
 
-        operatorController.leftStick().toggleOnTrue(drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0));
+        /* Shooter Table Index Down */
+        operatorController.leftTrigger(0.5).onTrue(Commands.none());
 
-        operatorController.rightStick().toggleOnTrue(drivetrain.pathFindCommand(Constants.LEFT_TRAP_Target, .2, 0)
-            .andThen(new WaitCommand(2))
-            .andThen(pivot.runToPositionCommand(Pivot.TRAP_POSITION))
-            .andThen(shooter.run(() -> {
-                shooter.setLeftToVel(1300);
-                shooter.setRightToVel(1300);
-            }).withTimeout(4)
-            .andThen(shooter.runOnce(() -> {
-                shooter.setLeftToVel(0);
-                shooter.setRightToVel(0);}))
-            .alongWith(new WaitCommand(2)
-            .andThen(conveyor.runXRotations(20))))
-            .andThen(pivot.runToPositionCommand(.5)));
+        /* Shooter Table Index Up */
+        operatorController.rightTrigger(0.5).onTrue(Commands.none());
 
-        operatorController.start().onTrue(Commands.runOnce(() -> getBestSTEntry()));
+        // ========================= //
+        /* Climber & Zeroing Control */
+        // ========================= //
+        
+        // TODO: get climber good
+
+        /* Zero Climber & Pivot */
+        operatorController.start().onTrue(pivot.zeroCommand());
+
+        /* Run Climber to "Home" */
+        operatorController.povDown().onTrue(climber.climbCommand());
+
+        /* Run Climber to "Down One" */
+        operatorController.povLeft().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_ONE));
+
+        /* Run Climber to "Down One" */
+        operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
+
+        /* Run Climber to "Ready" */
+        operatorController.povUp().onTrue(pivot.runToClimbCommand().andThen(
+                Commands.waitUntil(pivot.inPositionSupplier())));
+        // climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+
+        // ================ //
+        /* Amp & Trap Magic */
+        // ================ //
+
+        // TODO: make amp magic
+        operatorController.b().toggleOnTrue(drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0));
+
+        operatorController.y().toggleOnTrue(drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2, 0)
+                .andThen(shooter.setSlotCommand(Shooter.Slots.TRAP))
+                .andThen(new WaitCommand(2))
+                .andThen(pivot.runToTrapCommand())
+                .andThen(m_fan.runMotorCommand(FAN_VBUS))
+                .andThen(shooter.runShotCommand(Shooter.ShotSpeeds.TRAP).repeatedly())
+                .until(shooter.isReady()).withTimeout(4)
+                .andThen(shooter.stopCommand())
+                .alongWith(new WaitCommand(2)
+                        .andThen(conveyor.runXRotations(20)))
+                .andThen(pivot.runToHomeCommand()));
+
+        // ==================== //
+        /* EMERGENCY CONTROLLER */
+        // ==================== //
+
+        // ==================== //
+        /* Manual Pivot Control */
+        // ==================== //
+
+        /* Bump Pivot Up */
+        emergencyController.rightBumper()
+                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 0.2)));
+
+        /* Bump Pivot Down */
+        emergencyController.leftBumper()
+                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 0.2)));
+
+        // ====================== //
+        /* Manual Climber Control */
+        // ====================== //
+
+        /* Climber Up */
+        emergencyController.rightBumper().onTrue(climber.runMotorCommand(CLIMBER_VBUS))
+                .onFalse(climber.runMotorCommand(0.0));
+
+        /* Climber Down */
+        emergencyController.leftBumper().onTrue(climber.runMotorCommand(-CLIMBER_VBUS))
+                .onFalse(climber.runMotorCommand(0.0));
+
+        // ============= //
+        /* TrapStar 5000 */
+        // ============= //
+        emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS));
+
+        // ==== //
+        /* Misc */
+        // ==== //
+        emergencyController.back().onTrue(Commands.runOnce(() -> getBestSTEntry()));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -479,7 +479,7 @@ public class RobotContainer {
     // ================ //
     /* Vision Utilities */
     // ================ //
-    
+
     /* Return approx. 3d pose */
     public Optional<EstimatedRobotPose> getBestPose() {
         Pose2d drivetrainPose = drivetrain.getState().Pose;
