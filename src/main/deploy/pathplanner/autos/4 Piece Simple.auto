@@ -24,7 +24,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "startShooter"
+                  "name": "Start Shooter"
                 }
               },
               {
@@ -64,7 +64,7 @@
         {
           "type": "named",
           "data": {
-            "name": "stopShooter"
+            "name": "Stop Shooter"
           }
         }
       ]
