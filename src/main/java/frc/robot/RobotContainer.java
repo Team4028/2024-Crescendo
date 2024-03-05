@@ -213,11 +213,25 @@ public class RobotContainer {
                         .withTimeout(1.0))
                 .andThen(shooter.stopCommand()));
 
+        NamedCommands.registerCommand("Right Center Pathfinding Shot", drivetrain
+                .pathFindCommand(new Pose2d(4.3, 1.9, Rotation2d.fromDegrees(-40)), 0.75, 0)
+                .alongWith(runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST).repeatedly()
+                        .until(shooterAndPivotReady()))
+                .andThen(conveyor.runXRotations(20.).alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS))
+                        .withTimeout(1.0))
+                .andThen(shooter.stopCommand()));
+
         NamedCommands.registerCommand("Note 3",
                 drivetrain.pathFindCommand(new Pose2d(4.67, 6.7, Rotation2d.fromDegrees(-18)), 0.75, 2.5));
 
+        NamedCommands.registerCommand("Note 3 Right",
+                drivetrain.pathFindCommand(new Pose2d(4.67, 1.5, Rotation2d.fromDegrees(18)), 0.75, 2.5));
+
         NamedCommands.registerCommand("Note 4",
                 drivetrain.pathFindCommand(new Pose2d(3.66, 6.93, Rotation2d.fromDegrees(70.)), 0.75, 0));
+
+        NamedCommands.registerCommand("Note 4 Right", 
+                drivetrain.pathFindCommand(new Pose2d(3.66, 1.2, Rotation2d.fromDegrees(-70.)), 0.75, 0));
 
         NamedCommands.registerCommand("follow2pchoice",
                 new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
@@ -236,6 +250,11 @@ public class RobotContainer {
                         .repeatedly().until(shooterAndPivotReady())
                         .andThen(conveyor.runXRotations(20.).alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
                         .andThen(shooter.stopCommand()));
+
+        NamedCommands.registerCommand("2.5 Final Note", drivetrain
+                .pathFindCommand(new Pose2d(3.71, 6.51, new Rotation2d(Units.degreesToRadians(-9.1))), 0.75, 0));
+        NamedCommands.registerCommand("2.5 Final Note Right", drivetrain
+                .pathFindCommand(new Pose2d(3.71, 1.8, new Rotation2d(Units.degreesToRadians(9.1))), 0.75, 0.));
 
     }
 
