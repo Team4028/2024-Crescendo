@@ -6,6 +6,7 @@ package frc.robot;
 
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 import org.photonvision.EstimatedRobotPose;
 
@@ -23,11 +24,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -126,14 +129,14 @@ public class RobotContainer {
 
     public RobotContainer() {
         // TODO: Failsafe timer based on Infeed ToF
-        smartInfeedCommand = infeed.runInfeedMotorCommand(INFEED_VBUS)
+        smartInfeedCommand = infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
                 .repeatedly().until(conveyor.hasInfedSupplier())
-                .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
+                .andThen(infeed.runMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
                         .repeatedly().withTimeout(0.1))
                 .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
                         .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
-                                .alongWith(infeed.runInfeedMotorCommand(0.))))
+                                .alongWith(infeed.runMotorCommand(0.))))
                 .andThen(shooter.spinMotorLeftCommand(0.));// .withTimeout(3);
 
         initNamedCommands();
@@ -149,7 +152,7 @@ public class RobotContainer {
         }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReady()))
                 .andThen(Commands.waitSeconds(0.5))
                 .andThen(conveyor.runXRotations(10)
-                        .alongWith(infeed.runInfeedMotorCommand(SLOW_INFEED_VBUS)))
+                        .alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS)))
                 .andThen(Commands.waitSeconds(0.2))
                 .andThen(shooter.stopCommand())
                 .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
@@ -204,10 +207,10 @@ public class RobotContainer {
 
         // TODO: change this stuff for shootertable
         NamedCommands.registerCommand("runShooter", shooter.runVelocityCommand());
-        NamedCommands.registerCommand("4pinfeed", infeed.runInfeedMotorCommand(INFEED_VBUS)
+        NamedCommands.registerCommand("4pinfeed", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
 
-        NamedCommands.registerCommand("runThru", infeed.runInfeedMotorCommand(INFEED_VBUS)
+        NamedCommands.registerCommand("runThru", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
                 .alongWith(shooter.spinBothCommand(0.15))
                 .repeatedly());
@@ -216,26 +219,26 @@ public class RobotContainer {
                 new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.5),
                         drivetrain)
                         .alongWith(
-                                infeed.runInfeedMotorCommand(INFEED_VBUS)
+                                infeed.runMotorCommand(INFEED_VBUS)
                                         .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
                                         .repeatedly().until(conveyor.hasInfedSupplier())
                                         .andThen(
-                                                infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
+                                                infeed.runMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
                                                         .repeatedly().withTimeout(0.1))
                                         .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
                                                 .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
-                                                        .alongWith(infeed.runInfeedMotorCommand(0.))))
+                                                        .alongWith(infeed.runMotorCommand(0.))))
                                         .andThen(shooter.spinMotorLeftCommand(0.))// .withTimeout(3);
                         ));
 
-        NamedCommands.registerCommand("smartInfeed", infeed.runInfeedMotorCommand(INFEED_VBUS)
+        NamedCommands.registerCommand("smartInfeed", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
                 .repeatedly().until(conveyor.hasInfedSupplier())
-                .andThen(infeed.runInfeedMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
+                .andThen(infeed.runMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
                         .repeatedly().withTimeout(0.1))
                 .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
                         .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
-                                .alongWith(infeed.runInfeedMotorCommand(0.))))
+                                .alongWith(infeed.runMotorCommand(0.))))
                 .andThen(shooter.spinMotorLeftCommand(0.)));// .withTimeout(3);
         NamedCommands.registerCommand("farShot", Commands.runOnce(() -> pivot.runToPosition(1)));
 
@@ -287,7 +290,7 @@ public class RobotContainer {
                                         MAX_SPEED)));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
-        infeed.setDefaultCommand(infeed.runInfeedMotorCommand(0.));
+        infeed.setDefaultCommand(infeed.runMotorCommand(0.));
         m_fan.setDefaultCommand(m_fan.stopCommand());
 
         // ================= //
@@ -300,13 +303,13 @@ public class RobotContainer {
 
         /* Dumb Infeed */
         driverController.leftTrigger().onTrue(
-                infeed.runInfeedMotorCommand(INFEED_VBUS).alongWith(
+                infeed.runMotorCommand(INFEED_VBUS).alongWith(
                         conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS)).repeatedly())
-                .onFalse(infeed.runInfeedMotorCommand(0.).alongWith(
+                .onFalse(infeed.runMotorCommand(0.).alongWith(
                         conveyor.runMotorCommand(0.)));
 
         /* Smart Infeed */
-        driverController.leftBumper().onTrue(smartInfeedCommand);
+        driverController.leftBumper().toggleOnTrue(smartInfeedCommand);
 
         // ========================== //
         /* Drivetain & Vision Control */
@@ -352,7 +355,7 @@ public class RobotContainer {
 
         /* Convey Note */
         operatorController.rightBumper()
-                .whileTrue(runBoth(SLOW_CONVEYOR_VBUS, SLOW_INFEED_VBUS));
+                .whileTrue(runBoth(SLOW_CONVEYOR_VBUS, SLOW_INFEED_VBUS).repeatedly());
 
         /* Magic Shoot */
         operatorController.b().onTrue(magicShootCommand);
@@ -412,27 +415,46 @@ public class RobotContainer {
         emergencyController.leftBumper()
                 .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 0.2)));
 
-        // ====================== //
-        /* Manual Climber Control */
-        // ====================== //
+        // ============================== //
+        /* Manual Climber/Outfeed Control */
+        // ============================== //
 
-        /* Climber Up */
-        emergencyController.rightBumper().onTrue(climber.runMotorCommand(CLIMBER_VBUS))
+        /* Climber Up or Full Outfeed */
+        emergencyController.rightTrigger(0.2).whileTrue(
+                climber.runMotorCommand(CLIMBER_VBUS))
                 .onFalse(climber.runMotorCommand(0.0));
 
-        /* Climber Down */
-        emergencyController.leftBumper().onTrue(climber.runMotorCommand(-CLIMBER_VBUS))
+        /* Climber Down or Conveyor Outfeed */
+        emergencyController.leftTrigger(0.2).whileTrue(
+                climber.runMotorCommand(CLIMBER_VBUS))
                 .onFalse(climber.runMotorCommand(0.0));
-
-        // ============= //
-        /* TrapStar 5000 */
-        // ============= //
-        emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS));
 
         // ==== //
         /* Misc */
         // ==== //
+
+        /* TrapStar 5000 */
+        emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS));
+
+        /* ST test */
         emergencyController.back().onTrue(Commands.runOnce(() -> getBestSTEntry()));
+
+        /* Full Outfeed: left Y */
+        emergencyController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
+                .or(emergencyController.axisLessThan(XboxController.Axis.kLeftY.value, -0.2))
+                .whileTrue(
+                        runThree(
+                                () -> -emergencyController.getLeftY(),
+                                () -> -emergencyController.getLeftY(),
+                                () -> emergencyController.getLeftY() > 0. ? -emergencyController.getLeftY() : 0.));
+
+        /* Cool Outfeed: right Y */
+        emergencyController.axisLessThan(XboxController.Axis.kRightY.value, -0.2)
+                .whileTrue(
+                        runThree(
+                                () -> emergencyController.getRightY(),
+                                () -> -emergencyController.getRightY(),
+                                () -> emergencyController.getRightY()));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -448,7 +470,21 @@ public class RobotContainer {
 
     /* Run both Conveyor and Infeed */
     private Command runBoth(double conveyorVbus, double infeedVbus) {
-        return infeed.runInfeedMotorCommand(infeedVbus).alongWith(conveyor.runMotorCommand(conveyorVbus));
+        return infeed.runMotorCommand(infeedVbus).alongWith(conveyor.runMotorCommand(conveyorVbus));
+    }
+
+    /* Run both Conveyor and Infeed */
+    private Command runThree(Supplier<Double> conveyorVbus, Supplier<Double> infeedVbus, Supplier<Double> shooterVbus) {
+        return new FunctionalCommand(() -> {},
+        () -> {
+            infeed.runMotor(infeedVbus.get());
+            conveyor.runMotor(conveyorVbus.get());
+            shooter.spinMotorRight(0.3 * shooterVbus.get());
+            shooter.spinMotorLeft(0.3 * shooterVbus.get());
+        },
+                (z) -> shooter.stop(),
+                () -> false,
+                infeed, conveyor);
     }
 
     /* Auton Command */

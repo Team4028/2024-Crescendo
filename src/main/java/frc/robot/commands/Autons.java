@@ -72,10 +72,10 @@ public class Autons {
                                                         .getTranslation()
                                                         .getNorm())),
                                                 ShotSpeeds.FAST)),
-                                        infeed.runInfeedMotorCommand(0.8).alongWith(conveyor.runMotorCommand(0.85))
+                                        infeed.runMotorCommand(0.8).alongWith(conveyor.runMotorCommand(0.85))
                                                 .repeatedly()
                                                 .withTimeout(0.5)),
-                        infeed.runInfeedMotorCommand(0.)
+                        infeed.runMotorCommand(0.)
                                 .alongWith(conveyor.runMotorCommand(0.).alongWith(shooter.stopCommand())));
             } catch (Exception e) {
                 e.printStackTrace();
