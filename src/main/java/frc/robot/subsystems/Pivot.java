@@ -2,15 +2,14 @@ package frc.robot.subsystems;
 
 import java.util.function.BooleanSupplier;
 
-import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
-import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.SoftLimitDirection;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
+
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -22,7 +21,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 public class Pivot extends SubsystemBase {
-    private final TalonFX motor;
+    private final CANSparkMax motor;
+    private final RelativeEncoder encoder;
+    private final SparkPIDController pid;
 
     private final DataLog log;
     private final DoubleLogEntry currentLog, velocityLog, voltageLog, positionLog;
@@ -40,31 +41,20 @@ public class Pivot extends SubsystemBase {
     public final static double HOLD_POSITION = MIN_POSITION;
     public final static double TRAP_POSITION = 8.77;
 
-    private final PositionDutyCycle positionRequest = new PositionDutyCycle(0.);
+    /* PID */
+    private class PIDConstants {
+        private final static double kP = 0.125;
+        private final static double kD = 0.0125;
 
-    /* Configs */
-    private final Slot0Configs pidConfigs = new Slot0Configs()
-            .withKP(0.125)
-            .withKD(0.0125);
-            // .withKS(0.012);
+        private final static double MIN_OUTPUT = -0.2;
+        private final static double MAX_OUTPUT = 0.25;
+    }
 
-    private final MotorOutputConfigs outputConfigs = new MotorOutputConfigs()
-            // check pls
-            .withInverted(InvertedValue.Clockwise_Positive)
-            .withNeutralMode(NeutralModeValue.Brake)
-            .withPeakForwardDutyCycle(0.25)
-            .withPeakReverseDutyCycle(-0.2);
+    /* Current Limit */
+    private final static int CURRENT_LIMIT = 80;
 
-    private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(100.)
-            .withSupplyCurrentLimit(80.);
-
-    private final ClosedLoopRampsConfigs rampConfigs = new ClosedLoopRampsConfigs()
-            .withDutyCycleClosedLoopRampPeriod(1.0);
-
-    private final SoftwareLimitSwitchConfigs limitConfigs = new SoftwareLimitSwitchConfigs()
-            .withForwardSoftLimitThreshold(MAX_POSITION)
-            .withForwardSoftLimitEnable(true);
+    /* Ramp */
+    private final static double RAMP_RATE = 1.0;
 
     private double targetPosition;
 
@@ -72,17 +62,37 @@ public class Pivot extends SubsystemBase {
         /* ======== */
         /* MOTAHHHH */
         /* ======== */
-        motor = new TalonFX(CAN_ID);
+        motor = new CANSparkMax(CAN_ID, MotorType.kBrushless);
+        motor.setInverted(true);
+
+        encoder = motor.getEncoder();
+        pid = motor.getPIDController();
+        pid.setFeedbackDevice(encoder);
 
         /* ======= */
-        /* CONFIGS */
+        /* PID!!!! */
         /* ======= */
+        
+        pid.setP(PIDConstants.kP);
+        pid.setD(PIDConstants.kD);
+        pid.setOutputRange(PIDConstants.MIN_OUTPUT, PIDConstants.MAX_OUTPUT);
 
-        motor.getConfigurator().apply(pidConfigs);
-        motor.getConfigurator().apply(currentConfigs);
-        motor.getConfigurator().apply(outputConfigs);
-        motor.getConfigurator().apply(rampConfigs);
-        motor.getConfigurator().apply(limitConfigs);
+        // ============= //
+        /* Other Configs */
+        // ============= //
+
+        motor.setSmartCurrentLimit(CURRENT_LIMIT);
+        motor.setClosedLoopRampRate(RAMP_RATE);
+        motor.setSoftLimit(SoftLimitDirection.kForward, (float) MAX_POSITION);
+
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 20);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 101);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 102);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 103);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
 
         targetPosition = 1.;
 
@@ -103,7 +113,7 @@ public class Pivot extends SubsystemBase {
     // ==================================
 
     public double getPosition() {
-        return motor.getPosition().getValueAsDouble();
+        return encoder.getPosition();
     }
 
     public void runMotor(double vBus) {
@@ -116,7 +126,7 @@ public class Pivot extends SubsystemBase {
 
     public void runToPosition(double position) {
         targetPosition = position;
-        motor.setControl(positionRequest.withPosition(position));
+        pid.setReference(position, ControlType.kPosition);
     }
 
     public Command runToPositionCommand(double position) {
@@ -136,7 +146,7 @@ public class Pivot extends SubsystemBase {
     }
 
     public void holdPosition() {
-        runToPosition(motor.getPosition().getValueAsDouble());
+        runToPosition(encoder.getPosition());
     }
 
     public Command holdPositionCommand() {
@@ -149,9 +159,9 @@ public class Pivot extends SubsystemBase {
         })
                 .andThen(runMotorCommand(-0.025).repeatedly()
                         .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
-                                && Math.abs(motor.getVelocity().getValueAsDouble()) < ZERO_VELOCITY_THRESHOLD))
+                                && Math.abs(encoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
                 .andThen(runMotorCommand(0.).alongWith(Commands.runOnce(() -> zeroTimer.stop())))
-                .andThen(runOnce(() -> motor.setPosition(0.)))
+                .andThen(runOnce(() -> encoder.setPosition(0.)))
                 .andThen(new WaitCommand(0.25).andThen(runToPositionCommand(HOLD_POSITION)));
 
     }
@@ -161,20 +171,20 @@ public class Pivot extends SubsystemBase {
     // }
 
     public BooleanSupplier inPositionSupplier() {
-        return () -> (Math.abs(motor.getPosition().getValueAsDouble() - targetPosition) < 1.0);
+        return () -> (Math.abs(getPosition() - targetPosition) < 1.0);
     }
 
     public void logValues() {
-        currentLog.append(motor.getStatorCurrent().getValueAsDouble());
-        voltageLog.append(motor.getMotorVoltage().getValueAsDouble());
-        velocityLog.append(motor.getVelocity().getValueAsDouble());
-        positionLog.append(motor.getPosition().getValueAsDouble());
+        currentLog.append(motor.getOutputCurrent());
+        voltageLog.append(motor.getAppliedOutput() * motor.getBusVoltage());
+        velocityLog.append(encoder.getVelocity());
+        positionLog.append(getPosition());
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Pivot Position", motor.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("Pivot Current", motor.getStatorCurrent().getValueAsDouble());
+        SmartDashboard.putNumber("Pivot Position", getPosition());
+        SmartDashboard.putNumber("Pivot Current", motor.getOutputCurrent());
         SmartDashboard.putNumber("Pivot Target", targetPosition);
     }
 }
