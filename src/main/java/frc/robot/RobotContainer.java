@@ -120,9 +120,14 @@ public class RobotContainer {
                                                                                              // deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                      // driving in open loop
+
+    private final SwerveRequest.RobotCentric robotCentricDrive = new SwerveRequest.RobotCentric()
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
     private final Telemetry logger = new Telemetry(MAX_SPEED);
 
     public RobotContainer() {
+
         // TODO: Failsafe timer based on Infeed ToF
         smartInfeedCommand = infeed.runInfeedMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
@@ -172,7 +177,14 @@ public class RobotContainer {
                 .andThen(shooter.stopCommand())
                 .andThen(pivot.runToHomeCommand());
 
-        autoClimbCommand = Commands.none();
+        autoClimbCommand = climber.runToPositionCommand(Climber.ClimberPositions.READY)
+                .andThen(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_ONE))
+                .andThen(drivetrain.applyRequest(() -> robotCentricDrive.withVelocityX(1.5)).repeatedly()
+                        .withTimeout(0.1))
+                .andThen(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO))
+                .andThen(drivetrain.applyRequest(() -> robotCentricDrive.withVelocityX(-1.5)).repeatedly()
+                        .withTimeout(0.1))
+                .andThen(climber.climbCommand());
 
         configureBindings();
     }
@@ -383,8 +395,11 @@ public class RobotContainer {
 
         /* Run Climber to "Ready" */
         operatorController.povUp().onTrue(pivot.runToClimbCommand().andThen(
-                Commands.waitUntil(pivot.inPositionSupplier())));
-        // climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+                Commands.waitUntil(pivot.inPositionSupplier()),
+                climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+                
+        /* Auto Climb */
+        operatorController.x().onTrue(autoClimbCommand);
 
         // ================ //
         /* Amp & Trap Magic */
