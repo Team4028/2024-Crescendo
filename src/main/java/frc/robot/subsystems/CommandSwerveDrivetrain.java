@@ -6,11 +6,15 @@ import java.util.function.Supplier;
 import org.photonvision.EstimatedRobotPose;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
@@ -87,12 +91,89 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        configModules(modules);
     }
 
     public CommandSwerveDrivetrain(SwerveDrivetrainConstants driveTrainConstants, SwerveModuleConstants... modules) {
         super(driveTrainConstants, modules);
         if (Utils.isSimulation()) {
             startSimThread();
+        }
+        configModules(modules);
+    }
+
+    private void configModules(SwerveModuleConstants... modules) {
+        int i = 0;
+        for (SwerveModuleConstants module : modules) {
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                System.err.println("bad" + e.getMessage());
+            }
+
+            TalonFXConfiguration talonConfigs = new TalonFXConfiguration();
+
+            talonConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+
+            talonConfigs.Slot0 = module.DriveMotorGains;
+            talonConfigs.TorqueCurrent.PeakForwardTorqueCurrent = module.SlipCurrent;
+            talonConfigs.TorqueCurrent.PeakReverseTorqueCurrent = -module.SlipCurrent;
+            talonConfigs.CurrentLimits.StatorCurrentLimit = module.SlipCurrent;
+            talonConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
+
+            talonConfigs.MotorOutput.Inverted = module.DriveMotorInverted ? InvertedValue.Clockwise_Positive
+                    : InvertedValue.CounterClockwise_Positive;
+            StatusCode response = Modules[i].getDriveMotor().getConfigurator().apply(talonConfigs);
+            if (!response.isOK()) {
+                System.out.println(
+                        "TalonFX ID " + Modules[i].getDriveMotor().getDeviceID()
+                                + " failed config with error "
+                                + response.toString());
+            }
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                System.err.println("bad" + e.getMessage());
+            }
+
+            talonConfigs = new TalonFXConfiguration();
+
+            talonConfigs.Slot0 = module.SteerMotorGains;
+            // Modify configuration to use remote CANcoder fused
+            talonConfigs.Feedback.FeedbackRemoteSensorID = module.CANcoderId;
+            switch (module.FeedbackSource) {
+                case RemoteCANcoder:
+                    talonConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+                    break;
+                case FusedCANcoder:
+                    talonConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
+                    break;
+                case SyncCANcoder:
+                    talonConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.SyncCANcoder;
+                    break;
+            }
+            talonConfigs.Feedback.RotorToSensorRatio = module.SteerMotorGearRatio;
+
+            talonConfigs.MotionMagic.MotionMagicCruiseVelocity = 100.0 / module.SteerMotorGearRatio;
+            talonConfigs.MotionMagic.MotionMagicAcceleration = talonConfigs.MotionMagic.MotionMagicCruiseVelocity
+                    / 0.100;
+            talonConfigs.MotionMagic.MotionMagicExpo_kV = 0.12 * module.SteerMotorGearRatio;
+            talonConfigs.MotionMagic.MotionMagicExpo_kA = 0.1;
+
+            talonConfigs.ClosedLoopGeneral.ContinuousWrap = true; // Enable continuous wrap for swerve
+                                                                  // modules
+
+            talonConfigs.MotorOutput.Inverted = module.SteerMotorInverted
+                    ? InvertedValue.Clockwise_Positive
+                    : InvertedValue.CounterClockwise_Positive;
+            response = Modules[i].getSteerMotor().getConfigurator().apply(talonConfigs);
+            if (!response.isOK()) {
+                System.out.println(
+                        "TalonFX ID " + Modules[i].getSteerMotor() + " failed config with error "
+                                + response.toString());
+            }
+
+            i++;
         }
     }
 

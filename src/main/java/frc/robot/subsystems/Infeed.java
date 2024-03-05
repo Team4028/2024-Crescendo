@@ -83,12 +83,12 @@ public class Infeed extends SubsystemBase {
         return this::hasGamePiece;
     }
 
-    private void runInfeedMotor(double vBus) {
+    public void runMotor(double vBus) {
         motor.set(vBus);
     }
 
-    public Command runInfeedMotorCommand(double vBus) {
-        return runOnce(() -> runInfeedMotor(vBus));
+    public Command runMotorCommand(double vBus) {
+        return runOnce(() -> runMotor(vBus));
     }
 
     public void logValues() {
