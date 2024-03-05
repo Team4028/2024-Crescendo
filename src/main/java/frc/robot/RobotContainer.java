@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -434,8 +435,7 @@ public class RobotContainer {
                         runThree(
                                 () -> -emergencyController.getLeftY(),
                                 () -> -emergencyController.getLeftY(),
-                                () -> emergencyController.getLeftY() > 0. ? -emergencyController.getLeftY() : 0.))
-                .onFalse(shooter.stopCommand());
+                                () -> emergencyController.getLeftY() > 0. ? -emergencyController.getLeftY() : 0.));
 
         /* Cool Outfeed: right Y */
         emergencyController.axisLessThan(XboxController.Axis.kRightY.value, -0.2)
@@ -443,8 +443,7 @@ public class RobotContainer {
                         runThree(
                                 () -> emergencyController.getRightY(),
                                 () -> -emergencyController.getRightY(),
-                                () -> emergencyController.getRightY()))
-                .onFalse(shooter.stopCommand());
+                                () -> emergencyController.getRightY()));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -465,12 +464,16 @@ public class RobotContainer {
 
     /* Run both Conveyor and Infeed */
     private Command runThree(Supplier<Double> conveyorVbus, Supplier<Double> infeedVbus, Supplier<Double> shooterVbus) {
-        return Commands.run(() -> {
+        return new FunctionalCommand(() -> {},
+        () -> {
             infeed.runMotor(infeedVbus.get());
             conveyor.runMotor(conveyorVbus.get());
             shooter.spinMotorRight(0.3 * shooterVbus.get());
             shooter.spinMotorLeft(0.3 * shooterVbus.get());
-        }, infeed, conveyor);
+        },
+                (z) -> shooter.stop(),
+                () -> false,
+                infeed, conveyor);
     }
 
     /* Auton Command */
