@@ -9,7 +9,9 @@ import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
+import com.revrobotics.SparkPIDController.ArbFFUnits;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -108,6 +110,16 @@ public class Pivot extends SubsystemBase {
         voltageLog = new DoubleLogEntry(log, "/Pivot/Voltage");
         velocityLog = new DoubleLogEntry(log, "/Pivot/Velocity");
         positionLog = new DoubleLogEntry(log, "/Pivot/Position");
+    }
+
+    private double convertEncoderToRadians(double encoder) {
+        double sideA = 1.0;
+        double sideB = 14.0;
+        double sideC = (encoder / 4.0 * 0.472) + 12.0;
+        
+        double angle = Math.acos((sideA * sideA + sideB * sideB - sideC * sideC) / (2 * sideA * sideB));
+
+        return angle;
     }
     // ==================================
     // PIVOT COMMANDS
