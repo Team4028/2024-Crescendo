@@ -9,11 +9,12 @@ import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
-import com.revrobotics.SparkPIDController.ArbFFUnits;
-
-import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.util.datalog.StringLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -21,14 +22,18 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 public class Pivot extends SubsystemBase {
     private final CANSparkMax motor;
     private final RelativeEncoder encoder;
     private final SparkPIDController pid;
+    private final SysIdRoutine sysIdRoutine;
 
     private final DataLog log;
     private final DoubleLogEntry currentLog, velocityLog, voltageLog, positionLog;
+    private final StringLogEntry sysIDTestMode;
 
     private final Timer zeroTimer;
     private final double ZERO_TIMER_THRESHOLD = 0.14; // 7 scans
@@ -72,10 +77,24 @@ public class Pivot extends SubsystemBase {
         pid = motor.getPIDController();
         pid.setFeedbackDevice(encoder);
 
+        // Logging *Wo-HO!!
+        log = DataLogManager.getLog();
+        currentLog = new DoubleLogEntry(log, "/Pivot/Current");
+        voltageLog = new DoubleLogEntry(log, "/Pivot/Voltage");
+        velocityLog = new DoubleLogEntry(log, "/Pivot/Velocity");
+        positionLog = new DoubleLogEntry(log, "/Pivot/Position");
+        sysIDTestMode = new StringLogEntry(log, "/Pivot/SysID test mode");
+
+        sysIdRoutine = new SysIdRoutine(
+                new SysIdRoutine.Config(null, null, null, (state) -> sysIDTestMode.append(state.toString())),
+                new SysIdRoutine.Mechanism(
+                        (Measure<Voltage> volts) -> motor.setVoltage(volts.in(Units.Volts)), null,
+                        this));
+
         /* ======= */
         /* PID!!!! */
         /* ======= */
-        
+
         pid.setP(PIDConstants.kP);
         pid.setD(PIDConstants.kD);
         pid.setOutputRange(PIDConstants.MIN_OUTPUT, PIDConstants.MAX_OUTPUT);
@@ -103,20 +122,21 @@ public class Pivot extends SubsystemBase {
         /* TIMER */
         /* ===== */
         zeroTimer = new Timer();
+    }
 
-        // Logging *Wo-HO!!
-        log = DataLogManager.getLog();
-        currentLog = new DoubleLogEntry(log, "/Pivot/Current");
-        voltageLog = new DoubleLogEntry(log, "/Pivot/Voltage");
-        velocityLog = new DoubleLogEntry(log, "/Pivot/Velocity");
-        positionLog = new DoubleLogEntry(log, "/Pivot/Position");
+    public Command runQuasi(Direction dir) {
+        return sysIdRoutine.quasistatic(dir);
+    }
+
+    public Command runDyn(Direction dir) {
+        return sysIdRoutine.dynamic(dir);
     }
 
     private double convertEncoderToRadians(double encoder) {
         double sideA = 1.0;
         double sideB = 14.0;
         double sideC = (encoder / 4.0 * 0.472) + 12.0;
-        
+
         double angle = Math.acos((sideA * sideA + sideB * sideB - sideC * sideC) / (2 * sideA * sideB));
 
         return angle;
