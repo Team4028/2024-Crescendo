@@ -5,6 +5,7 @@
 package frc.robot;
 
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 import org.photonvision.EstimatedRobotPose;
 
@@ -94,7 +95,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command smartInfeedCommand, magicShootCommand;
+    private final Command smartInfeedCommand, magicShootCommand, magicTrapCommand, magicAmpCommand;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -122,7 +123,6 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MAX_SPEED);
 
     public RobotContainer() {
-
         // TODO: Failsafe timer based on Infeed ToF
         smartInfeedCommand = infeed.runInfeedMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
@@ -151,6 +151,29 @@ public class RobotContainer {
                 .andThen(Commands.waitSeconds(0.2))
                 .andThen(shooter.stopCommand())
                 .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
+
+        magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2, 0)
+                .andThen(shooter.setSlotCommand(Shooter.Slots.TRAP))
+                .andThen(pivot.runToTrapCommand())
+                .andThen(Commands.waitUntil(pivot.inPositionSupplier()))
+                .andThen(smartInfeedCommand)
+                .andThen(m_fan.runMotorCommand(FAN_VBUS))
+                .andThen(shooter.runShotCommand(ShotSpeeds.TRAP).repeatedly()
+                        .until(shooterAndPivotReady()).withTimeout(4))
+                .andThen(conveyor.runXRotations(20))
+                .andThen(shooter.stopCommand())
+                .andThen(pivot.runToHomeCommand());
+
+        magicAmpCommand = drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0)
+                .andThen(shooter.setSlotCommand(Shooter.Slots.AMP))
+                .andThen(pivot.runToClimbCommand())
+                .andThen(Commands.waitUntil(pivot.inPositionSupplier()))
+                .andThen(smartInfeedCommand)
+                .andThen(shooter.runShotCommand(ShotSpeeds.AMP).repeatedly()
+                        .until(shooterAndPivotReady()).withTimeout(4.))
+                .andThen(conveyor.runXRotations(20.))
+                .andThen(shooter.stopCommand())
+                .andThen(pivot.runToHomeCommand());
 
         configureBindings();
     }
@@ -344,7 +367,7 @@ public class RobotContainer {
         // ========================= //
         /* Climber & Zeroing Control */
         // ========================= //
-        
+
         // TODO: get climber good
 
         /* Zero Climber & Pivot */
@@ -368,20 +391,9 @@ public class RobotContainer {
         /* Amp & Trap Magic */
         // ================ //
 
-        // TODO: make amp magic
-        operatorController.b().toggleOnTrue(drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0));
+        operatorController.b().toggleOnTrue(magicAmpCommand);
 
-        operatorController.y().toggleOnTrue(drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2, 0)
-                .andThen(shooter.setSlotCommand(Shooter.Slots.TRAP))
-                .andThen(new WaitCommand(2))
-                .andThen(pivot.runToTrapCommand())
-                .andThen(m_fan.runMotorCommand(FAN_VBUS))
-                .andThen(shooter.runShotCommand(Shooter.ShotSpeeds.TRAP).repeatedly())
-                .until(shooter.isReady()).withTimeout(4)
-                .andThen(shooter.stopCommand())
-                .alongWith(new WaitCommand(2)
-                        .andThen(conveyor.runXRotations(20)))
-                .andThen(pivot.runToHomeCommand()));
+        operatorController.y().toggleOnTrue(magicTrapCommand);
 
         // ==================== //
         /* EMERGENCY CONTROLLER */
@@ -461,6 +473,11 @@ public class RobotContainer {
         return limiter.calculate(
                 controllerInput * (baseSpeedPercent
                         + driverController.getRightTriggerAxis() * (1 - baseSpeedPercent)));
+    }
+
+    /* Shooter & Pivot Ready */
+    private BooleanSupplier shooterAndPivotReady() {
+        return () -> shooter.isReady().getAsBoolean() && pivot.inPositionSupplier().getAsBoolean();
     }
 
     // ======= //
