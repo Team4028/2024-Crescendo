@@ -74,7 +74,7 @@ public class Climber extends SubsystemBase {
 
     public Climber() {
         motor = new TalonFX(CAN_ID);
-        
+
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setInverted(true);
 
@@ -119,11 +119,12 @@ public class Climber extends SubsystemBase {
     }
 
     public Command runToPositionCommand(double position) {
-        return runOnce(() -> runToPosition(position));
+        return run(() -> runToPosition(position))
+                .until(() -> Math.abs(motor.getPosition().getValueAsDouble() - position) < 1.);
     }
 
     public void climb() {
-        motor.setControl(motionMagicRequest.withPosition(ClimberPositions.CLIMB.Position ));
+        motor.setControl(motionMagicRequest.withPosition(ClimberPositions.CLIMB.Position));
     }
 
     public Command climbCommand() {
