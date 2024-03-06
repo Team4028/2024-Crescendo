@@ -30,24 +30,25 @@ public class Pivot extends SubsystemBase {
 
     private final Timer zeroTimer;
     private final double ZERO_TIMER_THRESHOLD = 0.14; // 7 scans
-    private final double ZERO_VELOCITY_THRESHOLD = 0.2;
+    private final double ZERO_VELOCITY_THRESHOLD = 0.8;
 
     private static final int CAN_ID = 13;
 
-    public final static double MAX_POSITION = 12.5;
+    public final static double MAX_POSITION = 64.0;
     public final static double MIN_POSITION = 1.;
 
-    public final static double CLIMB_POSITION = MAX_POSITION;
+    public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
-    public final static double TRAP_POSITION = 8.77;
+    public final static double TRAP_POSITION = 42.;
 
     /* PID */
     private class PIDConstants {
-        private final static double kP = 0.125;
-        private final static double kD = 0.0125;
+        // TODO: three different zones
+        private final static double kP = 0.05;
+        private final static double kD = 0.5;
 
-        private final static double MIN_OUTPUT = -0.2;
-        private final static double MAX_OUTPUT = 0.25;
+        private final static double MIN_OUTPUT = -0.5;
+        private final static double MAX_OUTPUT = 0.7;
     }
 
     /* Current Limit */
@@ -157,7 +158,7 @@ public class Pivot extends SubsystemBase {
         return runOnce(() -> {
             zeroTimer.restart();
         })
-                .andThen(runMotorCommand(-0.025).repeatedly()
+                .andThen(runMotorCommand(-0.1).repeatedly()
                         .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
                                 && Math.abs(encoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
                 .andThen(runMotorCommand(0.).alongWith(Commands.runOnce(() -> zeroTimer.stop())))
@@ -171,7 +172,7 @@ public class Pivot extends SubsystemBase {
     // }
 
     public BooleanSupplier inPositionSupplier() {
-        return () -> (Math.abs(getPosition() - targetPosition) < 1.0);
+        return () -> (Math.abs(getPosition() - targetPosition) < 2.0);
     }
 
     public void logValues() {

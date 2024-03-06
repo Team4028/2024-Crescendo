@@ -36,8 +36,8 @@ public class Shooter extends SubsystemBase {
 
     private double rightTarget, leftTarget;
 
-    private static final int LEFT_CAN_ID = 9;
-    private static final int RIGHT_CAN_ID = 10;
+    private static final int LEFT_CAN_ID = 10;
+    private static final int RIGHT_CAN_ID = 9;
 
     private final VelocityVoltage leftVelocityRequest = new VelocityVoltage(0.)
             .withEnableFOC(true);
@@ -61,9 +61,9 @@ public class Shooter extends SubsystemBase {
 
     public enum ShotSpeeds {
 
-        FAST(3400, 2500),
-        MEDIUM(2700, 2000),
-        TRAP(1300, 1300),
+        FAST(4800, 3400),
+        MEDIUM(3840, 2700),
+        TRAP(1800, 1800),
         AMP(677., 677.);
 
         public final double RightRPM;
@@ -83,34 +83,34 @@ public class Shooter extends SubsystemBase {
 
     private final class PIDConstants {
         private static class Right {
-            private static double kFF = 0.00019;
+            private static double kFF = 0.139535;
 
             private static final Slot2Configs Trap = new Slot2Configs()
-                    .withKP(0.0002)
+                    .withKP(0.02)
                     .withKV(kFF); // 1300
 
             private static final Slot1Configs Amp = new Slot1Configs()
-                    .withKP(0.00025)
+                    .withKP(0.02)
                     .withKV(kFF); // 690
 
             private static final Slot0Configs Fast = new Slot0Configs()
-                    .withKP(0.001)
+                    .withKP(0.1)
                     .withKV(kFF); // 100%
         }
 
         private static class Left {
-            private static double kFF = 0.00022;
+            private static double kFF = 0.13483;
 
             private static final Slot2Configs Trap = new Slot2Configs()
-                    .withKP(0.001)
+                    .withKP(0.01)
                     .withKV(kFF); // 1300
 
             private static final Slot1Configs Amp = new Slot1Configs()
-                    .withKP(0.0005)
+                    .withKP(0.01)
                     .withKV(kFF); // 690
 
             private static final Slot0Configs Fast = new Slot0Configs()
-                    .withKP(0.002)
+                    .withKP(0.05)
                     .withKV(kFF); // 100%
         }
     }
@@ -122,7 +122,7 @@ public class Shooter extends SubsystemBase {
         leftMotor = new TalonFX(LEFT_CAN_ID);
         rightMotor = new TalonFX(RIGHT_CAN_ID);
 
-        leftMotor.setInverted(false);
+        leftMotor.setInverted(true);
 
         leftMotor.setNeutralMode(NeutralModeValue.Brake);
         rightMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -271,7 +271,7 @@ public class Shooter extends SubsystemBase {
         leftTarget = velRPM;
 
         leftMotor.setControl(leftVelocityRequest
-                .withVelocity(velRPM)
+                .withVelocity(velRPM / 60.)
                 .withSlot(slot));
     }
 
@@ -279,7 +279,7 @@ public class Shooter extends SubsystemBase {
         rightTarget = velRPM;
 
         rightMotor.setControl(rightVelocityRequest
-                .withVelocity(velRPM)
+                .withVelocity(velRPM / 60.)
                 .withSlot(slot));
     }
 
@@ -307,8 +307,8 @@ public class Shooter extends SubsystemBase {
         leftCurrent.append(leftMotor.getStatorCurrent().getValueAsDouble());
         rightCurrent.append(rightMotor.getStatorCurrent().getValueAsDouble());
 
-        leftVelocity.append(leftMotor.getVelocity().getValueAsDouble());
-        rightVelocity.append(rightMotor.getVelocity().getValueAsDouble());
+        leftVelocity.append(leftMotor.getVelocity().getValueAsDouble() * 60.);
+        rightVelocity.append(rightMotor.getVelocity().getValueAsDouble() * 60.);
 
         leftVoltage.append(leftMotor.getDutyCycle().getValueAsDouble());
         rightVoltage.append(rightMotor.getDutyCycle().getValueAsDouble());
@@ -316,8 +316,8 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Left Shooter Speed", leftMotor.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("Right Shooter Speed", rightMotor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("Left Shooter Speed", leftMotor.getVelocity().getValueAsDouble() * 60.);
+        SmartDashboard.putNumber("Right Shooter Speed", rightMotor.getVelocity().getValueAsDouble() * 60.);
 
         SmartDashboard.putNumber("Left Shooter Target", leftTarget);
         SmartDashboard.putNumber("Right Shooter Target", rightTarget);

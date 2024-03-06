@@ -28,8 +28,8 @@ public class Climber extends SubsystemBase {
 
     private final Timer zeroTimer;
 
-    private static final double ZERO_TIMER_THRESHOLD = 0.2; // 5 scans
-    private static final double ZERO_CURRENT_THRESHOLD = 3.;
+    private static final double ZERO_TIMER_THRESHOLD = 0.2; // 10 scans
+    private static final double ZERO_CURRENT_THRESHOLD = 4.5;
     private static final double ZERO_VBUS = -0.1;
 
     private static final int CAN_ID = 15;
@@ -58,12 +58,13 @@ public class Climber extends SubsystemBase {
             .withEnableFOC(true)
             .withOverrideBrakeDurNeutral(true);
 
+    // TODO: these are incorrect rn
     public enum ClimberPositions {
         CLIMB(-1.),
         HOME(1.),
-        DOWN_ONE(50.),
-        DOWN_TWO(40.),
-        READY(65.);
+        DOWN_ONE(100.),
+        DOWN_TWO(80.),
+        READY(135.);
 
         public double Position;
 
@@ -74,7 +75,7 @@ public class Climber extends SubsystemBase {
 
     public Climber() {
         motor = new TalonFX(CAN_ID);
-        
+
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setInverted(true);
 
@@ -108,7 +109,7 @@ public class Climber extends SubsystemBase {
         })
                 .andThen(runMotorCommand(ZERO_VBUS).repeatedly()
                         .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
-                                && Math.abs(motor.getStatorCurrent().getValueAsDouble()) < ZERO_CURRENT_THRESHOLD))
+                                && Math.abs(motor.getStatorCurrent().getValueAsDouble()) > ZERO_CURRENT_THRESHOLD))
                 .andThen(runMotorCommand(0.),
                         Commands.runOnce(() -> zeroTimer.stop()),
                         Commands.runOnce(() -> motor.setPosition(0.0)));
@@ -123,7 +124,7 @@ public class Climber extends SubsystemBase {
     }
 
     public void climb() {
-        motor.setControl(motionMagicRequest.withPosition(ClimberPositions.CLIMB.Position ));
+        motor.setControl(motionMagicRequest.withPosition(ClimberPositions.CLIMB.Position));
     }
 
     public Command climbCommand() {

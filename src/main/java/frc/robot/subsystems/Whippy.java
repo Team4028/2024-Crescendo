@@ -13,10 +13,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Whippy extends SubsystemBase {
     private final CANSparkFlex motor;
 
+    private static final int CAN_ID = 16;
+    private static final int CURRENT_LIMIT = 40;
+
     /** Creates a new WhippyWheels. */
 
     public Whippy() {
-        motor = new CANSparkFlex(16, MotorType.kBrushless);
+        motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
+        motor.setSmartCurrentLimit(CURRENT_LIMIT);
     }
 
     public void whippyWheels(double vbus) {

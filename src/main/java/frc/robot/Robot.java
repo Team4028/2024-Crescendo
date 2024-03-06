@@ -45,11 +45,11 @@ public class Robot extends TimedRobot {
     public void autonomousInit() {
         DataLogManager.start();
 
-        // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-        // if (m_autonomousCommand != null) {
-        //     m_autonomousCommand.schedule();
-        // }
+        if (m_autonomousCommand != null) {
+            m_autonomousCommand.schedule();
+        }
 
         // m_robotContainer.zero();
     }
@@ -71,7 +71,7 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.cancel();
         }
 
-        // m_robotContainer.zero();
+        m_robotContainer.zero();
     }
 
     @Override
