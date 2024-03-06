@@ -392,7 +392,7 @@ public class RobotContainer {
         // ==================== //
 
         driverController.rightBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 0.2)));
+                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 0.5)));
         driverController.leftBumper()
                 .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 0.2)));
 
@@ -424,21 +424,18 @@ public class RobotContainer {
 
         operatorController.rightStick().toggleOnTrue(drivetrain.pathFindCommand(Constants.LEFT_TRAP_Target, .2, 0)
                 .andThen(new WaitCommand(2))
-                .andThen(pivot.runToPositionCommand(Pivot.TRAP_POSITION))
-                .alongWith(new WaitCommand(1))
-                .andThen(smartInfeedCommand())
-                .alongWith(new WaitCommand(1))
+                //.andThen(pivot.runToPositionCommand(Pivot.TRAP_POSITION))
+                //.alongWith(new WaitCommand(1))
+                //.andThen(smartInfeedCommand())
+                //.alongWith(new WaitCommand(1))
                 .andThen(shooter.run(() -> {
                     shooter.setLeftToVel(1300);
                     shooter.setRightToVel(1300);
-                }).withTimeout(4)
+                }).withTimeout(2)
                         .andThen(conveyor.runXRotations(20))
-                        .andThen(shooter.runOnce(() -> {
-                            shooter.setLeftToVel(0);
-                            shooter.setRightToVel(0);
-                        }))
-                        .alongWith(new WaitCommand(2)))
-                .andThen(pivot.runToPositionCommand(.5)));
+                        .andThen(shooter.stopCommand()))
+                //.andThen(pivot.runToPositionCommand(.5))
+                );
 
         operatorController.back().onTrue(Commands.runOnce(() -> getBestSTEntry()));
 
