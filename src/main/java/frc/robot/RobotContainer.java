@@ -45,6 +45,7 @@ import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Fan;
+import frc.robot.subsystems.Infeed;
 // import frc.robot.subsystems.Fan;
 // import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Pivot;
@@ -85,11 +86,11 @@ public class RobotContainer {
     private final CommandXboxController emergencyController = new CommandXboxController(OI_EMERGENCY_CONTROLLER);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
-    // private final Infeed infeed = new Infeed();
+    private final Infeed infeed = new Infeed();
     private final Shooter shooter = new Shooter();
     private final Conveyor conveyor = new Conveyor();
     private final Climber climber = new Climber();
-    // private final Autons autons;
+    private final Autons autons;
     private final Pivot pivot = new Pivot();
     private final Fan m_fan = new Fan();
     private final Whippy whippy = new Whippy();
@@ -100,9 +101,8 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    // private final Command smartInfeedCommand, magicShootCommand,
-    // magicTrapCommand, magicAmpCommand;
-    // private SendableChooser<Command> autonChooser;
+    private final Command magicShootCommand, magicTrapCommand, magicAmpCommand;
+    private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
     /* Drivetrain Constants, Magic numbers, and Slew Limiters */
@@ -130,58 +130,47 @@ public class RobotContainer {
 
     public RobotContainer() {
         // TODO: Failsafe timer based on Infeed ToF
-        // smartInfeedCommand = infeed.runMotorCommand(INFEED_VBUS)
-        // .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
-        // .repeatedly().until(conveyor.hasInfedSupplier())
-        // .andThen(infeed.runMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
-        // .repeatedly().withTimeout(0.1))
-        // .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-        // .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
-        // .alongWith(infeed.runMotorCommand(0.))))
-        // .andThen(shooter.spinMotorLeftCommand(0.));// .withTimeout(3);
+        initNamedCommands();
 
-        // initNamedCommands();
+        autons = new Autons(drivetrain, shooter, conveyor, infeed,
+                smartInfeedCommand());
 
-        // autons = new Autons(drivetrain, shooter, conveyor, infeed,
-        // smartInfeedCommand);
+        initAutonChooser();
 
-        // initAutonChooser();
+        magicShootCommand = new RotateToSpeaker(drivetrain).andThen(Commands.runOnce(() -> {
+            ShooterTableEntry entry = getBestSTEntry();
+            shooter.runEntry(entry, ShotSpeeds.FAST);
+            pivot.runToPosition(entry.angle);
+        }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReady()))
+                .andThen(Commands.waitSeconds(0.5))
+                .andThen(conveyor.runXRotations(10)
+                        .alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS)))
+                .andThen(Commands.waitSeconds(0.2))
+                .andThen(shooter.stopCommand())
+                .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
 
-        // magicShootCommand = new
-        // RotateToSpeaker(drivetrain).andThen(Commands.runOnce(() -> {
-        // ShooterTableEntry entry = getBestSTEntry();
-        // shooter.runEntry(entry, ShotSpeeds.FAST);
-        // pivot.runToPosition(entry.angle);
-        // }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReady()))
-        // .andThen(Commands.waitSeconds(0.5))
-        // .andThen(conveyor.runXRotations(10)
-        // .alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS)))
-        // .andThen(Commands.waitSeconds(0.2))
-        // .andThen(shooter.stopCommand())
-        // .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
+        magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2,
+                0)
+                .andThen(shooter.setSlotCommand(Shooter.Slots.TRAP))
+                .andThen(new WaitCommand(2))
+                .andThen(pivot.runToTrapCommand())
+                .andThen(m_fan.runMotorCommand(FAN_VBUS))
+                .andThen(shooter.runShotCommand(ShotSpeeds.TRAP).repeatedly()
+                        .until(shooterAndPivotReady()).withTimeout(4))
+                .andThen(conveyor.runXRotations(20))
+                .andThen(shooter.stopCommand())
+                .andThen(pivot.runToHomeCommand());
 
-        // magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2,
-        // 0)
-        // .andThen(shooter.setSlotCommand(Shooter.Slots.TRAP))
-        // .andThen(new WaitCommand(2))
-        // .andThen(pivot.runToTrapCommand())
-        // .andThen(m_fan.runMotorCommand(FAN_VBUS))
-        // .andThen(shooter.runShotCommand(ShotSpeeds.TRAP).repeatedly()
-        // .until(shooterAndPivotReady()).withTimeout(4))
-        // .andThen(conveyor.runXRotations(20))
-        // .andThen(shooter.stopCommand())
-        // .andThen(pivot.runToHomeCommand());
-
-        // magicAmpCommand = drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0)
-        // .andThen(shooter.setSlotCommand(Shooter.Slots.AMP))
-        // .andThen(pivot.runToClimbCommand())
-        // .andThen(whippy.whippyWheelsCommand(WHIPPY_VBUS))
-        // .andThen(shooter.runShotCommand(ShotSpeeds.AMP).repeatedly()
-        // .until(shooterAndPivotReady()).withTimeout(4.))
-        // .andThen(conveyor.runXRotations(20.))
-        // .andThen(shooter.stopCommand())
-        // .andThen(pivot.runToHomeCommand())
-        // .andThen(whippy.whippyWheelsCommand(0));
+        magicAmpCommand = drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0)
+                .andThen(shooter.setSlotCommand(Shooter.Slots.AMP))
+                .andThen(pivot.runToClimbCommand())
+                .andThen(whippy.whippyWheelsCommand(WHIPPY_VBUS))
+                .andThen(shooter.runShotCommand(ShotSpeeds.AMP).repeatedly()
+                        .until(shooterAndPivotReady()).withTimeout(4.))
+                .andThen(conveyor.runXRotations(20.))
+                .andThen(shooter.stopCommand())
+                .andThen(pivot.runToHomeCommand())
+                .andThen(whippy.whippyWheelsCommand(0));
 
         configureBindings();
     }
@@ -190,87 +179,63 @@ public class RobotContainer {
     /* Auton & Named Commands */
     // ====================== //
     private void initAutonChooser() {
-        // autonChooser = AutoBuilder.buildAutoChooser();
-        // autonChooser.addOption("2pdyn", autons.twoPieceAutonDynamic(StartPoses.TOP,
-        // 1, Notes.ONE, Notes.TWO));
-        // SmartDashboard.putData("Auto Chooser", autonChooser);
+        autonChooser = AutoBuilder.buildAutoChooser();
+        autonChooser.addOption("2pdyn", autons.twoPieceAutonDynamic(StartPoses.TOP,
+                1, Notes.ONE, Notes.TWO));
+        SmartDashboard.putData("Auto Chooser", autonChooser);
     }
 
     private void initNamedCommands() {
-        // NamedCommands.registerCommand("pivotZero", pivot.zeroCommand());
+        NamedCommands.registerCommand("pivotZero", pivot.zeroCommand());
 
-        // NamedCommands.registerCommand("zeroApril", new InstantCommand(() -> {
-        // Optional<EstimatedRobotPose> poseOpt = getBestPose();
-        // if (poseOpt.isEmpty())
-        // return;
+        NamedCommands.registerCommand("zeroApril", new InstantCommand(() -> {
+            Optional<EstimatedRobotPose> poseOpt = getBestPose();
+            if (poseOpt.isEmpty())
+                return;
 
-        // drivetrain.seedFieldRelative(poseOpt.get().estimatedPose.toPose2d());
-        // }, leftVision, rightVision));
+            drivetrain.seedFieldRelative(poseOpt.get().estimatedPose.toPose2d());
+        }, leftVision, rightVision));
 
-        // NamedCommands.registerCommand("llAquire",
-        // new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.8), drivetrain));
+        NamedCommands.registerCommand("llAquire",
+                new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.8), drivetrain));
 
-        // // TODO: change this stuff for shootertable
-        // NamedCommands.registerCommand("runShooter", shooter.runVelocityCommand());
-        // NamedCommands.registerCommand("4pinfeed", infeed.runMotorCommand(INFEED_VBUS)
-        // .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());//
+        // TODO: change this stuff for shootertable
+        NamedCommands.registerCommand("runShooter", shooter.runVelocityCommand());
+        NamedCommands.registerCommand("4pinfeed", infeed.runMotorCommand(INFEED_VBUS)
+                .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());//
         // .withTimeout(1.5));
 
-        // NamedCommands.registerCommand("runThru", infeed.runMotorCommand(INFEED_VBUS)
-        // .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
-        // .alongWith(shooter.spinBothCommand(0.15))
-        // .repeatedly());
+        NamedCommands.registerCommand("runThru", infeed.runMotorCommand(INFEED_VBUS)
+                .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
+                .alongWith(shooter.spinBothCommand(0.15))
+                .repeatedly());
 
-        // NamedCommands.registerCommand("LLAquire",
-        // new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.5),
-        // drivetrain)
-        // .alongWith(
-        // infeed.runMotorCommand(INFEED_VBUS)
-        // .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
-        // .repeatedly().until(conveyor.hasInfedSupplier())
-        // .andThen(
-        // infeed.runMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
-        // .repeatedly().withTimeout(0.1))
-        // .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-        // .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
-        // .alongWith(infeed.runMotorCommand(0.))))
-        // .andThen(shooter.spinMotorLeftCommand(0.))// .withTimeout(3);
-        // ));
+        NamedCommands.registerCommand("LLAquire",
+                new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.5),
+                        drivetrain)
+                        .alongWith(smartInfeedCommand()));
 
-        // NamedCommands.registerCommand("smartInfeed",
-        // infeed.runMotorCommand(INFEED_VBUS)
-        // .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
-        // .repeatedly().until(conveyor.hasInfedSupplier())
-        // .andThen(infeed.runMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
-        // .repeatedly().withTimeout(0.1))
-        // .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-        // .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
-        // .alongWith(infeed.runMotorCommand(0.))))
-        // .andThen(shooter.spinMotorLeftCommand(0.)));// .withTimeout(3);
-        // NamedCommands.registerCommand("farShot", Commands.runOnce(() ->
-        // pivot.runToPosition(1)));
+        NamedCommands.registerCommand("smartInfeed", smartInfeedCommand());
+        NamedCommands.registerCommand("farShot", Commands.runOnce(() -> pivot.runToPosition(1)));
 
-        // ShooterTableEntry aentry = new ShooterTableEntry(Feet.of(0),
-        // 3, 1.0);
-        // NamedCommands.registerCommand("startShooter",
-        // shooter.runEntryCommand(() -> aentry, () -> ShotSpeeds.FAST)
-        // .alongWith(pivot.runToPositionCommand(
-        // aentry.angle)));
+        ShooterTableEntry aentry = new ShooterTableEntry(Feet.of(0),
+                3, 1.0);
+        NamedCommands.registerCommand("startShooter",
+                shooter.runEntryCommand(() -> aentry, () -> ShotSpeeds.FAST)
+                        .alongWith(pivot.runToPositionCommand(
+                                aentry.angle)));
 
-        // NamedCommands.registerCommand("2.5StartShooter", shooter.runEntryCommand(()
-        // -> aentry, () -> ShotSpeeds.FAST));
+        NamedCommands.registerCommand("2.5StartShooter", shooter.runEntryCommand(() -> aentry, () -> ShotSpeeds.FAST));
 
-        // NamedCommands.registerCommand("stopShooter", shooter.stopCommand());
+        NamedCommands.registerCommand("stopShooter", shooter.stopCommand());
 
-        // NamedCommands.registerCommand("goTo2.5Shoot", drivetrain
-        // .pathFindCommand(new Pose2d(4.99, 6.66, new
-        // Rotation2d(Units.degreesToRadians(13.3))), 0.5, 0));
+        NamedCommands.registerCommand("goTo2.5Shoot", drivetrain
+                .pathFindCommand(new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.5, 0));
 
-        // NamedCommands.registerCommand("follow2pchoice",
-        // new
-        // ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
-        // AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pright")),
-        // () -> true));
+        NamedCommands.registerCommand("follow2pchoice",
+                new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
+                        AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pright")),
+                        () -> true));
     }
 
     // =========================== //
@@ -301,7 +266,7 @@ public class RobotContainer {
                                         MAX_SPEED)));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
-        // infeed.setDefaultCommand(infeed.runMotorCommand(0.));
+        infeed.setDefaultCommand(infeed.runMotorCommand(0.));
         m_fan.setDefaultCommand(m_fan.stopCommand());
 
         // ================= //
@@ -313,14 +278,14 @@ public class RobotContainer {
         // ========================= //
 
         /* Dumb Infeed */
-        // driverController.leftTrigger().onTrue(
-        // infeed.runMotorCommand(INFEED_VBUS).alongWith(
-        // conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS)).repeatedly())
-        // .onFalse(infeed.runMotorCommand(0.).alongWith(
-        // conveyor.runMotorCommand(0.)));
+        driverController.leftTrigger().onTrue(
+                infeed.runMotorCommand(INFEED_VBUS).alongWith(
+                        conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS)).repeatedly())
+                .onFalse(infeed.runMotorCommand(0.).alongWith(
+                        conveyor.runMotorCommand(0.)));
 
         /* Smart Infeed */
-        // driverController.leftBumper().toggleOnTrue(smartInfeedCommand);
+        driverController.leftBumper().toggleOnTrue(smartInfeedCommand());
 
         // ========================== //
         /* Drivetain & Vision Control */
@@ -358,23 +323,18 @@ public class RobotContainer {
         /* Spin Up Shooter */
         operatorController.leftBumper()
                 .onTrue(Commands.runOnce(() -> {
-                    // ShooterTableEntry entry = getBestSTEntry();
-                    var entry = new ShooterTableEntry(Feet.of(0), 0., 1.0);
+                    ShooterTableEntry entry = getBestSTEntry();
                     shooter.runEntry(entry, ShotSpeeds.FAST);
-                    // pivot.runToPosition(entry.angle);
+                    pivot.runToPosition(entry.angle);
                 }, shooter, pivot))
                 .onFalse(shooter.stopCommand());
-
-        // operatorController.leftBumper()
-        // .onTrue(shooter.spinMotorRightCommand(0.5).andThen(shooter.spinMotorLeftCommand(0.5)))
-        // .onFalse(shooter.stopCommand());
 
         /* Convey Note */
         operatorController.rightBumper()
                 .whileTrue(runBoth(FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS).repeatedly());
 
         /* Magic Shoot */
-        // operatorController.b().onTrue(magicShootCommand);
+        operatorController.b().onTrue(magicShootCommand);
 
         // TODO: bind these to ST index up/down
 
@@ -411,10 +371,10 @@ public class RobotContainer {
         /* Amp & Trap Magic */
         // ================ //
 
-        // operatorController.b().toggleOnTrue(magicAmpCommand);
+        operatorController.b().toggleOnTrue(magicAmpCommand);
 
-        // operatorController.y().toggleOnTrue(magicTrapCommand);
-        operatorController.y().onTrue(pivot.runToTrapCommand());
+        operatorController.y().toggleOnTrue(magicTrapCommand);
+        // operatorController.y().onTrue(pivot.runToTrapCommand());
 
         // ==================== //
         /* EMERGENCY CONTROLLER */
@@ -485,9 +445,22 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
+    /* Generate Smart Infeed Command */
+    private Command smartInfeedCommand() {
+        return infeed.runMotorCommand(INFEED_VBUS)
+                .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
+                .repeatedly().until(conveyor.hasInfedSupplier())
+                .andThen(infeed.runMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
+                        .repeatedly().withTimeout(0.1))
+                .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
+                        .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
+                                .alongWith(infeed.runMotorCommand(0.))))
+                .andThen(shooter.spinMotorLeftCommand(0.));
+    }
+
     /* Run both Conveyor and Infeed */
     private Command runBoth(double conveyorVbus, double infeedVbus) {
-        return /* infeed.runMotorCommand(infeedVbus).alongWith */(conveyor.runMotorCommand(conveyorVbus));
+        return infeed.runMotorCommand(infeedVbus).alongWith(conveyor.runMotorCommand(conveyorVbus));
     }
 
     /* Run both Conveyor and Infeed */
@@ -495,28 +468,26 @@ public class RobotContainer {
         return new FunctionalCommand(() -> {
         },
                 () -> {
-                    // infeed.runMotor(infeedVbus.get());
+                    infeed.runMotor(infeedVbus.get());
                     conveyor.runMotor(conveyorVbus.get());
                     shooter.spinMotorRight(0.3 * shooterVbus.get());
                     shooter.spinMotorLeft(0.3 * shooterVbus.get());
                 },
                 (z) -> shooter.stop(),
                 () -> false,
-                /* infeed, */ conveyor);
+                infeed, conveyor);
     }
 
     /* Auton Command */
     public Command getAutonomousCommand() {
-        return Commands.none();
-        // return new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d()))
-        // .andThen(NamedCommands.getCommand("zeroApril"))
-        // .andThen(autonChooser.getSelected());
+        return new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d()))
+                .andThen(NamedCommands.getCommand("zeroApril"))
+                .andThen(autonChooser.getSelected());
     }
 
     /* Zeroing Command */
     public Command zeroCommand() {
         return climber.zeroCommand().andThen(pivot.zeroCommand());
-        // return pivot.zeroCommand();
     }
 
     /* Asynchronous Zero */
@@ -542,11 +513,11 @@ public class RobotContainer {
     public void logValues() {
         drivetrain.logValues();
         conveyor.logValues();
-        // infeed.logValues();
+        infeed.logValues();
         shooter.logValues();
         climber.logValues();
         pivot.logValues();
-        // m_fan.logValues();
+        m_fan.logValues();
     }
 
     // ================ //

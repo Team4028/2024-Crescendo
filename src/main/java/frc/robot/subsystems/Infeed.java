@@ -27,12 +27,6 @@ public class Infeed extends SubsystemBase {
     private final DataLog log;
     private final DoubleLogEntry currentLog, velocityLog;
 
-    private static final int SUPPLY_CURRENT_LIMIT = 50;
-    private static final int STATOR_CURRENT_LIMIT = 90;
-
-    // private static final int ENCODER_MESURMENT_PERIOD = 16;
-    // private static final int ENCODER_AVG_DEPTH = 2;
-
     private static final double RANGE_THRESHOLD = 200;
     private static final int CAN_ID = 18;
     private static final int TOF_CAN_ID = 1;
@@ -41,8 +35,8 @@ public class Infeed extends SubsystemBase {
     private static final int[] TOF_ROI = new int[] { 4, 4, 11, 11 };
 
     private final CurrentLimitsConfigs currentLimitsConfigs = new CurrentLimitsConfigs()
-            .withSupplyCurrentLimit(SUPPLY_CURRENT_LIMIT)
-            .withStatorCurrentLimit(STATOR_CURRENT_LIMIT);
+            .withSupplyCurrentLimit(50.)
+            .withStatorCurrentLimit(90.);
 
     private final MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs()
             .withNeutralMode(NeutralModeValue.Brake);
@@ -53,25 +47,9 @@ public class Infeed extends SubsystemBase {
         // motor.restoreFactoryDefaults();
 
         motor.setInverted(true);
-        // motor.setSmartCurrentLimit(CURRENT_LIMIT);
+
         motor.getConfigurator().apply(currentLimitsConfigs);
-
         motor.getConfigurator().apply(motorOutputConfigs);
-
-        // motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 20);
-        // motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
-        // motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);
-        // motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 101);
-        // motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 102);
-        // motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 103);
-        // motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
-        // motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
-
-        // encoder = motor.getEncoder();
-        // encoder.setMeasurementPeriod(ENCODER_MESURMENT_PERIOD);
-        // encoder.setAverageDepth(ENCODER_AVG_DEPTH);
-
-        // motor.burnFlash();
 
         tofSensor = new TimeOfFlight(TOF_CAN_ID);
 
