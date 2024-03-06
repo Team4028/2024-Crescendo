@@ -8,47 +8,29 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.999999999999999,
-        "y": 5.75
+        "x": 7.931126061682322,
+        "y": 5.035263028018934
       },
       "isLocked": false,
       "linkedName": "3p2"
     },
     {
       "anchor": {
-        "x": 4.991222307694258,
-        "y": 6.663465994549679
+        "x": 8.0,
+        "y": 4.1
       },
       "prevControl": {
-        "x": 6.759558626107267,
-        "y": 6.335562571267796
+        "x": 7.0,
+        "y": 4.1
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "3pshoot"
+      "linkedName": "3+p3"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
-  "eventMarkers": [
-    {
-      "name": "startShooter",
-      "waypointRelativePos": 0.5,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "2.5StartShooter"
-              }
-            }
-          ]
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -57,7 +39,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 13.298570330494222,
+    "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,

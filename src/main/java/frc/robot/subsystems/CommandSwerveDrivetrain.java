@@ -63,7 +63,8 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         private static final double kMaxAngAccel = 1.5 * Math.PI;
     }
 
-    public DoubleLogEntry currentFL, currentFR, currentBL, currentBR, velocityFL, velocityFR, velocityBL, velocityBR, vBusFL, vBusFR, vBusBL,
+    public DoubleLogEntry currentFL, currentFR, currentBL, currentBR, velocityFL, velocityFR, velocityBL, velocityBR,
+            vBusFL, vBusFR, vBusBL,
             vBusBR;
 
     private final SwerveRequest.ApplyChassisSpeeds autoRequest = new SwerveRequest.ApplyChassisSpeeds();
@@ -254,29 +255,33 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
 
     public void logValues() {
         // for (var mod : Modules) {
-        //     TalonFX motor = mod.getDriveMotor();
-        //     switch (motor.getDeviceID()) {
-        //         case TunerConstants.kFrontLeftDriveMotorId:
-        //             currentFL.append(motor.getSupplyCurrent().getValueAsDouble());
-        //             velocityFL.append(motor.getVelocity().getValueAsDouble());
-        //             vBusFL.append(motor.getMotorVoltage().getValueAsDouble() / RobotController.getBatteryVoltage());
-        //             break;
-        //         case TunerConstants.kFrontRightDriveMotorId:
-        //             currentFR.append(motor.getSupplyCurrent().getValueAsDouble());
-        //             velocityFR.append(motor.getVelocity().getValueAsDouble());
-        //             vBusFR.append(motor.getMotorVoltage().getValueAsDouble() / RobotController.getBatteryVoltage());
-        //             break;
-        //         case TunerConstants.kBackLeftDriveMotorId:
-        //             currentBL.append(motor.getSupplyCurrent().getValueAsDouble());
-        //             velocityBL.append(motor.getVelocity().getValueAsDouble());
-        //             vBusBL.append(motor.getMotorVoltage().getValueAsDouble() / RobotController.getBatteryVoltage());
-        //             break;
-        //         case TunerConstants.kBackRightDriveMotorId:
-        //             currentBR.append(motor.getSupplyCurrent().getValueAsDouble());
-        //             velocityBR.append(motor.getVelocity().getValueAsDouble());
-        //             vBusBR.append(motor.getMotorVoltage().getValueAsDouble() / RobotController.getBatteryVoltage());
-        //             break;
-        //     }
+        // TalonFX motor = mod.getDriveMotor();
+        // switch (motor.getDeviceID()) {
+        // case TunerConstants.kFrontLeftDriveMotorId:
+        // currentFL.append(motor.getSupplyCurrent().getValueAsDouble());
+        // velocityFL.append(motor.getVelocity().getValueAsDouble());
+        // vBusFL.append(motor.getMotorVoltage().getValueAsDouble() /
+        // RobotController.getBatteryVoltage());
+        // break;
+        // case TunerConstants.kFrontRightDriveMotorId:
+        // currentFR.append(motor.getSupplyCurrent().getValueAsDouble());
+        // velocityFR.append(motor.getVelocity().getValueAsDouble());
+        // vBusFR.append(motor.getMotorVoltage().getValueAsDouble() /
+        // RobotController.getBatteryVoltage());
+        // break;
+        // case TunerConstants.kBackLeftDriveMotorId:
+        // currentBL.append(motor.getSupplyCurrent().getValueAsDouble());
+        // velocityBL.append(motor.getVelocity().getValueAsDouble());
+        // vBusBL.append(motor.getMotorVoltage().getValueAsDouble() /
+        // RobotController.getBatteryVoltage());
+        // break;
+        // case TunerConstants.kBackRightDriveMotorId:
+        // currentBR.append(motor.getSupplyCurrent().getValueAsDouble());
+        // velocityBR.append(motor.getVelocity().getValueAsDouble());
+        // vBusBR.append(motor.getMotorVoltage().getValueAsDouble() /
+        // RobotController.getBatteryVoltage());
+        // break;
+        // }
         // }
     }
 
@@ -316,7 +321,8 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 if (field.getName().contains("currentF") || field.getName().contains("currentB"))
                     field.set(this, new DoubleLogEntry(log, "/" + field.getName().replace("current", "") + "/current"));
                 else if (field.getName().contains("velocityF") || field.getName().contains("velocityB"))
-                    field.set(this, new DoubleLogEntry(log, "/" + field.getName().replace("velocity", "") + "/velocity"));
+                    field.set(this,
+                            new DoubleLogEntry(log, "/" + field.getName().replace("velocity", "") + "/velocity"));
                 else if (field.getName().contains("vBusF") || field.getName().contains("vBusB"))
                     field.set(this, new DoubleLogEntry(log, "/" + field.getName().replace("vBus", "") + "/vBus"));
             }

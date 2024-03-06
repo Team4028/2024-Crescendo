@@ -11,9 +11,11 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,6 +25,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Climber extends SubsystemBase {
     /** Creates a new Climber. */
     private final TalonFX motor;
+    private final DutyCycleEncoder encoder;
+
     private final DataLog log;
     private final DoubleLogEntry vbusLog, currentLog, positionLog, velocityLog;
 
@@ -30,20 +34,25 @@ public class Climber extends SubsystemBase {
 
     private static final double ZERO_TIMER_THRESHOLD = 0.2; // 10 scans
     private static final double ZERO_CURRENT_THRESHOLD = 4.5;
+
+    private boolean oneShot = false;
+
     private static final double ZERO_VBUS = -0.1;
+    private static final double ZERO_ABSOLUTE_ENCODER_POSITION = .447;
+    private static final double ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT = 390.6;
 
     private static final int CAN_ID = 15;
 
     /* Configs */
     private final Slot0Configs pidConfigs = new Slot0Configs()
-            .withKP(2.)
+            .withKP(0.66)
             .withKI(0.0)
             .withKD(0.0); // needs tuning
 
     private final MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(20.)
-            .withMotionMagicAcceleration(40.)
-            .withMotionMagicJerk(400.);
+            .withMotionMagicCruiseVelocity(40.)
+            .withMotionMagicAcceleration(80.)
+            .withMotionMagicJerk(800.);
 
     private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(100.)
@@ -60,11 +69,11 @@ public class Climber extends SubsystemBase {
 
     // TODO: these are incorrect rn
     public enum ClimberPositions {
-        CLIMB(-1.),
-        HOME(1.),
-        DOWN_ONE(100.),
-        DOWN_TWO(80.),
-        READY(135.);
+        CLIMB(-4.),
+        HOME(0.),
+        DOWN_ONE(156.),
+        DOWN_TWO(125.),
+        READY(175.);
 
         public double Position;
 
@@ -75,6 +84,7 @@ public class Climber extends SubsystemBase {
 
     public Climber() {
         motor = new TalonFX(CAN_ID);
+        encoder = new DutyCycleEncoder(9);
 
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setInverted(true);
@@ -103,6 +113,10 @@ public class Climber extends SubsystemBase {
         return runOnce(() -> runMotor(vBus));
     }
 
+    public Command setEncoderZeroCmd() {
+        return runOnce(() -> motor.setPosition(0.0));
+    }
+
     public Command zeroCommand() {
         return runOnce(() -> {
             zeroTimer.restart();
@@ -115,6 +129,8 @@ public class Climber extends SubsystemBase {
                         Commands.runOnce(() -> motor.setPosition(0.0)));
     }
 
+
+    
     public void runToPosition(double position) {
         motor.setControl(positionRequest.withPosition(position));
     }
@@ -144,9 +160,16 @@ public class Climber extends SubsystemBase {
 
     @Override
     public void periodic() {
+        if (!oneShot) {
+            motor.setPosition((encoder.getAbsolutePosition() - ZERO_ABSOLUTE_ENCODER_POSITION)
+                    * ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT);
+            oneShot = true;
+        }
+
         // // This method will be called once per scheduler run
         SmartDashboard.putNumber("Climber Position", motor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Climber Current", motor.getStatorCurrent().getValueAsDouble());
         SmartDashboard.putNumber("Climber Velocity", motor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("Abs Endocer Pos", encoder.getAbsolutePosition());
     }
 }

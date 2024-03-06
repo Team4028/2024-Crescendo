@@ -52,6 +52,7 @@ import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Whippy;
+import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
