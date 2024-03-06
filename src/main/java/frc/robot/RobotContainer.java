@@ -40,7 +40,7 @@ import frc.robot.commands.Autons.StartPoses;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.generated.TunerConstants;
 
-import frc.robot.subsystems.Climber;
+// import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
 // import frc.robot.subsystems.Fan;
@@ -48,7 +48,7 @@ import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Vision;
-import frc.robot.subsystems.Climber.ClimberPositions;
+// import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
@@ -83,7 +83,7 @@ public class RobotContainer {
     private final Infeed infeed = new Infeed();
     private final Shooter shooter = new Shooter();
     private final Conveyor conveyor = new Conveyor();
-    private final Climber climber = new Climber();
+    // private final Climber climber = new Climber();
     private final Autons autons;
     private final Pivot pivot = new Pivot();
     // private final Fan fan = new Fan();
@@ -230,7 +230,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Note 4",
                 drivetrain.pathFindCommand(new Pose2d(3.66, 6.93, Rotation2d.fromDegrees(70.)), 0.75, 0));
 
-        NamedCommands.registerCommand("Note 4 Right", 
+        NamedCommands.registerCommand("Note 4 Right",
                 drivetrain.pathFindCommand(new Pose2d(3.66, 1.2, Rotation2d.fromDegrees(-70.)), 0.75, 0));
 
         NamedCommands.registerCommand("follow2pchoice",
@@ -239,6 +239,8 @@ public class RobotContainer {
                         () -> true));
 
         NamedCommands.registerCommand("Wait For Shooter", Commands.waitUntil(shooterAndPivotReady()));
+
+        NamedCommands.registerCommand("4 piece align pivot", pivot.runToPositionCommand(2.5));
 
         /*
          * Spin up Shooter
@@ -336,17 +338,17 @@ public class RobotContainer {
         /* Zero Climber & Pivot */
         // driverController.y().and(driverController.povCenter()).onTrue(pivot.zeroCommand());
 
-        /* Run Climber to "Home" */
-        driverController.y().and(driverController.povDown())
-                .onTrue(climber.climbCommand());
+        // /* Run Climber to "Home" */
+        // driverController.y().and(driverController.povDown())
+        //         .onTrue(climber.climbCommand());
 
-        /* Run Climber to "Down One" */
-        driverController.y().and(driverController.povLeft())
-                .onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_ONE));
+        // /* Run Climber to "Down One" */
+        // driverController.y().and(driverController.povLeft())
+        //         .onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_ONE));
 
-        /* Run Climber to "Down One" */
-        driverController.y().and(driverController.povRight())
-                .onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
+        // /* Run Climber to "Down One" */
+        // driverController.y().and(driverController.povRight())
+        //         .onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
 
         // TODO: change this to a toggle that runs forever until you stop, and add a
         // robot-relative mode
@@ -360,10 +362,10 @@ public class RobotContainer {
         // () -> xLimeAquireLimiter.calculate(0.8), drivetrain));
 
         /* Run Climber to "Ready" */
-        driverController.y().and(driverController.povUp())
-                .onTrue(pivot.runToPositionCommand(Pivot.CLIMB_POSITION).andThen(
-                        Commands.waitUntil(pivot.inPositionSupplier()))
-                        .andThen(climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+        // driverController.y().and(driverController.povUp())
+        //         .onTrue(pivot.runToPositionCommand(Pivot.CLIMB_POSITION).andThen(
+        //                 Commands.waitUntil(pivot.inPositionSupplier()))
+        //                 .andThen(climber.runToPositionCommand(Climber.ClimberPositions.READY)));
 
         // ========================== //
         /* Drivetain & Vision Control */
@@ -399,10 +401,10 @@ public class RobotContainer {
         // =================== //
 
         /* Manual Climber Control */
-        operatorController.rightBumper().onTrue(climber.runMotorCommand(CLIMBER_VBUS))
-                .onFalse(climber.runMotorCommand(0.0));
-        operatorController.leftBumper().onTrue(climber.runMotorCommand(-CLIMBER_VBUS))
-                .onFalse(climber.runMotorCommand(0.0));
+        // operatorController.rightBumper().onTrue(climber.runMotorCommand(CLIMBER_VBUS))
+        //         .onFalse(climber.runMotorCommand(0.0));
+        // operatorController.leftBumper().onTrue(climber.runMotorCommand(-CLIMBER_VBUS))
+        //         .onFalse(climber.runMotorCommand(0.0));
 
         operatorController.a().toggleOnTrue(new RotateToSpeaker(drivetrain));
 
@@ -424,21 +426,23 @@ public class RobotContainer {
                 .andThen(new WaitCommand(2))
                 .andThen(pivot.runToPositionCommand(Pivot.TRAP_POSITION))
                 .alongWith(new WaitCommand(1))
+                .andThen(smartInfeedCommand())
+                .alongWith(new WaitCommand(1))
                 .andThen(shooter.run(() -> {
                     shooter.setLeftToVel(1300);
                     shooter.setRightToVel(1300);
                 }).withTimeout(4)
+                        .andThen(conveyor.runXRotations(20))
                         .andThen(shooter.runOnce(() -> {
                             shooter.setLeftToVel(0);
                             shooter.setRightToVel(0);
                         }))
-                        .alongWith(new WaitCommand(2)
-                                .andThen(conveyor.runXRotations(20))))
+                        .alongWith(new WaitCommand(2)))
                 .andThen(pivot.runToPositionCommand(.5)));
 
         operatorController.back().onTrue(Commands.runOnce(() -> getBestSTEntry()));
 
-        operatorController.start().onTrue(climber.runToPositionCommand(ClimberPositions.HOME));
+        // operatorController.start().onTrue(climber.runToPositionCommand(ClimberPositions.HOME));
 
         operatorController.povDown().whileTrue(
                 shooter.startEnd(
@@ -523,7 +527,7 @@ public class RobotContainer {
         conveyor.logValues();
         infeed.logValues();
         shooter.logValues();
-        climber.logValues();
+        // climber.logValues();
         pivot.logValues();
         // m_fan.logValues();
     }

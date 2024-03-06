@@ -32,12 +32,12 @@
     },
     {
       "anchor": {
-        "x": 1.4,
-        "y": 6.1
+        "x": 3.5903725964221542,
+        "y": 6.2
       },
       "prevControl": {
-        "x": 2.3999999999999995,
-        "y": 6.1
+        "x": 4.590372596422149,
+        "y": 6.2
       },
       "nextControl": null,
       "isLocked": false,
@@ -54,12 +54,18 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Start Shooter",
-      "waypointRelativePos": 0,
+      "name": "Fix Note + Start Shooter",
+      "waypointRelativePos": 0.0,
       "command": {
-        "type": "parallel",
+        "type": "sequential",
         "data": {
           "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Smart Infeed"
+              }
+            },
             {
               "type": "named",
               "data": {

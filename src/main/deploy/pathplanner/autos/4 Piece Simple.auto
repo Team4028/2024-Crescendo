@@ -18,6 +18,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "4 piece align pivot"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [

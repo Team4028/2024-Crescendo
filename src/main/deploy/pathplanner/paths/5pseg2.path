@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "Stop Shooter",
-      "waypointRelativePos": 0,
+      "waypointRelativePos": 0.45,
       "command": {
         "type": "parallel",
         "data": {
