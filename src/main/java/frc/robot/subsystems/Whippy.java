@@ -20,6 +20,7 @@ public class Whippy extends SubsystemBase {
 
     public Whippy() {
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
+        motor.setInverted(true);
         motor.setSmartCurrentLimit(CURRENT_LIMIT);
     }
 
@@ -29,6 +30,14 @@ public class Whippy extends SubsystemBase {
 
     public Command whippyWheelsCommand(double vbus) {
         return runOnce(() -> whippyWheels(vbus));
+    }
+
+    public void stop() {
+        whippyWheels(0.);
+    }
+
+    public Command stopCommand() {
+        return whippyWheelsCommand(0.);
     }
 
     @Override
