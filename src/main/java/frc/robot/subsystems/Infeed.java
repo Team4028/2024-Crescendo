@@ -9,6 +9,7 @@ import java.util.function.BooleanSupplier;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.playingwithfusion.TimeOfFlight;
 import com.playingwithfusion.TimeOfFlight.RangingMode;
@@ -39,14 +40,15 @@ public class Infeed extends SubsystemBase {
             .withStatorCurrentLimit(90.);
 
     private final MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs()
-            .withNeutralMode(NeutralModeValue.Brake);
+            .withNeutralMode(NeutralModeValue.Brake)
+            .withInverted(InvertedValue.Clockwise_Positive);
 
     /** Creates a new SensorMotor. */
     public Infeed() {
         motor = new TalonFX(CAN_ID);
         // motor.restoreFactoryDefaults();
 
-        motor.setInverted(true);
+        // motor.setInverted(true);
 
         motor.getConfigurator().apply(currentLimitsConfigs);
         motor.getConfigurator().apply(motorOutputConfigs);

@@ -410,8 +410,12 @@ public class RobotContainer {
         /* Misc */
         // ==== //
 
+        /* whippyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy */
+        emergencyController.a().onTrue(whippy.whippyWheelsCommand(WHIPPY_VBUS))
+                .onFalse(whippy.stopCommand());
+
         /* TrapStar 5000 */
-        emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS));
+        emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS)).onFalse(m_fan.stopCommand());
 
         /* ST test */
         emergencyController.back().onTrue(Commands.runOnce(() -> getBestSTEntry()));
