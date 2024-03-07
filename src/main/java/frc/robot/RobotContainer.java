@@ -98,6 +98,7 @@ public class RobotContainer {
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
+    private final Vision tarpVision = new Vision("Trap_AprilTag_Camera", Vision.TRAP_ROBOT_TO_CAMERA);
 
     // ====================== //
     /* Auton & Other Commands */

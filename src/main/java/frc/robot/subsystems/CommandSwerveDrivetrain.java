@@ -36,9 +36,12 @@ import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog.State;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants;
 import frc.robot.SwerveVoltRequest;
 import frc.robot.generated.TunerConstants;
-
+import frc.robot.subsystems.Shooter.ShotSpeeds;
+import frc.robot.utils.ShooterTable;
+import frc.robot.commands.AlignDrivetrain;
 // FIXME: extract out magic numbers & fixup logging
 // TODO: general clean up
 
@@ -201,6 +204,20 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         return AutoBuilder.pathfindThenFollowPath(
                 path,
                 constraints);
+    }
+
+    public Command lineUpToTrap(Shooter shooter, Conveyor conveyor, Vision vision, int tagID) {
+        return new AlignDrivetrain(this, () -> 0, () -> {
+            var yaw = vision.getTagYaw(tagID);
+            return yaw.isPresent() ? yaw.get() : 0.0;
+        }).andThen(shooter.runEntryCommand(() -> {
+            var dist = vision.getTagDistance(tagID);
+            if (dist.isEmpty())
+                throw new RuntimeException("Could not find tag id " + tagID + " dist");
+            return ShooterTable.calcShooterTableEntry(Units.Meters.of(dist.isPresent() ? dist.get() : 0.0));
+        }, () -> ShotSpeeds.TRAP))
+                .andThen(pathFindCommand(Constants.LEFT_TRAP_TARGET, 0.2, 0))
+                .andThen(conveyor.runXRotations(20));
     }
 
     public Command addMeasurementCommand(Supplier<Pose2d> measurement, Supplier<Double> timeStamp) {

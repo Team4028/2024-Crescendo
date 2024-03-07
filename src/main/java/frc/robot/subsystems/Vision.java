@@ -34,6 +34,8 @@ public class Vision extends SubsystemBase {
             new Rotation3d(0., Units.degreesToRadians(28.125),
                     Units.degreesToRadians(150.)));
 
+    public static final Transform3d TRAP_ROBOT_TO_CAMERA = new Transform3d();
+
     // "2.5": 44 in (14 in)
     // "5.5": 80 in (14 in)
     // "7.5": 104 in (14 in)
