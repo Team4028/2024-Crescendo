@@ -294,7 +294,7 @@ public class RobotContainer {
         // ========================== //
         /* Drivetain & Vision Control */
         // ========================== //
-        
+
         /* X-Drive */
         driverController.x().whileTrue(drivetrain.applyRequest(() -> xDrive));
 
@@ -370,15 +370,18 @@ public class RobotContainer {
         operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
 
         /* Run Climber to "Ready" */
-        operatorController.povUp().onTrue(pivot.runToClimbCommand().andThen(
-                Commands.waitUntil(pivot.inPositionSupplier()),
-                climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+        operatorController.povUp().onTrue(/*
+                                           * pivot.runToClimbCommand().andThen(
+                                           * Commands.waitUntil(pivot.inPositionSupplier()),
+                                           */
+                climber.runToPositionCommand(Climber.ClimberPositions.READY));
 
         // ================ //
         /* Amp & Trap Magic */
         // ================ //
 
-        operatorController.b().toggleOnTrue(magicAmpCommand);
+        // operatorController.b().toggleOnTrue(magicAmpCommand);
+        operatorController.b().onTrue(shooter.runShotCommand(ShotSpeeds.AMP)).onFalse(shooter.stopCommand());
 
         operatorController.y().toggleOnTrue(magicTrapCommand);
         // operatorController.y().onTrue(pivot.runToTrapCommand());
@@ -393,11 +396,11 @@ public class RobotContainer {
 
         /* Bump Pivot Up */
         emergencyController.rightBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 0.5)));
+                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 2)));
 
         /* Bump Pivot Down */
         emergencyController.leftBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 0.5)));
+                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 2)));
 
         // ============================== //
         /* Manual Climber/Outfeed Control */
@@ -498,7 +501,7 @@ public class RobotContainer {
 
     /* Zeroing Command */
     public Command zeroCommand() {
-        return climber.zeroCommand().andThen(pivot.zeroCommand());
+        return pivot.zeroCommand();
     }
 
     /* Asynchronous Zero */

@@ -16,10 +16,8 @@ import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Climber extends SubsystemBase {
@@ -30,14 +28,8 @@ public class Climber extends SubsystemBase {
     private final DataLog log;
     private final DoubleLogEntry vbusLog, currentLog, positionLog, velocityLog;
 
-    private final Timer zeroTimer;
-
-    private static final double ZERO_TIMER_THRESHOLD = 0.2; // 10 scans
-    private static final double ZERO_CURRENT_THRESHOLD = 4.5;
-
     private boolean oneShot = false;
 
-    private static final double ZERO_VBUS = -0.1;
     private static final double ZERO_ABSOLUTE_ENCODER_POSITION = .447;
     private static final double ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT = 390.6;
 
@@ -67,13 +59,12 @@ public class Climber extends SubsystemBase {
             .withEnableFOC(true)
             .withOverrideBrakeDurNeutral(true);
 
-    // TODO: these are incorrect rn
     public enum ClimberPositions {
-        CLIMB(-4.),
+        CLIMB(-11.),
         HOME(0.),
-        DOWN_ONE(156.),
-        DOWN_TWO(125.),
-        READY(175.);
+        DOWN_ONE(122.),
+        DOWN_TWO(115.), // unused
+        READY(169.);
 
         public double Position;
 
@@ -96,8 +87,6 @@ public class Climber extends SubsystemBase {
         motor.getConfigurator().apply(pidConfigs);
         motor.getConfigurator().apply(currentConfigs);
 
-        zeroTimer = new Timer();
-
         log = DataLogManager.getLog();
         vbusLog = new DoubleLogEntry(log, "/Climber/Vbus");
         currentLog = new DoubleLogEntry(log, "/Climber/Current");
@@ -117,20 +106,6 @@ public class Climber extends SubsystemBase {
         return runOnce(() -> motor.setPosition(0.0));
     }
 
-    public Command zeroCommand() {
-        return runOnce(() -> {
-            zeroTimer.restart();
-        })
-                .andThen(runMotorCommand(ZERO_VBUS).repeatedly()
-                        .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
-                                && Math.abs(motor.getStatorCurrent().getValueAsDouble()) > ZERO_CURRENT_THRESHOLD))
-                .andThen(runMotorCommand(0.),
-                        Commands.runOnce(() -> zeroTimer.stop()),
-                        Commands.runOnce(() -> motor.setPosition(0.0)));
-    }
-
-
-    
     public void runToPosition(double position) {
         motor.setControl(positionRequest.withPosition(position));
     }
