@@ -296,7 +296,7 @@ public class RobotContainer {
         // ========================== //
         
         /* X-Drive */
-        driverController.x().whileTrue(drivetrain.applyRequest(() ->xDrive));
+        driverController.x().whileTrue(drivetrain.applyRequest(() -> xDrive));
 
         /* Reset Field-Centric Heading */
         driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
