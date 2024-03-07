@@ -427,11 +427,11 @@ public class RobotContainer {
 
         /* Bump Pivot Up */
         emergencyController.rightBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 0.5)));
+                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 2)));
 
         /* Bump Pivot Down */
         emergencyController.leftBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 0.5)));
+                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 2)));
 
         // ============================== //
         /* Manual Climber/Outfeed Control */
@@ -474,11 +474,11 @@ public class RobotContainer {
                                 () -> -emergencyController.getRightY(),
                                 () -> emergencyController.getRightY()));
 
-        emergencyController.a().and(emergencyController.povUp()).onTrue(pivot.runQuasi(Direction.kForward));
-        emergencyController.a().and(emergencyController.povDown()).onTrue(pivot.runQuasi(Direction.kReverse));
+        emergencyController.a().and(emergencyController.povUp()).whileTrue(pivot.runQuasi(Direction.kForward)).onFalse(pivot.runMotorCommand(0.));
+        emergencyController.a().and(emergencyController.povDown()).whileTrue(pivot.runQuasi(Direction.kReverse)).onFalse(pivot.runMotorCommand(0.));
                 
-        emergencyController.b().and(emergencyController.povUp()).onTrue(pivot.runDyn(Direction.kForward));
-        emergencyController.b().and(emergencyController.povDown()).onTrue(pivot.runDyn(Direction.kReverse));
+        emergencyController.b().and(emergencyController.povUp()).whileTrue(pivot.runDyn(Direction.kForward)).onFalse(pivot.runMotorCommand(0.));
+        emergencyController.b().and(emergencyController.povDown()).whileTrue(pivot.runDyn(Direction.kReverse)).onFalse(pivot.runMotorCommand(0.));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -522,8 +522,8 @@ public class RobotContainer {
 
     /* Zeroing Command */
     public Command zeroCommand() {
-        return climber.zeroCommand().andThen(pivot.zeroCommand());
-        // return pivot.zeroCommand();
+        // return climber.zeroCommand().andThen(pivot.zeroCommand());
+        return pivot.zeroCommand();
     }
 
     /* Asynchronous Zero */

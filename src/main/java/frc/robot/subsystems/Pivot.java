@@ -243,7 +243,7 @@ public class Pivot extends SubsystemBase {
         SmartDashboard.putNumber("Pivot Current", motor.getOutputCurrent());
         SmartDashboard.putNumber("Pivot Target", targetPosition);
 
-        pid.setReference(targetPosition, ControlType.kPosition, 0, armFF.calculate(
-                convertEncoderToRadians(encoder.getPosition()), convertEncoderToRadians(encoder.getVelocity())));
+        // pid.setReference(targetPosition, ControlType.kPosition, 0, armFF.calculate(
+        //         convertEncoderToRadians(encoder.getPosition()), convertEncoderToRadians(encoder.getVelocity())));
     }
 }
