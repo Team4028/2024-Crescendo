@@ -9,6 +9,8 @@ import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
+
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Voltage;
@@ -24,11 +26,22 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants;
 
 public class Pivot extends SubsystemBase {
+
+    public static class ConversionConstants {
+        public static final double SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT = 5.5;
+        public static final double SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT = 19.5;
+        public static final double LINEAR_ACTUATOR_INITIAL_LENGTH = 17;
+        public static final double LINEAR_ACTUATOR_REDUCTION = 4.0;
+        public static final double LINEAR_ACTUATOR_ROTATIONS_TO_INCHES_SCALAR = 0.472;
+    }
+
     private final CANSparkMax motor;
     private final RelativeEncoder encoder;
     private final SparkPIDController pid;
+    private final ArmFeedforward armFF;
     private final SysIdRoutine sysIdRoutine;
 
     private final DataLog log;
@@ -47,6 +60,8 @@ public class Pivot extends SubsystemBase {
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
     public final static double TRAP_POSITION = 42.;
+
+    private final static double ANGULAR_CANSTANT = 0.9123; // rad
 
     /* PID */
     private class PIDConstants {
@@ -76,6 +91,8 @@ public class Pivot extends SubsystemBase {
         encoder = motor.getEncoder();
         pid = motor.getPIDController();
         pid.setFeedbackDevice(encoder);
+
+        armFF = new ArmFeedforward(0, 0, 0);
 
         // Logging *Wo-HO!!
         log = DataLogManager.getLog();
@@ -133,13 +150,19 @@ public class Pivot extends SubsystemBase {
     }
 
     private double convertEncoderToRadians(double encoder) {
-        double sideA = 1.0;
-        double sideB = 14.0;
-        double sideC = (encoder / 4.0 * 0.472) + 12.0;
+        double sideC = (encoder / ConversionConstants.LINEAR_ACTUATOR_REDUCTION
+                * ConversionConstants.LINEAR_ACTUATOR_ROTATIONS_TO_INCHES_SCALAR)
+                + ConversionConstants.LINEAR_ACTUATOR_INITIAL_LENGTH;
 
-        double angle = Math.acos((sideA * sideA + sideB * sideB - sideC * sideC) / (2 * sideA * sideB));
+        double angle = Math.acos((ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                + ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
+                        * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
+                - sideC * sideC)
+                / (2 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                        * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT));
 
-        return angle;
+        return angle - ANGULAR_CANSTANT;
     }
     // ==================================
     // PIVOT COMMANDS
@@ -210,14 +233,17 @@ public class Pivot extends SubsystemBase {
     public void logValues() {
         currentLog.append(motor.getOutputCurrent());
         voltageLog.append(motor.getAppliedOutput() * motor.getBusVoltage());
-        velocityLog.append(encoder.getVelocity());
-        positionLog.append(getPosition());
+        velocityLog.append(convertEncoderToRadians(encoder.getVelocity()));
+        positionLog.append(convertEncoderToRadians(getPosition()));
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Pivot Position", getPosition());
+        SmartDashboard.putNumber("Pivot Position", convertEncoderToRadians(getPosition()));
         SmartDashboard.putNumber("Pivot Current", motor.getOutputCurrent());
         SmartDashboard.putNumber("Pivot Target", targetPosition);
+
+        pid.setReference(targetPosition, ControlType.kPosition, 0, armFF.calculate(
+                convertEncoderToRadians(encoder.getPosition()), convertEncoderToRadians(encoder.getVelocity())));
     }
 }
