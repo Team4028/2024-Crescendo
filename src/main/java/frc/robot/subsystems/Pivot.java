@@ -200,17 +200,27 @@ public class Pivot extends SubsystemBase {
                                                                                                     // nonlinear
 
         // ab
-        double ab = ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT;
+        // double ab = ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+        // * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT;
 
         // c
-        double c = extension;
+        // double c = extension;
 
-        double sine = Math.sin(convertEncoderToRadians(pos));
+        // ===================
+        //  Alternate method
+        // ===================
 
-        double dTheta_dt = (c * vel * scalar) / (ab * sine);
+        double sine = Math.sin(convertEncoderToRadians(pos) + INCIDENT_OFFSET); // add incident offset to get full
+                                                                                // angle, as we subtract incident offset
+                                                                                // in convertEncoderToRadians
 
-        SmartDashboard.putNumber("Alternate dTheta", dTheta_dt);
+        double velRadPerTime = (extension * vel * scalar) / (ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT * sine);
+
+        SmartDashboard.putNumber("Alternate dTheta", velRadPerTime);
+        // ========================
+        //   End Alternate method
+        // ========================
 
         return (scalar * extension * vel)
                 / (ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
