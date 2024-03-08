@@ -117,15 +117,14 @@ public class RobotContainer {
 
     private static final double MAX_SPEED = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top
                                                                                // speed
-    private static final double MAX_ANGULAR_SPEED = 1.5 * Math.PI; // 3/4 of a rotation per second max angular
-                                                                   // velocity
+    private static final double MAX_ANGULAR_SPEED = 4 * Math.PI; // 2rps
     private static final double BASE_SPEED = 0.25;
 
     // ======================== //
     /* Swerve Control & Logging */
     // ======================== //
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MAX_SPEED * 0.05).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.05) // Add a 50%
+            .withDeadband(MAX_SPEED * 0.02).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.01) // Add a 50%
                                                                                              // deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                      // driving in open loop
@@ -268,7 +267,7 @@ public class RobotContainer {
                         .withRotationalRate(
                                 scaleDriverController(-driverController.getRightX(),
                                         thetaLimiter, BASE_SPEED) *
-                                        MAX_SPEED)));
+                                        MAX_ANGULAR_SPEED)));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runMotorCommand(0.));
