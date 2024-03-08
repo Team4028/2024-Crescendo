@@ -209,10 +209,10 @@ public class Pivot extends SubsystemBase {
                                         + ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
                                                 * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
                                         - extension * extension, 2)
-                                / 4 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                                / (4 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
                                 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
                                 * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
-                                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT)));
+                                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT))));
     }
 
     // ==================================
