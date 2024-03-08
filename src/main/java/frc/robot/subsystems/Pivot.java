@@ -208,10 +208,9 @@ public class Pivot extends SubsystemBase {
 
         double sine = Math.sin(convertEncoderToRadians(pos));
 
-        double dTheta_dC = c / (ab * sine);
-        double dTheta = dTheta_dC * vel * scalar;
+        double dTheta_dt = (c * vel * scalar) / (ab * sine);
 
-        SmartDashboard.putNumber("Alternate dTheta", dTheta);
+        SmartDashboard.putNumber("Alternate dTheta", dTheta_dt);
 
         return (scalar * extension * vel)
                 / (ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
