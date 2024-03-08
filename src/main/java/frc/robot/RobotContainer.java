@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
@@ -446,6 +447,12 @@ public class RobotContainer {
                                 () -> emergencyController.getRightY(),
                                 () -> -emergencyController.getRightY(),
                                 () -> emergencyController.getRightY()));
+
+        emergencyController.a().and(emergencyController.povUp()).whileTrue(pivot.runQuasi(Direction.kForward)).onFalse(pivot.runMotorCommand(0.));
+        emergencyController.a().and(emergencyController.povDown()).whileTrue(pivot.runQuasi(Direction.kReverse)).onFalse(pivot.runMotorCommand(0.));
+                
+        emergencyController.b().and(emergencyController.povUp()).whileTrue(pivot.runDyn(Direction.kForward)).onFalse(pivot.runMotorCommand(0.));
+        emergencyController.b().and(emergencyController.povDown()).whileTrue(pivot.runDyn(Direction.kReverse)).onFalse(pivot.runMotorCommand(0.));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
