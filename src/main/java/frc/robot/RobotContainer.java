@@ -329,12 +329,15 @@ public class RobotContainer {
         // ======================= //
 
         /* Spin Up Shooter */
+        // operatorController.leftBumper()
+        // .onTrue(Commands.runOnce(() -> {
+        // ShooterTableEntry entry = getBestSTEntry();
+        // shooter.runEntry(entry, ShotSpeeds.FAST);
+        // pivot.runToPosition(entry.angle);
+        // }, shooter, pivot))
+        // .onFalse(shooter.stopCommand());
         operatorController.leftBumper()
-                .onTrue(Commands.runOnce(() -> {
-                    ShooterTableEntry entry = getBestSTEntry();
-                    shooter.runEntry(entry, ShotSpeeds.FAST);
-                    pivot.runToPosition(entry.angle);
-                }, shooter, pivot))
+                .onTrue(shooter.setSlotCommand(Shooter.Slots.FAST).andThen(shooter.runShotCommand(ShotSpeeds.FAST)))
                 .onFalse(shooter.stopCommand());
 
         /* Convey Note */
@@ -384,8 +387,8 @@ public class RobotContainer {
         // operatorController.b().toggleOnTrue(magicAmpCommand);
         operatorController.b().onTrue(shooter.runShotCommand(ShotSpeeds.AMP)).onFalse(shooter.stopCommand());
 
-        operatorController.y().toggleOnTrue(magicTrapCommand);
-        // operatorController.y().onTrue(pivot.runToTrapCommand());
+        // operatorController.y().toggleOnTrue(magicTrapCommand);
+        operatorController.y().onTrue(pivot.runToTrapCommand());
 
         // ==================== //
         /* EMERGENCY CONTROLLER */
@@ -448,11 +451,15 @@ public class RobotContainer {
                                 () -> -emergencyController.getRightY(),
                                 () -> emergencyController.getRightY()));
 
-        emergencyController.a().and(emergencyController.povUp()).whileTrue(pivot.runQuasi(Direction.kForward)).onFalse(pivot.runMotorCommand(0.));
-        emergencyController.a().and(emergencyController.povDown()).whileTrue(pivot.runQuasi(Direction.kReverse)).onFalse(pivot.runMotorCommand(0.));
-                
-        emergencyController.b().and(emergencyController.povUp()).whileTrue(pivot.runDyn(Direction.kForward)).onFalse(pivot.runMotorCommand(0.));
-        emergencyController.b().and(emergencyController.povDown()).whileTrue(pivot.runDyn(Direction.kReverse)).onFalse(pivot.runMotorCommand(0.));
+        emergencyController.a().and(emergencyController.povUp()).whileTrue(pivot.runQuasi(Direction.kForward))
+                .onFalse(pivot.runMotorCommand(0.));
+        emergencyController.a().and(emergencyController.povDown()).whileTrue(pivot.runQuasi(Direction.kReverse))
+                .onFalse(pivot.runMotorCommand(0.));
+
+        emergencyController.b().and(emergencyController.povUp()).whileTrue(pivot.runDyn(Direction.kForward))
+                .onFalse(pivot.runMotorCommand(0.));
+        emergencyController.b().and(emergencyController.povDown()).whileTrue(pivot.runDyn(Direction.kReverse))
+                .onFalse(pivot.runMotorCommand(0.));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
