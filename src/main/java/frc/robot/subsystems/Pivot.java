@@ -9,8 +9,9 @@ import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
+import com.revrobotics.SparkPIDController.ArbFFUnits;
 
-import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Voltage;
@@ -26,13 +27,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants;
 
 public class Pivot extends SubsystemBase {
 
     public static class ConversionConstants {
         public static final double SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT = 5.5;
-        public static final double SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT = 19.5;
+        public static final double SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT = 18;
         public static final double LINEAR_ACTUATOR_INITIAL_LENGTH = 17;
         public static final double LINEAR_ACTUATOR_REDUCTION = 4.0;
         public static final double LINEAR_ACTUATOR_ROTATIONS_TO_INCHES_SCALAR = 0.472;
@@ -41,7 +41,8 @@ public class Pivot extends SubsystemBase {
     private final CANSparkMax motor;
     private final RelativeEncoder encoder;
     private final SparkPIDController pid;
-    private final ArmFeedforward armFF;
+    private final SimpleMotorFeedforward feedforward;
+
     private final SysIdRoutine sysIdRoutine;
 
     private final DataLog log;
@@ -49,8 +50,8 @@ public class Pivot extends SubsystemBase {
     private final StringLogEntry sysIDTestMode;
 
     private final Timer zeroTimer;
-    private final double ZERO_TIMER_THRESHOLD = 0.14; // 7 scans
-    private final double ZERO_VELOCITY_THRESHOLD = 0.8;
+    private final double ZERO_TIMER_THRESHOLD = 0.4; // 7 scans
+    private final double ZERO_VELOCITY_THRESHOLD = 400;
 
     private static final int CAN_ID = 13;
 
@@ -59,15 +60,15 @@ public class Pivot extends SubsystemBase {
 
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
-    public final static double TRAP_POSITION = 42.;
+    public final static double TRAP_POSITION = 55.55;
 
-    private final static double ANGULAR_CANSTANT = 0.9123; // rad
+    private final static double INCIDENT_OFFSET = 0.9123; // rad
 
     /* PID */
     private class PIDConstants {
         // TODO: three different zones
-        private final static double kP = 0.05;
-        private final static double kD = 0.5;
+        private final static double kP = 0.03;
+        private final static double kD = 0.003;
 
         private final static double MIN_OUTPUT = -0.5;
         private final static double MAX_OUTPUT = 0.7;
@@ -92,7 +93,7 @@ public class Pivot extends SubsystemBase {
         pid = motor.getPIDController();
         pid.setFeedbackDevice(encoder);
 
-        armFF = new ArmFeedforward(0, 0, 0);
+        feedforward = new SimpleMotorFeedforward(0.36895, 0.11267, 0.020622);
 
         // Logging *Wo-HO!!
         log = DataLogManager.getLog();
@@ -162,7 +163,7 @@ public class Pivot extends SubsystemBase {
                 / (2 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
                         * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT));
 
-        return angle - ANGULAR_CANSTANT;
+        return angle - INCIDENT_OFFSET;
     }
     // ==================================
     // PIVOT COMMANDS
@@ -233,17 +234,26 @@ public class Pivot extends SubsystemBase {
     public void logValues() {
         currentLog.append(motor.getOutputCurrent());
         voltageLog.append(motor.getAppliedOutput() * motor.getBusVoltage());
-        velocityLog.append(convertEncoderToRadians(encoder.getVelocity()));
-        positionLog.append(convertEncoderToRadians(getPosition()));
+        velocityLog.append(encoder.getVelocity());
+        positionLog.append(getPosition());
     }
 
     @Override
     public void periodic() {
         SmartDashboard.putNumber("Pivot Position", convertEncoderToRadians(getPosition()));
+        SmartDashboard.putNumber("Pivot Native Position", (getPosition()));
         SmartDashboard.putNumber("Pivot Current", motor.getOutputCurrent());
         SmartDashboard.putNumber("Pivot Target", targetPosition);
+        SmartDashboard.putNumber("Pivot Velocity", convertEncoderToRadians(encoder.getVelocity() / 60));
+        SmartDashboard.putNumber("Pivot Native Velocity", encoder.getVelocity());
 
-        // pid.setReference(targetPosition, ControlType.kPosition, 0, armFF.calculate(
-        //         convertEncoderToRadians(encoder.getPosition()), convertEncoderToRadians(encoder.getVelocity())));
+        double error = targetPosition - encoder.getPosition();
+
+        boolean useFeedforward = error > 0 && (targetPosition < 35.);
+
+        pid.setReference(targetPosition, ControlType.kPosition, 0,
+                useFeedforward ? feedforward.calculate(error * PIDConstants.kP * 1000. / 60.) : 0, ArbFFUnits.kVoltage);
+
+        SmartDashboard.putNumber("feedforward", feedforward.calculate(error * PIDConstants.kP * 1000. / 60.));
     }
 }

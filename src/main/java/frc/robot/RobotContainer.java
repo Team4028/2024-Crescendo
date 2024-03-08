@@ -405,8 +405,8 @@ public class RobotContainer {
 
         /* Run Climber to "Ready" */
         operatorController.povUp().onTrue(pivot.runToClimbCommand().andThen(
-                Commands.waitUntil(pivot.inPositionSupplier()),
-                climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+                Commands.waitUntil(pivot.inPositionSupplier())));
+                // climber.runToPositionCommand(Climber.ClimberPositions.READY)));
 
         // ================ //
         /* Amp & Trap Magic */
