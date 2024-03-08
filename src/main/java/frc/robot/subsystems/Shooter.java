@@ -63,7 +63,7 @@ public class Shooter extends SubsystemBase {
 
         FAST(4800, 3400),
         MEDIUM(3840, 2700),
-        TRAP(1800, 1800),
+        TRAP(1400, 1400),
         AMP(677., 677.);
 
         public final double RightRPM;
@@ -83,7 +83,7 @@ public class Shooter extends SubsystemBase {
 
     private final class PIDConstants {
         private static class Right {
-            private static double kFF = 0.139535;
+            private static double kFF = 0.136;
 
             private static final Slot2Configs Trap = new Slot2Configs()
                     .withKP(0.02)
@@ -99,7 +99,7 @@ public class Shooter extends SubsystemBase {
         }
 
         private static class Left {
-            private static double kFF = 0.13483;
+            private static double kFF = 0.132;
 
             private static final Slot2Configs Trap = new Slot2Configs()
                     .withKP(0.01)
@@ -166,8 +166,8 @@ public class Shooter extends SubsystemBase {
 
     /* Check if shooter is spinned up */
     public BooleanSupplier isReady() {
-        return () -> Math.abs(leftMotor.getVelocity().getValueAsDouble() - leftTarget) < 20.
-                && Math.abs(rightMotor.getVelocity().getValueAsDouble() - rightTarget) < 20.;
+        return () -> Math.abs(leftMotor.getVelocity().getValueAsDouble() * 60. - leftTarget) < 100.
+                && Math.abs(rightMotor.getVelocity().getValueAsDouble() * 60. - rightTarget) < 100.;
     }
 
     /**

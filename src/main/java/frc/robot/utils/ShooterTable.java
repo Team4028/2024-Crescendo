@@ -34,11 +34,12 @@ public class ShooterTable {
     private static void fillInTable() {
         // put entries here
         // Distances must go from top to bottom: shortest to longest
-        table.add(new ShooterTableEntry(Feet.of(3.1), 5.3, .8));
-        table.add(new ShooterTableEntry(Feet.of(5.9), 2.82, .8));
-        table.add(new ShooterTableEntry(Feet.of(8.9), 1.63, .8));
-        table.add(new ShooterTableEntry(Feet.of(12.), 0.58, 1.));
-        table.add(new ShooterTableEntry(Feet.of(14.), 0.05, 1.));
+        table.add(new ShooterTableEntry(Feet.of(3.1), 36.0, .95));
+        table.add(new ShooterTableEntry(Feet.of(6.0), 15.4, .95));
+        table.add(new ShooterTableEntry(Feet.of(9.0), 14.2, .95));
+        table.add(new ShooterTableEntry(Feet.of(12.), 9.2, .95));
+        table.add(new ShooterTableEntry(Feet.of(15.), 7.0, 1.));
+        table.add(new ShooterTableEntry(Feet.of(20.), 4.8, 1.));
     }
 
     static {
@@ -75,7 +76,7 @@ public class ShooterTable {
         double calculatedPercent = scaleFactor * (closestHigher.percent - closestLower.percent)
                 + closestLower.percent;
 
-        double calculatedAngle = scaleFactor * (closestLower.angle - closestHigher.angle) + closestHigher.angle;
+        double calculatedAngle = scaleFactor * (closestHigher.angle - closestLower.angle) + closestLower.angle;
 
         return new ShooterTableEntry(distance, calculatedAngle, calculatedPercent);
     }

@@ -284,10 +284,11 @@ public class RobotContainer {
 
         /* Dumb Infeed */
         driverController.leftTrigger().onTrue(
-                infeed.runMotorCommand(INFEED_VBUS).alongWith(
-                        conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS)).repeatedly())
-                .onFalse(infeed.runMotorCommand(0.).alongWith(
-                        conveyor.runMotorCommand(0.)));
+                runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS).repeatedly())
+                .onFalse(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
+                        .raceWith(conveyor.runXRotations(-3.0).withTimeout(0.25) // -1.5
+                                .alongWith(infeed.runMotorCommand(0.)))
+                                .andThen(shooter.stopCommand()));
 
         /* Smart Infeed */
         driverController.leftBumper().toggleOnTrue(smartInfeedCommand());
@@ -345,7 +346,7 @@ public class RobotContainer {
                 .whileTrue(runBoth(FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS).repeatedly());
 
         /* Magic Shoot */
-        operatorController.b().onTrue(magicShootCommand);
+        operatorController.x().onTrue(magicShootCommand);
 
         // TODO: bind these to ST index up/down
 
@@ -363,6 +364,11 @@ public class RobotContainer {
 
         /* Zero Climber & Pivot */
         operatorController.start().onTrue(zeroCommand());
+
+        /* Run Pivot & Climber to Zero */
+        operatorController.back().onTrue(climber.runToPositionCommand(ClimberPositions.HOME).andThen(
+            Commands.waitUntil(climber.inPositionSupplier()),
+            pivot.runToHomeCommand()));
 
         /* Run Climber to "Home" */
         operatorController.povDown().onTrue(climber.climbCommand());
@@ -425,8 +431,8 @@ public class RobotContainer {
         // ==== //
 
         /* whippyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy */
-        emergencyController.a().onTrue(whippy.whippyWheelsCommand(WHIPPY_VBUS))
-                .onFalse(whippy.stopCommand());
+        // emergencyController.a().onTrue(whippy.whippyWheelsCommand(WHIPPY_VBUS))
+        //         .onFalse(whippy.stopCommand());
 
         /* TrapStar 5000 */
         emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS)).onFalse(m_fan.stopCommand());
@@ -451,15 +457,17 @@ public class RobotContainer {
                                 () -> -emergencyController.getRightY(),
                                 () -> emergencyController.getRightY()));
 
-        emergencyController.a().and(emergencyController.povUp()).whileTrue(pivot.runQuasi(Direction.kForward))
-                .onFalse(pivot.runMotorCommand(0.));
-        emergencyController.a().and(emergencyController.povDown()).whileTrue(pivot.runQuasi(Direction.kReverse))
-                .onFalse(pivot.runMotorCommand(0.));
+        // emergencyController.a().and(emergencyController.povUp()).whileTrue(pivot.runQuasi(Direction.kForward))
+        //         .onFalse(pivot.runMotorCommand(0.));
+        // emergencyController.a().and(emergencyController.povDown()).whileTrue(pivot.runQuasi(Direction.kReverse))
+        //         .onFalse(pivot.runMotorCommand(0.));
 
-        emergencyController.b().and(emergencyController.povUp()).whileTrue(pivot.runDyn(Direction.kForward))
-                .onFalse(pivot.runMotorCommand(0.));
-        emergencyController.b().and(emergencyController.povDown()).whileTrue(pivot.runDyn(Direction.kReverse))
-                .onFalse(pivot.runMotorCommand(0.));
+        // emergencyController.b().and(emergencyController.povUp()).whileTrue(pivot.runDyn(Direction.kForward))
+        //         .onFalse(pivot.runMotorCommand(0.));
+        // emergencyController.b().and(emergencyController.povDown()).whileTrue(pivot.runDyn(Direction.kReverse))
+        //         .onFalse(pivot.runMotorCommand(0.));
+
+        emergencyController.a().onTrue(shooter.runShotCommand(ShotSpeeds.TRAP)).onFalse(shooter.stopCommand());
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));

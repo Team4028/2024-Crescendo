@@ -56,11 +56,11 @@ public class Pivot extends SubsystemBase {
     private static final int CAN_ID = 13;
 
     public final static double MAX_POSITION = 64.0;
-    public final static double MIN_POSITION = 1.;
+    public final static double MIN_POSITION = 0.25;
 
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
-    public final static double TRAP_POSITION = 55.55;
+    public final static double TRAP_POSITION = 59.3;
 
     private final static double INCIDENT_OFFSET = 0.9123; // rad
 
@@ -92,7 +92,7 @@ public class Pivot extends SubsystemBase {
         encoder = motor.getEncoder();
         pid = motor.getPIDController();
         pid.setFeedbackDevice(encoder);
-
+        
         feedforward = new SimpleMotorFeedforward(0.36895, 0.11267, 0.020622);
 
         // Logging *Wo-HO!!
@@ -165,6 +165,7 @@ public class Pivot extends SubsystemBase {
 
         return angle - INCIDENT_OFFSET;
     }
+    
     // ==================================
     // PIVOT COMMANDS
     // ==================================

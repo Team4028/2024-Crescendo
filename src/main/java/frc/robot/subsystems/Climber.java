@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.function.BooleanSupplier;
+
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -29,6 +31,7 @@ public class Climber extends SubsystemBase {
     private final DoubleLogEntry vbusLog, currentLog, positionLog, velocityLog;
 
     private boolean oneShot = false;
+    private double targetPosition = 0.;
 
     private static final double ZERO_ABSOLUTE_ENCODER_POSITION = .447;
     private static final double ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT = 390.6;
@@ -107,6 +110,7 @@ public class Climber extends SubsystemBase {
     }
 
     public void runToPosition(double position) {
+        targetPosition = position;
         motor.setControl(positionRequest.withPosition(position));
     }
 
@@ -115,6 +119,7 @@ public class Climber extends SubsystemBase {
     }
 
     public void climb() {
+        targetPosition = ClimberPositions.CLIMB.Position;
         motor.setControl(motionMagicRequest.withPosition(ClimberPositions.CLIMB.Position));
     }
 
@@ -124,6 +129,14 @@ public class Climber extends SubsystemBase {
 
     public Command runToPositionCommand(ClimberPositions position) {
         return runToPositionCommand(position.Position);
+    }
+
+    public boolean inPosition() {
+        return Math.abs(targetPosition - motor.getPosition().getValueAsDouble()) < 1.5;
+    }
+
+    public BooleanSupplier inPositionSupplier() {
+        return () -> inPosition();
     }
 
     public void logValues() {
