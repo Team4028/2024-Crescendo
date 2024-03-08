@@ -596,7 +596,7 @@ public class RobotContainer {
         if (pose.isPresent()) {
             return Optional.of(new EstimatedRobotPose(
                     new Pose3d(pose.get()
-                            .plus(new Transform2d(Units.inchesToMeters(9.), 0.,
+                            .plus(new Transform2d(Units.inchesToMeters(13.), 0.,
                                     new Rotation2d()))),
                     (front.isEmpty() ? back : front).get().timestampSeconds,
                     null, null));
