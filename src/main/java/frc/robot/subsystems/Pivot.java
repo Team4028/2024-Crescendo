@@ -26,13 +26,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants;
 
 public class Pivot extends SubsystemBase {
 
     public static class ConversionConstants {
         public static final double SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT = 5.5;
-        public static final double SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT = 19.5;
+        public static final double SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT_DY = 4.35261;
+        public static final double SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT = 18.0;
         public static final double LINEAR_ACTUATOR_INITIAL_LENGTH = 17;
         public static final double LINEAR_ACTUATOR_REDUCTION = 4.0;
         public static final double LINEAR_ACTUATOR_ROTATIONS_TO_INCHES_SCALAR = 0.472;
@@ -61,7 +61,9 @@ public class Pivot extends SubsystemBase {
     public final static double HOLD_POSITION = MIN_POSITION;
     public final static double TRAP_POSITION = 42.;
 
-    private final static double ANGULAR_CANSTANT = 0.9123; // rad
+    private final static double ANGULAR_CANSTANT = (Math.PI / 2)
+            - Math.acos(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT_DY
+                    / ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT); // rad
 
     /* PID */
     private class PIDConstants {
@@ -164,6 +166,55 @@ public class Pivot extends SubsystemBase {
 
         return angle - ANGULAR_CANSTANT;
     }
+
+    /**
+     * Derivative of {@link Pivot#convertEncoderToRadians()}, used to convert the
+     * velocity reported by {@link com.revrobotics.RelativeEncoder#getVelocity()}
+     * from rotations per unit of time to radians per unit of time.
+     *
+     * <b>
+     * <i>
+     * IMPORTANT: THIS IS ONLY FOR THE 4028 2024 COMP ROBOT, DO NOT EVER COPY FOR
+     * ANOTHER ROBOT PLZ THX
+     * </i>
+     * </b>
+     * 
+     * @param pos the encoder position recorded by
+     *            {@link com.revrobotics.RelativeEncoder#getPosition()}
+     * @param vel the encoder velocity recorded by
+     *            {@link com.revrobotics.RelativeEncoder#getVelocity()}
+     * @return the angular velocity of the shooter, in terms of Radians / whatever
+     *         time unit {@code vel} is in (the default return for
+     *         {@link com.revrobotics.RelativeEncoder#getVelocity()} is in minutes)
+     */
+    private double convertEncoderRotationsPerTimeToRadiansPerTime(double pos, double vel) {
+        final double scalar = 0.118; // this is ConversionConstants.LINEAR_ACTUATOR_ROTATIONS_TO_INCHES_SCALAR /
+                                     // ConversionConstants.LINEAR_ACTUATOR_REDUCTION, but I wanted to write 118 in
+                                     // the code.
+
+        final double extension = scalar * pos + ConversionConstants.LINEAR_ACTUATOR_INITIAL_LENGTH; // extension of the
+                                                                                                    // arm, needed
+                                                                                                    // because the
+                                                                                                    // relationship
+                                                                                                    // between dRad/dt
+                                                                                                    // and dRot/dt is
+                                                                                                    // nonlinear
+
+        return (scalar * extension * vel)
+                / (ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                        * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
+                        * Math.sqrt(1 - (Math
+                                .pow(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                                        * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                                        + ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
+                                                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
+                                        - extension * extension, 2)
+                                / 4 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                                * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
+                                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT)));
+    }
+
     // ==================================
     // PIVOT COMMANDS
     // ==================================
