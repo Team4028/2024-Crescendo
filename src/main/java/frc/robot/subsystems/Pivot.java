@@ -60,8 +60,7 @@ public class Pivot extends SubsystemBase {
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
     public final static double TRAP_POSITION = 42.;
-
-    private final static double ANGULAR_CANSTANT = (Math.PI / 2)
+    private final static double INCIDENT_OFFSET = (Math.PI / 2)
             - Math.acos(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT_DY
                     / ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT); // rad
 
@@ -156,15 +155,15 @@ public class Pivot extends SubsystemBase {
                 * ConversionConstants.LINEAR_ACTUATOR_ROTATIONS_TO_INCHES_SCALAR)
                 + ConversionConstants.LINEAR_ACTUATOR_INITIAL_LENGTH;
 
-        double angle = Math.acos((ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                + ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
-                        * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
-                - sideC * sideC)
-                / (2 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                        * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT));
+        double angle = Math.acos(
+                (Math.pow(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT, 2)
+                        + Math.pow(ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT, 2)
+                        - sideC * sideC //
+                )
+                        / (2 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT));
 
-        return angle - ANGULAR_CANSTANT;
+        return angle - INCIDENT_OFFSET;
     }
 
     /**
@@ -200,6 +199,20 @@ public class Pivot extends SubsystemBase {
                                                                                                     // and dRot/dt is
                                                                                                     // nonlinear
 
+        // ab
+        double ab = ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT;
+
+        // c
+        double c = extension;
+
+        double sine = Math.sin(convertEncoderToRadians(pos));
+
+        double dTheta_dC = c / (ab * sine);
+        double dTheta = dTheta_dC * vel * scalar;
+
+        SmartDashboard.putNumber("Alternate dTheta", dTheta);
+
         return (scalar * extension * vel)
                 / (ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
                         * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
@@ -210,9 +223,10 @@ public class Pivot extends SubsystemBase {
                                                 * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
                                         - extension * extension, 2)
                                 / (4 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                                * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
-                                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT))));
+                                        * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                                        * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
+                                        * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT))));
+
     }
 
     // ==================================
