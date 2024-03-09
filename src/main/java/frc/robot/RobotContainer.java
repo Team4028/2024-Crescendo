@@ -120,7 +120,11 @@ public class RobotContainer {
     private static final double MAX_SPEED = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top
                                                                                // speed
     private static final double MAX_ANGULAR_SPEED = 4 * Math.PI; // 2rps
+
     private static final double BASE_SPEED = 0.25;
+    private static final double SLOW_SPEED = 0.07;
+
+    private double currentSpeed = BASE_SPEED;
 
     private enum SnapDirection {
         None(Double.NaN),
@@ -338,21 +342,21 @@ public class RobotContainer {
                         drivetrain.applyRequest(() -> drive
                                 .withVelocityX(scaleDriverController(-driverController.getLeftY(),
                                         xLimiter,
-                                        BASE_SPEED) * MAX_SPEED)
+                                        currentSpeed) * MAX_SPEED)
                                 .withVelocityY(scaleDriverController(-driverController.getLeftX(),
                                         yLimiter,
-                                        BASE_SPEED) * MAX_SPEED)
+                                        currentSpeed) * MAX_SPEED)
                                 .withRotationalRate(
                                         scaleDriverController(-driverController.getRightX(),
-                                                thetaLimiter, BASE_SPEED) *
+                                                thetaLimiter, currentSpeed) *
                                                 MAX_ANGULAR_SPEED)),
                         drivetrain.applyRequest(() -> snapDrive
                                 .withVelocityX(scaleDriverController(-driverController.getLeftY(),
                                         xLimiter,
-                                        BASE_SPEED) * MAX_SPEED)
+                                        currentSpeed) * MAX_SPEED)
                                 .withVelocityY(scaleDriverController(-driverController.getLeftX(),
                                         yLimiter,
-                                        BASE_SPEED) * MAX_SPEED)
+                                        currentSpeed) * MAX_SPEED)
                                 .withTargetDirection(Rotation2d.fromDegrees(currentSnap.Angle))),
                         () -> currentSnap == SnapDirection.None));
 
@@ -393,28 +397,21 @@ public class RobotContainer {
         driverController.back()
                 .onTrue(drivetrain.addMeasurementCommand(() -> getBestPose()));
 
-        /* Reset Pose & Test ShooterTable */
-        // driverController.back().and(driverController.povDown()).onTrue(Commands.runOnce(() -> {
-        //     var pose = getBestPose();
-        //     if (pose.isPresent())
-        //         drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
-
-        //     getBestSTEntry();
-        // }));
-
         /* Snap Directions */
         driverController.povUp().toggleOnTrue(setSnapCommand(SnapDirection.Forward));
         driverController.povLeft().toggleOnTrue(setSnapCommand(SnapDirection.Left));
         driverController.povRight().toggleOnTrue(setSnapCommand(SnapDirection.Right));
         driverController.povDown().toggleOnTrue(setSnapCommand(SnapDirection.Back));
 
-        // TODO: Limelight squaring
-        // toggle that runs forever, goes to robot relative mode, no infeed/whatever
-        // control
+        /* Limelight Square */
         driverController.leftStick().toggleOnTrue(new LimelightSquare(true,
-                () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
-                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
+                () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, currentSpeed) * MAX_SPEED,
+                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, currentSpeed) * MAX_SPEED,
                 drivetrain));
+
+        /* Toggle Chassis Mode */
+        driverController.rightBumper().onTrue(Commands.runOnce(() -> currentSpeed = SLOW_SPEED))
+                .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
 
         // =================== //
         /* OPERATOR CONTROLLER */
