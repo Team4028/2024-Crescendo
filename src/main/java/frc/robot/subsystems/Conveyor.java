@@ -28,7 +28,8 @@ import com.playingwithfusion.TimeOfFlight.RangingMode;
 public class Conveyor extends SubsystemBase {
     private final CANSparkFlex motor;
     private final RelativeEncoder encoder;
-    private final TimeOfFlight tofSensor;
+    private final TimeOfFlight conveyorTofSensor;
+    private final TimeOfFlight infeedTofSensor;
     private final SparkPIDController pid;
     private final DataLog log;
     private final DoubleLogEntry currentLog, vbusLog, positionLog, velocityLog;
@@ -42,19 +43,31 @@ public class Conveyor extends SubsystemBase {
 
     private static final double NOTE_HELD_RANGE_THRESHOLD = 70.;
     private static final double INITIAL_DETECTION_RANGE_THRESHOLD = 60.;
+    private static final double INFEED_DETECTION_RANGE_THRESHOLD = 60.;
+
+    private static final double CONVEYOR_TIMER_THRESHOLD = 0.75;
+    private static final double INFEED_TIMER_THRESHOLD = 1;
 
     private static final int CAN_ID = 11;
-    private static final int TOF_CAN_ID = 21;
+    private static final int CONVEYOR_TOF_CAN_ID = 21;
+    private static final int INFEED_TOF_CAN_ID = 1;
 
-    private boolean hasInfed = false;
+    private boolean conveyorHasSeenNote = false;
+    private boolean hasStrawbrryJam = false;
+
+
     private double target;
-    private final Timer timer;
+    private final Timer conveyorTimer;
+    private final Timer infeedTimer;
 
     public Conveyor() {
-        timer = new Timer();
-        timer.reset();
-        motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
+        conveyorTimer = new Timer();
+        conveyorTimer.reset();
+        infeedTimer = new Timer();
+        infeedTimer.reset();
+        
 
+        motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
         motor.restoreFactoryDefaults();
         
         motor.setIdleMode(IdleMode.kCoast);
@@ -81,9 +94,13 @@ public class Conveyor extends SubsystemBase {
 
         motor.burnFlash();
 
-        tofSensor = new TimeOfFlight(TOF_CAN_ID);
-        tofSensor.setRangingMode(RangingMode.Short, 24.0);
-        tofSensor.setRangeOfInterest(4, 4, 11, 11);
+        conveyorTofSensor = new TimeOfFlight(CONVEYOR_TOF_CAN_ID);
+        conveyorTofSensor.setRangingMode(RangingMode.Short, 24.0);
+        conveyorTofSensor.setRangeOfInterest(4, 4, 11, 11);
+
+        infeedTofSensor = new TimeOfFlight(INFEED_TOF_CAN_ID);
+        infeedTofSensor.setRangingMode(RangingMode.Short, 24.0);
+        infeedTofSensor.setRangeOfInterest(4, 4, 11, 11);
 
         log = DataLogManager.getLog();
 
@@ -93,39 +110,47 @@ public class Conveyor extends SubsystemBase {
         velocityLog = new DoubleLogEntry(log, "/Conveyor/Velocity");
     }
 
-    public boolean getHasInfed() {
-        if (tofSensor.getRange() < INITIAL_DETECTION_RANGE_THRESHOLD) {
-            hasInfed = true;
-            timer.start();
+    public boolean hasInfed() {
+        /*
+         * inffeeeddd tof sees -> sstart infedd timer, set infeedddshasseenNote = true
+         * connnvveryyre tof sees -> stop infeddd timre, settt convashasseennote = true
+         * ingffeed timre expires -> sayyy strawbry jam
+         * coveyorTimre exxpriess -> return truee;
+         * else -> https://www.wikihow.com/Be-Better-at-Something
+         */
+        if (infeedTofSensor.getRange() <= INFEED_DETECTION_RANGE_THRESHOLD) {
+            infeedTimer.start();
+        }
+        
+        if (conveyorTofSensor.getRange() <= INITIAL_DETECTION_RANGE_THRESHOLD) {
+            conveyorTimer.start();
+            conveyorHasSeenNote = true;
         }
 
-        if (hasInfed && ((tofSensor.getRange() >= NOTE_HELD_RANGE_THRESHOLD) || (timer.get() >= 0.75))) {
-            hasInfed = false;
-            timer.stop();
-            timer.reset();
+        if (infeedTimer.get() >= INFEED_TIMER_THRESHOLD) {
+            infeedTimer.stop();
+            infeedTimer.reset();
+            hasStrawbrryJam = true;
+        }
+
+        if (conveyorHasSeenNote && (conveyorTimer.get() >= CONVEYOR_TIMER_THRESHOLD || conveyorTofSensor.getRange() >= NOTE_HELD_RANGE_THRESHOLD)) {
             return true;
         }
 
         return false;
     }
 
-    public BooleanSupplier hasInfedSupplier() {
-        return this::getHasInfed;
-    }
+    public BooleanSupplier hasInfedSupplier() { return this::hasInfed; }
 
-    public boolean hasGamePiece() {
-        return tofSensor.getRange() < NOTE_HELD_RANGE_THRESHOLD;
-    }
+    private boolean hasJam() { return hasStrawbrryJam; }
+
+    public BooleanSupplier hasJamSupplier() { return this::hasJam; }
 
     public Command runXRotations(double x) {
         return runOnce(() -> {
             target = encoder.getPosition() + x;
             pid.setReference(target, ControlType.kPosition);
         }).andThen(Commands.idle(this)).until(() -> Math.abs(target - encoder.getPosition()) < 0.06);
-    }
-
-    public BooleanSupplier hasGamePieceSupplier() {
-        return this::hasGamePiece;
     }
 
     public final void runMotor(double vBus) {
@@ -146,6 +171,6 @@ public class Conveyor extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        SmartDashboard.putNumber("ToF Sensor", tofSensor.getRange());
+        SmartDashboard.putNumber("ToF Sensor", conveyorTofSensor.getRange());
     }
 }
