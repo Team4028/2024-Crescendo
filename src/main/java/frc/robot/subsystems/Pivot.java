@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.utils.DashboardStore;
 
 public class Pivot extends SubsystemBase {
 
@@ -140,6 +141,14 @@ public class Pivot extends SubsystemBase {
         /* TIMER */
         /* ===== */
         zeroTimer = new Timer();
+
+        /* Dashboard */
+        DashboardStore.add("Pivot Position", () -> convertEncoderToRadians(getPosition()));
+        DashboardStore.add("Pivot Native Position", () -> getPosition());
+        DashboardStore.add("Pivot Current", () -> motor.getOutputCurrent());
+        DashboardStore.add("Pivot Target", () -> targetPosition);
+        DashboardStore.add("Pivot Velocity", () -> convertEncoderToRadians(encoder.getVelocity() / 60));
+        DashboardStore.add("Pivot Native Velocity", () -> encoder.getVelocity());
     }
 
     public Command runQuasi(Direction dir) {
@@ -239,22 +248,22 @@ public class Pivot extends SubsystemBase {
         positionLog.append(getPosition());
     }
 
-    @Override
-    public void periodic() {
+    public void dashboardPeriodic() {
         SmartDashboard.putNumber("Pivot Position", convertEncoderToRadians(getPosition()));
         SmartDashboard.putNumber("Pivot Native Position", (getPosition()));
         SmartDashboard.putNumber("Pivot Current", motor.getOutputCurrent());
         SmartDashboard.putNumber("Pivot Target", targetPosition);
         SmartDashboard.putNumber("Pivot Velocity", convertEncoderToRadians(encoder.getVelocity() / 60));
         SmartDashboard.putNumber("Pivot Native Velocity", encoder.getVelocity());
+    }
 
+    @Override
+    public void periodic() {
         double error = targetPosition - encoder.getPosition();
 
         boolean useFeedforward = error > 0 && (targetPosition < 35.);
 
         pid.setReference(targetPosition, ControlType.kPosition, 0,
                 useFeedforward ? feedforward.calculate(error * PIDConstants.kP * 1000. / 60.) : 0, ArbFFUnits.kVoltage);
-
-        SmartDashboard.putNumber("feedforward", feedforward.calculate(error * PIDConstants.kP * 1000. / 60.));
     }
 }

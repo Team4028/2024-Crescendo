@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.utils.DashboardStore;
 
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
@@ -21,6 +22,11 @@ public class Robot extends TimedRobot {
         DataLogManager.start();
         robotContainer = new RobotContainer();
         SignalLogger.setPath("/u/ctre");
+
+        addPeriodic(() -> {
+            DashboardStore.update();
+            // robotContainer.dashboardPeriodic();
+        }, 0.1);
     }
 
     @Override

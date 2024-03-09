@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.DashboardStore;
 
 public class Infeed extends SubsystemBase {
     private final TimeOfFlight tofSensor;
@@ -61,6 +62,9 @@ public class Infeed extends SubsystemBase {
         log = DataLogManager.getLog();
         currentLog = new DoubleLogEntry(log, "/Infeed/Current");
         velocityLog = new DoubleLogEntry(log, "/Infeed/Velocity");
+
+        /* Dashboard */
+        DashboardStore.add("Infeed Tof", () -> tofSensor.getRange());
     }
 
     public boolean hasGamePiece() {
@@ -84,8 +88,11 @@ public class Infeed extends SubsystemBase {
         velocityLog.append(motor.getVelocity().getValueAsDouble());
     }
 
+    public void dashboardPeriodic() {
+        SmartDashboard.putNumber("Infeed Tof", tofSensor.getRange());
+    }
+
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Infeed Tof", tofSensor.getRange());
     }
 }

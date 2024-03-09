@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.DashboardStore;
+
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -56,11 +58,10 @@ public class Conveyor extends SubsystemBase {
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
 
         motor.restoreFactoryDefaults();
-        
+
         motor.setIdleMode(IdleMode.kCoast);
         motor.setInverted(true);
         motor.setClosedLoopRampRate(.1);
-
 
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 20);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
@@ -91,6 +92,9 @@ public class Conveyor extends SubsystemBase {
         vbusLog = new DoubleLogEntry(log, "/Conveyor/Vbus");
         positionLog = new DoubleLogEntry(log, "/Conveyor/Position");
         velocityLog = new DoubleLogEntry(log, "/Conveyor/Velocity");
+
+        /* Dashboard */
+        DashboardStore.add("ToF Sensor", () -> tofSensor.getRange());
     }
 
     public boolean getHasInfed() {
@@ -143,9 +147,12 @@ public class Conveyor extends SubsystemBase {
         velocityLog.append(encoder.getVelocity());
     }
 
+    public void dashboardPeriodic() {
+        SmartDashboard.putNumber("ToF Sensor", tofSensor.getRange());
+    }
+
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        SmartDashboard.putNumber("ToF Sensor", tofSensor.getRange());
     }
 }
