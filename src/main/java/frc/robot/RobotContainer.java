@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -19,6 +20,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -36,7 +38,6 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
@@ -121,8 +122,26 @@ public class RobotContainer {
     private static final double MAX_ANGULAR_SPEED = 4 * Math.PI; // 2rps
     private static final double BASE_SPEED = 0.25;
 
-    public final double NUM_STEINDICIS = 20;
-    public double steIndex = 0.0;
+    private enum ShooterTableIndex {
+        Close(3.0, "Close Shot"),
+        Protected(6.0, "Protected"),
+        Chain(10.0, "Chain"),
+        Truss(14.0, "Truss"),
+        Wing(15.5, "Wing"),
+        Neutral(26.0, "Neutral Zone");
+
+        public double Index;
+        public String Name;
+
+        private ShooterTableIndex(double index, String name) {
+            Index = index;
+            Name = name;
+        }
+    }
+
+    private List<ShooterTableIndex> indexList = List.of(ShooterTableIndex.values());
+
+    private int currentIndex = 0;
 
     // ======================== //
     /* Swerve Control & Logging */
@@ -391,19 +410,13 @@ public class RobotContainer {
         // ======================= //
 
         /* Spin Up Shooter */
-        // operatorController.leftBumper()
-        // .onTrue(Commands.runOnce(() -> {
-        // ShooterTableEntry entry = getBestSTEntry();
-        // shooter.runEntry(entry, ShotSpeeds.FAST);
-        // pivot.runToPosition(entry.angle);
-        // }, shooter, pivot))
-        // .onFalse(shooter.stopCommand());
-
-        operatorController.a().onTrue(shooter
-                .runEntryCommand(() -> ShooterTable.calcShooterTableEntryByPercent(steIndex), () -> ShotSpeeds.FAST));
-
         operatorController.leftBumper()
-                .onTrue(shooter.setSlotCommand(Shooter.Slots.FAST).andThen(shooter.runShotCommand(ShotSpeeds.FAST)))
+                .onTrue(Commands.runOnce(() -> {
+                    ShooterTableEntry entry = ShooterTable
+                            .calcShooterTableEntry(Feet.of(indexList.get(currentIndex).Index));
+                    shooter.runEntry(entry, ShotSpeeds.FAST);
+                    pivot.runToPosition(entry.Angle);
+                }, shooter, pivot))
                 .onFalse(shooter.stopCommand());
 
         /* Convey Note */
@@ -417,18 +430,14 @@ public class RobotContainer {
 
         /* Shooter Table Index Down */
         operatorController.leftTrigger(0.5).onTrue(new InstantCommand(() -> {
-            if (steIndex - 1 / NUM_STEINDICIS <= 0)
-                steIndex = 0;
-            else
-                steIndex -= 1 / NUM_STEINDICIS;
+            currentIndex = MathUtil.clamp(currentIndex + 1, 0, ShooterTableIndex.values().length - 1);
+            pushIndexData();
         }));
 
         /* Shooter Table Index Up */
         operatorController.rightTrigger(0.5).onTrue(new InstantCommand(() -> {
-            if (steIndex + 1 / NUM_STEINDICIS >= 1)
-                steIndex = 1;
-            else
-                steIndex += 1 / NUM_STEINDICIS;
+            currentIndex = MathUtil.clamp(currentIndex - 1, 0, ShooterTableIndex.values().length - 1);
+            pushIndexData();
         }));
 
         // ========================= //
@@ -555,6 +564,13 @@ public class RobotContainer {
     // =========================================== //
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
+
+    /* Put Current ST Index Data to Dashboard */
+    private void pushIndexData() {
+        ShooterTableIndex idx = indexList.get(currentIndex);
+        SmartDashboard.putNumber("Shooter Table Index", idx.Index);
+        SmartDashboard.putString("Shooter Table Index", idx.Name);
+    }
 
     /* Smart Infeed Command Generator */
     private Command smartInfeedCommand() {
