@@ -14,6 +14,7 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
+import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -121,6 +122,22 @@ public class RobotContainer {
     private static final double MAX_ANGULAR_SPEED = 4 * Math.PI; // 2rps
     private static final double BASE_SPEED = 0.25;
 
+    private enum SnapDirection {
+        None(Double.NaN),
+        Forward(0),
+        Left(90),
+        Back(180),
+        Right(270);
+
+        public double Angle;
+
+        private SnapDirection(double angle) {
+            Angle = angle;
+        }
+    }
+
+    private SnapDirection currentSnap = SnapDirection.None;
+
     // ======================== //
     /* Swerve Control & Logging */
     // ======================== //
@@ -132,8 +149,12 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MAX_SPEED);
 
     private final SwerveRequest.SwerveDriveBrake xDrive = new SwerveDriveBrake();
+    private final SwerveRequest.FieldCentricFacingAngle snapDrive = new SwerveRequest.FieldCentricFacingAngle()
+            .withDeadband(MAX_SPEED * 0.035)
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     public RobotContainer() {
+        snapDrive.HeadingController = new PhoenixPIDController(2., 0., 0.);
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
 
@@ -313,17 +334,27 @@ public class RobotContainer {
         // ================ //
 
         drivetrain.setDefaultCommand(
-                drivetrain.applyRequest(() -> drive
-                        .withVelocityX(scaleDriverController(-driverController.getLeftY(),
-                                xLimiter,
-                                BASE_SPEED) * MAX_SPEED)
-                        .withVelocityY(scaleDriverController(-driverController.getLeftX(),
-                                yLimiter,
-                                BASE_SPEED) * MAX_SPEED)
-                        .withRotationalRate(
-                                scaleDriverController(-driverController.getRightX(),
-                                        thetaLimiter, BASE_SPEED) *
-                                        MAX_ANGULAR_SPEED)));
+                new ConditionalCommand(
+                        drivetrain.applyRequest(() -> drive
+                                .withVelocityX(scaleDriverController(-driverController.getLeftY(),
+                                        xLimiter,
+                                        BASE_SPEED) * MAX_SPEED)
+                                .withVelocityY(scaleDriverController(-driverController.getLeftX(),
+                                        yLimiter,
+                                        BASE_SPEED) * MAX_SPEED)
+                                .withRotationalRate(
+                                        scaleDriverController(-driverController.getRightX(),
+                                                thetaLimiter, BASE_SPEED) *
+                                                MAX_ANGULAR_SPEED)),
+                        drivetrain.applyRequest(() -> snapDrive
+                                .withVelocityX(scaleDriverController(-driverController.getLeftY(),
+                                        xLimiter,
+                                        BASE_SPEED) * MAX_SPEED)
+                                .withVelocityY(scaleDriverController(-driverController.getLeftX(),
+                                        yLimiter,
+                                        BASE_SPEED) * MAX_SPEED)
+                                .withTargetDirection(Rotation2d.fromDegrees(currentSnap.Angle))),
+                        () -> currentSnap == SnapDirection.None));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runMotorCommand(0.));
@@ -359,24 +390,31 @@ public class RobotContainer {
         driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
 
         /* Add Vision Measurement */
-        driverController.back().and(driverController.povCenter())
+        driverController.back()
                 .onTrue(drivetrain.addMeasurementCommand(() -> getBestPose()));
 
         /* Reset Pose & Test ShooterTable */
-        driverController.back().and(driverController.povDown()).onTrue(Commands.runOnce(() -> {
-            var pose = getBestPose();
-            if (pose.isPresent())
-                drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
+        // driverController.back().and(driverController.povDown()).onTrue(Commands.runOnce(() -> {
+        //     var pose = getBestPose();
+        //     if (pose.isPresent())
+        //         drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
 
-            getBestSTEntry();
-        }));
+        //     getBestSTEntry();
+        // }));
+
+        /* Snap Directions */
+        driverController.povUp().toggleOnTrue(setSnapCommand(SnapDirection.Forward));
+        driverController.povLeft().toggleOnTrue(setSnapCommand(SnapDirection.Left));
+        driverController.povRight().toggleOnTrue(setSnapCommand(SnapDirection.Right));
+        driverController.povDown().toggleOnTrue(setSnapCommand(SnapDirection.Back));
 
         // TODO: Limelight squaring
         // toggle that runs forever, goes to robot relative mode, no infeed/whatever
         // control
         driverController.leftStick().toggleOnTrue(new LimelightSquare(true,
                 () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
-                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, BASE_SPEED) * MAX_SPEED, drivetrain));
+                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
+                drivetrain));
 
         // =================== //
         /* OPERATOR CONTROLLER */
@@ -537,6 +575,11 @@ public class RobotContainer {
     // =========================================== //
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
+
+    /* Set Snap Direction Toggle */
+    private Command setSnapCommand(SnapDirection direction) {
+        return Commands.startEnd(() -> currentSnap = direction, () -> currentSnap = SnapDirection.None);
+    }
 
     /* Smart Infeed Command Generator */
     private Command smartInfeedCommand() {
