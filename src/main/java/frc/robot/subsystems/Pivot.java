@@ -62,8 +62,9 @@ public class Pivot extends SubsystemBase {
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
 
+    public final static double HARD_STOP = 59.3;
+    public final static double STAGE_PIVOT = 56;
 
-    public final static double TRAP_POSITION = 56.75;
     private final static double INCIDENT_OFFSET = (Math.PI / 2)
             - Math.acos(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT_DY
                     / ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT);
@@ -185,7 +186,7 @@ public class Pivot extends SubsystemBase {
 
         return angle - INCIDENT_OFFSET;
     }
-    
+
     // ==================================
     // PIVOT COMMANDS
     // ==================================
@@ -216,11 +217,12 @@ public class Pivot extends SubsystemBase {
     }
 
     public Command runToTrapCommand() {
-        return runToPositionCommand(TRAP_POSITION);
+        return runToPositionCommand(STAGE_PIVOT)
+                .andThen(runToPositionCommand(HARD_STOP));
     }
 
     public Command runToClimbCommand() {
-        return runToPositionCommand(CLIMB_POSITION);
+        return runToTrapCommand();
     }
 
     public void holdPosition() {
@@ -266,9 +268,10 @@ public class Pivot extends SubsystemBase {
     public void periodic() {
         double error = targetPosition - getPosition();
 
-        if (!isVbus && Math.abs(error) > FEEDFORWARD_THRESHOLD) pid.setReference(targetPosition, ControlType.kPosition, 0,
-                armFF.calculate(convertEncoderToRadians(encoder.getPosition()),
-                        (targetPosition - getPosition()) / 0.1 * 60.),// * PIDConstants.MAX_OUTPUT * 6000.),
-                ArbFFUnits.kVoltage);
+        if (!isVbus && Math.abs(error) > FEEDFORWARD_THRESHOLD)
+            pid.setReference(targetPosition, ControlType.kPosition, 0,
+                    armFF.calculate(convertEncoderToRadians(encoder.getPosition()),
+                            (targetPosition - getPosition()) / 0.1 * 60.), // * PIDConstants.MAX_OUTPUT * 6000.),
+                    ArbFFUnits.kVoltage);
     }
 }
