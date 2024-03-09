@@ -16,7 +16,6 @@ import com.playingwithfusion.TimeOfFlight.RangingMode;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.DashboardStore;
@@ -86,10 +85,6 @@ public class Infeed extends SubsystemBase {
     public void logValues() {
         currentLog.append(motor.getStatorCurrent().getValueAsDouble());
         velocityLog.append(motor.getVelocity().getValueAsDouble());
-    }
-
-    public void dashboardPeriodic() {
-        SmartDashboard.putNumber("Infeed Tof", tofSensor.getRange());
     }
 
     @Override

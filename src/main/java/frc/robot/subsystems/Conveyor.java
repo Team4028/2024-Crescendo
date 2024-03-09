@@ -8,7 +8,6 @@ import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -95,6 +94,7 @@ public class Conveyor extends SubsystemBase {
 
         /* Dashboard */
         DashboardStore.add("ToF Sensor", () -> tofSensor.getRange());
+        //TODO: Add enum for dashboard forward/back/off
     }
 
     public boolean getHasInfed() {
@@ -145,10 +145,6 @@ public class Conveyor extends SubsystemBase {
         vbusLog.append(motor.getAppliedOutput());
         positionLog.append(encoder.getPosition());
         velocityLog.append(encoder.getVelocity());
-    }
-
-    public void dashboardPeriodic() {
-        SmartDashboard.putNumber("ToF Sensor", tofSensor.getRange());
     }
 
     @Override

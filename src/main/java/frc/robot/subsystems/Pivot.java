@@ -20,7 +20,6 @@ import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.util.datalog.StringLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -246,15 +245,6 @@ public class Pivot extends SubsystemBase {
         voltageLog.append(motor.getAppliedOutput() * motor.getBusVoltage());
         velocityLog.append(encoder.getVelocity());
         positionLog.append(getPosition());
-    }
-
-    public void dashboardPeriodic() {
-        SmartDashboard.putNumber("Pivot Position", convertEncoderToRadians(getPosition()));
-        SmartDashboard.putNumber("Pivot Native Position", (getPosition()));
-        SmartDashboard.putNumber("Pivot Current", motor.getOutputCurrent());
-        SmartDashboard.putNumber("Pivot Target", targetPosition);
-        SmartDashboard.putNumber("Pivot Velocity", convertEncoderToRadians(encoder.getVelocity() / 60));
-        SmartDashboard.putNumber("Pivot Native Velocity", encoder.getVelocity());
     }
 
     @Override

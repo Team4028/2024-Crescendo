@@ -652,14 +652,6 @@ public class RobotContainer {
         m_fan.logValues();
     }
 
-    public void dashboardPeriodic() {
-        climber.dashboardPeriodic();
-        conveyor.dashboardPeriodic();
-        infeed.dashboardPeriodic();
-        pivot.dashboardPeriodic();
-        shooter.dashboardPeriodic();
-    }
-
     // ================ //
     /* Vision Utilities */
     // ================ //

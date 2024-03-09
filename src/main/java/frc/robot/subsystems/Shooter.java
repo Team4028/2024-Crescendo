@@ -20,7 +20,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.DashboardStore;
@@ -283,14 +282,6 @@ public class Shooter extends SubsystemBase {
 
         leftVoltage.append(leftMotor.getDutyCycle().getValueAsDouble());
         rightVoltage.append(rightMotor.getDutyCycle().getValueAsDouble());
-    }
-
-    public void dashboardPeriodic() {
-        SmartDashboard.putNumber("Left Shooter Speed", leftMotor.getVelocity().getValueAsDouble() * 60.);
-        SmartDashboard.putNumber("Right Shooter Speed", rightMotor.getVelocity().getValueAsDouble() * 60.);
-
-        SmartDashboard.putNumber("Left Shooter Target", leftTarget);
-        SmartDashboard.putNumber("Right Shooter Target", rightTarget);
     }
 
     @Override

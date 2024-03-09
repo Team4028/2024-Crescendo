@@ -18,7 +18,6 @@ import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.DashboardStore;
@@ -151,13 +150,6 @@ public class Climber extends SubsystemBase {
         currentLog.append(motor.getStatorCurrent().getValueAsDouble());
         positionLog.append(motor.getPosition().getValueAsDouble());
         velocityLog.append(motor.getVelocity().getValueAsDouble());
-    }
-
-    public void dashboardPeriodic() {
-        SmartDashboard.putNumber("Climber Position", motor.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("Climber Current", motor.getStatorCurrent().getValueAsDouble());
-        SmartDashboard.putNumber("Climber Velocity", motor.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("Abs Endocer Pos", encoder.getAbsolutePosition());
     }
 
     @Override
