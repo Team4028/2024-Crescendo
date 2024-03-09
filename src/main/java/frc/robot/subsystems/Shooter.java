@@ -20,9 +20,9 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.DashboardStore;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
 public class Shooter extends SubsystemBase {
@@ -145,8 +145,6 @@ public class Shooter extends SubsystemBase {
         rightMotor.getConfigurator().apply(PIDConstants.Right.Amp);
         rightMotor.getConfigurator().apply(PIDConstants.Right.Fast);
 
-        fastMode();
-
         // ==================================
         // LOGS
         // ==================================
@@ -158,6 +156,12 @@ public class Shooter extends SubsystemBase {
         rightVoltage = new DoubleLogEntry(log, "/Shooter/right/Voltage");
         leftVoltage = new DoubleLogEntry(log, "/Shooter/left/Voltage");
 
+        /* Dashboard */
+        DashboardStore.add("Left Shooter Speed", () -> leftMotor.getVelocity().getValueAsDouble() * 60.);
+        DashboardStore.add("Right Shooter Speed", () -> rightMotor.getVelocity().getValueAsDouble() * 60.);
+
+        DashboardStore.add("Left Shooter Target", () -> leftTarget);
+        DashboardStore.add("Right Shooter Target", () -> rightTarget);
     }
 
     // ==================================
@@ -196,9 +200,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShotSpeeds> shotSpeed) {
-        // return startEnd(
         return runOnce(() -> runEntry(entry.get(), shotSpeed.get()));
-        // () -> stop());
     }
 
     public void stop() {
@@ -212,20 +214,6 @@ public class Shooter extends SubsystemBase {
 
     public void setSlot(int slot) {
         this.slot = MathUtil.clamp(slot, 0, 3);
-
-        switch (slot) {
-            case Slots.TRAP:
-                trapMode();
-                break;
-            case Slots.AMP:
-                ampMode();
-                break;
-            case Slots.FAST:
-                fastMode();
-                break;
-            default:
-                break;
-        }
     }
 
     public Command setSlotCommand(int slot) {
@@ -233,30 +221,8 @@ public class Shooter extends SubsystemBase {
     }
 
     // =============================
-    // MODES
+    // SHOTS
     // =============================
-
-    private void putConstants(ShotSpeeds speeds, String modeString) {
-        SmartDashboard.putNumber("Left Velocity Target", speeds.LeftRPM);
-        SmartDashboard.putNumber("Right Velocity Target", speeds.RightRPM);
-
-        SmartDashboard.putString("Shooter Mode", modeString);
-
-        rightTarget = speeds.RightRPM;
-        leftTarget = speeds.LeftRPM;
-    }
-
-    private void trapMode() {
-        putConstants(ShotSpeeds.TRAP, "Trap");
-    }
-
-    private void fastMode() {
-        putConstants(ShotSpeeds.FAST, "Fast");
-    }
-
-    private void ampMode() {
-        putConstants(ShotSpeeds.AMP, "Amp");
-    }
 
     public void runShot(ShotSpeeds shot, double scale) {
         setLeftToVel(shot.LeftRPM * scale);
@@ -320,10 +286,6 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Left Shooter Speed", leftMotor.getVelocity().getValueAsDouble() * 60.);
-        SmartDashboard.putNumber("Right Shooter Speed", rightMotor.getVelocity().getValueAsDouble() * 60.);
-
-        SmartDashboard.putNumber("Left Shooter Target", leftTarget);
-        SmartDashboard.putNumber("Right Shooter Target", rightTarget);
+        
     }
 }

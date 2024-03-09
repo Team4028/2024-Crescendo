@@ -46,6 +46,11 @@ public class ShooterTable {
         fillInTable();
     }
 
+    public static ShooterTableEntry calcShooterTableEntryByPercent(double percent) {
+        Measure<Distance> size = table.get(table.size() - 1).Distance.minus(table.get(0).Distance);
+        return calcShooterTableEntry(size.times(percent));
+    }
+
     public static ShooterTableEntry calcShooterTableEntry(Measure<Distance> distance) {
         ShooterTableEntry closestLower = table.get(0);
         ShooterTableEntry closestHigher = table.get(table.size() - 1);

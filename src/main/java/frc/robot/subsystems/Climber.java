@@ -18,9 +18,9 @@ import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.DashboardStore;
 
 public class Climber extends SubsystemBase {
     /** Creates a new Climber. */
@@ -95,6 +95,12 @@ public class Climber extends SubsystemBase {
         currentLog = new DoubleLogEntry(log, "/Climber/Current");
         positionLog = new DoubleLogEntry(log, "/Climber/Position");
         velocityLog = new DoubleLogEntry(log, "/Climber/Velocity");
+
+        /* Dashboard */
+        DashboardStore.add("Climber Position", () -> motor.getPosition().getValueAsDouble());
+        DashboardStore.add("Climber Current", () -> motor.getStatorCurrent().getValueAsDouble());
+        DashboardStore.add("Climber Velocity", () -> motor.getVelocity().getValueAsDouble());
+        DashboardStore.add("Absolute Encoder Position", () -> encoder.getAbsolutePosition());
     }
 
     public void runMotor(double vBus) {
@@ -155,9 +161,5 @@ public class Climber extends SubsystemBase {
         }
 
         // // This method will be called once per scheduler run
-        SmartDashboard.putNumber("Climber Position", motor.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("Climber Current", motor.getStatorCurrent().getValueAsDouble());
-        SmartDashboard.putNumber("Climber Velocity", motor.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("Abs Endocer Pos", encoder.getAbsolutePosition());
     }
 }

@@ -10,17 +10,23 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.utils.DashboardStore;
 
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
 
-    private RobotContainer m_robotContainer;
+    private RobotContainer robotContainer;
 
     @Override
     public void robotInit() {
         DataLogManager.start();
-        m_robotContainer = new RobotContainer();
+        robotContainer = new RobotContainer();
         SignalLogger.setPath("/u/ctre");
+
+        addPeriodic(() -> {
+            DashboardStore.update();
+            // robotContainer.dashboardPeriodic();
+        }, 0.1);
     }
 
     @Override
@@ -48,7 +54,7 @@ public class Robot extends TimedRobot {
     public void autonomousInit() {
         DataLogManager.start();
 
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        m_autonomousCommand = robotContainer.getAutonomousCommand();
 
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
@@ -59,7 +65,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousPeriodic() {
-        m_robotContainer.logValues();
+        robotContainer.logValues();
     }
 
     @Override
@@ -74,12 +80,12 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.cancel();
         }
 
-        m_robotContainer.zero();
+        robotContainer.zero();
     }
 
     @Override
     public void teleopPeriodic() {
-        m_robotContainer.logValues();
+        robotContainer.logValues();
     }
 
     @Override
