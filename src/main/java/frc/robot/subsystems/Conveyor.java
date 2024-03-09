@@ -82,7 +82,7 @@ public class Conveyor extends SubsystemBase {
         motor.burnFlash();
 
         tofSensor = new TimeOfFlight(TOF_CAN_ID);
-        tofSensor.setRangingMode(RangingMode.Short, 24.0);
+        tofSensor.setRangingMode(RangingMode.Short, 20.0);
         tofSensor.setRangeOfInterest(4, 4, 11, 11);
 
         log = DataLogManager.getLog();
@@ -147,5 +147,6 @@ public class Conveyor extends SubsystemBase {
     public void periodic() {
         // This method will be called once per scheduler run
         SmartDashboard.putNumber("ToF Sensor", tofSensor.getRange());
+        SmartDashboard.putNumber("TOF Sample Rate", tofSensor.getSampleTime());
     }
 }
