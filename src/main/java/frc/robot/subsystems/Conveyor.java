@@ -29,6 +29,7 @@ public class Conveyor extends SubsystemBase {
     private final CANSparkFlex motor;
     private final RelativeEncoder encoder;
     private final TimeOfFlight tofSensor;
+    private final TimeOfFlight infeedTof;
     private final SparkPIDController pid;
     private final DataLog log;
     private final DoubleLogEntry currentLog, vbusLog, positionLog, velocityLog;
@@ -41,26 +42,33 @@ public class Conveyor extends SubsystemBase {
     }
 
     private static final double NOTE_HELD_RANGE_THRESHOLD = 70.;
-    private static final double INITIAL_DETECTION_RANGE_THRESHOLD = 60.;
+    private static final double CONVEYOR_INITIAL_DETECTION_RANGE_THRESHOLD = 60.;
+    private static final double CONVEYOR_BACKDRIVE_TIMER = 0.75;
+    private static final double INFEED_BACKDRIVE_TIMER = 2.00;
+    private static final double INFEED_INITIAL_DETECTION_RANGE_THRESHOLD = 60.;
 
     private static final int CAN_ID = 11;
     private static final int TOF_CAN_ID = 21;
+    private static final int INFEED_TOF_ID = 1;
 
     private boolean hasInfed = false;
     private double target;
-    private final Timer timer;
+    private final Timer conveyorTimer;
+    private final Timer infeedTimer;
 
     public Conveyor() {
-        timer = new Timer();
-        timer.reset();
+        conveyorTimer = new Timer();
+        conveyorTimer.reset();
+        infeedTimer = new Timer();
+        infeedTimer.reset();
+
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
 
         motor.restoreFactoryDefaults();
-        
+
         motor.setIdleMode(IdleMode.kCoast);
         motor.setInverted(true);
         motor.setClosedLoopRampRate(.1);
-
 
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 20);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
@@ -85,6 +93,10 @@ public class Conveyor extends SubsystemBase {
         tofSensor.setRangingMode(RangingMode.Short, 24.0);
         tofSensor.setRangeOfInterest(4, 4, 11, 11);
 
+        infeedTof = new TimeOfFlight(INFEED_TOF_ID);
+        tofSensor.setRangingMode(RangingMode.Short, 24.0);
+        tofSensor.setRangeOfInterest(4, 4, 11, 11);
+
         log = DataLogManager.getLog();
 
         currentLog = new DoubleLogEntry(log, "/Conveyor/Current");
@@ -94,15 +106,23 @@ public class Conveyor extends SubsystemBase {
     }
 
     public boolean getHasInfed() {
-        if (tofSensor.getRange() < INITIAL_DETECTION_RANGE_THRESHOLD) {
-            hasInfed = true;
-            timer.start();
+        if (infeedTof.getRange() < INFEED_INITIAL_DETECTION_RANGE_THRESHOLD) {
+            infeedTimer.start();
         }
 
-        if (hasInfed && ((tofSensor.getRange() >= NOTE_HELD_RANGE_THRESHOLD) || (timer.get() >= 0.75))) {
+        if (tofSensor.getRange() < CONVEYOR_INITIAL_DETECTION_RANGE_THRESHOLD) {
+            hasInfed = true;
+            conveyorTimer.start();
+        }
+
+        if ((hasInfed && ((tofSensor.getRange() >= NOTE_HELD_RANGE_THRESHOLD)
+                || (conveyorTimer.get() >= CONVEYOR_BACKDRIVE_TIMER)))
+                /*|| infeedTimer.get() >= INFEED_BACKDRIVE_TIMER*/) {
             hasInfed = false;
-            timer.stop();
-            timer.reset();
+            conveyorTimer.stop();
+            conveyorTimer.reset();
+            infeedTimer.stop();
+            infeedTimer.reset();
             return true;
         }
 
