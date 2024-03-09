@@ -41,6 +41,7 @@ import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
 import frc.robot.commands.vision.LimelightAcquire;
+import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.generated.TunerConstants;
 
 import frc.robot.subsystems.Climber;
@@ -114,6 +115,7 @@ public class RobotContainer {
     private final SlewRateLimiter yLimiter = new SlewRateLimiter(4.);
     private final SlewRateLimiter thetaLimiter = new SlewRateLimiter(4.);
     private final SlewRateLimiter xLimeAquireLimiter = new SlewRateLimiter(4.);
+    private final SlewRateLimiter yLimeAquireLimiter = new SlewRateLimiter(4.);
 
     private static final double MAX_SPEED = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top
                                                                                // speed
@@ -287,7 +289,7 @@ public class RobotContainer {
                 .onFalse(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
                         .raceWith(conveyor.runXRotations(-2.5).withTimeout(0.2) // -1.5
                                 .alongWith(infeed.runMotorCommand(0.)))
-                                .andThen(shooter.stopCommand()));
+                        .andThen(shooter.stopCommand()));
 
         /* Smart Infeed */
         driverController.leftBumper().toggleOnTrue(smartInfeedCommand());
@@ -318,7 +320,9 @@ public class RobotContainer {
         // TODO: Limelight squaring
         // toggle that runs forever, goes to robot relative mode, no infeed/whatever
         // control
-        driverController.leftStick().onTrue(Commands.none());
+        driverController.leftStick().toggleOnTrue(new LimelightSquare(true,
+                () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
+                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, BASE_SPEED) * MAX_SPEED, drivetrain));
 
         // =================== //
         /* OPERATOR CONTROLLER */
@@ -366,8 +370,8 @@ public class RobotContainer {
 
         /* Run Pivot & Climber to Zero */
         operatorController.back().onTrue(climber.runToPositionCommand(ClimberPositions.HOME).andThen(
-            Commands.waitUntil(climber.inPositionSupplier()),
-            pivot.runToHomeCommand()));
+                Commands.waitUntil(climber.inPositionSupplier()),
+                pivot.runToHomeCommand()));
 
         /* Run Climber to "Home" */
         operatorController.povDown().onTrue(climber.climbCommand());
@@ -457,14 +461,14 @@ public class RobotContainer {
                                 () -> emergencyController.getRightY()));
 
         // emergencyController.a().and(emergencyController.povUp()).whileTrue(pivot.runQuasi(Direction.kForward))
-        //         .onFalse(pivot.runMotorCommand(0.));
+        // .onFalse(pivot.runMotorCommand(0.));
         // emergencyController.a().and(emergencyController.povDown()).whileTrue(pivot.runQuasi(Direction.kReverse))
-        //         .onFalse(pivot.runMotorCommand(0.));
+        // .onFalse(pivot.runMotorCommand(0.));
 
         // emergencyController.b().and(emergencyController.povUp()).whileTrue(pivot.runDyn(Direction.kForward))
-        //         .onFalse(pivot.runMotorCommand(0.));
+        // .onFalse(pivot.runMotorCommand(0.));
         // emergencyController.b().and(emergencyController.povDown()).whileTrue(pivot.runDyn(Direction.kReverse))
-        //         .onFalse(pivot.runMotorCommand(0.));
+        // .onFalse(pivot.runMotorCommand(0.));
 
         emergencyController.b().onTrue(shooter.runShotCommand(ShotSpeeds.TRAP)).onFalse(shooter.stopCommand());
 
