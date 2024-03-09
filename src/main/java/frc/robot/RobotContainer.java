@@ -285,7 +285,7 @@ public class RobotContainer {
         driverController.leftTrigger().onTrue(
                 runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS).repeatedly())
                 .onFalse(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-                        .raceWith(conveyor.runXRotations(-3.0).withTimeout(0.25) // -1.5
+                        .raceWith(conveyor.runXRotations(-2.5).withTimeout(0.2) // -1.5
                                 .alongWith(infeed.runMotorCommand(0.)))
                                 .andThen(shooter.stopCommand()));
 
@@ -430,8 +430,8 @@ public class RobotContainer {
         // ==== //
 
         /* whippyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy */
-        // emergencyController.a().onTrue(whippy.whippyWheelsCommand(WHIPPY_VBUS))
-        //         .onFalse(whippy.stopCommand());
+        emergencyController.a().onTrue(whippy.whippyWheelsCommand(WHIPPY_VBUS))
+                .onFalse(whippy.stopCommand());
 
         /* TrapStar 5000 */
         emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS)).onFalse(m_fan.stopCommand());
@@ -466,7 +466,7 @@ public class RobotContainer {
         // emergencyController.b().and(emergencyController.povDown()).whileTrue(pivot.runDyn(Direction.kReverse))
         //         .onFalse(pivot.runMotorCommand(0.));
 
-        emergencyController.a().onTrue(shooter.runShotCommand(ShotSpeeds.TRAP)).onFalse(shooter.stopCommand());
+        emergencyController.b().onTrue(shooter.runShotCommand(ShotSpeeds.TRAP)).onFalse(shooter.stopCommand());
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
