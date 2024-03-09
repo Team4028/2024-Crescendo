@@ -16,6 +16,7 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -49,8 +50,6 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Fan;
 import frc.robot.subsystems.Infeed;
-// import frc.robot.subsystems.Fan;
-// import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Vision;
@@ -146,8 +145,8 @@ public class RobotContainer {
         magicShootCommand = new RotateToSpeaker(drivetrain).andThen(Commands.runOnce(() -> {
             ShooterTableEntry entry = getBestSTEntry();
             shooter.runEntry(entry, ShotSpeeds.FAST);
-            pivot.runToPosition(entry.angle);
-        }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReady()))
+            pivot.runToPosition(entry.Angle);
+        }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReadySupplier()))
                 .andThen(Commands.waitSeconds(0.5))
                 .andThen(conveyor.runXRotations(10)
                         .alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS)))
@@ -202,46 +201,100 @@ public class RobotContainer {
             drivetrain.seedFieldRelative(poseOpt.get().estimatedPose.toPose2d());
         }, leftVision, rightVision));
 
-        NamedCommands.registerCommand("llAquire",
-                new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.8), drivetrain));
+        NamedCommands.registerCommand("Go to 4 piece path",
+                drivetrain.pathFindCommand(PathPlannerAuto.getStaringPoseFromAutoFile("4 Piece Simple"), 1., 0.));
 
-        // TODO: change this stuff for shootertable
-        NamedCommands.registerCommand("runShooter", shooter.runVelocityCommand());
+        // TODO: change this stuff for shooter table
         NamedCommands.registerCommand("4pinfeed", infeed.runMotorCommand(INFEED_VBUS)
-                .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());//
-        // .withTimeout(1.5));
+                .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
 
-        NamedCommands.registerCommand("runThru", infeed.runMotorCommand(INFEED_VBUS)
+        NamedCommands.registerCommand("Shoot Note",
+                conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS))
+                        .andThen(shooter.stopCommand()));
+
+        NamedCommands.registerCommand("Spit Note", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
                 .alongWith(shooter.spinBothCommand(0.15))
                 .repeatedly());
 
-        NamedCommands.registerCommand("LLAquire",
+        NamedCommands.registerCommand("Prepare Spit", shooter.spinBothCommand(0.15));
+
+        // TODO: use the smart infeed command
+        NamedCommands.registerCommand("Limelight Acquire",
                 new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.5),
                         drivetrain)
                         .alongWith(smartInfeedCommand()));
 
-        NamedCommands.registerCommand("smartInfeed", smartInfeedCommand());
+        NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
+
         NamedCommands.registerCommand("farShot", Commands.runOnce(() -> pivot.runToPosition(1)));
 
-        ShooterTableEntry aentry = new ShooterTableEntry(Feet.of(0),
-                3, 1.0);
-        NamedCommands.registerCommand("startShooter",
-                shooter.runEntryCommand(() -> aentry, () -> ShotSpeeds.FAST)
-                        .alongWith(pivot.runToPositionCommand(
-                                aentry.angle)));
+        ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0),
+                0.05, 1.0);
 
-        NamedCommands.registerCommand("2.5StartShooter", shooter.runEntryCommand(() -> aentry, () -> ShotSpeeds.FAST));
+        // TODO: We may want a command that constantly updates the shooter table and
+        // runs the shooter/pivot based on that
+        // makes shooting on the move/faster autons much easier
 
-        NamedCommands.registerCommand("stopShooter", shooter.stopCommand());
+        NamedCommands.registerCommand("Start Shooter",
+                runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST));
 
-        NamedCommands.registerCommand("goTo2.5Shoot", drivetrain
-                .pathFindCommand(new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.5, 0));
+        NamedCommands.registerCommand("Stop Shooter", shooter.stopCommand());
+        NamedCommands.registerCommand("Stop Infeed", runBoth(0., 0.));
+
+        NamedCommands.registerCommand("Center Pathfinding Shot", drivetrain
+                .pathFindCommand(new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.75, 0)
+                .alongWith(runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST).repeatedly()
+                        .until(shooterAndPivotReady()))
+                .andThen(conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS))
+                        .withTimeout(1.0))
+                .andThen(shooter.stopCommand()));
+
+        NamedCommands.registerCommand("Right Center Pathfinding Shot", drivetrain
+                .pathFindCommand(new Pose2d(4.3, 1.9, Rotation2d.fromDegrees(-40)), 0.75, 0)
+                .alongWith(runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST).repeatedly()
+                        .until(shooterAndPivotReady()))
+                .andThen(conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS))
+                        .withTimeout(1.0))
+                .andThen(shooter.stopCommand()));
+
+        NamedCommands.registerCommand("Note 3",
+                drivetrain.pathFindCommand(new Pose2d(4.67, 6.7, Rotation2d.fromDegrees(-18)), 0.75, 2.5));
+
+        NamedCommands.registerCommand("Note 3 Right",
+                drivetrain.pathFindCommand(new Pose2d(4.67, 1.5, Rotation2d.fromDegrees(18)), 0.75, 2.5));
+
+        NamedCommands.registerCommand("Note 4",
+                drivetrain.pathFindCommand(new Pose2d(3.66, 6.93, Rotation2d.fromDegrees(70.)), 0.75, 0));
+
+        NamedCommands.registerCommand("Note 4 Right",
+                drivetrain.pathFindCommand(new Pose2d(3.66, 1.2, Rotation2d.fromDegrees(-70.)), 0.75, 0));
 
         NamedCommands.registerCommand("follow2pchoice",
                 new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
                         AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pright")),
                         () -> true));
+
+        NamedCommands.registerCommand("Wait For Shooter", Commands.waitUntil(shooterAndPivotReady()));
+
+        NamedCommands.registerCommand("4 piece align pivot", pivot.runToPositionCommand(2.5));
+
+        /*
+         * Spin up Shooter
+         * When shooter ready, feed
+         * Stop shooter
+         */
+        NamedCommands.registerCommand("2.5 Stationary Shot",
+                runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST)
+                        .repeatedly().until(shooterAndPivotReady())
+                        .andThen(conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS)))
+                        .andThen(shooter.stopCommand()));
+
+        NamedCommands.registerCommand("2.5 Final Note", drivetrain
+                .pathFindCommand(new Pose2d(3.71, 6.51, new Rotation2d(Units.degreesToRadians(-9.1))), 0.75, 0));
+        NamedCommands.registerCommand("2.5 Final Note Right", drivetrain
+                .pathFindCommand(new Pose2d(3.71, 1.8, new Rotation2d(Units.degreesToRadians(9.1))), 0.75, 0.));
+
     }
 
     // =========================== //
@@ -251,6 +304,7 @@ public class RobotContainer {
 
         // TODO: Add reverse infeed in case of jams so driver can spit out note and
         // retry
+
         // TODO: Buttons should NOT be toggles. Commands should only be running while
         // buttons are being held
 
@@ -484,17 +538,27 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
-    /* Generate Smart Infeed Command */
+    /* Smart Infeed Command Generator */
     private Command smartInfeedCommand() {
-        return infeed.runMotorCommand(INFEED_VBUS)
-                .alongWith(conveyor.runMotorCommand(SLOW_CONVEYOR_VBUS))
+        return runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS)
                 .repeatedly().until(conveyor.hasInfedSupplier())
-                .andThen(infeed.runMotorCommand(0.).alongWith(conveyor.runMotorCommand(0.))
+                .andThen(runBoth(0., 0.)
                         .repeatedly().withTimeout(0.1))
                 .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
                         .raceWith(conveyor.runXRotations(-4.0).withTimeout(0.5) // -1.5
                                 .alongWith(infeed.runMotorCommand(0.))))
                 .andThen(shooter.spinMotorLeftCommand(0.));
+    }
+
+    /* Run a Shooter Table Entry */
+    private Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShotSpeeds> speed) {
+        return shooter.runEntryCommand(entry, speed)
+                .alongWith(pivot.runToPositionCommand(entry.get().Angle));
+    }
+
+    /* Shooter & Pivot Both Ready */
+    private BooleanSupplier shooterAndPivotReady() {
+        return () -> shooter.isReady() && pivot.inPosition();
     }
 
     /* Run both Conveyor and Infeed */
@@ -541,11 +605,6 @@ public class RobotContainer {
                         + driverController.getRightTriggerAxis() * (1 - baseSpeedPercent)));
     }
 
-    /* Shooter & Pivot Ready */
-    private BooleanSupplier shooterAndPivotReady() {
-        return () -> shooter.isReady().getAsBoolean() && pivot.inPositionSupplier().getAsBoolean();
-    }
-
     // ======= //
     /* Logging */
     // ======= //
@@ -554,7 +613,7 @@ public class RobotContainer {
         conveyor.logValues();
         infeed.logValues();
         shooter.logValues();
-        climber.logValues();
+        // climber.logValues();
         pivot.logValues();
         m_fan.logValues();
     }
@@ -620,8 +679,8 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("Distance", Units.metersToFeet(translation.getNorm()));
 
-        SmartDashboard.putNumber("ST Angle", entryPicked.angle);
-        SmartDashboard.putNumber("ST Left", entryPicked.percent);
+        SmartDashboard.putNumber("ST Angle", entryPicked.Angle);
+        SmartDashboard.putNumber("ST Left", entryPicked.Percent);
 
         return entryPicked;
     }

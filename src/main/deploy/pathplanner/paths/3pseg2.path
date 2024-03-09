@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 8.0,
-        "y": 7.36
+        "y": 7.4
       },
       "prevControl": null,
       "nextControl": {
         "x": 7.579317184311971,
-        "y": 7.12387531220141
+        "y": 7.16387531220141
       },
       "isLocked": false,
       "linkedName": "3p1"
@@ -17,23 +17,29 @@
     {
       "anchor": {
         "x": 8.0,
-        "y": 5.75
+        "y": 5.88
       },
       "prevControl": {
-        "x": 5.861260725370453,
-        "y": 6.017572001183889
+        "x": 7.038866934787628,
+        "y": 6.454998461698352
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "3p2"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.7,
+      "rotationDegrees": -30.0,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "stopShooter",
-      "waypointRelativePos": 0.25,
+      "name": "Stop Shooter",
+      "waypointRelativePos": 0.65,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,7 +47,7 @@
             {
               "type": "named",
               "data": {
-                "name": "stopShooter"
+                "name": "Stop Shooter"
               }
             }
           ]
@@ -49,7 +55,7 @@
       }
     },
     {
-      "name": "smartInfeedCmd",
+      "name": "Infeed Note",
       "waypointRelativePos": 0.75,
       "command": {
         "type": "parallel",
@@ -58,7 +64,7 @@
             {
               "type": "named",
               "data": {
-                "name": "smartInfeed"
+                "name": "Smart Infeed"
               }
             }
           ]
@@ -74,7 +80,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -30.0,
     "rotateFast": false
   },
   "reversed": false,
@@ -83,5 +89,5 @@
     "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

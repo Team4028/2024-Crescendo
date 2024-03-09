@@ -10,9 +10,9 @@ import edu.wpi.first.units.Measure;
 public class ShooterTable {
     // TODO: We may want P values here, or just tune kF
     public static final class ShooterTableEntry {
-        public Measure<Distance> distance;
-        public double angle;
-        public double percent;
+        public Measure<Distance> Distance;
+        public double Angle;
+        public double Percent;
 
         /**
          * Construct a shooter table entry.
@@ -23,9 +23,9 @@ public class ShooterTable {
          * @param rightSpeed Speed of the right shooter motor, in RPM.
          */
         public ShooterTableEntry(Measure<Distance> distance, double angle, double percent) {
-            this.angle = angle;
-            this.percent = percent;
-            this.distance = distance;
+            this.Angle = angle;
+            this.Percent = percent;
+            this.Distance = distance;
         }
     }
 
@@ -50,33 +50,33 @@ public class ShooterTable {
         ShooterTableEntry closestLower = table.get(0);
         ShooterTableEntry closestHigher = table.get(table.size() - 1);
 
-        if (distance.lte(closestLower.distance))
+        if (distance.lte(closestLower.Distance))
             return closestLower;
-        if (distance.gte(closestHigher.distance))
+        if (distance.gte(closestHigher.Distance))
             return closestHigher;
 
         // loop thru all of the entrys of the shootertable
         for (ShooterTableEntry entry : table) {
-            if (entry.distance.lt(distance)
-                    && (Math.abs(distance.minus(closestLower.distance).baseUnitMagnitude()) > Math
-                            .abs(distance.minus(entry.distance).baseUnitMagnitude()))) {
+            if (entry.Distance.lt(distance)
+                    && (Math.abs(distance.minus(closestLower.Distance).baseUnitMagnitude()) > Math
+                            .abs(distance.minus(entry.Distance).baseUnitMagnitude()))) {
                 closestLower = entry;
-            } else if (entry.distance.gt(distance)
-                    && (Math.abs(closestHigher.distance.minus(distance).baseUnitMagnitude()) > Math
-                            .abs(entry.distance.minus(distance).baseUnitMagnitude()))) {
+            } else if (entry.Distance.gt(distance)
+                    && (Math.abs(closestHigher.Distance.minus(distance).baseUnitMagnitude()) > Math
+                            .abs(entry.Distance.minus(distance).baseUnitMagnitude()))) {
                 closestHigher = entry;
-            } else if (entry.distance.isEquivalent(distance)) {
+            } else if (entry.Distance.isEquivalent(distance)) {
                 return entry;
             }
         }
 
-        double scaleFactor = (distance.minus(closestLower.distance).baseUnitMagnitude())
-                / (closestHigher.distance.minus(closestLower.distance).baseUnitMagnitude());
+        double scaleFactor = (distance.minus(closestLower.Distance).baseUnitMagnitude())
+                / (closestHigher.Distance.minus(closestLower.Distance).baseUnitMagnitude());
 
-        double calculatedPercent = scaleFactor * (closestHigher.percent - closestLower.percent)
-                + closestLower.percent;
+        double calculatedPercent = scaleFactor * (closestHigher.Percent - closestLower.Percent)
+                + closestLower.Percent;
 
-        double calculatedAngle = scaleFactor * (closestHigher.angle - closestLower.angle) + closestLower.angle;
+        double calculatedAngle = scaleFactor * (closestHigher.Angle - closestLower.Angle) + closestLower.Angle;
 
         return new ShooterTableEntry(distance, calculatedAngle, calculatedPercent);
     }

@@ -224,12 +224,12 @@ public class Pivot extends SubsystemBase {
 
     }
 
-    // public boolean inPosition() {
-    // return Math.abs(motor.getPosition() - targetPosition) < 1.0;
-    // }
+    public boolean inPosition() {
+        return Math.abs(getPosition() - targetPosition) < 1.0;
+    }
 
     public BooleanSupplier inPositionSupplier() {
-        return () -> (Math.abs(getPosition() - targetPosition) < 2.0);
+        return () -> (inPosition());
     }
 
     public void logValues() {

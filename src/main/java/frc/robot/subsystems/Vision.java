@@ -19,11 +19,11 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 
 public class Vision extends SubsystemBase {
-    private final PhotonCamera m_camera;
-    private AprilTagFieldLayout m_layout;
-    private final Transform3d m_offset;
+    private final PhotonCamera camera;
+    private AprilTagFieldLayout layout;
+    private final Transform3d offset;
 
-    private PhotonPoseEstimator m_estimator;
+    private PhotonPoseEstimator estimator;
 
     public static final Transform3d LEFT_ROBOT_TO_CAMERA = new Transform3d(Units.inchesToMeters(0.),
             Units.inchesToMeters(+12.5), Units.inchesToMeters(0.),
@@ -48,14 +48,14 @@ public class Vision extends SubsystemBase {
      *                      center of the camera lens.
      */
     public Vision(String cameraName, Transform3d robotToCamera) {
-        m_camera = new PhotonCamera(cameraName);
-        m_offset = robotToCamera;
+        camera = new PhotonCamera(cameraName);
+        offset = robotToCamera;
 
         try {
-            m_layout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
-            m_estimator = new PhotonPoseEstimator(m_layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, m_camera,
+            layout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
+            estimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera,
                     robotToCamera);
-            m_estimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
+            estimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
         } catch (IOException e) {
             System.err.println(e.getMessage());
             System.exit(1);
@@ -63,7 +63,7 @@ public class Vision extends SubsystemBase {
     }
 
     public Optional<PhotonTrackedTarget> getTag(int tagID) {
-        for (PhotonTrackedTarget target : m_camera.getLatestResult().getTargets()) {
+        for (PhotonTrackedTarget target : camera.getLatestResult().getTargets()) {
             if (target.getFiducialId() == tagID) {
                 return Optional.of(target);
             }
@@ -78,7 +78,7 @@ public class Vision extends SubsystemBase {
             return Optional.empty();
 
         double yaw = target.get().getYaw();
-        yaw += m_offset.getRotation().toRotation2d().getDegrees();
+        yaw += offset.getRotation().toRotation2d().getDegrees();
 
         return Optional.of(yaw);
     }
@@ -91,27 +91,27 @@ public class Vision extends SubsystemBase {
             return Optional.empty();
 
         double distance = PhotonUtils.calculateDistanceToTargetMeters(
-                m_offset.getZ(), m_layout.getTagPose(tagID).get().getZ(), m_offset.getRotation().getY(),
+                offset.getZ(), layout.getTagPose(tagID).get().getZ(), offset.getRotation().getY(),
                 target.get().getPitch());
 
         return Optional.of(distance);
     }
 
     public Optional<EstimatedRobotPose> getCameraResult(Pose2d prevPose) {
-        m_estimator.setReferencePose(prevPose);
-        Optional<EstimatedRobotPose> pose = m_estimator.update();
+        estimator.setReferencePose(prevPose);
+        Optional<EstimatedRobotPose> pose = estimator.update();
         return pose;
     }
 
     public PhotonTrackedTarget getBestTarget() {
-        var result = m_camera.getLatestResult();
+        var result = camera.getLatestResult();
         if (!result.hasTargets())
             return null;
         return result.getBestTarget();
     }
 
     public PhotonTrackedTarget getTargetById(int id) {
-        var result = m_camera.getLatestResult();
+        var result = camera.getLatestResult();
 
         for (var target : result.getTargets()) {
             if (target.getFiducialId() == id)

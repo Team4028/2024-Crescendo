@@ -18,13 +18,19 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "4 piece align pivot"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "named",
                 "data": {
-                  "name": "startShooter"
+                  "name": "Start Shooter"
                 }
               },
               {
@@ -64,7 +70,7 @@
         {
           "type": "named",
           "data": {
-            "name": "stopShooter"
+            "name": "Stop Shooter"
           }
         }
       ]

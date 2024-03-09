@@ -63,7 +63,7 @@
             {
               "type": "named",
               "data": {
-                "name": "smartInfeed"
+                "name": "Smart Infeed"
               }
             }
           ]
@@ -86,7 +86,7 @@
             {
               "type": "named",
               "data": {
-                "name": "runShooter"
+                "name": "Start Shooter"
               }
             }
           ]

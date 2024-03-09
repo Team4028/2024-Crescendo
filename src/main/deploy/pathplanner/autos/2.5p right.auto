@@ -3,7 +3,7 @@
   "startingPose": {
     "position": {
       "x": 1.4,
-      "y": 6.2
+      "y": 1.6
     },
     "rotation": 0
   },
@@ -14,19 +14,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "3pseg1"
+            "pathName": "3p 0-1 right"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "3pseg2"
+            "pathName": "3p 1-2 right"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "3pseg3"
+            "pathName": "3p 2-3 right"
           }
         },
         {
@@ -44,13 +44,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Center Pathfinding Shot"
+            "name": "Right Center Pathfinding Shot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "2.5 Final Note"
+            "name": "2.5 Final Note Right"
           }
         },
         {
@@ -62,7 +62,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Center Pathfinding Shot"
+            "name": "Right Center Pathfinding Shot"
           }
         }
       ]

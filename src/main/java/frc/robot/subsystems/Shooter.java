@@ -165,8 +165,12 @@ public class Shooter extends SubsystemBase {
     // ==================================
 
     /* Check if shooter is spinned up */
-    public BooleanSupplier isReady() {
-        return () -> Math.abs(leftMotor.getVelocity().getValueAsDouble() * 60. - leftTarget) < 100.
+    public BooleanSupplier isReadySupplier() {
+        return () -> isReady();
+    }
+
+    public boolean isReady() {
+        return Math.abs(leftMotor.getVelocity().getValueAsDouble() * 60. - leftTarget) < 100.
                 && Math.abs(rightMotor.getVelocity().getValueAsDouble() * 60. - rightTarget) < 100.;
     }
 
@@ -187,14 +191,14 @@ public class Shooter extends SubsystemBase {
 
     /* Run Based on Shooter Table Entry */
     public void runEntry(ShooterTableEntry entry, ShotSpeeds shotSpeed) {
-        setLeftToVel(entry.percent * shotSpeed.LeftRPM);
-        setRightToVel(entry.percent * shotSpeed.RightRPM);
+        setLeftToVel(entry.Percent * shotSpeed.LeftRPM);
+        setRightToVel(entry.Percent * shotSpeed.RightRPM);
     }
 
     public Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShotSpeeds> shotSpeed) {
-        return startEnd(
-                () -> runEntry(entry.get(), shotSpeed.get()),
-                () -> stop());
+        // return startEnd(
+        return runOnce(() -> runEntry(entry.get(), shotSpeed.get()));
+        // () -> stop());
     }
 
     public void stop() {

@@ -3,57 +3,62 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.0,
-        "y": 5.88
+        "x": 1.4,
+        "y": 1.6
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.720631281718404,
-        "y": 5.170180564691614
+        "x": 2.3999999999999995,
+        "y": 1.6
       },
       "isLocked": false,
-      "linkedName": "3p2"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.0,
-        "y": 4.05
+        "x": 7.860377261410728,
+        "y": 0.9
       },
       "prevControl": {
-        "x": 7.0,
-        "y": 4.05
+        "x": 6.860377261410728,
+        "y": 0.9
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "3+p3"
+      "linkedName": "3pr1"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.2,
-      "rotationDegrees": -33.04704371738193,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Smart Infeed",
-      "waypointRelativePos": 0.25,
+      "name": "Start Shooter",
+      "waypointRelativePos": 0,
       "command": {
-        "type": "sequential",
+        "type": "parallel",
         "data": {
           "commands": [
             {
               "type": "named",
               "data": {
-                "name": "Stop Shooter"
+                "name": "Prepare Spit"
               }
-            },
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Spit Note",
+      "waypointRelativePos": 0.15,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
             {
               "type": "named",
               "data": {
-                "name": "Smart Infeed"
+                "name": "Spit Note"
               }
             }
           ]
@@ -63,7 +68,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 5.0,
-    "maxAcceleration": 4.25,
+    "maxAcceleration": 5.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },

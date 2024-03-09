@@ -3,61 +3,73 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.4,
-        "y": 6.15
+        "x": 7.8726552894701225,
+        "y": 7.449176379834242
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4,
-        "y": 6.15
+        "x": 6.8726552894701225,
+        "y": 7.449176379834242
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "5p2"
     },
     {
       "anchor": {
         "x": 4.5,
-        "y": 6.15
+        "y": 6.2
       },
       "prevControl": {
-        "x": 3.3412811867811545,
-        "y": 6.15
+        "x": 5.417704877720102,
+        "y": 6.2
       },
       "nextControl": {
-        "x": 5.66,
-        "y": 6.15
+        "x": 3.5822951222798984,
+        "y": 6.2
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.0,
-        "y": 7.4
+        "x": 3.5903725964221542,
+        "y": 6.2
       },
       "prevControl": {
-        "x": 7.0,
-        "y": 7.4
+        "x": 4.590372596422149,
+        "y": 6.2
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "3p1"
+      "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1,
+      "rotationDegrees": 12.919619963490153,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Spit Note",
-      "waypointRelativePos": 0.25,
+      "name": "Fix Note + Start Shooter",
+      "waypointRelativePos": 0.0,
       "command": {
-        "type": "parallel",
+        "type": "sequential",
         "data": {
           "commands": [
             {
               "type": "named",
               "data": {
-                "name": "Spit Note"
+                "name": "Smart Infeed"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Start Shooter"
               }
             }
           ]
@@ -65,8 +77,8 @@
       }
     },
     {
-      "name": "Spin Shooter",
-      "waypointRelativePos": 0.0,
+      "name": "Shoot Note",
+      "waypointRelativePos": 1.0,
       "command": {
         "type": "parallel",
         "data": {
@@ -74,7 +86,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Prepare Spit"
+                "name": "4pinfeed"
               }
             }
           ]
@@ -90,7 +102,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": 0.0,
     "rotateFast": false
   },
   "reversed": false,

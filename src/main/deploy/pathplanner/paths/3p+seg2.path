@@ -4,56 +4,44 @@
     {
       "anchor": {
         "x": 8.0,
-        "y": 5.88
+        "y": 7.4
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.720631281718404,
-        "y": 5.170180564691614
+        "x": 7.229476795135926,
+        "y": 7.131904982100564
       },
       "isLocked": false,
-      "linkedName": "3p2"
+      "linkedName": "3p1"
     },
     {
       "anchor": {
         "x": 8.0,
-        "y": 4.05
+        "y": 5.88
       },
       "prevControl": {
-        "x": 7.0,
-        "y": 4.05
+        "x": 7.042370324056887,
+        "y": 6.453013567679557
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "3+p3"
+      "linkedName": "3p2"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.2,
-      "rotationDegrees": -33.04704371738193,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Smart Infeed",
-      "waypointRelativePos": 0.25,
+      "name": "Spit Note",
+      "waypointRelativePos": 0.75,
       "command": {
-        "type": "sequential",
+        "type": "parallel",
         "data": {
           "commands": [
             {
               "type": "named",
               "data": {
-                "name": "Stop Shooter"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "Smart Infeed"
+                "name": "Spit Note"
               }
             }
           ]
@@ -63,13 +51,13 @@
   ],
   "globalConstraints": {
     "maxVelocity": 5.0,
-    "maxAcceleration": 4.25,
+    "maxAcceleration": 5.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -29.680135491700533,
     "rotateFast": false
   },
   "reversed": false,
