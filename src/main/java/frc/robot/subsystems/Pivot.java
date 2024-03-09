@@ -60,7 +60,9 @@ public class Pivot extends SubsystemBase {
 
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
-    public final static double TRAP_POSITION = 59.3;
+    public final static double HARD_STOP = 59.3;
+    public final static double STAGE_PIVOT = 56;
+
 
     private final static double INCIDENT_OFFSET = 0.9123; // rad
 
@@ -187,20 +189,25 @@ public class Pivot extends SubsystemBase {
         pid.setReference(position, ControlType.kPosition);
     }
 
-    public Command runToPositionCommand(double position) {
+    public Command runToPositionCommandFast(double position) {
+        return runOnce(() -> runToPosition(position));
+    }
+
+    public Command runToPositionCommandcontroled(double position) {
         return runOnce(() -> runToPosition(position));
     }
 
     public Command runToHomeCommand() {
-        return runToPositionCommand(HOLD_POSITION);
+        return runToPositionCommandFast(HOLD_POSITION);
     }
 
     public Command runToTrapCommand() {
-        return runToPositionCommand(TRAP_POSITION);
+        return runToPositionCommandFast(STAGE_PIVOT)
+                .andThen(runToPositionCommandcontroled(HARD_STOP));
     }
 
     public Command runToClimbCommand() {
-        return runToPositionCommand(CLIMB_POSITION);
+        return runToPositionCommandFast(CLIMB_POSITION);
     }
 
     public void holdPosition() {
@@ -220,7 +227,7 @@ public class Pivot extends SubsystemBase {
                                 && Math.abs(encoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
                 .andThen(runMotorCommand(0.).alongWith(Commands.runOnce(() -> zeroTimer.stop())))
                 .andThen(runOnce(() -> encoder.setPosition(0.)))
-                .andThen(new WaitCommand(0.25).andThen(runToPositionCommand(HOLD_POSITION)));
+                .andThen(new WaitCommand(0.25).andThen(runToPositionCommandFast(HOLD_POSITION)));
 
     }
 

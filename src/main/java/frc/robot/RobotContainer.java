@@ -155,7 +155,7 @@ public class RobotContainer {
                         .alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS)))
                 .andThen(Commands.waitSeconds(0.2))
                 .andThen(shooter.stopCommand())
-                .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
+                .andThen(pivot.runToPositionCommandFast(Pivot.HOLD_POSITION));
 
         magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2,
                 0)
@@ -280,7 +280,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Wait For Shooter", Commands.waitUntil(shooterAndPivotReady()));
 
-        NamedCommands.registerCommand("4 piece align pivot", pivot.runToPositionCommand(2.5));
+        NamedCommands.registerCommand("4 piece align pivot", pivot.runToPositionCommandFast(2.5));
 
         /*
          * Spin up Shooter
@@ -571,7 +571,7 @@ public class RobotContainer {
     /* Run a Shooter Table Entry */
     private Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShotSpeeds> speed) {
         return shooter.runEntryCommand(entry, speed)
-                .alongWith(pivot.runToPositionCommand(entry.get().Angle));
+                .alongWith(pivot.runToPositionCommandFast(entry.get().Angle));
     }
 
     /* Shooter & Pivot Both Ready */
