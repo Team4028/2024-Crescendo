@@ -18,6 +18,7 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         DataLogManager.start();
         m_robotContainer = new RobotContainer();
+        addPeriodic(m_robotContainer::logValues, 0.01);
     }
 
     @Override
@@ -56,7 +57,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousPeriodic() {
-        m_robotContainer.logValues();
+        // m_robotContainer.logValues();
     }
 
     @Override
@@ -76,7 +77,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
-        m_robotContainer.logValues();
+        // m_robotContainer.logValues();
     }
 
     @Override

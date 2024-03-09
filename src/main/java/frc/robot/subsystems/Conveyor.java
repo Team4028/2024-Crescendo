@@ -31,7 +31,7 @@ public class Conveyor extends SubsystemBase {
     private final TimeOfFlight tofSensor;
     private final SparkPIDController pid;
     private final DataLog log;
-    private final DoubleLogEntry currentLog, vbusLog, positionLog, velocityLog;
+    private final DoubleLogEntry currentLog, vbusLog, positionLog, velocityLog, tofLog;
 
     private final static class PIDConstants {
         private static final double kP = 0.8;
@@ -82,8 +82,8 @@ public class Conveyor extends SubsystemBase {
         motor.burnFlash();
 
         tofSensor = new TimeOfFlight(TOF_CAN_ID);
+        tofSensor.setRangeOfInterest(5, 5, 10, 10);
         tofSensor.setRangingMode(RangingMode.Short, 20.0);
-        tofSensor.setRangeOfInterest(4, 4, 11, 11);
 
         log = DataLogManager.getLog();
 
@@ -91,6 +91,7 @@ public class Conveyor extends SubsystemBase {
         vbusLog = new DoubleLogEntry(log, "/Conveyor/Vbus");
         positionLog = new DoubleLogEntry(log, "/Conveyor/Position");
         velocityLog = new DoubleLogEntry(log, "/Conveyor/Velocity");
+        tofLog = new DoubleLogEntry(log, "/Conveyor/TOFRange");
     }
 
     public boolean getHasInfed() {
@@ -141,6 +142,7 @@ public class Conveyor extends SubsystemBase {
         vbusLog.append(motor.getAppliedOutput());
         positionLog.append(encoder.getPosition());
         velocityLog.append(encoder.getVelocity());
+        tofLog.append(tofSensor.getRange());
     }
 
     @Override
