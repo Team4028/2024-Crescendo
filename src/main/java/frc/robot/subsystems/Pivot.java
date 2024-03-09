@@ -82,6 +82,8 @@ public class Pivot extends SubsystemBase {
 
     private double targetPosition;
 
+    private double previousPosition = 0.;
+
     public Pivot() {
         /* ======== */
         /* MOTAHHHH */
@@ -238,6 +240,18 @@ public class Pivot extends SubsystemBase {
 
     }
 
+    public void funkyBusiness() {
+        double position = convertEncoderToRadians(getPosition());
+        double displacement = position - previousPosition;
+        previousPosition = position;
+
+        double time = 0.010;
+
+        if (displacement == 0 || 
+        (getPosition() == 0 && Math.abs(displacement) > 0.2)) return;
+        velocityLog.append(displacement / time);
+    }
+
     // ==================================
     // PIVOT COMMANDS
     // ==================================
@@ -307,7 +321,7 @@ public class Pivot extends SubsystemBase {
     public void logValues() {
         currentLog.append(motor.getOutputCurrent());
         voltageLog.append(motor.getAppliedOutput() * motor.getBusVoltage());
-        velocityLog.append(convertEncoderToRadians(encoder.getVelocity()));
+        // velocityLog.append(convertEncoderToRadians(encoder.getVelocity()));
         positionLog.append(convertEncoderToRadians(getPosition()));
     }
 
@@ -317,7 +331,7 @@ public class Pivot extends SubsystemBase {
         SmartDashboard.putNumber("Pivot Current", motor.getOutputCurrent());
         SmartDashboard.putNumber("Pivot Target", targetPosition);
 
-        pid.setReference(targetPosition, ControlType.kPosition, 0, armFF.calculate(
-                convertEncoderToRadians(encoder.getPosition()), convertEncoderToRadians(encoder.getVelocity())));
+        // pid.setReference(targetPosition, ControlType.kPosition, 0, armFF.calculate(
+        //         convertEncoderToRadians(encoder.getPosition()), convertEncoderToRadians(encoder.getVelocity())));
     }
 }

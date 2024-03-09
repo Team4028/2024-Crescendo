@@ -492,6 +492,10 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
+    public void funky() {
+        pivot.funkyBusiness();
+    }
+
     /* Run both Conveyor and Infeed */
     private Command runBoth(double conveyorVbus, double infeedVbus) {
         return /* infeed.runMotorCommand(infeedVbus).alongWith */(conveyor.runMotorCommand(conveyorVbus));
