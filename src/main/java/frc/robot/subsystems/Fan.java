@@ -4,6 +4,12 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -16,27 +22,39 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Fan extends SubsystemBase {
-    private final CANSparkFlex m_motor;
-    private final RelativeEncoder m_encoder;
+    private final CANSparkFlex motor;
+    private final RelativeEncoder encoder;
+    private final TalonFX fanPivot;
 
-    private static final int CAN_ID = 14;
+    private static final int fanMotorCAN_ID = 14;
+
+
+    private static final int pivotMotorCAN_ID = 16; //? Actual id?
+    double targetPosition = 0;
+    double trapPosition = 13; // Find out the actual position for the trap angle.
 
     private final DataLog m_log;
     private final DoubleLogEntry m_vbusLog, m_currentLog, m_velocityLog;
 
     /** Creates a new Fan. */
     public Fan() {
-        m_motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
-        m_encoder = m_motor.getEncoder();
+        motor = new CANSparkFlex(fanMotorCAN_ID, MotorType.kBrushless);
+        encoder = motor.getEncoder();
 
         m_log = DataLogManager.getLog();
         m_vbusLog = new DoubleLogEntry(m_log, "/Fan/Vbus");
         m_currentLog = new DoubleLogEntry(m_log, "/Fan/Current");
         m_velocityLog = new DoubleLogEntry(m_log, "/Fan/Velocity");
+
+        // Creates a new pivot
+        fanPivot = new TalonFX(pivotMotorCAN_ID);
+        fanPivot.getConfigurator().apply(pidConfigs); // See Pivot Pid and configs below
     }
 
+    // Fan Motor Controls //
+
     public void runMotor(double vbus) {
-        m_motor.set(vbus);
+        motor.set(vbus);
     }
 
     public Command runMotorCommand(double vbus) {
@@ -54,14 +72,48 @@ public class Fan extends SubsystemBase {
     }
 
     public void logValues() {
-        m_vbusLog.append(m_motor.getAppliedOutput());
-        m_currentLog.append(m_motor.getOutputCurrent());
-        m_velocityLog.append(m_encoder.getVelocity());
+        m_vbusLog.append(motor.getAppliedOutput());
+        m_currentLog.append(motor.getOutputCurrent());
+        m_velocityLog.append(encoder.getVelocity());
+    }
+
+    // FAN PIVOT COMMANDS AND PID CONTROLS //
+
+    private final MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
+            .withMotionMagicCruiseVelocity(40.)
+            .withMotionMagicAcceleration(80.)
+            .withMotionMagicJerk(800.);
+
+    private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(100.)
+            .withSupplyCurrentLimit(80.);
+
+    /* Requests */
+    private final PositionVoltage positionRequest = new PositionVoltage(0.)
+            .withEnableFOC(true)
+            .withOverrideBrakeDurNeutral(true);
+
+    private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0.)
+            .withEnableFOC(true)
+            .withOverrideBrakeDurNeutral(true);
+
+    private final Slot0Configs pidConfigs = new Slot0Configs()
+            .withKP(0.0)
+            .withKI(0.0)
+            .withKD(0.0); // needs to be testing
+
+    public void runToPosition(double position) {
+        targetPosition = position;
+        fanPivot.setControl(positionRequest.withPosition(position)); 
+    }
+
+    public Command runToPositionCommand(double position) {
+        return runOnce(() -> runToPosition(position));
     }
 
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        SmartDashboard.putNumber("Fan RPM", m_encoder.getVelocity());
+        SmartDashboard.putNumber("Fan RPM", encoder.getVelocity());
     }
 }
