@@ -8,24 +8,27 @@ import com.ctre.phoenix6.SignalLogger;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
 
-    private RobotContainer m_robotContainer;
+    private RobotContainer robotContainer;
 
     @Override
     public void robotInit() {
         DataLogManager.start();
-        m_robotContainer = new RobotContainer();
+        robotContainer = new RobotContainer();
         SignalLogger.setPath("/u/ctre");
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+
+        SmartDashboard.putNumber("Shooter Table Index", robotContainer.steIndex * robotContainer.NUM_STEINDICIS);
     }
 
     @Override
@@ -48,7 +51,7 @@ public class Robot extends TimedRobot {
     public void autonomousInit() {
         DataLogManager.start();
 
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        m_autonomousCommand = robotContainer.getAutonomousCommand();
 
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
@@ -59,7 +62,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousPeriodic() {
-        m_robotContainer.logValues();
+        robotContainer.logValues();
     }
 
     @Override
@@ -74,12 +77,12 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.cancel();
         }
 
-        m_robotContainer.zero();
+        robotContainer.zero();
     }
 
     @Override
     public void teleopPeriodic() {
-        m_robotContainer.logValues();
+        robotContainer.logValues();
     }
 
     @Override

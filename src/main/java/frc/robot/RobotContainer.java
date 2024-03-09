@@ -121,6 +121,9 @@ public class RobotContainer {
     private static final double MAX_ANGULAR_SPEED = 4 * Math.PI; // 2rps
     private static final double BASE_SPEED = 0.25;
 
+    public final double NUM_STEINDICIS = 20;
+    public double steIndex = 0.0;
+
     // ======================== //
     /* Swerve Control & Logging */
     // ======================== //
@@ -376,7 +379,8 @@ public class RobotContainer {
         // control
         driverController.leftStick().toggleOnTrue(new LimelightSquare(true,
                 () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
-                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, BASE_SPEED) * MAX_SPEED, drivetrain));
+                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
+                drivetrain));
 
         // =================== //
         /* OPERATOR CONTROLLER */
@@ -394,6 +398,10 @@ public class RobotContainer {
         // pivot.runToPosition(entry.angle);
         // }, shooter, pivot))
         // .onFalse(shooter.stopCommand());
+
+        operatorController.a().onTrue(shooter
+                .runEntryCommand(() -> ShooterTable.calcShooterTableEntryByPercent(steIndex), () -> ShotSpeeds.FAST));
+
         operatorController.leftBumper()
                 .onTrue(shooter.setSlotCommand(Shooter.Slots.FAST).andThen(shooter.runShotCommand(ShotSpeeds.FAST)))
                 .onFalse(shooter.stopCommand());
@@ -408,10 +416,20 @@ public class RobotContainer {
         // TODO: bind these to ST index up/down
 
         /* Shooter Table Index Down */
-        operatorController.leftTrigger(0.5).onTrue(Commands.none());
+        operatorController.leftTrigger(0.5).onTrue(new InstantCommand(() -> {
+            if (steIndex - 1 / NUM_STEINDICIS <= 0)
+                steIndex = 0;
+            else
+                steIndex -= 1 / NUM_STEINDICIS;
+        }));
 
         /* Shooter Table Index Up */
-        operatorController.rightTrigger(0.5).onTrue(Commands.none());
+        operatorController.rightTrigger(0.5).onTrue(new InstantCommand(() -> {
+            if (steIndex + 1 / NUM_STEINDICIS >= 1)
+                steIndex = 1;
+            else
+                steIndex += 1 / NUM_STEINDICIS;
+        }));
 
         // ========================= //
         /* Climber & Zeroing Control */
