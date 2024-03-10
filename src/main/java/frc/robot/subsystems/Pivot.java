@@ -5,6 +5,7 @@ import java.util.function.BooleanSupplier;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
+import com.revrobotics.SparkPIDController.ArbFFUnits;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -50,7 +51,7 @@ public class Pivot extends SubsystemBase {
 
     private final Timer zeroTimer;
     private final double ZERO_TIMER_THRESHOLD = 0.14; // 7 scans
-    private final double ZERO_VELOCITY_THRESHOLD = 0.8;
+    private final double ZERO_VELOCITY_THRESHOLD = 400.;
 
     private static final int CAN_ID = 13;
 
@@ -59,7 +60,7 @@ public class Pivot extends SubsystemBase {
 
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
-    public final static double TRAP_POSITION = 42.;
+    public final static double TRAP_POSITION = 21.;
     private final static double INCIDENT_OFFSET = (Math.PI / 2)
             - Math.acos(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT_DY
                     / ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT); // rad
@@ -67,11 +68,11 @@ public class Pivot extends SubsystemBase {
     /* PID */
     private class PIDConstants {
         // TODO: three different zones
-        private final static double kP = 0.05;
+        private final static double kP = 0.035;
         private final static double kD = 0.5;
 
         private final static double MIN_OUTPUT = -0.5;
-        private final static double MAX_OUTPUT = 0.7;
+        private final static double MAX_OUTPUT = 0.85;
     }
 
     /* Current Limit */
@@ -82,7 +83,7 @@ public class Pivot extends SubsystemBase {
 
     private double targetPosition;
 
-    private double previousPosition = 0.;
+    private boolean isVbus = true;
 
     public Pivot() {
         /* ======== */
@@ -95,7 +96,10 @@ public class Pivot extends SubsystemBase {
         pid = motor.getPIDController();
         pid.setFeedbackDevice(encoder);
 
-        armFF = new ArmFeedforward(0, 0, 0);
+        armFF = new ArmFeedforward(0.41062, 0.081135, 2.8182E-05);
+
+        encoder.setMeasurementPeriod(16);
+        encoder.setAverageDepth(2);
 
         // Logging *Wo-HO!!
         log = DataLogManager.getLog();
@@ -168,90 +172,6 @@ public class Pivot extends SubsystemBase {
         return angle - INCIDENT_OFFSET;
     }
 
-    /**
-     * Derivative of {@link Pivot#convertEncoderToRadians()}, used to convert the
-     * velocity reported by {@link com.revrobotics.RelativeEncoder#getVelocity()}
-     * from rotations per unit of time to radians per unit of time.
-     *
-     * <b>
-     * <i>
-     * IMPORTANT: THIS IS ONLY FOR THE 4028 2024 COMP ROBOT, DO NOT EVER COPY FOR
-     * ANOTHER ROBOT PLZ THX
-     * </i>
-     * </b>
-     * 
-     * @param pos the encoder position recorded by
-     *            {@link com.revrobotics.RelativeEncoder#getPosition()}
-     * @param vel the encoder velocity recorded by
-     *            {@link com.revrobotics.RelativeEncoder#getVelocity()}
-     * @return the angular velocity of the shooter, in terms of Radians / whatever
-     *         time unit {@code vel} is in (the default return for
-     *         {@link com.revrobotics.RelativeEncoder#getVelocity()} is in minutes)
-     */
-    private double convertEncoderRotationsPerTimeToRadiansPerTime(double pos, double vel) {
-        final double scalar = 0.118; // this is ConversionConstants.LINEAR_ACTUATOR_ROTATIONS_TO_INCHES_SCALAR /
-                                     // ConversionConstants.LINEAR_ACTUATOR_REDUCTION, but I wanted to write 118 in
-                                     // the code.
-
-        final double extension = scalar * pos + ConversionConstants.LINEAR_ACTUATOR_INITIAL_LENGTH; // extension of the
-                                                                                                    // arm, needed
-                                                                                                    // because the
-                                                                                                    // relationship
-                                                                                                    // between dRad/dt
-                                                                                                    // and dRot/dt is
-                                                                                                    // nonlinear
-
-        // ab
-        // double ab = ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-        // * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT;
-
-        // c
-        // double c = extension;
-
-        // ===================
-        //  Alternate method
-        // ===================
-
-        double sine = Math.sin(convertEncoderToRadians(pos) + INCIDENT_OFFSET); // add incident offset to get full
-                                                                                // angle, as we subtract incident offset
-                                                                                // in convertEncoderToRadians
-
-        double velRadPerTime = (extension * vel * scalar) / (ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT * sine);
-
-        SmartDashboard.putNumber("Alternate dTheta", velRadPerTime);
-        // ========================
-        //   End Alternate method
-        // ========================
-
-        return (scalar * extension * vel)
-                / (ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                        * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
-                        * Math.sqrt(1 - (Math
-                                .pow(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                                        * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                                        + ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
-                                                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
-                                        - extension * extension, 2)
-                                / (4 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                                        * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                                        * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
-                                        * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT))));
-
-    }
-
-    public void funkyBusiness() {
-        double position = convertEncoderToRadians(getPosition());
-        double displacement = position - previousPosition;
-        previousPosition = position;
-
-        double time = 0.010;
-
-        if (displacement == 0 || 
-        (getPosition() == 0 && Math.abs(displacement) > 0.2)) return;
-        velocityLog.append(displacement / time);
-    }
-
     // ==================================
     // PIVOT COMMANDS
     // ==================================
@@ -300,13 +220,15 @@ public class Pivot extends SubsystemBase {
     public Command zeroCommand() {
         return runOnce(() -> {
             zeroTimer.restart();
+            isVbus = true;
         })
                 .andThen(runMotorCommand(-0.1).repeatedly()
                         .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
                                 && Math.abs(encoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
                 .andThen(runMotorCommand(0.).alongWith(Commands.runOnce(() -> zeroTimer.stop())))
                 .andThen(runOnce(() -> encoder.setPosition(0.)))
-                .andThen(new WaitCommand(0.25).andThen(runToPositionCommand(HOLD_POSITION)));
+                .andThen(new WaitCommand(0.25).andThen(runToPositionCommand(HOLD_POSITION)))
+                .andThen(runOnce(() -> isVbus = false));
 
     }
 
@@ -321,8 +243,8 @@ public class Pivot extends SubsystemBase {
     public void logValues() {
         currentLog.append(motor.getOutputCurrent());
         voltageLog.append(motor.getAppliedOutput() * motor.getBusVoltage());
-        // velocityLog.append(convertEncoderToRadians(encoder.getVelocity()));
-        positionLog.append(convertEncoderToRadians(getPosition()));
+        velocityLog.append(encoder.getVelocity());
+        positionLog.append(getPosition());
     }
 
     @Override
@@ -331,7 +253,9 @@ public class Pivot extends SubsystemBase {
         SmartDashboard.putNumber("Pivot Current", motor.getOutputCurrent());
         SmartDashboard.putNumber("Pivot Target", targetPosition);
 
-        // pid.setReference(targetPosition, ControlType.kPosition, 0, armFF.calculate(
-        //         convertEncoderToRadians(encoder.getPosition()), convertEncoderToRadians(encoder.getVelocity())));
+        if (!isVbus) pid.setReference(targetPosition, ControlType.kPosition, 0,
+                armFF.calculate(convertEncoderToRadians(encoder.getPosition()),
+                        PIDConstants.MAX_OUTPUT * 6000.),
+                ArbFFUnits.kVoltage);
     }
 }

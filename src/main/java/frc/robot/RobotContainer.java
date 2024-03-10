@@ -4,6 +4,11 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+
+import static edu.wpi.first.units.Units.Feet;
+import static edu.wpi.first.units.Units.Meters;
+
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -11,12 +16,7 @@ import java.util.function.Supplier;
 import org.photonvision.EstimatedRobotPose;
 
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.path.PathPlannerPath;
-
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -25,38 +25,27 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.RotateToSpeaker;
-import frc.robot.commands.Autons;
-import frc.robot.commands.Autons.Notes;
-import frc.robot.commands.Autons.StartPoses;
-import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.generated.TunerConstants;
-
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Fan;
+import frc.robot.subsystems.Infeed;
 // import frc.robot.subsystems.Fan;
 // import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Whippy;
-import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
-
-import static edu.wpi.first.units.Units.*;
 
 public class RobotContainer {
     // =============================================== //
@@ -86,7 +75,7 @@ public class RobotContainer {
     private final CommandXboxController emergencyController = new CommandXboxController(OI_EMERGENCY_CONTROLLER);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
-    // private final Infeed infeed = new Infeed();
+    private final Infeed infeed = new Infeed();
     private final Shooter shooter = new Shooter();
     private final Conveyor conveyor = new Conveyor();
     private final Climber climber = new Climber();
@@ -474,11 +463,11 @@ public class RobotContainer {
                                 () -> -emergencyController.getRightY(),
                                 () -> emergencyController.getRightY()));
 
-        emergencyController.a().and(emergencyController.povUp()).onTrue(pivot.runQuasi(Direction.kForward));
-        emergencyController.a().and(emergencyController.povDown()).onTrue(pivot.runQuasi(Direction.kReverse));
+        emergencyController.a().and(emergencyController.povUp()).onTrue(pivot.runQuasi(Direction.kForward)).onFalse(pivot.runMotorCommand(0.));
+        emergencyController.a().and(emergencyController.povDown()).onTrue(pivot.runQuasi(Direction.kReverse)).onFalse(pivot.runMotorCommand(0.));
                 
-        emergencyController.b().and(emergencyController.povUp()).onTrue(pivot.runDyn(Direction.kForward));
-        emergencyController.b().and(emergencyController.povDown()).onTrue(pivot.runDyn(Direction.kReverse));
+        emergencyController.b().and(emergencyController.povUp()).onTrue(pivot.runDyn(Direction.kForward)).onFalse(pivot.runMotorCommand(0.));
+        emergencyController.b().and(emergencyController.povDown()).onTrue(pivot.runDyn(Direction.kReverse)).onFalse(pivot.runMotorCommand(0.));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -491,10 +480,6 @@ public class RobotContainer {
     // =========================================== //
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
-
-    public void funky() {
-        pivot.funkyBusiness();
-    }
 
     /* Run both Conveyor and Infeed */
     private Command runBoth(double conveyorVbus, double infeedVbus) {
@@ -547,13 +532,13 @@ public class RobotContainer {
         return () -> shooter.isReady().getAsBoolean() && pivot.inPositionSupplier().getAsBoolean();
     }
 
-    // ======= //
-    /* Logging */
-    // ======= //
+    // // ======= //
+    // /* Logging */
+    // // ======= //
     public void logValues() {
         drivetrain.logValues();
         conveyor.logValues();
-        // infeed.logValues();
+        infeed.logValues();
         shooter.logValues();
         climber.logValues();
         pivot.logValues();
