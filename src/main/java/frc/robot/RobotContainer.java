@@ -273,10 +273,8 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
 
-        NamedCommands.registerCommand("farShot", Commands.runOnce(() -> pivot.runToPosition(1)));
-
         ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0),
-                0.05, 1.0);
+                10.0, 1.0); // TODO: fix
 
         // TODO: We may want a command that constantly updates the shooter table and
         // runs the shooter/pivot based on that
@@ -284,6 +282,9 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Start Shooter",
                 runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST));
+
+        ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 21.5, 1.0);
+        NamedCommands.registerCommand("4 Piece Shooter", runEntryCommand(() -> fourEntry, () -> ShotSpeeds.FAST));
 
         NamedCommands.registerCommand("Stop Shooter", shooter.stopCommand());
         NamedCommands.registerCommand("Stop Infeed", runBoth(0., 0.));
@@ -323,7 +324,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Wait For Shooter", Commands.waitUntil(shooterAndPivotReady()));
 
-        NamedCommands.registerCommand("4 piece align pivot", pivot.runToPositionCommand(2.5));
+        NamedCommands.registerCommand("4 piece align pivot", pivot.runToPositionCommand(16.0));
 
         /*
          * Spin up Shooter

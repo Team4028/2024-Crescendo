@@ -2,7 +2,7 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.45,
+      "x": 1.35,
       "y": 6.0
     },
     "rotation": 0.0
@@ -11,18 +11,6 @@
     "type": "sequential",
     "data": {
       "commands": [
-        {
-          "type": "named",
-          "data": {
-            "name": "pivotZero"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "4 piece align pivot"
-          }
-        },
         {
           "type": "parallel",
           "data": {
@@ -40,7 +28,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 2.0
+                        "waitTime": 0.5
                       }
                     },
                     {
@@ -50,9 +38,47 @@
                       }
                     },
                     {
+                      "type": "race",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "4pinfeed"
+                            }
+                          },
+                          {
+                            "type": "wait",
+                            "data": {
+                              "waitTime": 0.5
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
                       "type": "path",
                       "data": {
                         "pathName": "4 piece 1-2"
+                      }
+                    },
+                    {
+                      "type": "race",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "4pinfeed"
+                            }
+                          },
+                          {
+                            "type": "wait",
+                            "data": {
+                              "waitTime": 0.5
+                            }
+                          }
+                        ]
                       }
                     },
                     {
