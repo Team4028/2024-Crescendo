@@ -18,6 +18,7 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
+import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -121,7 +122,25 @@ public class RobotContainer {
     private static final double MAX_SPEED = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top
                                                                                // speed
     private static final double MAX_ANGULAR_SPEED = 4 * Math.PI; // 2rps
+
     private static final double BASE_SPEED = 0.25;
+    private static final double SLOW_SPEED = 0.07;
+
+    private double currentSpeed = BASE_SPEED;
+
+    private enum SnapDirection {
+        None(Double.NaN),
+        Forward(0),
+        Left(90),
+        Back(180),
+        Right(270);
+
+        public double Angle;
+
+        private SnapDirection(double angle) {
+            Angle = angle;
+        }
+    }
 
     private enum ShooterTableIndex {
         Close(4.2, "Close Shot"),
@@ -155,8 +174,13 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MAX_SPEED);
 
     private final SwerveRequest.SwerveDriveBrake xDrive = new SwerveDriveBrake();
+    private final SwerveRequest.FieldCentricFacingAngle snapDrive = new SwerveRequest.FieldCentricFacingAngle()
+            .withDeadband(MAX_SPEED * 0.035)
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     public RobotContainer() {
+        snapDrive.HeadingController = new PhoenixPIDController(2., 0., 0.);
+        snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
 
@@ -331,14 +355,15 @@ public class RobotContainer {
                 drivetrain.applyRequest(() -> drive
                         .withVelocityX(scaleDriverController(-driverController.getLeftY(),
                                 xLimiter,
-                                BASE_SPEED) * MAX_SPEED)
+                                currentSpeed) * MAX_SPEED)
                         .withVelocityY(scaleDriverController(-driverController.getLeftX(),
                                 yLimiter,
-                                BASE_SPEED) * MAX_SPEED)
+                                currentSpeed) * MAX_SPEED)
                         .withRotationalRate(
                                 scaleDriverController(-driverController.getRightX(),
-                                        thetaLimiter, BASE_SPEED) *
-                                        MAX_ANGULAR_SPEED)));
+                                        thetaLimiter, currentSpeed) *
+                                        MAX_ANGULAR_SPEED))
+                        .alongWith(Commands.runOnce(() -> SmartDashboard.putBoolean("Snapped", false))));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runMotorCommand(0.));
@@ -374,22 +399,24 @@ public class RobotContainer {
         driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
 
         /* Add Vision Measurement */
-        driverController.back().and(driverController.povCenter())
+        driverController.back()
                 .onTrue(drivetrain.addMeasurementCommand(() -> getBestPose()));
 
-        /* Reset Pose & Test ShooterTable */
-        driverController.back().and(driverController.povDown()).onTrue(Commands.runOnce(() -> {
-            var pose = getBestPose();
-            if (pose.isPresent())
-                drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
+        /* Snap Directions */
+        driverController.povUp().toggleOnTrue(snapCommand(SnapDirection.Forward));
+        driverController.povLeft().toggleOnTrue(snapCommand(SnapDirection.Left));
+        driverController.povRight().toggleOnTrue(snapCommand(SnapDirection.Right));
+        driverController.povDown().toggleOnTrue(snapCommand(SnapDirection.Back));
 
-            getBestSTEntry();
-        }));
-
+        /* Limelight Square */
         driverController.leftStick().toggleOnTrue(new LimelightSquare(true,
-                () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
-                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
+                () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, currentSpeed) * MAX_SPEED,
+                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, currentSpeed) * MAX_SPEED,
                 drivetrain));
+
+        /* Toggle Chassis Mode */
+        driverController.rightBumper().onTrue(Commands.runOnce(() -> currentSpeed = SLOW_SPEED))
+                .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
 
         // =================== //
         /* OPERATOR CONTROLLER */
@@ -572,6 +599,19 @@ public class RobotContainer {
         ShooterTableIndex idx = indexList.get(currentIndex);
         SmartDashboard.putNumber("Shooter Table Index", idx.Index);
         SmartDashboard.putString("Shooter Table Index", idx.Name);
+    }
+
+    /* Set Snap Direction Toggle */
+    private Command snapCommand(SnapDirection direction) {
+        return drivetrain.applyRequest(() -> snapDrive
+                .withVelocityX(scaleDriverController(-driverController.getLeftY(),
+                        xLimiter,
+                        currentSpeed) * MAX_SPEED)
+                .withVelocityY(scaleDriverController(-driverController.getLeftX(),
+                        yLimiter,
+                        currentSpeed) * MAX_SPEED)
+                .withTargetDirection(Rotation2d.fromDegrees(direction.Angle)))
+                .alongWith(Commands.runOnce(() -> SmartDashboard.putBoolean("Snapped", true)));
     }
 
     /* Smart Infeed Command Generator */
