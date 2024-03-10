@@ -400,16 +400,16 @@ public class RobotContainer {
         // ======================= //
 
         /* Spin Up Shooter */
-        // operatorController.leftBumper()
-        //         .onTrue(Commands.runOnce(() -> {
-        //             ShooterTableEntry entry = ShooterTable
-        //                     .calcShooterTableEntry(Feet.of(indexList.get(currentIndex).Index));
-        //             shooter.runEntry(entry, ShotSpeeds.FAST);
-        //             pivot.runToPosition(entry.Angle);
-        //         }, shooter, pivot))
-        //         .onFalse(shooter.stopCommand());
-        operatorController.leftBumper().onTrue(shooter.runShotCommand(ShotSpeeds.FAST))
-        .onFalse(shooter.stopCommand());
+        operatorController.leftBumper()
+                .onTrue(Commands.runOnce(() -> {
+                    ShooterTableEntry entry = ShooterTable
+                            .calcShooterTableEntry(Feet.of(indexList.get(currentIndex).Index));
+                    shooter.runEntry(entry, ShotSpeeds.FAST);
+                    pivot.runToPosition(entry.Angle);
+                }, shooter, pivot))
+                .onFalse(shooter.stopCommand().alongWith(pivot.runToHomeCommand()));
+        // operatorController.leftBumper().onTrue(shooter.runShotCommand(ShotSpeeds.FAST))
+        // .onFalse(shooter.stopCommand());
 
         /* Convey Note */
         operatorController.rightBumper()
@@ -420,13 +420,13 @@ public class RobotContainer {
 
         /* Shooter Table Index Down */
         operatorController.leftTrigger(0.5).onTrue(new InstantCommand(() -> {
-            currentIndex = MathUtil.clamp(currentIndex + 1, 0, ShooterTableIndex.values().length - 1);
+            currentIndex = MathUtil.clamp(currentIndex - 1, 0, ShooterTableIndex.values().length - 1);
             pushIndexData();
         }));
 
         /* Shooter Table Index Up */
         operatorController.rightTrigger(0.5).onTrue(new InstantCommand(() -> {
-            currentIndex = MathUtil.clamp(currentIndex - 1, 0, ShooterTableIndex.values().length - 1);
+            currentIndex = MathUtil.clamp(currentIndex + 1, 0, ShooterTableIndex.values().length - 1);
             pushIndexData();
         }));
 
@@ -438,8 +438,8 @@ public class RobotContainer {
         operatorController.start().onTrue(zeroCommand());
 
         /* Run Pivot & Climber to Zero */
-        operatorController.back().onTrue(
-            // climber.runToPositionCommand(ClimberPositions.HOME).andThen(
+        operatorController.a().onTrue(
+                // climber.runToPositionCommand(ClimberPositions.HOME).andThen(
                 // Commands.waitUntil(climber.inPositionSupplier()),
                 pivot.runToHomeCommand());
 
@@ -459,11 +459,14 @@ public class RobotContainer {
                                            */
                 climber.runToPositionCommand(Climber.ClimberPositions.READY));
 
-        // operatorController.povUp().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.9)).onFalse(shooter.stopCommand());
-        // operatorController.povLeft().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.93)).onFalse(shooter.stopCommand());
-        // operatorController.povRight().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.95)).onFalse(shooter.stopCommand());
-        // operatorController.povDown().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.98)).onFalse(shooter.stopCommand());
-
+        // operatorController.povUp().onTrue(shooter.runShotCommand(ShotSpeeds.FAST,
+        // 0.9)).onFalse(shooter.stopCommand());
+        // operatorController.povLeft().onTrue(shooter.runShotCommand(ShotSpeeds.FAST,
+        // 0.93)).onFalse(shooter.stopCommand());
+        // operatorController.povRight().onTrue(shooter.runShotCommand(ShotSpeeds.FAST,
+        // 0.95)).onFalse(shooter.stopCommand());
+        // operatorController.povDown().onTrue(shooter.runShotCommand(ShotSpeeds.FAST,
+        // 0.98)).onFalse(shooter.stopCommand());
 
         // ================ //
         /* Amp & Trap Magic */
