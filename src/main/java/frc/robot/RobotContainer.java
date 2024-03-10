@@ -42,11 +42,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.AlignDrivetrain;
-import frc.robot.commands.AlignDrivetrainLinear;
+import frc.robot.commands.MoveDrivetrain;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
@@ -197,26 +196,28 @@ public class RobotContainer {
          * .andThen(pivot.runToHomeCommand());
          */
 
-        mundaneTrapCommand = new AlignDrivetrain(drivetrain, () -> 0.0, () -> {
-            var res = trapVision.getTagYaw(15);
-            if (res.isEmpty())
+        mundaneTrapCommand =
+        pivot.runToTrapCommand()
+        .andThen(new AlignDrivetrain(drivetrain, () -> 0.0, () -> {
+            // TODO: configurable between 11-16
+            Optional<Double> yaw = trapVision.getTagYaw(15);
+            if (yaw.isEmpty())
                 return 0.0;
-            return res.get();
-        })
-                .andThen(new AlignDrivetrainLinear(drivetrain, () -> DIST_TO_TRAP.in(Meters),
+            return yaw.get();
+        }))
+                .andThen(new MoveDrivetrain(drivetrain, () -> DIST_TO_TRAP.in(Meters),
                         () -> {
                             var res = trapVision.getTagDistance(15);
                             if (res.isEmpty())
                                 return DIST_TO_TRAP.in(Meters);
                             return res.get();
                         }))
-                .andThen(pivot.runToTrapCommand())
-                .alongWith(Commands.none()) // fannn
-                .alongWith(shooter.runEntryCommand(() -> new ShooterTableEntry(null, 0.0, 1.0) /* trap pose */,
-                        () -> ShotSpeeds.TRAP))
-                .andThen(new WaitCommand(2))
-                .andThen(conveyor.runXRotations(20))
-                .andThen(pivot.runToHomeCommand());
+                .alongWith() // fannn
+                .alongWith(shooter.runShotCommand(ShotSpeeds.TRAP))
+                .andThen(Commands.waitUntil(shooter.isReadySupplier()))
+                .andThen(conveyor.runXRotations(20).alongWith(infeed.runMotorCommand(INFEED_VBUS)))
+                .andThen(pivot.runToHomeCommand())
+                .andThen(shooter.stopCommand());
 
         magicTrapCommand = Commands.none();
 
