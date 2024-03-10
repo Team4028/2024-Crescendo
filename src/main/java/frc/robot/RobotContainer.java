@@ -18,6 +18,7 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
+import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -78,6 +79,8 @@ public class RobotContainer {
     private static final double FAST_CONVEYOR_VBUS = 0.85;
 
     private static final double FAN_VBUS = 1.;
+    private static final double FAN_PIVOT_VBUS = 0.1;
+
     private static final double SHOOTER_BACKOUT_VBUS = -0.4;
     private static final double WHIPPY_VBUS = 0.2;
 
@@ -126,15 +129,33 @@ public class RobotContainer {
     private static final double MAX_SPEED = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top
                                                                                // speed
     private static final double MAX_ANGULAR_SPEED = 4 * Math.PI; // 2rps
+
     private static final double BASE_SPEED = 0.25;
+    private static final double SLOW_SPEED = 0.07;
+
+    private double currentSpeed = BASE_SPEED;
+
+    private enum SnapDirection {
+        None(Double.NaN),
+        Forward(0),
+        Left(90),
+        Back(180),
+        Right(270);
+
+        public double Angle;
+
+        private SnapDirection(double angle) {
+            Angle = angle;
+        }
+    }
 
     private enum ShooterTableIndex {
-        Close(3.0, "Close Shot"),
-        Protected(6.0, "Protected"),
-        Chain(10.0, "Chain"),
-        Truss(14.0, "Truss"),
-        Wing(15.5, "Wing"),
-        Neutral(26.0, "Neutral Zone");
+        Close(4.2, "Close Shot"),
+        Protected(10.0, "Protected"),
+        Chain(13.0, "Chain"),
+        Truss(16.0, "Truss"),
+        Wing(19.0, "Wing"),
+        Neutral(22.0, "Neutral Zone");
 
         public double Index;
         public String Name;
@@ -160,8 +181,13 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MAX_SPEED);
 
     private final SwerveRequest.SwerveDriveBrake xDrive = new SwerveDriveBrake();
+    private final SwerveRequest.FieldCentricFacingAngle snapDrive = new SwerveRequest.FieldCentricFacingAngle()
+            .withDeadband(MAX_SPEED * 0.035)
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     public RobotContainer() {
+        snapDrive.HeadingController = new PhoenixPIDController(2., 0., 0.);
+        snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
 
@@ -274,7 +300,6 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Prepare Spit", shooter.spinBothCommand(0.15));
 
-        // TODO: use the smart infeed command
         NamedCommands.registerCommand("Limelight Acquire",
                 new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.5),
                         drivetrain)
@@ -356,13 +381,6 @@ public class RobotContainer {
     /* Bindings & Default Commands */
     // =========================== //
     private void configureBindings() {
-
-        // TODO: Add reverse infeed in case of jams so driver can spit out note and
-        // retry
-
-        // TODO: Buttons should NOT be toggles. Commands should only be running while
-        // buttons are being held
-
         // ================ //
         /* Default Commands */
         // ================ //
@@ -371,14 +389,15 @@ public class RobotContainer {
                 drivetrain.applyRequest(() -> drive
                         .withVelocityX(scaleDriverController(-driverController.getLeftY(),
                                 xLimiter,
-                                BASE_SPEED) * MAX_SPEED)
+                                currentSpeed) * MAX_SPEED)
                         .withVelocityY(scaleDriverController(-driverController.getLeftX(),
                                 yLimiter,
-                                BASE_SPEED) * MAX_SPEED)
+                                currentSpeed) * MAX_SPEED)
                         .withRotationalRate(
                                 scaleDriverController(-driverController.getRightX(),
-                                        thetaLimiter, BASE_SPEED) *
-                                        MAX_ANGULAR_SPEED)));
+                                        thetaLimiter, currentSpeed) *
+                                        MAX_ANGULAR_SPEED))
+                        .alongWith(Commands.runOnce(() -> SmartDashboard.putBoolean("Snapped", false))));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runMotorCommand(0.));
@@ -414,25 +433,24 @@ public class RobotContainer {
         driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
 
         /* Add Vision Measurement */
-        driverController.back().and(driverController.povCenter())
+        driverController.back()
                 .onTrue(drivetrain.addMeasurementCommand(() -> getBestPose()));
 
-        /* Reset Pose & Test ShooterTable */
-        driverController.back().and(driverController.povDown()).onTrue(Commands.runOnce(() -> {
-            var pose = getBestPose();
-            if (pose.isPresent())
-                drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
+        /* Snap Directions */
+        driverController.povUp().toggleOnTrue(snapCommand(SnapDirection.Forward));
+        driverController.povLeft().toggleOnTrue(snapCommand(SnapDirection.Left));
+        driverController.povRight().toggleOnTrue(snapCommand(SnapDirection.Right));
+        driverController.povDown().toggleOnTrue(snapCommand(SnapDirection.Back));
 
-            getBestSTEntry();
-        }));
-
-        // TODO: Limelight squaring
-        // toggle that runs forever, goes to robot relative mode, no infeed/whatever
-        // control
+        /* Limelight Square */
         driverController.leftStick().toggleOnTrue(new LimelightSquare(true,
-                () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
-                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
+                () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, currentSpeed) * MAX_SPEED,
+                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, currentSpeed) * MAX_SPEED,
                 drivetrain));
+
+        /* Toggle Chassis Mode */
+        driverController.rightBumper().onTrue(Commands.runOnce(() -> currentSpeed = SLOW_SPEED))
+                .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
 
         // =================== //
         /* OPERATOR CONTROLLER */
@@ -450,7 +468,9 @@ public class RobotContainer {
                     shooter.runEntry(entry, ShotSpeeds.FAST);
                     pivot.runToPosition(entry.Angle);
                 }, shooter, pivot))
-                .onFalse(shooter.stopCommand());
+                .onFalse(shooter.stopCommand().alongWith(pivot.runToHomeCommand()));
+        // operatorController.leftBumper().onTrue(shooter.runShotCommand(ShotSpeeds.FAST))
+        // .onFalse(shooter.stopCommand());
 
         /* Convey Note */
         operatorController.rightBumper()
@@ -459,17 +479,15 @@ public class RobotContainer {
         /* Magic Shoot */
         operatorController.x().onTrue(magicShootCommand);
 
-        // TODO: bind these to ST index up/down
-
         /* Shooter Table Index Down */
         operatorController.leftTrigger(0.5).onTrue(new InstantCommand(() -> {
-            currentIndex = MathUtil.clamp(currentIndex + 1, 0, ShooterTableIndex.values().length - 1);
+            currentIndex = MathUtil.clamp(currentIndex - 1, 0, ShooterTableIndex.values().length - 1);
             pushIndexData();
         }));
 
         /* Shooter Table Index Up */
         operatorController.rightTrigger(0.5).onTrue(new InstantCommand(() -> {
-            currentIndex = MathUtil.clamp(currentIndex - 1, 0, ShooterTableIndex.values().length - 1);
+            currentIndex = MathUtil.clamp(currentIndex + 1, 0, ShooterTableIndex.values().length - 1);
             pushIndexData();
         }));
 
@@ -477,14 +495,12 @@ public class RobotContainer {
         /* Climber & Zeroing Control */
         // ========================= //
 
-        // TODO: get climber good
-
         /* Zero Climber & Pivot */
         operatorController.start().onTrue(zeroCommand());
 
         /* Run Pivot & Climber to Zero */
-        operatorController.back().onTrue(
-            // climber.runToPositionCommand(ClimberPositions.HOME).andThen(
+        operatorController.a().onTrue(
+                // climber.runToPositionCommand(ClimberPositions.HOME).andThen(
                 // Commands.waitUntil(climber.inPositionSupplier()),
                 pivot.runToHomeCommand());
 
@@ -503,6 +519,15 @@ public class RobotContainer {
                                            * Commands.waitUntil(pivot.inPositionSupplier()),
                                            */
                 climber.runToPositionCommand(Climber.ClimberPositions.READY));
+
+        // operatorController.povUp().onTrue(shooter.runShotCommand(ShotSpeeds.FAST,
+        // 0.9)).onFalse(shooter.stopCommand());
+        // operatorController.povLeft().onTrue(shooter.runShotCommand(ShotSpeeds.FAST,
+        // 0.93)).onFalse(shooter.stopCommand());
+        // operatorController.povRight().onTrue(shooter.runShotCommand(ShotSpeeds.FAST,
+        // 0.95)).onFalse(shooter.stopCommand());
+        // operatorController.povDown().onTrue(shooter.runShotCommand(ShotSpeeds.FAST,
+        // 0.98)).onFalse(shooter.stopCommand());
 
         // ================ //
         /* Amp & Trap Magic */
@@ -555,8 +580,11 @@ public class RobotContainer {
         /* TrapStar 5000 */
         emergencyController.y().onTrue(fan.runMotorCommand(FAN_VBUS)).onFalse(fan.stopCommand());
 
+        emergencyController.back().whileTrue(m_fan.runPivotCommand(-FAN_PIVOT_VBUS));
+        emergencyController.start().whileTrue(m_fan.runPivotCommand(FAN_PIVOT_VBUS));
+
         /* ST test */
-        emergencyController.back().onTrue(Commands.runOnce(() -> getBestSTEntry()));
+        // emergencyController.back().onTrue(Commands.runOnce(() -> getBestSTEntry()));
 
         /* Full Outfeed: left Y */
         emergencyController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
@@ -586,6 +614,7 @@ public class RobotContainer {
         // .onFalse(pivot.runMotorCommand(0.));
 
         emergencyController.b().onTrue(shooter.runShotCommand(ShotSpeeds.TRAP)).onFalse(shooter.stopCommand());
+        emergencyController.x().onTrue(m_fan.runToTrapCommand());
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -604,6 +633,19 @@ public class RobotContainer {
         ShooterTableIndex idx = indexList.get(currentIndex);
         SmartDashboard.putNumber("Shooter Table Index", idx.Index);
         SmartDashboard.putString("Shooter Table Index", idx.Name);
+    }
+
+    /* Set Snap Direction Toggle */
+    private Command snapCommand(SnapDirection direction) {
+        return drivetrain.applyRequest(() -> snapDrive
+                .withVelocityX(scaleDriverController(-driverController.getLeftY(),
+                        xLimiter,
+                        currentSpeed) * MAX_SPEED)
+                .withVelocityY(scaleDriverController(-driverController.getLeftX(),
+                        yLimiter,
+                        currentSpeed) * MAX_SPEED)
+                .withTargetDirection(Rotation2d.fromDegrees(direction.Angle)))
+                .alongWith(Commands.runOnce(() -> SmartDashboard.putBoolean("Snapped", true)));
     }
 
     /* Smart Infeed Command Generator */
