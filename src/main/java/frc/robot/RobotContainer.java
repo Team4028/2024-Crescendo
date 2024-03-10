@@ -37,7 +37,6 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
@@ -140,8 +139,6 @@ public class RobotContainer {
         }
     }
 
-    private SnapDirection currentSnap = SnapDirection.None;
-
     // ======================== //
     /* Swerve Control & Logging */
     // ======================== //
@@ -159,6 +156,7 @@ public class RobotContainer {
 
     public RobotContainer() {
         snapDrive.HeadingController = new PhoenixPIDController(2., 0., 0.);
+        snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
 
@@ -338,27 +336,17 @@ public class RobotContainer {
         // ================ //
 
         drivetrain.setDefaultCommand(
-                new ConditionalCommand(
-                        drivetrain.applyRequest(() -> drive
-                                .withVelocityX(scaleDriverController(-driverController.getLeftY(),
-                                        xLimiter,
-                                        currentSpeed) * MAX_SPEED)
-                                .withVelocityY(scaleDriverController(-driverController.getLeftX(),
-                                        yLimiter,
-                                        currentSpeed) * MAX_SPEED)
-                                .withRotationalRate(
-                                        scaleDriverController(-driverController.getRightX(),
-                                                thetaLimiter, currentSpeed) *
-                                                MAX_ANGULAR_SPEED)),
-                        drivetrain.applyRequest(() -> snapDrive
-                                .withVelocityX(scaleDriverController(-driverController.getLeftY(),
-                                        xLimiter,
-                                        currentSpeed) * MAX_SPEED)
-                                .withVelocityY(scaleDriverController(-driverController.getLeftX(),
-                                        yLimiter,
-                                        currentSpeed) * MAX_SPEED)
-                                .withTargetDirection(Rotation2d.fromDegrees(currentSnap.Angle))),
-                        () -> currentSnap == SnapDirection.None));
+                drivetrain.applyRequest(() -> drive
+                        .withVelocityX(scaleDriverController(-driverController.getLeftY(),
+                                xLimiter,
+                                currentSpeed) * MAX_SPEED)
+                        .withVelocityY(scaleDriverController(-driverController.getLeftX(),
+                                yLimiter,
+                                currentSpeed) * MAX_SPEED)
+                        .withRotationalRate(
+                                scaleDriverController(-driverController.getRightX(),
+                                        thetaLimiter, currentSpeed) *
+                                        MAX_ANGULAR_SPEED)));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runMotorCommand(0.));
@@ -398,10 +386,10 @@ public class RobotContainer {
                 .onTrue(drivetrain.addMeasurementCommand(() -> getBestPose()));
 
         /* Snap Directions */
-        driverController.povUp().toggleOnTrue(setSnapCommand(SnapDirection.Forward));
-        driverController.povLeft().toggleOnTrue(setSnapCommand(SnapDirection.Left));
-        driverController.povRight().toggleOnTrue(setSnapCommand(SnapDirection.Right));
-        driverController.povDown().toggleOnTrue(setSnapCommand(SnapDirection.Back));
+        driverController.povUp().toggleOnTrue(snapCommand(SnapDirection.Forward));
+        driverController.povLeft().toggleOnTrue(snapCommand(SnapDirection.Left));
+        driverController.povRight().toggleOnTrue(snapCommand(SnapDirection.Right));
+        driverController.povDown().toggleOnTrue(snapCommand(SnapDirection.Back));
 
         /* Limelight Square */
         driverController.leftStick().toggleOnTrue(new LimelightSquare(true,
@@ -422,13 +410,6 @@ public class RobotContainer {
         // ======================= //
 
         /* Spin Up Shooter */
-        // operatorController.leftBumper()
-        // .onTrue(Commands.runOnce(() -> {
-        // ShooterTableEntry entry = getBestSTEntry();
-        // shooter.runEntry(entry, ShotSpeeds.FAST);
-        // pivot.runToPosition(entry.angle);
-        // }, shooter, pivot))
-        // .onFalse(shooter.stopCommand());
         operatorController.leftBumper()
                 .onTrue(shooter.setSlotCommand(Shooter.Slots.FAST).andThen(shooter.runShotCommand(ShotSpeeds.FAST)))
                 .onFalse(shooter.stopCommand());
@@ -574,8 +555,15 @@ public class RobotContainer {
     // =========================================== //
 
     /* Set Snap Direction Toggle */
-    private Command setSnapCommand(SnapDirection direction) {
-        return Commands.startEnd(() -> currentSnap = direction, () -> currentSnap = SnapDirection.None);
+    private Command snapCommand(SnapDirection direction) {
+        return drivetrain.applyRequest(() -> snapDrive
+                .withVelocityX(scaleDriverController(-driverController.getLeftY(),
+                        xLimiter,
+                        currentSpeed) * MAX_SPEED)
+                .withVelocityY(scaleDriverController(-driverController.getLeftX(),
+                        yLimiter,
+                        currentSpeed) * MAX_SPEED)
+                .withTargetDirection(Rotation2d.fromDegrees(direction.Angle)));
     }
 
     /* Smart Infeed Command Generator */
