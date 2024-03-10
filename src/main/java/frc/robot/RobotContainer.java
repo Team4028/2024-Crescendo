@@ -122,12 +122,12 @@ public class RobotContainer {
     private static final double BASE_SPEED = 0.25;
 
     private enum ShooterTableIndex {
-        Close(3.0, "Close Shot"),
-        Protected(6.0, "Protected"),
-        Chain(10.0, "Chain"),
-        Truss(14.0, "Truss"),
-        Wing(15.5, "Wing"),
-        Neutral(26.0, "Neutral Zone");
+        Close(4.2, "Close Shot"),
+        Protected(10.0, "Protected"),
+        Chain(13.0, "Chain"),
+        Truss(16.0, "Truss"),
+        Wing(19.0, "Wing"),
+        Neutral(22.0, "Neutral Zone");
 
         public double Index;
         public String Name;
@@ -240,7 +240,6 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Prepare Spit", shooter.spinBothCommand(0.15));
 
-        // TODO: use the smart infeed command
         NamedCommands.registerCommand("Limelight Acquire",
                 new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.5),
                         drivetrain)
@@ -322,13 +321,6 @@ public class RobotContainer {
     /* Bindings & Default Commands */
     // =========================== //
     private void configureBindings() {
-
-        // TODO: Add reverse infeed in case of jams so driver can spit out note and
-        // retry
-
-        // TODO: Buttons should NOT be toggles. Commands should only be running while
-        // buttons are being held
-
         // ================ //
         /* Default Commands */
         // ================ //
@@ -392,9 +384,6 @@ public class RobotContainer {
             getBestSTEntry();
         }));
 
-        // TODO: Limelight squaring
-        // toggle that runs forever, goes to robot relative mode, no infeed/whatever
-        // control
         driverController.leftStick().toggleOnTrue(new LimelightSquare(true,
                 () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
                 () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
@@ -409,14 +398,16 @@ public class RobotContainer {
         // ======================= //
 
         /* Spin Up Shooter */
-        operatorController.leftBumper()
-                .onTrue(Commands.runOnce(() -> {
-                    ShooterTableEntry entry = ShooterTable
-                            .calcShooterTableEntry(Feet.of(indexList.get(currentIndex).Index));
-                    shooter.runEntry(entry, ShotSpeeds.FAST);
-                    pivot.runToPosition(entry.Angle);
-                }, shooter, pivot))
-                .onFalse(shooter.stopCommand());
+        // operatorController.leftBumper()
+        //         .onTrue(Commands.runOnce(() -> {
+        //             ShooterTableEntry entry = ShooterTable
+        //                     .calcShooterTableEntry(Feet.of(indexList.get(currentIndex).Index));
+        //             shooter.runEntry(entry, ShotSpeeds.FAST);
+        //             pivot.runToPosition(entry.Angle);
+        //         }, shooter, pivot))
+        //         .onFalse(shooter.stopCommand());
+        operatorController.leftBumper().onTrue(shooter.runShotCommand(ShotSpeeds.FAST))
+        .onFalse(shooter.stopCommand());
 
         /* Convey Note */
         operatorController.rightBumper()
@@ -424,8 +415,6 @@ public class RobotContainer {
 
         /* Magic Shoot */
         operatorController.x().onTrue(magicShootCommand);
-
-        // TODO: bind these to ST index up/down
 
         /* Shooter Table Index Down */
         operatorController.leftTrigger(0.5).onTrue(new InstantCommand(() -> {
@@ -443,8 +432,6 @@ public class RobotContainer {
         /* Climber & Zeroing Control */
         // ========================= //
 
-        // TODO: get climber good
-
         /* Zero Climber & Pivot */
         operatorController.start().onTrue(zeroCommand());
 
@@ -454,21 +441,27 @@ public class RobotContainer {
                 // Commands.waitUntil(climber.inPositionSupplier()),
                 pivot.runToHomeCommand());
 
-        /* Run Climber to "Home" */
-        operatorController.povDown().onTrue(climber.climbCommand());
+        // /* Run Climber to "Home" */
+        // operatorController.povDown().onTrue(climber.climbCommand());
 
-        /* Run Climber to "Down One" */
-        operatorController.povLeft().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_ONE));
+        // /* Run Climber to "Down One" */
+        // operatorController.povLeft().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_ONE));
 
-        /* Run Climber to "Down One" */
-        operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
+        // /* Run Climber to "Down One" */
+        // operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
 
-        /* Run Climber to "Ready" */
-        operatorController.povUp().onTrue(/*
-                                           * pivot.runToClimbCommand().andThen(
-                                           * Commands.waitUntil(pivot.inPositionSupplier()),
-                                           */
-                climber.runToPositionCommand(Climber.ClimberPositions.READY));
+        // /* Run Climber to "Ready" */
+        // operatorController.povUp().onTrue(/*
+        //                                    * pivot.runToClimbCommand().andThen(
+        //                                    * Commands.waitUntil(pivot.inPositionSupplier()),
+        //                                    */
+        //         climber.runToPositionCommand(Climber.ClimberPositions.READY));
+
+        operatorController.povUp().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.9)).onFalse(shooter.stopCommand());
+        operatorController.povLeft().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.93)).onFalse(shooter.stopCommand());
+        operatorController.povRight().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.95)).onFalse(shooter.stopCommand());
+        operatorController.povDown().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.98)).onFalse(shooter.stopCommand());
+
 
         // ================ //
         /* Amp & Trap Magic */

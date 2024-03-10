@@ -62,7 +62,7 @@ public class Pivot extends SubsystemBase {
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
 
-    public final static double TRAP_POSITION = 57.5;
+    public final static double TRAP_POSITION = 56.75;
     private final static double INCIDENT_OFFSET = (Math.PI / 2)
             - Math.acos(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT_DY
                     / ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT);

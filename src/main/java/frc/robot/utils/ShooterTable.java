@@ -34,12 +34,16 @@ public class ShooterTable {
     private static void fillInTable() {
         // put entries here
         // Distances must go from top to bottom: shortest to longest
-        table.add(new ShooterTableEntry(Feet.of(3.1), 36.0, .95));
-        table.add(new ShooterTableEntry(Feet.of(6.0), 15.4, .95));
-        table.add(new ShooterTableEntry(Feet.of(9.0), 14.2, .95));
-        table.add(new ShooterTableEntry(Feet.of(12.), 9.2, .95));
-        table.add(new ShooterTableEntry(Feet.of(15.), 7.0, 1.));
-        table.add(new ShooterTableEntry(Feet.of(20.), 4.8, 1.));
+        table.add(new ShooterTableEntry(Feet.of(4.2), 30.9, .6)); // 55 degrees
+        table.add(new ShooterTableEntry(Feet.of(5.0), 27.0, .7)); // 50 degrees
+        table.add(new ShooterTableEntry(Feet.of(6.0), 22.8, .8)); // 45 degrees
+        table.add(new ShooterTableEntry(Feet.of(8.0), 16., .1)); // 36 degrees
+        table.add(new ShooterTableEntry(Feet.of(10.), 12.1, 1.)); // 31 degrees
+        table.add(new ShooterTableEntry(Feet.of(13.), 6.7, 1.)); // 25 degrees
+        table.add(new ShooterTableEntry(Feet.of(16.), 4.3, 1.)); // 23 degrees
+        table.add(new ShooterTableEntry(Feet.of(19.), 3.25, 1.)); // 21.5 degrees
+        table.add(new ShooterTableEntry(Feet.of(22.), 2.24, 1.)); // 20.5 degrees
+        table.add(new ShooterTableEntry(Feet.of(27.), 0.25, 0.95)); // 20 degrees
     }
 
     static {
