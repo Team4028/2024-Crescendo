@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Feet;
+import static edu.wpi.first.units.Units.Meters;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -12,8 +15,8 @@ import java.util.function.Supplier;
 import org.photonvision.EstimatedRobotPose;
 
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -45,7 +48,6 @@ import frc.robot.commands.Autons.StartPoses;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.generated.TunerConstants;
-
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
@@ -53,14 +55,12 @@ import frc.robot.subsystems.Fan;
 import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Whippy;
 import frc.robot.subsystems.Climber.ClimberPositions;
-import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
-
-import static edu.wpi.first.units.Units.*;
 
 public class RobotContainer {
     // =============================================== //

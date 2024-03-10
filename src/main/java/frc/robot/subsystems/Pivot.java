@@ -5,13 +5,13 @@ import java.util.function.BooleanSupplier;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
+import com.revrobotics.SparkPIDController.ArbFFUnits;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
-import com.revrobotics.SparkPIDController.ArbFFUnits;
 
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Voltage;
@@ -32,7 +32,8 @@ public class Pivot extends SubsystemBase {
 
     public static class ConversionConstants {
         public static final double SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT = 5.5;
-        public static final double SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT = 18;
+        public static final double SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT_DY = 4.35261;
+        public static final double SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT = 18.0;
         public static final double LINEAR_ACTUATOR_INITIAL_LENGTH = 17;
         public static final double LINEAR_ACTUATOR_REDUCTION = 4.0;
         public static final double LINEAR_ACTUATOR_ROTATIONS_TO_INCHES_SCALAR = 0.472;
@@ -41,7 +42,7 @@ public class Pivot extends SubsystemBase {
     private final CANSparkMax motor;
     private final RelativeEncoder encoder;
     private final SparkPIDController pid;
-    private final SimpleMotorFeedforward feedforward;
+    private final ArmFeedforward armFF;
 
     private final SysIdRoutine sysIdRoutine;
 
@@ -60,9 +61,11 @@ public class Pivot extends SubsystemBase {
 
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
-    public final static double TRAP_POSITION = 59.3;
 
-    private final static double INCIDENT_OFFSET = 0.9123; // rad
+    public final static double TRAP_POSITION = 59.3;
+    private final static double INCIDENT_OFFSET = (Math.PI / 2)
+            - Math.acos(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT_DY
+                    / ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT);
 
     /* PID */
     private class PIDConstants {
@@ -71,7 +74,7 @@ public class Pivot extends SubsystemBase {
         private final static double kD = 0.003;
 
         private final static double MIN_OUTPUT = -0.5;
-        private final static double MAX_OUTPUT = 0.7;
+        private final static double MAX_OUTPUT = 0.85;
     }
 
     /* Current Limit */
@@ -81,6 +84,8 @@ public class Pivot extends SubsystemBase {
     private final static double RAMP_RATE = 1.0;
 
     private double targetPosition;
+
+    private boolean isVbus = true;
 
     public Pivot() {
         /* ======== */
@@ -92,8 +97,11 @@ public class Pivot extends SubsystemBase {
         encoder = motor.getEncoder();
         pid = motor.getPIDController();
         pid.setFeedbackDevice(encoder);
-        
-        feedforward = new SimpleMotorFeedforward(0.36895, 0.11267, 0.020622);
+
+        armFF = new ArmFeedforward(0.41062, 0.081135, 2.8182E-05);
+
+        encoder.setMeasurementPeriod(16);
+        encoder.setAverageDepth(2);
 
         // Logging *Wo-HO!!
         log = DataLogManager.getLog();
@@ -163,13 +171,13 @@ public class Pivot extends SubsystemBase {
                 * ConversionConstants.LINEAR_ACTUATOR_ROTATIONS_TO_INCHES_SCALAR)
                 + ConversionConstants.LINEAR_ACTUATOR_INITIAL_LENGTH;
 
-        double angle = Math.acos((ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                + ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
-                        * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT
-                - sideC * sideC)
-                / (2 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                        * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT));
+        double angle = Math.acos(
+                (Math.pow(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT, 2)
+                        + Math.pow(ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT, 2)
+                        - sideC * sideC //
+                )
+                        / (2 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT));
 
         return angle - INCIDENT_OFFSET;
     }
@@ -222,13 +230,15 @@ public class Pivot extends SubsystemBase {
     public Command zeroCommand() {
         return runOnce(() -> {
             zeroTimer.restart();
+            isVbus = true;
         })
                 .andThen(runMotorCommand(-0.1).repeatedly()
                         .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
                                 && Math.abs(encoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
                 .andThen(runMotorCommand(0.).alongWith(Commands.runOnce(() -> zeroTimer.stop())))
                 .andThen(runOnce(() -> encoder.setPosition(0.)))
-                .andThen(new WaitCommand(0.25).andThen(runToPositionCommand(HOLD_POSITION)));
+                .andThen(new WaitCommand(0.25).andThen(runToPositionCommand(HOLD_POSITION)))
+                .andThen(runOnce(() -> isVbus = false));
 
     }
 
@@ -249,11 +259,9 @@ public class Pivot extends SubsystemBase {
 
     @Override
     public void periodic() {
-        double error = targetPosition - encoder.getPosition();
-
-        boolean useFeedforward = error > 0 && (targetPosition < 35.);
-
-        pid.setReference(targetPosition, ControlType.kPosition, 0,
-                useFeedforward ? feedforward.calculate(error * PIDConstants.kP * 1000. / 60.) : 0, ArbFFUnits.kVoltage);
+        if (!isVbus) pid.setReference(targetPosition, ControlType.kPosition, 0,
+                armFF.calculate(convertEncoderToRadians(encoder.getPosition()),
+                        PIDConstants.MAX_OUTPUT * 6000.),
+                ArbFFUnits.kVoltage);
     }
 }
