@@ -29,6 +29,8 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -40,6 +42,8 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.RotateToSpeaker;
+import frc.robot.commands.AlignDrivetrain;
+import frc.robot.commands.AlignDrivetrainLinear;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
@@ -79,6 +83,8 @@ public class RobotContainer {
     private static final double SHOOTER_BACKOUT_VBUS = -0.4;
     private static final double WHIPPY_VBUS = 0.2;
 
+    private static final Measure<Distance> DIST_TO_TRAP = Feet.of(1.0);
+
     private static final int OI_DRIVER_CONTROLLER = 0;
     private static final int OI_OPERATOR_CONTROLLER = 1;
     private static final int OI_EMERGENCY_CONTROLLER = 2;
@@ -97,7 +103,7 @@ public class RobotContainer {
     private final Climber climber = new Climber();
     private final Autons autons;
     private final Pivot pivot = new Pivot();
-    private final Fan m_fan = new Fan();
+    private final Fan fan = new Fan();
     private final Whippy whippy = new Whippy();
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
@@ -178,20 +184,42 @@ public class RobotContainer {
                 .andThen(shooter.stopCommand())
                 .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
 
-        /*magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2,
-                0)
-                .andThen(shooter.setSlotCommand(Shooter.Slots.TRAP))
-                .andThen(new WaitCommand(2))
-                .andThen(pivot.runToTrapCommand())
-                .andThen(m_fan.runMotorCommand(FAN_VBUS))
-                .andThen(shooter.runShotCommand(ShotSpeeds.TRAP).repeatedly()
-                        .until(shooterAndPivotReady()).withTimeout(4))
-                .andThen(conveyor.runXRotations(20))
-                .andThen(shooter.stopCommand())
-                .andThen(pivot.runToHomeCommand());
-        */
+        /*
+         * magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2,
+         * 0)
+         * .andThen(shooter.setSlotCommand(Shooter.Slots.TRAP))
+         * .andThen(new WaitCommand(2))
+         * .andThen(pivot.runToTrapCommand())
+         * .andThen(m_fan.runMotorCommand(FAN_VBUS))
+         * .andThen(shooter.runShotCommand(ShotSpeeds.TRAP).repeatedly()
+         * .until(shooterAndPivotReady()).withTimeout(4))
+         * .andThen(conveyor.runXRotations(20))
+         * .andThen(shooter.stopCommand())
+         * .andThen(pivot.runToHomeCommand());
+         */
 
-        mundaneTrapCommand = trapVision.getTagYaw;
+        mundaneTrapCommand = new AlignDrivetrain(drivetrain, () -> 0.0, () -> {
+            var res = trapVision.getTagYaw(15);
+            if (res.isEmpty())
+                return 0.0;
+            return res.get();
+        })
+                .andThen(new AlignDrivetrainLinear(drivetrain, () -> DIST_TO_TRAP.in(Meters),
+                        () -> {
+                            var res = trapVision.getTagDistance(15);
+                            if (res.isEmpty())
+                                return DIST_TO_TRAP.in(Meters);
+                            return res.get();
+                        }))
+                .andThen(pivot.runToTrapCommand())
+                .alongWith(Commands.none()) // fannn
+                .alongWith(shooter.runEntryCommand(() -> new ShooterTableEntry(null, 0.0, 1.0) /* trap pose */,
+                        () -> ShotSpeeds.TRAP))
+                .andThen(new WaitCommand(2))
+                .andThen(conveyor.runXRotations(20))
+                .andThen(pivot.runToHomeCommand());
+
+        magicTrapCommand = Commands.none();
 
         magicAmpCommand = drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0)
                 .andThen(shooter.setSlotCommand(Shooter.Slots.AMP))
@@ -354,7 +382,7 @@ public class RobotContainer {
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runMotorCommand(0.));
-        m_fan.setDefaultCommand(m_fan.stopCommand());
+        fan.setDefaultCommand(fan.stopCommand());
 
         // ================= //
         /* DRIVER CONTROLLER */
@@ -524,7 +552,7 @@ public class RobotContainer {
                 .onFalse(whippy.stopCommand());
 
         /* TrapStar 5000 */
-        emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS)).onFalse(m_fan.stopCommand());
+        emergencyController.y().onTrue(fan.runMotorCommand(FAN_VBUS)).onFalse(fan.stopCommand());
 
         /* ST test */
         emergencyController.back().onTrue(Commands.runOnce(() -> getBestSTEntry()));
@@ -654,7 +682,7 @@ public class RobotContainer {
         shooter.logValues();
         // climber.logValues();
         pivot.logValues();
-        m_fan.logValues();
+        fan.logValues();
     }
 
     // ================ //
