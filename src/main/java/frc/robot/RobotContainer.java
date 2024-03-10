@@ -29,6 +29,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
@@ -100,11 +101,12 @@ public class RobotContainer {
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
+    private final Vision trapVision = new Vision("Trap_AprilTag_Camera", new Transform3d());
 
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command magicShootCommand, magicTrapCommand, magicAmpCommand;
+    private final Command magicShootCommand, magicTrapCommand, magicAmpCommand, mundaneTrapCommand;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -175,7 +177,7 @@ public class RobotContainer {
                 .andThen(shooter.stopCommand())
                 .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
 
-        magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2,
+        /*magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2,
                 0)
                 .andThen(shooter.setSlotCommand(Shooter.Slots.TRAP))
                 .andThen(new WaitCommand(2))
@@ -186,6 +188,9 @@ public class RobotContainer {
                 .andThen(conveyor.runXRotations(20))
                 .andThen(shooter.stopCommand())
                 .andThen(pivot.runToHomeCommand());
+        */
+
+        mundaneTrapCommand = trapVision.getTagYaw;
 
         magicAmpCommand = drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0)
                 .andThen(shooter.setSlotCommand(Shooter.Slots.AMP))
