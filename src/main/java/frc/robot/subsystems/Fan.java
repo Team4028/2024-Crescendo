@@ -4,8 +4,10 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
+import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.RelativeEncoder;
@@ -16,25 +18,38 @@ import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.DashboardStore;
 
 public class Fan extends SubsystemBase {
     private final CANSparkFlex motor;
     private final RelativeEncoder encoder;
-    private final TalonFX fanPivot;
+    private final TalonFX pivot;
 
-    private static final int fanMotorCAN_ID = 14;
+    private static final int FAN_CAN_ID = 14;
+    private static final int PIVOT_CAN_ID = 17; // ? Actual id?
 
+    private static final double TRAP_POSITION = 0.46; // Find out the actual position for the trap angle.
 
-    private static final int pivotMotorCAN_ID = 16; //? Actual id?
+    /* Requests */
+    private final PositionDutyCycle positionRequest = new PositionDutyCycle(0.)
+            .withOverrideBrakeDurNeutral(true);
+
+    private final Slot0Configs pidConfigs = new Slot0Configs()
+            .withKP(0.3)
+            .withKI(0.0)
+            .withKD(0.0); // needs to be testing
+    
+    private final ClosedLoopRampsConfigs closedLoopRampsConfigs = new ClosedLoopRampsConfigs()
+    .withDutyCycleClosedLoopRampPeriod(0.25);
+
     double targetPosition = 0;
-    double trapPosition = 13; // Find out the actual position for the trap angle.
 
     private final DataLog m_log;
-    private final DoubleLogEntry m_vbusLog, m_currentLog, m_velocityLog;
+    private final DoubleLogEntry m_vbusLog, m_currentLog, m_velocityLog, m_pivotVelocityLog, m_pivotPositionLog;
 
     /** Creates a new Fan. */
     public Fan() {
-        motor = new CANSparkFlex(fanMotorCAN_ID, MotorType.kBrushless);
+        motor = new CANSparkFlex(FAN_CAN_ID, MotorType.kBrushless);
         encoder = motor.getEncoder();
 
         m_log = DataLogManager.getLog();
@@ -43,8 +58,16 @@ public class Fan extends SubsystemBase {
         m_velocityLog = new DoubleLogEntry(m_log, "/Fan/Velocity");
 
         // Creates a new pivot
-        fanPivot = new TalonFX(pivotMotorCAN_ID);
-        fanPivot.getConfigurator().apply(pidConfigs); // See Pivot Pid and configs below
+        pivot = new TalonFX(PIVOT_CAN_ID);
+        pivot.getConfigurator().apply(pidConfigs); // See Pivot Pid and configs below
+        pivot.getConfigurator().apply(closedLoopRampsConfigs);
+        pivot.setPosition(0.);
+
+        // LOGGGGGGGGGGGGGGGGG DA PIVOTTTTT
+        m_pivotPositionLog = new DoubleLogEntry(m_log, "/Fan/Pivot/Position");
+        m_pivotVelocityLog = new DoubleLogEntry(m_log, "/Fan/Pivot/Velocity");
+
+        DashboardStore.add("Fan Pivot Position", () -> pivot.getPosition().getValueAsDouble());
     }
 
     // Fan Motor Controls //
@@ -71,27 +94,32 @@ public class Fan extends SubsystemBase {
         m_vbusLog.append(motor.getAppliedOutput());
         m_currentLog.append(motor.getOutputCurrent());
         m_velocityLog.append(encoder.getVelocity());
+
+        m_pivotPositionLog.append(pivot.getPosition().getValueAsDouble());
+        m_pivotVelocityLog.append(pivot.getVelocity().getValueAsDouble());
     }
-
-    // FAN PIVOT COMMANDS AND PID CONTROLS //
-
-    /* Requests */
-    private final PositionVoltage positionRequest = new PositionVoltage(0.)
-            .withEnableFOC(true)
-            .withOverrideBrakeDurNeutral(true);
-
-    private final Slot0Configs pidConfigs = new Slot0Configs()
-            .withKP(0.0)
-            .withKI(0.0)
-            .withKD(0.0); // needs to be testing
 
     public void runToPosition(double position) {
         targetPosition = position;
-        fanPivot.setControl(positionRequest.withPosition(position)); 
+        pivot.setControl(positionRequest.withPosition(position));
     }
 
     public Command runToPositionCommand(double position) {
         return runOnce(() -> runToPosition(position));
+    }
+
+    public Command runToTrapCommand() {
+        return runToPositionCommand(TRAP_POSITION);
+    }
+
+    public void runPivot(double vbus) {
+        pivot.set(vbus);
+    }
+
+    public Command runPivotCommand(double vbus) {
+        return startEnd(
+                () -> runPivot(vbus),
+                () -> runPivot(0.));
     }
 
     @Override

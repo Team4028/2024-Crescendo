@@ -45,9 +45,9 @@ public class Climber extends SubsystemBase {
             .withKD(0.0); // needs tuning
 
     private final MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(40.)
-            .withMotionMagicAcceleration(80.)
-            .withMotionMagicJerk(800.);
+            .withMotionMagicCruiseVelocity(30.)
+            .withMotionMagicAcceleration(60.)
+            .withMotionMagicJerk(600.);
 
     private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(100.)
@@ -63,7 +63,7 @@ public class Climber extends SubsystemBase {
             .withOverrideBrakeDurNeutral(true);
 
     public enum ClimberPositions {
-        CLIMB(-11.),
+        CLIMB(-10.),
         HOME(0.),
         DOWN_ONE(122.),
         DOWN_TWO(115.), // unused

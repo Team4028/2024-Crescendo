@@ -74,6 +74,8 @@ public class RobotContainer {
     private static final double FAST_CONVEYOR_VBUS = 0.85;
 
     private static final double FAN_VBUS = 1.;
+    private static final double FAN_PIVOT_VBUS = 0.1;
+
     private static final double SHOOTER_BACKOUT_VBUS = -0.4;
     private static final double WHIPPY_VBUS = 0.2;
 
@@ -441,26 +443,26 @@ public class RobotContainer {
                 // Commands.waitUntil(climber.inPositionSupplier()),
                 pivot.runToHomeCommand());
 
-        // /* Run Climber to "Home" */
-        // operatorController.povDown().onTrue(climber.climbCommand());
+        /* Run Climber to "Home" */
+        operatorController.povDown().onTrue(climber.climbCommand());
 
-        // /* Run Climber to "Down One" */
-        // operatorController.povLeft().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_ONE));
+        /* Run Climber to "Down One" */
+        operatorController.povLeft().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_ONE));
 
-        // /* Run Climber to "Down One" */
-        // operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
+        /* Run Climber to "Down One" */
+        operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
 
-        // /* Run Climber to "Ready" */
-        // operatorController.povUp().onTrue(/*
-        //                                    * pivot.runToClimbCommand().andThen(
-        //                                    * Commands.waitUntil(pivot.inPositionSupplier()),
-        //                                    */
-        //         climber.runToPositionCommand(Climber.ClimberPositions.READY));
+        /* Run Climber to "Ready" */
+        operatorController.povUp().onTrue(/*
+                                           * pivot.runToClimbCommand().andThen(
+                                           * Commands.waitUntil(pivot.inPositionSupplier()),
+                                           */
+                climber.runToPositionCommand(Climber.ClimberPositions.READY));
 
-        operatorController.povUp().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.9)).onFalse(shooter.stopCommand());
-        operatorController.povLeft().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.93)).onFalse(shooter.stopCommand());
-        operatorController.povRight().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.95)).onFalse(shooter.stopCommand());
-        operatorController.povDown().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.98)).onFalse(shooter.stopCommand());
+        // operatorController.povUp().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.9)).onFalse(shooter.stopCommand());
+        // operatorController.povLeft().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.93)).onFalse(shooter.stopCommand());
+        // operatorController.povRight().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.95)).onFalse(shooter.stopCommand());
+        // operatorController.povDown().onTrue(shooter.runShotCommand(ShotSpeeds.FAST, 0.98)).onFalse(shooter.stopCommand());
 
 
         // ================ //
@@ -514,8 +516,11 @@ public class RobotContainer {
         /* TrapStar 5000 */
         emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS)).onFalse(m_fan.stopCommand());
 
+        emergencyController.back().whileTrue(m_fan.runPivotCommand(-FAN_PIVOT_VBUS));
+        emergencyController.start().whileTrue(m_fan.runPivotCommand(FAN_PIVOT_VBUS));
+
         /* ST test */
-        emergencyController.back().onTrue(Commands.runOnce(() -> getBestSTEntry()));
+        // emergencyController.back().onTrue(Commands.runOnce(() -> getBestSTEntry()));
 
         /* Full Outfeed: left Y */
         emergencyController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
@@ -545,6 +550,7 @@ public class RobotContainer {
         // .onFalse(pivot.runMotorCommand(0.));
 
         emergencyController.b().onTrue(shooter.runShotCommand(ShotSpeeds.TRAP)).onFalse(shooter.stopCommand());
+        emergencyController.x().onTrue(m_fan.runToTrapCommand());
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
