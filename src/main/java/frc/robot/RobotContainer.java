@@ -108,7 +108,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command magicShootCommand, magicTrapCommand, magicAmpCommand, ampSequence;
+    private final Command magicShootCommand, magicTrapCommand, magicAmpCommand, ampPrep, ampShoot;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -224,11 +224,11 @@ public class RobotContainer {
                 .andThen(pivot.runToHomeCommand())
                 .andThen(whippy.whippyWheelsCommand(0));
 
-        ampSequence = pivot.runToClimbCommand()
+        ampPrep = pivot.runToClimbCommand()
                 .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
-                .alongWith(shooter.runShotCommand(ShotSpeeds.AMP))
-                .andThen(Commands.waitUntil(shooterAndPivotReady())).withTimeout(4.)
-                .andThen(conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(INFEED_VBUS)))
+                .alongWith(shooter.runShotCommand(ShotSpeeds.AMP));
+
+        ampShoot = conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(INFEED_VBUS))
                 .finallyDo(this::stopAll);
 
         configureBindings();
@@ -492,21 +492,11 @@ public class RobotContainer {
                                            */
                 climber.runToPositionCommand(Climber.ClimberPositions.READY));
 
-        // operatorController.povUp().onTrue(shooter.runShotCommand(ShotSpeeds.FAST,
-        // 0.9)).onFalse(shooter.stopCommand());
-        // operatorController.povLeft().onTrue(shooter.runShotCommand(ShotSpeeds.FAST,
-        // 0.93)).onFalse(shooter.stopCommand());
-        // operatorController.povRight().onTrue(shooter.runShotCommand(ShotSpeeds.FAST,
-        // 0.95)).onFalse(shooter.stopCommand());
-        // operatorController.povDown().onTrue(shooter.runShotCommand(ShotSpeeds.FAST,
-        // 0.98)).onFalse(shooter.stopCommand());
-
         // ================ //
         /* Amp & Trap Magic */
         // ================ //
 
-        operatorController.b().toggleOnTrue(magicAmpCommand);
-        // operatorController.b().onTrue(shooter.runShotCommand(ShotSpeeds.AMP)).onFalse(shooter.stopCommand());
+        operatorController.b().onTrue(ampPrep).onFalse(ampShoot);
 
         // operatorController.y().toggleOnTrue(magicTrapCommand);
         operatorController.y().onTrue(pivot.runToTrapCommand());
