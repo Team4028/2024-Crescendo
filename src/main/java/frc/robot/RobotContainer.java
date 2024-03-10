@@ -75,7 +75,7 @@ public class RobotContainer {
     private static final double FAST_CONVEYOR_VBUS = 0.85;
 
     private static final double FAN_VBUS = 1.;
-    private static final double FAN_PIVOT_VBUS = 0.1;
+    private static final double FAN_PIVOT_VBUS = 0.2;
 
     private static final double SHOOTER_BACKOUT_VBUS = -0.4;
     private static final double WHIPPY_VBUS = 0.2;
@@ -400,7 +400,13 @@ public class RobotContainer {
 
         /* Add Vision Measurement */
         driverController.back()
-                .onTrue(drivetrain.addMeasurementCommand(() -> getBestPose()));
+                .onTrue(Commands.runOnce(() -> {
+                    var pose = getBestPose();
+                    if (pose.isPresent())
+                        drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
+
+                    getBestSTEntry();
+                }));
 
         /* Snap Directions */
         driverController.povUp().toggleOnTrue(snapCommand(SnapDirection.Forward));
@@ -546,7 +552,7 @@ public class RobotContainer {
         /* TrapStar 5000 */
         emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS)).onFalse(m_fan.stopCommand());
 
-        emergencyController.back().whileTrue(m_fan.runPivotCommand(-FAN_PIVOT_VBUS));
+        emergencyController.back().onTrue(m_fan.runToPositionCommand(0.));
         emergencyController.start().whileTrue(m_fan.runPivotCommand(FAN_PIVOT_VBUS));
 
         /* ST test */
@@ -598,7 +604,7 @@ public class RobotContainer {
     private void pushIndexData() {
         ShooterTableIndex idx = indexList.get(currentIndex);
         SmartDashboard.putNumber("Shooter Table Index", idx.Index);
-        SmartDashboard.putString("Shooter Table Index", idx.Name);
+        SmartDashboard.putString("Shooter Table Name", idx.Name);
     }
 
     /* Set Snap Direction Toggle */
@@ -666,7 +672,7 @@ public class RobotContainer {
 
     /* Zeroing Command */
     public Command zeroCommand() {
-        return pivot.zeroCommand();
+        return pivot.zeroCommand().alongWith(m_fan.runToPositionCommand(0.));
     }
 
     /* Asynchronous Zero */

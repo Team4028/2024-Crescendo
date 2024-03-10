@@ -34,7 +34,7 @@ public class Fan extends SubsystemBase {
             .withOverrideBrakeDurNeutral(true);
 
     private final Slot0Configs pidConfigs = new Slot0Configs()
-            .withKP(0.3)
+            .withKP(0.8)
             .withKI(0.0)
             .withKD(0.0); // needs to be testing
     
@@ -67,6 +67,7 @@ public class Fan extends SubsystemBase {
         m_pivotVelocityLog = new DoubleLogEntry(m_log, "/Fan/Pivot/Velocity");
 
         DashboardStore.add("Fan Pivot Position", () -> pivot.getPosition().getValueAsDouble());
+        DashboardStore.add("Fan Pivot Current", () -> pivot.getStatorCurrent().getValueAsDouble());
     }
 
     // Fan Motor Controls //

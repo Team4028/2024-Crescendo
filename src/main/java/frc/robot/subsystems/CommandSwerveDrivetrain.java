@@ -121,6 +121,8 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
             talonConfigs.TorqueCurrent.PeakReverseTorqueCurrent = -module.SlipCurrent;
             talonConfigs.CurrentLimits.StatorCurrentLimit = module.SlipCurrent;
             talonConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
+            talonConfigs.CurrentLimits.SupplyCurrentLimit = 65.;
+            talonConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
 
             talonConfigs.MotorOutput.Inverted = module.DriveMotorInverted ? InvertedValue.Clockwise_Positive
                     : InvertedValue.CounterClockwise_Positive;
