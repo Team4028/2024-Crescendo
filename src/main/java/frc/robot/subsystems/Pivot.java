@@ -56,14 +56,14 @@ public class Pivot extends SubsystemBase {
 
     private static final int CAN_ID = 13;
 
-    public final static double MAX_POSITION = 64.0;
+    public final static double MAX_POSITION = 60.0;
     public final static double MIN_POSITION = 1.0;
 
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
 
-    public final static double HARD_STOP = 59.3;
-    public final static double STAGE_PIVOT = 56;
+    public final static double HARD_STOP = 57.;//59.4;
+    public final static double STAGE_PIVOT = 54.;
 
     private final static double INCIDENT_OFFSET = (Math.PI / 2)
             - Math.acos(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT_DY
@@ -159,8 +159,7 @@ public class Pivot extends SubsystemBase {
         DashboardStore.add("Pivot Native Position", () -> getPosition());
         DashboardStore.add("Pivot Current", () -> motor.getOutputCurrent());
         DashboardStore.add("Pivot Target", () -> targetPosition);
-        DashboardStore.add("Pivot Velocity", () -> convertEncoderToRadians(encoder.getVelocity() / 60));
-        DashboardStore.add("Pivot Native Velocity", () -> encoder.getVelocity());
+        DashboardStore.add("Pivot Velocity", () -> encoder.getVelocity());
     }
 
     public Command runQuasi(Direction dir) {
