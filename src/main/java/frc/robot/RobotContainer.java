@@ -104,7 +104,7 @@ public class RobotContainer {
     private final Climber climber = new Climber();
     private final Autons autons;
     private final Pivot pivot = new Pivot();
-    private final Fan fan = new Fan();
+    private final Fan m_fan = new Fan();
     private final Whippy whippy = new Whippy();
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
@@ -238,7 +238,7 @@ public class RobotContainer {
                                 return DIST_TO_TRAP.in(Meters);
                             return res.get();
                         }))
-                .alongWith() // fannn
+                .alongWith(m_fan.runMotorCommand(1.0).andThen(m_fan.runToTrapCommand()))
                 .alongWith(shooter.runShotCommand(ShotSpeeds.TRAP))
                 .andThen(Commands.waitUntil(shooter.isReadySupplier()))
                 .andThen(conveyor.runXRotations(20).alongWith(infeed.runMotorCommand(INFEED_VBUS)))
@@ -401,7 +401,7 @@ public class RobotContainer {
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runMotorCommand(0.));
-        fan.setDefaultCommand(fan.stopCommand());
+        m_fan.setDefaultCommand(m_fan.stopCommand());
 
         // ================= //
         /* DRIVER CONTROLLER */
@@ -578,7 +578,7 @@ public class RobotContainer {
                 .onFalse(whippy.stopCommand());
 
         /* TrapStar 5000 */
-        emergencyController.y().onTrue(fan.runMotorCommand(FAN_VBUS)).onFalse(fan.stopCommand());
+        emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS)).onFalse(m_fan.stopCommand());
 
         emergencyController.back().whileTrue(m_fan.runPivotCommand(-FAN_PIVOT_VBUS));
         emergencyController.start().whileTrue(m_fan.runPivotCommand(FAN_PIVOT_VBUS));
@@ -725,7 +725,7 @@ public class RobotContainer {
         shooter.logValues();
         // climber.logValues();
         pivot.logValues();
-        fan.logValues();
+        m_fan.logValues();
     }
 
     // ================ //
