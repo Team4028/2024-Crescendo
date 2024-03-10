@@ -58,7 +58,6 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Whippy;
-import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
@@ -450,9 +449,10 @@ public class RobotContainer {
         operatorController.start().onTrue(zeroCommand());
 
         /* Run Pivot & Climber to Zero */
-        operatorController.back().onTrue(climber.runToPositionCommand(ClimberPositions.HOME).andThen(
-                Commands.waitUntil(climber.inPositionSupplier()),
-                pivot.runToHomeCommand()));
+        operatorController.back().onTrue(
+            // climber.runToPositionCommand(ClimberPositions.HOME).andThen(
+                // Commands.waitUntil(climber.inPositionSupplier()),
+                pivot.runToHomeCommand());
 
         /* Run Climber to "Home" */
         operatorController.povDown().onTrue(climber.climbCommand());

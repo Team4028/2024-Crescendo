@@ -51,8 +51,8 @@ public class Pivot extends SubsystemBase {
     private final StringLogEntry sysIDTestMode;
 
     private final Timer zeroTimer;
-    private final double ZERO_TIMER_THRESHOLD = 0.4; // 7 scans
-    private final double ZERO_VELOCITY_THRESHOLD = 400;
+    private final double ZERO_TIMER_THRESHOLD = 0.2; // 7 scans
+    private final double ZERO_VELOCITY_THRESHOLD = 200;
 
     private static final int CAN_ID = 13;
 
@@ -62,7 +62,7 @@ public class Pivot extends SubsystemBase {
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
 
-    public final static double TRAP_POSITION = 59.3;
+    public final static double TRAP_POSITION = 57.5;
     private final static double INCIDENT_OFFSET = (Math.PI / 2)
             - Math.acos(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT_DY
                     / ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT);
@@ -81,7 +81,7 @@ public class Pivot extends SubsystemBase {
     private final static int CURRENT_LIMIT = 80;
 
     /* Ramp */
-    private final static double RAMP_RATE = 1.0;
+    private final static double RAMP_RATE = 0.25;
 
     private double targetPosition;
 
@@ -232,7 +232,7 @@ public class Pivot extends SubsystemBase {
             zeroTimer.restart();
             isVbus = true;
         })
-                .andThen(runMotorCommand(-0.1).repeatedly()
+                .andThen(runMotorCommand(-0.05).repeatedly()
                         .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
                                 && Math.abs(encoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
                 .andThen(runMotorCommand(0.).alongWith(Commands.runOnce(() -> zeroTimer.stop())))

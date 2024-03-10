@@ -4,6 +4,7 @@
 
 package frc.robot.utils;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -14,10 +15,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Add your docs here. */
 public class DashboardStore {
-    private static Map<String, BooleanSupplier> boolMap;
-    private static Map<String, DoubleSupplier> doubleMap;
-    private static Map<String, IntSupplier> intMap;
-    private static Map<String, Supplier<String>> stringMap;
+    private static Map<String, BooleanSupplier> boolMap = new HashMap<String, BooleanSupplier>();
+    private static Map<String, DoubleSupplier> doubleMap = new HashMap<String, DoubleSupplier>();
+    private static Map<String, IntSupplier> intMap = new HashMap<String, IntSupplier>();
+    private static Map<String, Supplier<String>> stringMap = new HashMap<String, Supplier<String>>();
 
     public static void add(String key, BooleanSupplier value) {
         boolMap.put(key, value);
