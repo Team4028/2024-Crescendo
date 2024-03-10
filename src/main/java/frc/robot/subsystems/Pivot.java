@@ -57,10 +57,11 @@ public class Pivot extends SubsystemBase {
     private static final int CAN_ID = 13;
 
     public final static double MAX_POSITION = 64.0;
-    public final static double MIN_POSITION = 0.25;
+    public final static double MIN_POSITION = 1.0;
 
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
+
 
     public final static double TRAP_POSITION = 56.75;
     private final static double INCIDENT_OFFSET = (Math.PI / 2)
@@ -70,12 +71,14 @@ public class Pivot extends SubsystemBase {
     /* PID */
     private class PIDConstants {
         // TODO: three different zones
-        private final static double kP = 0.03;
-        private final static double kD = 0.003;
+        private final static double kP = 0.05;
+        private final static double kD = 0.5;
 
         private final static double MIN_OUTPUT = -0.5;
         private final static double MAX_OUTPUT = 0.85;
     }
+
+    private final double FEEDFORWARD_THRESHOLD = 0.1;
 
     /* Current Limit */
     private final static int CURRENT_LIMIT = 80;
@@ -98,7 +101,8 @@ public class Pivot extends SubsystemBase {
         pid = motor.getPIDController();
         pid.setFeedbackDevice(encoder);
 
-        armFF = new ArmFeedforward(0.41062, 0.081135, 2.8182E-05);
+        // armFF = new ArmFeedforward(0.41062, 0.081135, 2.8182E-05);
+        armFF = new ArmFeedforward(0.20531, 0.081135, 2.8182E-05);
 
         encoder.setMeasurementPeriod(16);
         encoder.setAverageDepth(2);
@@ -255,13 +259,16 @@ public class Pivot extends SubsystemBase {
         voltageLog.append(motor.getAppliedOutput() * motor.getBusVoltage());
         velocityLog.append(encoder.getVelocity());
         positionLog.append(getPosition());
+        // TODO: degrees + 1.5
     }
 
     @Override
     public void periodic() {
-        if (!isVbus) pid.setReference(targetPosition, ControlType.kPosition, 0,
+        double error = targetPosition - getPosition();
+
+        if (!isVbus && Math.abs(error) > FEEDFORWARD_THRESHOLD) pid.setReference(targetPosition, ControlType.kPosition, 0,
                 armFF.calculate(convertEncoderToRadians(encoder.getPosition()),
-                        PIDConstants.MAX_OUTPUT * 6000.),
+                        (targetPosition - getPosition()) / 0.1 * 60.),// * PIDConstants.MAX_OUTPUT * 6000.),
                 ArbFFUnits.kVoltage);
     }
 }

@@ -21,7 +21,7 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final Pose2d SPEAKER_TARGET = new Pose2d(1.37, 5.56, new Rotation2d(Math.PI));
+    public static final Pose2d SPEAKER_TARGET = new Pose2d(1.37, 5.8, new Rotation2d(Math.PI));
     public static final Pose2d SPEAKER_DISTANCE_TARGET = new Pose2d(0.0, 5.52, new Rotation2d(Math.PI));
     public static final Pose2d AMP_TARGET = new Pose2d(1.83, 7.27, new Rotation2d(Math.PI / 2.));
     public static final Pose2d LEFT_TRAP_TARGET = new Pose2d(4.4, 4.62  , new Rotation2d(Units.degreesToRadians(120)));
