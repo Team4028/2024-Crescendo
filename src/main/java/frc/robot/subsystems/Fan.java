@@ -34,7 +34,7 @@ public class Fan extends SubsystemBase {
             .withOverrideBrakeDurNeutral(true);
 
     private final Slot0Configs pidConfigs = new Slot0Configs()
-            .withKP(0.3)
+            .withKP(0.8)
             .withKI(0.0)
             .withKD(0.0); // needs to be testing
     

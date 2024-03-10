@@ -140,6 +140,14 @@ public class Conveyor extends SubsystemBase {
         return runOnce(() -> runMotor(vBus));
     }
 
+    public void stop() {
+        runMotor(0.);
+    }
+
+    public Command stopCommand() {
+        return runMotorCommand(0.);
+    }
+
     public void logValues() {
         currentLog.append(motor.getOutputCurrent());
         vbusLog.append(motor.getAppliedOutput());

@@ -50,6 +50,7 @@ import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Fan;
@@ -107,7 +108,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command magicShootCommand, magicTrapCommand, magicAmpCommand;
+    private final Command magicShootCommand, magicTrapCommand, magicAmpCommand, ampSequence;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -198,8 +199,7 @@ public class RobotContainer {
                 .andThen(conveyor.runXRotations(10)
                         .alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS)))
                 .andThen(Commands.waitSeconds(0.2))
-                .andThen(shooter.stopCommand())
-                .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
+                .finallyDo(this::stopAll);
 
         magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2,
                 0)
@@ -223,6 +223,13 @@ public class RobotContainer {
                 .andThen(shooter.stopCommand())
                 .andThen(pivot.runToHomeCommand())
                 .andThen(whippy.whippyWheelsCommand(0));
+
+        ampSequence = pivot.runToClimbCommand()
+                .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
+                .alongWith(shooter.runShotCommand(ShotSpeeds.AMP))
+                .andThen(Commands.waitUntil(shooterAndPivotReady())).withTimeout(4.)
+                .andThen(conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(INFEED_VBUS)))
+                .finallyDo(this::stopAll);
 
         configureBindings();
     }
@@ -367,7 +374,6 @@ public class RobotContainer {
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runMotorCommand(0.));
-        m_fan.setDefaultCommand(m_fan.stopCommand());
 
         // ================= //
         /* DRIVER CONTROLLER */
@@ -499,8 +505,8 @@ public class RobotContainer {
         /* Amp & Trap Magic */
         // ================ //
 
-        // operatorController.b().toggleOnTrue(magicAmpCommand);
-        operatorController.b().onTrue(shooter.runShotCommand(ShotSpeeds.AMP)).onFalse(shooter.stopCommand());
+        operatorController.b().toggleOnTrue(magicAmpCommand);
+        // operatorController.b().onTrue(shooter.runShotCommand(ShotSpeeds.AMP)).onFalse(shooter.stopCommand());
 
         // operatorController.y().toggleOnTrue(magicTrapCommand);
         operatorController.y().onTrue(pivot.runToTrapCommand());
@@ -593,6 +599,20 @@ public class RobotContainer {
     // =========================================== //
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
+
+    /* Stop all motors and zero everything */
+    private void stopAll() {
+        infeed.stop();
+        conveyor.stop();
+        shooter.stop();
+        climber.runToPositionCommand(ClimberPositions.HOME)
+                .andThen(Commands.waitUntil(climber.inPositionSupplier()),
+                        pivot.runToHomeCommand())
+                .schedule();
+        m_fan.stop();
+        m_fan.runToPosition(0.);
+        whippy.stop();
+    }
 
     /* Put Current ST Index Data to Dashboard */
     private void pushIndexData() {

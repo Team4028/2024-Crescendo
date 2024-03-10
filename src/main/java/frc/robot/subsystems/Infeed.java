@@ -23,7 +23,6 @@ import frc.robot.utils.DashboardStore;
 public class Infeed extends SubsystemBase {
     private final TimeOfFlight tofSensor;
     private final TalonFX motor;
-    // private final RelativeEncoder encoder;
 
     private final DataLog log;
     private final DoubleLogEntry currentLog, velocityLog;
@@ -46,9 +45,6 @@ public class Infeed extends SubsystemBase {
     /** Creates a new SensorMotor. */
     public Infeed() {
         motor = new TalonFX(CAN_ID);
-        // motor.restoreFactoryDefaults();
-
-        // motor.setInverted(true);
 
         motor.getConfigurator().apply(currentLimitsConfigs);
         motor.getConfigurator().apply(motorOutputConfigs);
@@ -80,6 +76,14 @@ public class Infeed extends SubsystemBase {
 
     public Command runMotorCommand(double vBus) {
         return runOnce(() -> runMotor(vBus));
+    }
+
+    public void stop() {
+        runMotor(0.);
+    }
+
+    public Command stopCommand() {
+        return runMotorCommand(0.);
     }
 
     public void logValues() {

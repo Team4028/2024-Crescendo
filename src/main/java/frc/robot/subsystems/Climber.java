@@ -133,6 +133,10 @@ public class Climber extends SubsystemBase {
         return runOnce(this::climb);
     }
 
+    public void runToPosition(ClimberPositions position) {
+        runToPosition(position.Position);
+    }
+
     public Command runToPositionCommand(ClimberPositions position) {
         return runToPositionCommand(position.Position);
     }
