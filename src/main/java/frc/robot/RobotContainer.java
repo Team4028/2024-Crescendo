@@ -346,7 +346,8 @@ public class RobotContainer {
                         .withRotationalRate(
                                 scaleDriverController(-driverController.getRightX(),
                                         thetaLimiter, currentSpeed) *
-                                        MAX_ANGULAR_SPEED)));
+                                        MAX_ANGULAR_SPEED))
+                        .alongWith(Commands.runOnce(() -> SmartDashboard.putBoolean("Snapped", false))));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runMotorCommand(0.));
@@ -563,7 +564,8 @@ public class RobotContainer {
                 .withVelocityY(scaleDriverController(-driverController.getLeftX(),
                         yLimiter,
                         currentSpeed) * MAX_SPEED)
-                .withTargetDirection(Rotation2d.fromDegrees(direction.Angle)));
+                .withTargetDirection(Rotation2d.fromDegrees(direction.Angle)))
+                .alongWith(Commands.runOnce(() -> SmartDashboard.putBoolean("Snapped", true)));
     }
 
     /* Smart Infeed Command Generator */
