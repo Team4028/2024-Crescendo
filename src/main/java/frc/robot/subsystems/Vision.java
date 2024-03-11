@@ -38,6 +38,9 @@ public class Vision extends SubsystemBase {
     public static final Transform3d TRAP_ROBOT_TO_CAMERA = new Transform3d(0, 0, Units.inchesToMeters(30),
             new Rotation3d(0, Units.degreesToRadians(-5), 0));
 
+    public static final int TRAP_PIPELINE_INDEX = 1;
+    public static final int SHOOTER_PIPELINE_INDEX = 0;
+
     // "2.5": 44 in (14 in)
     // "5.5": 80 in (14 in)
     // "7.5": 104 in (14 in)
@@ -129,7 +132,7 @@ public class Vision extends SubsystemBase {
         camera.setPipelineIndex(pipelineIndex);
     }
 
-    public Command setPiplelineCmd(int pipelineIndex) {
+    public Command setPipelineCommand(int pipelineIndex) {
         return runOnce(() -> setPipeline(pipelineIndex));
     }
 

@@ -29,9 +29,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Distance;
@@ -188,8 +186,11 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     public RobotContainer() {
+        trapVision.setPipeline(Vision.SHOOTER_PIPELINE_INDEX);
+
         snapDrive.HeadingController = new PhoenixPIDController(2., 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
+
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
 
@@ -210,13 +211,13 @@ public class RobotContainer {
                 .andThen(shooter.stopCommand())
                 .andThen(pivot.runToPositionCommand(Pivot.HOLD_POSITION));
 
-        DashboardStore.add("Dist to trap", () -> {
-            trapVision.setPipeline(1);
-            var res = trapVision.getTagDistance(15);
-            if (res.isEmpty())
-                return Double.NaN;
-            return Units.metersToInches(res.get());
-        });
+        // DashboardStore.add("Dist to trap", () -> {
+        //     trapVision.setPipeline(1);
+        //     var res = trapVision.getTagDistance(15);
+        //     if (res.isEmpty())
+        //         return Double.NaN;
+        //     return Units.metersToInches(res.get());
+        // });
 
         /*
          * magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2,
@@ -232,7 +233,7 @@ public class RobotContainer {
          * .andThen(pivot.runToHomeCommand());
          */
 
-        mundaneTrapCommand = pivot.runToTrapCommand().alongWith(trapVision.setPiplelineCmd(1))
+        mundaneTrapCommand = pivot.runToTrapCommand().alongWith(trapVision.setPipelineCommand(Vision.TRAP_PIPELINE_INDEX))
                 .andThen(new AlignDrivetrain(drivetrain, () -> 0.0, () -> {
                     // TODO: configurable between 11-16
                     Optional<Double> yaw = trapVision.getTagYaw(15);
@@ -253,7 +254,7 @@ public class RobotContainer {
                 .andThen(conveyor.runXRotations(20).alongWith(infeed.runMotorCommand(INFEED_VBUS)))
                 .andThen(pivot.runToHomeCommand())
                 .andThen(shooter.stopCommand().alongWith(infeed.runMotorCommand(0)))
-                .andThen(trapVision.setPiplelineCmd(0));
+                .andThen(trapVision.setPipelineCommand(Vision.SHOOTER_PIPELINE_INDEX));
 
         magicTrapCommand = Commands.none();
 
@@ -512,7 +513,7 @@ public class RobotContainer {
         operatorController.a().onTrue(
                 // climber.runToPositionCommand(ClimberPositions.HOME).andThen(
                 // Commands.waitUntil(climber.inPositionSupplier()),
-                pivot.runToHomeCommand());
+                pivot.runToHomeCommand().alongWith(trapVision.setPipelineCommand(Vision.SHOOTER_PIPELINE_INDEX)));
 
         /* Run Climber to "Home" */
         // operatorController.povDown().onTrue(climber.climbCommand());
@@ -547,7 +548,7 @@ public class RobotContainer {
         operatorController.b().onTrue(mundaneTrapCommand);
 
         // operatorController.y().toggleOnTrue(magicTrapCommand);
-        operatorController.y().onTrue(pivot.runToTrapCommand());
+        operatorController.y().onTrue(pivot.runToTrapCommand().alongWith(trapVision.setPipelineCommand(Vision.TRAP_PIPELINE_INDEX)));
 
         // ==================== //
         /* EMERGENCY CONTROLLER */
