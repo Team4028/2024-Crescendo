@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
@@ -44,7 +45,7 @@ import frc.robot.commands.Autons.StartPoses;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.generated.TunerConstants;
-
+import frc.robot.subsystems.Candle;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
@@ -54,6 +55,7 @@ import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Whippy;
+import frc.robot.subsystems.Candle.Color;
 import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.utils.ShooterTable;
@@ -97,9 +99,14 @@ public class RobotContainer {
     private final Pivot pivot = new Pivot();
     private final Fan m_fan = new Fan();
     private final Whippy whippy = new Whippy();
+    private final Candle CANdle = new Candle();
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
+
+    public Conveyor getConveyor() {
+        return conveyor;
+    }
 
     // ====================== //
     /* Auton & Other Commands */
@@ -302,6 +309,12 @@ public class RobotContainer {
     // =========================== //
     private void configureBindings() {
 
+        // LED Triggers //
+
+        new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.RED)).onFalse(CANdle.runBurnyBurnCommand());
+        new Trigger(conveyor.hasInfedSupplier()).onTrue(CANdle.blink(Color.GREEN)).onFalse(CANdle.runBurnyBurnCommand());
+
+
         // TODO: Add reverse infeed in case of jams so driver can spit out note and
         // retry
 
@@ -376,7 +389,8 @@ public class RobotContainer {
         // control
         driverController.leftStick().toggleOnTrue(new LimelightSquare(true,
                 () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
-                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, BASE_SPEED) * MAX_SPEED, drivetrain));
+                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, BASE_SPEED) * MAX_SPEED,
+                drivetrain));
 
         // =================== //
         /* OPERATOR CONTROLLER */

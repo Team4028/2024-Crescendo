@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 import com.ctre.phoenix.led.FireAnimation;
 import com.ctre.phoenix.led.RainbowAnimation;
+import com.ctre.phoenix.led.SingleFadeAnimation;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -20,7 +22,7 @@ public class Candle extends SubsystemBase {
     private final int NUM_LEDS = 69;
     private Color color;
 
-    enum Color {
+    public enum Color {
 
         GREEN(0, 254, 0),
         PURPLE(118, 0, 254),
@@ -42,7 +44,7 @@ public class Candle extends SubsystemBase {
     }
 
     /** Creates a new light. */
-    private Candle() {
+    public Candle() {
         candle = new CANdle(21, "rio");
         candle.configBrightnessScalar(.5);
         candle.configLEDType(LEDStripType.GRB);
@@ -86,6 +88,14 @@ public class Candle extends SubsystemBase {
         return runOnce(() -> candle.animate(rainbow()));
     }
 
+    public SingleFadeAnimation fadyFadePurple() {
+        return new SingleFadeAnimation(105, 35, 166, 0, 0.5, 60);
+    }
+
+    public Command runfadyFadePurple() {
+        return runOnce(() -> candle.animate(fadyFadePurple()));
+    }
+
     //Blink command -> Use for anything
 public SequentialCommandGroup blink(Color color) {
     return new SequentialCommandGroup(
@@ -98,7 +108,6 @@ public SequentialCommandGroup blink(Color color) {
         new InstantCommand(() -> setColor(color)),
         new InstantCommand(() -> setNoColor()));
 }
-
 
 
 

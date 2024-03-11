@@ -55,7 +55,6 @@ public class Conveyor extends SubsystemBase {
     private boolean conveyorHasSeenNote = false;
     private boolean hasStrawbrryJam = false;
 
-
     private double target;
     private final Timer conveyorTimer;
     private final Timer infeedTimer;
@@ -65,15 +64,13 @@ public class Conveyor extends SubsystemBase {
         conveyorTimer.reset();
         infeedTimer = new Timer();
         infeedTimer.reset();
-        
 
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
         motor.restoreFactoryDefaults();
-        
+
         motor.setIdleMode(IdleMode.kCoast);
         motor.setInverted(true);
         motor.setClosedLoopRampRate(.1);
-
 
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 20);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
@@ -121,7 +118,7 @@ public class Conveyor extends SubsystemBase {
         if (infeedTofSensor.getRange() <= INFEED_DETECTION_RANGE_THRESHOLD) {
             infeedTimer.start();
         }
-        
+
         if (conveyorTofSensor.getRange() <= INITIAL_DETECTION_RANGE_THRESHOLD) {
             conveyorTimer.start();
             conveyorHasSeenNote = true;
@@ -133,7 +130,8 @@ public class Conveyor extends SubsystemBase {
             hasStrawbrryJam = true;
         }
 
-        if (conveyorHasSeenNote && (conveyorTimer.get() >= CONVEYOR_TIMER_THRESHOLD || conveyorTofSensor.getRange() >= NOTE_HELD_RANGE_THRESHOLD)) {
+        if (conveyorHasSeenNote && (conveyorTimer.get() >= CONVEYOR_TIMER_THRESHOLD
+                || conveyorTofSensor.getRange() >= NOTE_HELD_RANGE_THRESHOLD)) {
             conveyorHasSeenNote = false;
             conveyorTimer.stop();
             conveyorTimer.reset();
@@ -143,11 +141,17 @@ public class Conveyor extends SubsystemBase {
         return false;
     }
 
-    public BooleanSupplier hasInfedSupplier() { return this::hasInfed; }
+    public BooleanSupplier hasInfedSupplier() {
+        return this::hasInfed;
+    }
 
-    private boolean hasJam() { return hasStrawbrryJam; }
+    private boolean hasJam() {
+        return hasStrawbrryJam;
+    }
 
-    public BooleanSupplier hasJamSupplier() { return this::hasJam; }
+    public BooleanSupplier hasJamSupplier() {
+        return this::hasJam;
+    }
 
     public Command runXRotations(double x) {
         return runOnce(() -> {
