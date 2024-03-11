@@ -12,57 +12,69 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "3pseg1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "3pseg2"
+            "name": "zeroApril"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "3pseg3"
+            "pathName": "5pseg1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5pseg2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5psesg3"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "2.5 Stationary Shot"
+            "name": "Start Shooter"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Limelight Acquire"
+            "name": "Go to 4 piece path"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Center Pathfinding Shot"
+            "name": "zeroApril"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "2.5 Final Note"
+            "name": "4 piece align pivot"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Limelight Acquire"
+            "pathName": "4 piece 0-1"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Center Pathfinding Shot"
+            "pathName": "4 piece 1-2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4 piece 2-3"
           }
         }
       ]

@@ -20,13 +20,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "3pseg2"
+            "pathName": "3p+seg2"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.1
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "3pseg3"
+            "pathName": "3p+seg3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3p+seg4"
           }
         },
         {
@@ -50,7 +62,25 @@
         {
           "type": "named",
           "data": {
-            "name": "2.5 Final Note"
+            "name": "Note 3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Limelight Acquire"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Center Pathfinding Shot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Note 4"
           }
         },
         {

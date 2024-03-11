@@ -6,33 +6,27 @@ package frc.robot.subsystems;
 
 import java.util.function.BooleanSupplier;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.playingwithfusion.TimeOfFlight;
 import com.playingwithfusion.TimeOfFlight.RangingMode;
-import com.revrobotics.CANSparkFlex;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkBase.IdleMode;
-
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.DashboardStore;
 
 public class Infeed extends SubsystemBase {
     private final TimeOfFlight tofSensor;
-    private final CANSparkFlex motor;
-    private final RelativeEncoder encoder;
+    private final TalonFX motor;
+    // private final RelativeEncoder encoder;
 
     private final DataLog log;
     private final DoubleLogEntry currentLog, velocityLog;
-
-    private static final int CURRENT_LIMIT = 60;
-
-    private static final int ENCODER_MESURMENT_PERIOD = 16;
-    private static final int ENCODER_AVG_DEPTH = 2;
 
     private static final double RANGE_THRESHOLD = 200;
     private static final int CAN_ID = 18;
@@ -41,29 +35,23 @@ public class Infeed extends SubsystemBase {
     private static final double TOF_SAMPLE_TIME = 24.0;
     private static final int[] TOF_ROI = new int[] { 4, 4, 11, 11 };
 
+    private final CurrentLimitsConfigs currentLimitsConfigs = new CurrentLimitsConfigs()
+            .withSupplyCurrentLimit(50.)
+            .withStatorCurrentLimit(90.);
+
+    private final MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs()
+            .withNeutralMode(NeutralModeValue.Brake)
+            .withInverted(InvertedValue.Clockwise_Positive);
+
     /** Creates a new SensorMotor. */
     public Infeed() {
-        motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
-        motor.restoreFactoryDefaults();
+        motor = new TalonFX(CAN_ID);
+        // motor.restoreFactoryDefaults();
 
-        motor.setInverted(true);
-        motor.setSmartCurrentLimit(CURRENT_LIMIT);
-        motor.setIdleMode(IdleMode.kBrake);
-        
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 20);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 101);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 102);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 103);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
+        // motor.setInverted(true);
 
-        encoder = motor.getEncoder();
-        encoder.setMeasurementPeriod(ENCODER_MESURMENT_PERIOD);
-        encoder.setAverageDepth(ENCODER_AVG_DEPTH);
-
-        motor.burnFlash();
+        motor.getConfigurator().apply(currentLimitsConfigs);
+        motor.getConfigurator().apply(motorOutputConfigs);
 
         tofSensor = new TimeOfFlight(TOF_CAN_ID);
 
@@ -73,6 +61,9 @@ public class Infeed extends SubsystemBase {
         log = DataLogManager.getLog();
         currentLog = new DoubleLogEntry(log, "/Infeed/Current");
         velocityLog = new DoubleLogEntry(log, "/Infeed/Velocity");
+
+        /* Dashboard */
+        DashboardStore.add("Infeed Tof", () -> tofSensor.getRange());
     }
 
     public boolean hasGamePiece() {
@@ -83,21 +74,20 @@ public class Infeed extends SubsystemBase {
         return this::hasGamePiece;
     }
 
-    private void runInfeedMotor(double vBus) {
+    public void runMotor(double vBus) {
         motor.set(vBus);
     }
 
-    public Command runInfeedMotorCommand(double vBus) {
-        return runOnce(() -> runInfeedMotor(vBus));
+    public Command runMotorCommand(double vBus) {
+        return runOnce(() -> runMotor(vBus));
     }
 
     public void logValues() {
-        currentLog.append(motor.getOutputCurrent());
-        velocityLog.append(encoder.getVelocity());
+        currentLog.append(motor.getStatorCurrent().getValueAsDouble());
+        velocityLog.append(motor.getVelocity().getValueAsDouble());
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Infeed Tof", tofSensor.getRange());
     }
 }

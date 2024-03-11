@@ -38,7 +38,7 @@ public class LimelightSquare extends Command {
 
     @Override
     public void initialize() {
-        m_controller = new PIDController(5, 0., .5);
+        m_controller = new PIDController(2., 0., 0.);
         m_controller.reset();
     }
 
