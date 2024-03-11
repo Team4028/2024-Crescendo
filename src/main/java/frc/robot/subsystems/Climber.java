@@ -33,8 +33,8 @@ public class Climber extends SubsystemBase {
     private boolean oneShot = false;
     private double targetPosition = 0.;
 
-    private static final double ZERO_ABSOLUTE_ENCODER_POSITION = .447;
-    private static final double ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT = 390.6;
+    private static final double ZERO_ABSOLUTE_ENCODER_POSITION = .11;
+    private static final double ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT = 287.5;
 
     private static final int CAN_ID = 15;
 
@@ -45,9 +45,9 @@ public class Climber extends SubsystemBase {
             .withKD(0.0); // needs tuning
 
     private final MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(30.)
-            .withMotionMagicAcceleration(60.)
-            .withMotionMagicJerk(600.);
+            .withMotionMagicCruiseVelocity(40.)
+            .withMotionMagicAcceleration(80.)
+            .withMotionMagicJerk(800.);
 
     private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(100.)
@@ -63,11 +63,12 @@ public class Climber extends SubsystemBase {
             .withOverrideBrakeDurNeutral(true);
 
     public enum ClimberPositions {
-        CLIMB(-10.),
+        CLIMB(-11.),
         HOME(0.),
-        DOWN_ONE(122.),
+        DOWN_ONE(105.25),
         DOWN_TWO(115.), // unused
-        READY(169.);
+        READY(120.6), // 169.
+        ALL_THE_WAY(150.0); // wrong
 
         public double Position;
 
@@ -100,7 +101,7 @@ public class Climber extends SubsystemBase {
         DashboardStore.add("Climber Position", () -> motor.getPosition().getValueAsDouble());
         DashboardStore.add("Climber Current", () -> motor.getStatorCurrent().getValueAsDouble());
         DashboardStore.add("Climber Velocity", () -> motor.getVelocity().getValueAsDouble());
-        DashboardStore.add("Absolute Encoder Position", () -> encoder.getAbsolutePosition());
+        DashboardStore.add("Absolute Encoder Position", encoder::getAbsolutePosition);
     }
 
     public void runMotor(double vBus) {
