@@ -32,7 +32,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -408,25 +410,39 @@ public class RobotContainer {
         driverController.back()
                 .onTrue(drivetrain.addMeasurementCommand(() -> getBestPose()));
 
-        /* Snap Directions */
-        driverController.povUp().toggleOnTrue(snapCommand(SnapDirection.Forward));
-        driverController.povLeft().toggleOnTrue(snapCommand(SnapDirection.Left));
-        driverController.povRight().toggleOnTrue(snapCommand(SnapDirection.Right));
-        driverController.povDown().toggleOnTrue(snapCommand(SnapDirection.Back));
-
-        /* Limelight Square */
-        driverController.leftStick().toggleOnTrue(new LimelightSquare(true,
-                () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, currentSpeed) * MAX_SPEED,
-                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, currentSpeed) * MAX_SPEED,
-                drivetrain));
-
         /* Toggle Chassis Mode */
         driverController.rightBumper().onTrue(Commands.runOnce(() -> currentSpeed = SLOW_SPEED))
                 .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
 
+        // ========================= //
+        /* Misc */
+        // ========================= //
+
+        /* End snap, limelight & stop all motors */
+        driverController.rightStick().onTrue(stopAllCommand().alongWith(drivetrain.runOnce(() -> {
+        })));
+
         // =================== //
         /* OPERATOR CONTROLLER */
         // =================== //
+
+        // ========================= //
+        /* Driver Help Control */
+        // ========================= //
+
+        /* Snap to Amp */
+        operatorController.povLeft().toggleOnTrue(Commands.either(
+                snapCommand(SnapDirection.Left), snapCommand(SnapDirection.Right),
+                () -> {
+                    var alliance = DriverStation.getAlliance();
+                    return alliance.isPresent() && alliance.get() == Alliance.Blue;
+                }));
+
+        /* Limelight Square */
+        operatorController.leftStick().toggleOnTrue(new LimelightSquare(true,
+                () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, currentSpeed) * MAX_SPEED,
+                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, currentSpeed) * MAX_SPEED,
+                drivetrain));
 
         // ======================= //
         /* Shooter Control */
@@ -440,16 +456,14 @@ public class RobotContainer {
                     shooter.runEntry(entry, ShotSpeeds.FAST);
                     pivot.runToPosition(entry.Angle);
                 }, shooter, pivot))
-                .onFalse(shooter.stopCommand().alongWith(pivot.runToHomeCommand()));
-        // operatorController.leftBumper().onTrue(shooter.runShotCommand(ShotSpeeds.FAST))
-        // .onFalse(shooter.stopCommand());
+                .onFalse(stopAllCommand());
 
         /* Convey Note */
         operatorController.rightBumper()
                 .whileTrue(runBoth(FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS).repeatedly());
 
         /* Magic Shoot */
-        operatorController.x().onTrue(magicShootCommand);
+        operatorController.x().toggleOnTrue(magicShootCommand);
 
         /* Shooter Table Index Down */
         operatorController.leftTrigger(0.5).onTrue(new InstantCommand(() -> {
@@ -472,25 +486,24 @@ public class RobotContainer {
 
         /* Run Pivot & Climber to Zero */
         operatorController.a().onTrue(
-                // climber.runToPositionCommand(ClimberPositions.HOME).andThen(
-                // Commands.waitUntil(climber.inPositionSupplier()),
-                pivot.runToHomeCommand());
+                climber.runToPositionCommand(ClimberPositions.HOME).andThen(
+                        Commands.waitUntil(climber.inPositionSupplier()),
+                        pivot.runToHomeCommand()));
 
-        /* Run Climber to "Home" */
+        /* CLIMB */
         operatorController.povDown().onTrue(climber.climbCommand());
 
-        /* Run Climber to "Down One" */
-        operatorController.povLeft().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_ONE));
+        /* Tension Chain */
+        operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.TENSION));
 
-        /* Run Climber to "Down One" */
-        operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.DOWN_TWO));
+        /* Prime Climber & Pivot */
+        operatorController.povUp().onTrue(pivot.runToClimbCommand().andThen(
+                Commands.waitUntil(pivot.inPositionSupplier()),
+                climber.runToPositionCommand(Climber.ClimberPositions.READY)));
 
-        /* Run Climber to "Ready" */
-        operatorController.povUp().onTrue(/*
-                                           * pivot.runToClimbCommand().andThen(
-                                           * Commands.waitUntil(pivot.inPositionSupplier()),
-                                           */
-                climber.runToPositionCommand(Climber.ClimberPositions.READY));
+        // TODO: no explicit trap position command
+        // trap, amp, climb sequences should all do this on their own
+        // w/ explicit position on emergency
 
         // ================ //
         /* Amp & Trap Magic */
@@ -565,16 +578,6 @@ public class RobotContainer {
                                 () -> -emergencyController.getRightY(),
                                 () -> emergencyController.getRightY()));
 
-        // emergencyController.a().and(emergencyController.povUp()).whileTrue(pivot.runQuasi(Direction.kForward))
-        // .onFalse(pivot.runMotorCommand(0.));
-        // emergencyController.a().and(emergencyController.povDown()).whileTrue(pivot.runQuasi(Direction.kReverse))
-        // .onFalse(pivot.runMotorCommand(0.));
-
-        // emergencyController.b().and(emergencyController.povUp()).whileTrue(pivot.runDyn(Direction.kForward))
-        // .onFalse(pivot.runMotorCommand(0.));
-        // emergencyController.b().and(emergencyController.povDown()).whileTrue(pivot.runDyn(Direction.kReverse))
-        // .onFalse(pivot.runMotorCommand(0.));
-
         emergencyController.b().onTrue(shooter.runShotCommand(ShotSpeeds.TRAP)).onFalse(shooter.stopCommand());
         emergencyController.x().onTrue(m_fan.runToTrapCommand());
 
@@ -604,11 +607,15 @@ public class RobotContainer {
         whippy.stop();
     }
 
+    private Command stopAllCommand() {
+        return Commands.runOnce(this::stopAll, infeed, conveyor, shooter, climber, m_fan, pivot, whippy);
+    }
+
     /* Put Current ST Index Data to Dashboard */
     private void pushIndexData() {
         ShooterTableIndex idx = indexList.get(currentIndex);
         SmartDashboard.putNumber("Shooter Table Index", idx.Index);
-        SmartDashboard.putString("Shooter Table Index", idx.Name);
+        SmartDashboard.putString("Shooter Table Name", idx.Name);
     }
 
     /* Set Snap Direction Toggle */
@@ -652,7 +659,7 @@ public class RobotContainer {
         return infeed.runMotorCommand(infeedVbus).alongWith(conveyor.runMotorCommand(conveyorVbus));
     }
 
-    /* Run both Conveyor and Infeed */
+    /* Run Conveyor, Infeed, and shooter if backwards */
     private Command runThree(Supplier<Double> conveyorVbus, Supplier<Double> infeedVbus, Supplier<Double> shooterVbus) {
         return new FunctionalCommand(() -> {
         },
@@ -699,7 +706,7 @@ public class RobotContainer {
         conveyor.logValues();
         infeed.logValues();
         shooter.logValues();
-        // climber.logValues();
+        climber.logValues();
         pivot.logValues();
         m_fan.logValues();
     }
@@ -721,7 +728,6 @@ public class RobotContainer {
         numPoses += back.isPresent() ? 1 : 0;
 
         Optional<Pose2d> pose = Optional.empty();
-        SmartDashboard.putNumber("nuMPoses", numPoses);
 
         if (numPoses == 1) {
             pose = Optional

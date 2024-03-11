@@ -65,7 +65,7 @@ public class Climber extends SubsystemBase {
     public enum ClimberPositions {
         CLIMB(-10.),
         HOME(0.),
-        DOWN_ONE(122.),
+        TENSION(122.),
         DOWN_TWO(115.), // unused
         READY(169.);
 
