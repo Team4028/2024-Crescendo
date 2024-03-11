@@ -40,7 +40,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
@@ -259,6 +261,8 @@ public class RobotContainer {
                 conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS))
                         .andThen(shooter.stopCommand()));
 
+        NamedCommands.registerCommand("2pr Shooter to angle", pivot.runToPositionCommand(4.3));
+
         NamedCommands.registerCommand("Spit Note", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
                 .alongWith(shooter.spinBothCommand(0.15))
@@ -273,6 +277,14 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
 
+        NamedCommands.registerCommand("Dumb Infeed",
+                runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS).repeatedly().withTimeout(.25));
+
+        NamedCommands.registerCommand("Run Back", shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
+                .raceWith(conveyor.runXRotations(-2.5).withTimeout(0.2) // -1.5
+                        .alongWith(infeed.runMotorCommand(0.)))
+                .andThen(shooter.stopCommand()));
+
         ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0),
                 10.0, 1.0); // TODO: fix
 
@@ -283,8 +295,17 @@ public class RobotContainer {
         NamedCommands.registerCommand("Start Shooter",
                 runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST));
 
-        ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 21.5, 1.0);
-        NamedCommands.registerCommand("4 Piece Shooter", runEntryCommand(() -> fourEntry, () -> ShotSpeeds.FAST));
+        ShooterTableEntry fourP = new ShooterTableEntry(Feet.of(0), 0.0, 0.85);
+        NamedCommands.registerCommand("Start Shooter No Pivot",
+                shooter.runEntryCommand(() -> fourP, () -> ShotSpeeds.FAST));
+
+        // ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 12, 1.0);
+        NamedCommands.registerCommand("4 Piece Shooter Pivot", pivot.runToPositionCommand(13));
+
+        NamedCommands.registerCommand("4 Piece Mid Shooter Pivot", pivot.runToPositionCommand(17));
+
+        // ShooterTableEntry fourLastEntry = new ShooterTableEntry(Feet.of(0), 15, 1.0);
+        NamedCommands.registerCommand("4 Piece Last Shooter Pivot", pivot.runToPositionCommand(13));
 
         NamedCommands.registerCommand("Stop Shooter", shooter.stopCommand());
         NamedCommands.registerCommand("Stop Infeed", runBoth(0., 0.));
