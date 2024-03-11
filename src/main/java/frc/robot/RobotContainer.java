@@ -108,7 +108,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command magicShootCommand, magicTrapCommand, magicAmpCommand, ampPrep, ampShoot;
+    private final Command magicShootCommand, magicTrapCommand, ampPrep, ampShoot;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -213,22 +213,12 @@ public class RobotContainer {
                 .andThen(shooter.stopCommand())
                 .andThen(pivot.runToHomeCommand());
 
-        magicAmpCommand = drivetrain.pathFindCommand(Constants.AMP_TARGET, .5, 0)
-                .andThen(shooter.setSlotCommand(Shooter.Slots.AMP))
-                .andThen(pivot.runToClimbCommand())
-                .andThen(whippy.whippyWheelsCommand(WHIPPY_VBUS))
-                .andThen(shooter.runShotCommand(ShotSpeeds.AMP).repeatedly()
-                        .until(shooterAndPivotReady()).withTimeout(4.))
-                .andThen(conveyor.runXRotations(20.))
-                .andThen(shooter.stopCommand())
-                .andThen(pivot.runToHomeCommand())
-                .andThen(whippy.whippyWheelsCommand(0));
-
         ampPrep = pivot.runToClimbCommand()
                 .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
                 .alongWith(shooter.runShotCommand(ShotSpeeds.AMP));
 
         ampShoot = conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(INFEED_VBUS))
+                .andThen(new WaitCommand(1.0))
                 .finallyDo(this::stopAll);
 
         configureBindings();
