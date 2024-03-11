@@ -7,9 +7,13 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix.led.CANdle.LEDStripType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+
 import com.ctre.phoenix.led.FireAnimation;
 import com.ctre.phoenix.led.RainbowAnimation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 public class Candle extends SubsystemBase {
     private final CANdle candle;
@@ -59,6 +63,9 @@ public class Candle extends SubsystemBase {
         return runOnce(() -> setColor(Color.GREEN));
     }
 
+    public Command setColorRedCommand() {
+        return runOnce(() -> setColor(Color.RED));
+    }
     public Command setNoColorCommand() {
         return runOnce(() -> setColor(Color.OFF));
     }
@@ -78,6 +85,23 @@ public class Candle extends SubsystemBase {
     public Command runRainbowAnimationCommnad() {
         return runOnce(() -> candle.animate(rainbow()));
     }
+
+    //Blink command -> Use for anything
+public SequentialCommandGroup blink(Color color) {
+    return new SequentialCommandGroup(
+        new InstantCommand(() -> setNoColor()),
+        new WaitCommand(0.02),
+        new InstantCommand(() -> setColor(color)),
+        new WaitCommand(0.02),
+        new InstantCommand(() -> setNoColor()),
+        new WaitCommand(0.02),
+        new InstantCommand(() -> setColor(color)),
+        new InstantCommand(() -> setNoColor()));
+}
+
+
+
+
 
     //TODO: Add following options: Blinking, quick-flash, fade/breathe mode, more colors???
 
