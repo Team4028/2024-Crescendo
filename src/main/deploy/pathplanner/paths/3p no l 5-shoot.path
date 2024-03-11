@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.094844223876482,
-        "y": 2.268665961833349
+        "x": 2.820780570336069,
+        "y": 1.1694154442439941
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.232821213097223,
-        "y": 1.2146906727130133
+        "x": 3.7797012346161436,
+        "y": 2.268665961833349
       },
       "isLocked": false,
-      "linkedName": "3pr2"
+      "linkedName": "3prnl5"
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 2.576384040071932
       },
       "prevControl": {
-        "x": 4.628186374775031,
-        "y": 2.072818068603326
+        "x": 3.230075975821467,
+        "y": 1.5436283864020728
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,10 +32,10 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Fix Note + Spin Shooter",
-      "waypointRelativePos": 0.5,
+      "name": "Fix Note + Start Shooter",
+      "waypointRelativePos": 0.25,
       "command": {
-        "type": "sequential",
+        "type": "parallel",
         "data": {
           "commands": [
             {
@@ -64,12 +64,12 @@
   "goalEndState": {
     "velocity": 0,
     "rotation": -37.5,
-    "rotateFast": false
+    "rotateFast": true
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 40.0,
+    "rotation": -90.0,
     "velocity": 0
   },
   "useDefaultConstraints": false

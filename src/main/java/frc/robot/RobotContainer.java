@@ -259,8 +259,6 @@ public class RobotContainer {
                 conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS))
                         .andThen(shooter.stopCommand()));
 
-        NamedCommands.registerCommand("2pr Shooter to angle", pivot.runToPositionCommand(4.3));
-
         NamedCommands.registerCommand("Spit Note", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
                 .alongWith(shooter.spinBothCommand(0.15))
@@ -284,7 +282,7 @@ public class RobotContainer {
                 .andThen(shooter.stopCommand()));
 
         ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0),
-                10.0, 1.0); // TODO: fix
+                4.3, 1.0); // TODO: fix
 
         // TODO: We may want a command that constantly updates the shooter table and
         // runs the shooter/pivot based on that
