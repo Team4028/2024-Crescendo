@@ -21,9 +21,9 @@ public class MoveDrivetrain extends ProfiledPIDCommand {
     private static int taps = 5;
 
     public MoveDrivetrain(CommandSwerveDrivetrain drivetrain, DoubleSupplier target,
-            DoubleSupplier measurement) {
+            DoubleSupplier measurement, boolean slow) {
         super(
-                new ProfiledPIDController(1, 0, 0, new TrapezoidProfile.Constraints(5, 5)),
+                new ProfiledPIDController(slow ? 0.2 : 1.0, 0, 0, new TrapezoidProfile.Constraints(slow ? 1.0: 5.0, slow ? 1.0 : 5.0)),
                 measurement,
                 target,
                 (output, setpoint) -> {

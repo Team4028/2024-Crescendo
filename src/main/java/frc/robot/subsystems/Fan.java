@@ -27,14 +27,14 @@ public class Fan extends SubsystemBase {
     private static final int FAN_CAN_ID = 14;
     private static final int PIVOT_CAN_ID = 17; // ? Actual id?
 
-    private static final double TRAP_POSITION = 0.46; // Find out the actual position for the trap angle.
+    private static final double TRAP_POSITION = 0.57; // Find out the actual position for the trap angle.
 
     /* Requests */
     private final PositionDutyCycle positionRequest = new PositionDutyCycle(0.)
             .withOverrideBrakeDurNeutral(true);
 
     private final Slot0Configs pidConfigs = new Slot0Configs()
-            .withKP(0.3)
+            .withKP(0.4)
             .withKI(0.0)
             .withKD(0.0); // needs to be testing
     
