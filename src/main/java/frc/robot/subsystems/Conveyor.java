@@ -41,12 +41,12 @@ public class Conveyor extends SubsystemBase {
         private static final double[] kOutputRange = new double[] { -0.3, 0.6 };
     }
 
-    private static final double NOTE_HELD_RANGE_THRESHOLD = 70.;
-    private static final double INITIAL_DETECTION_RANGE_THRESHOLD = 60.;
+    private static final double NOTE_HELD_RANGE_THRESHOLD = 80.;
+    private static final double INITIAL_DETECTION_RANGE_THRESHOLD = 70.;
     private static final double INFEED_DETECTION_RANGE_THRESHOLD = 60.;
 
-    private static final double CONVEYOR_TIMER_THRESHOLD = 0.75;
-    private static final double INFEED_TIMER_THRESHOLD = 1;
+    private static final double CONVEYOR_TIMER_THRESHOLD = 1;
+    private static final double INFEED_TIMER_THRESHOLD = 2;
 
     private static final int CAN_ID = 11;
     private static final int CONVEYOR_TOF_CAN_ID = 21;
@@ -134,6 +134,9 @@ public class Conveyor extends SubsystemBase {
         }
 
         if (conveyorHasSeenNote && (conveyorTimer.get() >= CONVEYOR_TIMER_THRESHOLD || conveyorTofSensor.getRange() >= NOTE_HELD_RANGE_THRESHOLD)) {
+            conveyorHasSeenNote = false;
+            conveyorTimer.stop();
+            conveyorTimer.reset();
             return true;
         }
 
