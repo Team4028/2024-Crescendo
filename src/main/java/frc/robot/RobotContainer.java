@@ -165,10 +165,9 @@ public class RobotContainer {
     /* Swerve Control & Logging */
     // ======================== //
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MAX_SPEED * 0.02).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.01) // Add a 50%
-                                                                                             // deadband
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
-                                                                     // driving in open loop
+            .withDeadband(MAX_SPEED * 0.02).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.01)
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); 
+            
     private final Telemetry logger = new Telemetry(MAX_SPEED);
 
     private final SwerveRequest.SwerveDriveBrake xDrive = new SwerveDriveBrake();
