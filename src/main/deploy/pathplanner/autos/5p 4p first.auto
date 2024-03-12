@@ -120,13 +120,19 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 0.5
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Stop Shooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Run Pivot To Home"
           }
         },
         {
@@ -138,7 +144,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "5psesg3"
+            "pathName": "4pend-5th-shoot"
           }
         },
         {

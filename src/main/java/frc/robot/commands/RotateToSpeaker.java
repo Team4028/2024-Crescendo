@@ -34,11 +34,11 @@ public class RotateToSpeaker extends ProfiledPIDCommand {
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
                         // The PID gains
-                        4.,
+                        10.,
                         0,
                         0,
                         // The motion profile constraints
-                        new TrapezoidProfile.Constraints(6, 6)),
+                        new TrapezoidProfile.Constraints(2, 2)),
                 // This should return the measurement
                 () -> drivetrain.getState().Pose.getRotation().getRadians(),
                 // This should return the goal (can also be a constant)
@@ -76,6 +76,6 @@ public class RotateToSpeaker extends ProfiledPIDCommand {
     @Override
     public boolean isFinished() {
         return Math.abs(
-                target.getRadians() - drivetrain.getState().Pose.getRotation().getRadians()) < 0.1;
+                target.getDegrees() - drivetrain.getState().Pose.getRotation().getDegrees()) < 0.8;
     }
 }

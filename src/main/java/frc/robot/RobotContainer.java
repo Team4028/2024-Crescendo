@@ -51,8 +51,8 @@ import frc.robot.commands.Autons.StartPoses;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Climber;
-import frc.robot.subsystems.Climber.ClimberPositions;
+// import frc.robot.subsystems.Climber;
+// import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Fan;
@@ -98,7 +98,7 @@ public class RobotContainer {
     private final Infeed infeed = new Infeed();
     private final Shooter shooter = new Shooter();
     private final Conveyor conveyor = new Conveyor();
-    private final Climber climber = new Climber();
+    // private final Climber climber = new Climber();
     private final Autons autons;
     private final Pivot pivot = new Pivot();
     private final Fan m_fan = new Fan();
@@ -110,7 +110,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command magicShootCommand, magicTrapCommand, ampPrep, conveyCommand;
+    private final Command magicShootCommand, magicTrapCommand, ampPrep;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -180,8 +180,6 @@ public class RobotContainer {
         snapDrive.HeadingController = new PhoenixPIDController(2., 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
-        conveyCommand = conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS));
-
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
 
@@ -196,7 +194,7 @@ public class RobotContainer {
             pivot.runToPosition(entry.Angle);
         }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReadySupplier()))
                 .andThen(Commands.waitSeconds(0.5))
-                .andThen(conveyCommand)
+                .andThen(conveyCommand())
                 .andThen(Commands.waitSeconds(0.2))
                 .finallyDo(this::stopAll);
 
@@ -248,12 +246,14 @@ public class RobotContainer {
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
 
         NamedCommands.registerCommand("Shoot Note",
-                conveyCommand.andThen(shooter.stopCommand()));
+                conveyCommand().andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("Spit Note", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
                 .alongWith(shooter.spinBothCommand(0.15))
                 .repeatedly());
+
+        NamedCommands.registerCommand("Run Pivot To Home", pivot.runToHomeCommand());
 
         NamedCommands.registerCommand("Prepare Spit", shooter.spinBothCommand(0.15));
 
@@ -301,14 +301,14 @@ public class RobotContainer {
                 .pathFindCommand(new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.75, 0)
                 .alongWith(runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST).repeatedly()
                         .until(shooterAndPivotReady()))
-                .andThen(conveyCommand.withTimeout(1.0))
+                .andThen(conveyCommand().withTimeout(1.0))
                 .andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("Right Center Pathfinding Shot", drivetrain
                 .pathFindCommand(new Pose2d(4.3, 1.9, Rotation2d.fromDegrees(-40)), 0.75, 0)
                 .alongWith(runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST).repeatedly()
                         .until(shooterAndPivotReady()))
-                .andThen(conveyCommand.withTimeout(1.0))
+                .andThen(conveyCommand().withTimeout(1.0))
                 .andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("Note 3",
@@ -340,7 +340,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("2.5 Stationary Shot",
                 runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST)
                         .repeatedly().until(shooterAndPivotReady())
-                        .andThen(conveyCommand)
+                        .andThen(conveyCommand())
                         .andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("2.5 Final Note", drivetrain
@@ -493,22 +493,22 @@ public class RobotContainer {
         /* Zero Climber & Pivot */
         operatorController.start().onTrue(zeroCommand());
 
-        /* Run Pivot & Climber to Zero */
-        operatorController.a().onTrue(
-                climber.runToPositionCommand(ClimberPositions.HOME).andThen(
-                        Commands.waitUntil(climber.inPositionSupplier()),
-                        pivot.runToHomeCommand()));
+        // /* Run Pivot & Climber to Zero */
+        // operatorController.a().onTrue(
+        //         climber.runToPositionCommand(ClimberPositions.HOME).andThen(
+        //                 Commands.waitUntil(climber.inPositionSupplier()),
+        //                 pivot.runToHomeCommand()));
 
-        /* Prime Climber & Pivot */
-        operatorController.povUp().onTrue(pivot.runToClimbCommand().andThen(
-                Commands.waitUntil(pivot.inPositionSupplier()),
-                climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+        // /* Prime Climber & Pivot */
+        // operatorController.povUp().onTrue(pivot.runToClimbCommand().andThen(
+        //         Commands.waitUntil(pivot.inPositionSupplier()),
+        //         climber.runToPositionCommand(Climber.ClimberPositions.READY)));
 
-        /* Tension Chain */
-        operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.TENSION));
+        // /* Tension Chain */
+        // operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.TENSION));
 
-        /* CLIMB */
-        operatorController.povDown().onTrue(climber.climbCommand());
+        // /* CLIMB */
+        // operatorController.povDown().onTrue(climber.climbCommand());
 
         // TODO: no explicit trap position command
         // trap, amp, climb sequences should all do this on their own
@@ -542,15 +542,15 @@ public class RobotContainer {
         /* Manual Climber/Outfeed Control */
         // ============================== //
 
-        /* Climber Up */
-        emergencyController.rightTrigger(0.2).whileTrue(
-                climber.runMotorCommand(CLIMBER_VBUS))
-                .onFalse(climber.runMotorCommand(0.0));
+        // /* Climber Up */
+        // emergencyController.rightTrigger(0.2).whileTrue(
+        //         climber.runMotorCommand(CLIMBER_VBUS))
+        //         .onFalse(climber.runMotorCommand(0.0));
 
-        /* Climber Down */
-        emergencyController.leftTrigger(0.2).whileTrue(
-                climber.runMotorCommand(-CLIMBER_VBUS))
-                .onFalse(climber.runMotorCommand(0.0));
+        // /* Climber Down */
+        // emergencyController.leftTrigger(0.2).whileTrue(
+        //         climber.runMotorCommand(-CLIMBER_VBUS))
+        //         .onFalse(climber.runMotorCommand(0.0));
 
         // ==== //
         /* Misc */
@@ -601,6 +601,11 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
+    /* Convey the Note */
+    private Command conveyCommand() {
+        return conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS));
+    }
+
     /* Stop all motors and zero everything */
     private void stopAll() {
         stopAllCommand().schedule();
@@ -611,11 +616,11 @@ public class RobotContainer {
                 infeed.stopCommand(),
                 conveyor.stopCommand(),
                 shooter.stopCommand(),
-                climber.runToPositionCommand(ClimberPositions.HOME)
-                        .andThen(Commands.waitUntil(climber.inPositionSupplier()),
-                                pivot.runToHomeCommand()),
-                m_fan.stopCommand(),
-                m_fan.runToPositionCommand(0.),
+                // climber.runToPositionCommand(ClimberPositions.HOME)
+                //           .andThen(Commands.waitUntil(climber.inPositionSupplier()),
+                                pivot.runToHomeCommand()/*)*/,
+                m_fan.stopCommand().andThen(
+                m_fan.runToPositionCommand(0.)),
                 whippy.stopCommand());
     }
 
@@ -723,7 +728,7 @@ public class RobotContainer {
         conveyor.logValues();
         infeed.logValues();
         shooter.logValues();
-        climber.logValues();
+        // climber.logValues();
         pivot.logValues();
         m_fan.logValues();
     }
