@@ -7,6 +7,9 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Meters;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -149,13 +152,7 @@ public class RobotContainer {
     private static double MAX_INDEX = 27.;
     private static double MIN_INDEX = 4.2;
 
-    private final Map<Double, String> indexMap = Map.of(
-            4.2, "Speaker",
-            10.0, "Protected",
-            13.0, "Chain",
-            16.0, "Truss",
-            19.0, "Wing",
-            22.0, "Neutral");
+    private final LinkedHashMap<Double, String> indexMap = new LinkedHashMap<>();
 
     private double currentIndex = MIN_INDEX;
     private double manualIndex = MIN_INDEX;
@@ -179,6 +176,14 @@ public class RobotContainer {
     public RobotContainer() {
         snapDrive.HeadingController = new PhoenixPIDController(2., 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
+
+        /* Init Index Map */
+        indexMap.put(4.2, "Speaker");
+        indexMap.put(10.0, "Protected");
+        indexMap.put(13.0, "Chain");
+        indexMap.put(16.0, "Truss");
+        indexMap.put(19.0, "Wing");
+        indexMap.put(22.0, "Neutral");
 
         /* Dashboard */
         DashboardStore.add("Shooter Table Index", () -> currentIndex);
@@ -480,15 +485,15 @@ public class RobotContainer {
         /* Manual/Preset Mode */
         operatorController.back().onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));
 
-        /* Shooter Table Index Down */
-        operatorController.leftBumper().onTrue(
+        /* Shooter Table Index Up */
+        operatorController.rightBumper().onTrue(
                 Commands.either(
                         Commands.runOnce(() -> manualIndex += 1.0),
                         Commands.runOnce(() -> presetIndex += 1),
                         () -> useManual).andThen(this::pushIndexData));
 
-        /* Shooter Table Index Up */
-        operatorController.rightBumper().onTrue(
+        /* Shooter Table Index Down */
+        operatorController.leftBumper().onTrue(
                 Commands.either(
                         Commands.runOnce(() -> manualIndex -= 1.0),
                         Commands.runOnce(() -> presetIndex -= 1),
@@ -640,7 +645,9 @@ public class RobotContainer {
         if (useManual) {
             currentIndex = manualIndex;
         } else {
-            currentIndex = presetIndex;
+            List<Double> keys = new ArrayList<>(indexMap.keySet());
+            currentIndex = keys.get(presetIndex);
+            manualIndex = currentIndex;
         }
     }
 
