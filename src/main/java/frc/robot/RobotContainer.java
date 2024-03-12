@@ -273,7 +273,7 @@ public class RobotContainer {
                 .andThen(shooter.stopCommand()));
 
         ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0),
-                4.3, 1.0); // TODO: fix
+                10.8, 1.0); // TODO: fix
 
         // TODO: We may want a command that constantly updates the shooter table and
         // runs the shooter/pivot based on that
@@ -289,7 +289,7 @@ public class RobotContainer {
         // ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 12, 1.0);
         NamedCommands.registerCommand("4 Piece Shooter Pivot", pivot.runToPositionCommand(13));
 
-        NamedCommands.registerCommand("4 Piece Mid Shooter Pivot", pivot.runToPositionCommand(17));
+        NamedCommands.registerCommand("4 Piece Mid Shooter Pivot", pivot.runToPositionCommand(16.7));
 
         // ShooterTableEntry fourLastEntry = new ShooterTableEntry(Feet.of(0), 15, 1.0);
         NamedCommands.registerCommand("4 Piece Last Shooter Pivot", pivot.runToPositionCommand(13));
@@ -494,10 +494,10 @@ public class RobotContainer {
         operatorController.start().onTrue(zeroCommand());
 
         // /* Run Pivot & Climber to Zero */
-        // operatorController.a().onTrue(
+        operatorController.a().onTrue(
         //         climber.runToPositionCommand(ClimberPositions.HOME).andThen(
         //                 Commands.waitUntil(climber.inPositionSupplier()),
-        //                 pivot.runToHomeCommand()));
+                        pivot.runToHomeCommand());
 
         // /* Prime Climber & Pivot */
         // operatorController.povUp().onTrue(pivot.runToClimbCommand().andThen(
