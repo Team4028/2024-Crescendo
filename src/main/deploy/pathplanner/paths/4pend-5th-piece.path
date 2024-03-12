@@ -1,0 +1,70 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.6570624081419103,
+        "y": 4.2332839081632585
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.8598500563620233,
+        "y": 6.077924167260603
+      },
+      "isLocked": false,
+      "linkedName": "4pdr 3"
+    },
+    {
+      "anchor": {
+        "x": 7.8726552894701225,
+        "y": 7.449176379834242
+      },
+      "prevControl": {
+        "x": 6.8726552894701225,
+        "y": 7.449176379834242
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "5p2"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "Smart Infeed",
+      "waypointRelativePos": 0.8,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Smart Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 5.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": -33.47000000000003,
+    "velocity": 0
+  },
+  "useDefaultConstraints": false
+}
