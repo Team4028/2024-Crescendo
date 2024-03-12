@@ -119,4 +119,10 @@ public SequentialCommandGroup blink(Color color) {
     public void periodic() {
         // This method will be called once per scheduler run
     }
+
+    // driverController.a().onTrue(CANdle.runRainbowAnimationCommnad()).onFalse(CANdle.runBurnyBurnCommand());
+    //     driverController.b().onTrue(CANdle.runfadyFadePurple()).onFalse(CANdle.runBurnyBurnCommand());
+    //     driverController.x().onTrue(CANdle.blink(Color.BLUE)).onFalse(CANdle.runBurnyBurnCommand());
+
+        
 }
