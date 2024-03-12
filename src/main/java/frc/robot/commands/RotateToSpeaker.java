@@ -34,7 +34,7 @@ public class RotateToSpeaker extends ProfiledPIDCommand {
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
                         // The PID gains
-                        10.,
+                        20.,
                         0,
                         0,
                         // The motion profile constraints
@@ -47,7 +47,6 @@ public class RotateToSpeaker extends ProfiledPIDCommand {
                 (output, setpoint) -> {
                     // Use the output (and setpoint, if desired) here
                     drivetrain.setControl(drive.withRotationalRate(output + setpoint.velocity));
-                    SmartDashboard.putNumber("setpoint", setpoint.velocity);
                 });
         // Use addRequirements() here to declare subsystem dependencies.
         // Configure additional PID options by calling `getController` here.
