@@ -112,7 +112,17 @@ public class Conveyor extends SubsystemBase {
 
         /* Dashboard */
         DashboardStore.add("ToF Sensor", () -> conveyorTofSensor.getRange());
-        //TODO: Add enum for dashboard forward/back/off
+        
+        DashboardStore.add("Running/Conveyor", this::isRunning);
+    }
+
+    // ==================================
+    // SHOOTER COMMANDS
+    // ==================================
+
+    /* Check if shooter is running */
+    public boolean isRunning() {
+        return Math.abs(motor.getAppliedOutput()) > 0.1;
     }
 
     public boolean hasInfed() {

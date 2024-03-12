@@ -60,6 +60,17 @@ public class Infeed extends SubsystemBase {
 
         /* Dashboard */
         DashboardStore.add("Infeed Tof", () -> tofSensor.getRange());
+
+        DashboardStore.add("Running/Infeed", this::isRunning);
+    }
+
+    // ==================================
+    // REAL STUFF
+    // ==================================
+
+    /* Check if shooter is running */
+    public boolean isRunning() {
+        return Math.abs(motor.getMotorVoltage().getValueAsDouble()) > 0.2;
     }
 
     public boolean hasGamePiece() {
