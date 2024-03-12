@@ -67,6 +67,7 @@ public class Fan extends SubsystemBase {
         m_pivotVelocityLog = new DoubleLogEntry(m_log, "/Fan/Pivot/Velocity");
 
         DashboardStore.add("Fan Pivot Position", () -> pivot.getPosition().getValueAsDouble());
+        DashboardStore.add("Fan Pivot Current", () -> pivot.getStatorCurrent().getValueAsDouble());
     }
 
     // Fan Motor Controls //

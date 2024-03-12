@@ -78,7 +78,7 @@ public class RobotContainer {
     private static final double FAST_CONVEYOR_VBUS = 0.85;
 
     private static final double FAN_VBUS = 1.;
-    private static final double FAN_PIVOT_VBUS = 0.1;
+    private static final double FAN_PIVOT_VBUS = 0.2;
 
     private static final double SHOOTER_BACKOUT_VBUS = -0.4;
     private static final double WHIPPY_VBUS = 0.2;
@@ -264,10 +264,16 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
 
-        NamedCommands.registerCommand("farShot", Commands.runOnce(() -> pivot.runToPosition(1)));
+        NamedCommands.registerCommand("Dumb Infeed",
+                runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS).repeatedly().withTimeout(.25));
+
+        NamedCommands.registerCommand("Run Back", shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
+                .raceWith(conveyor.runXRotations(-2.5).withTimeout(0.2) // -1.5
+                        .alongWith(infeed.runMotorCommand(0.)))
+                .andThen(shooter.stopCommand()));
 
         ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0),
-                0.05, 1.0);
+                4.3, 1.0); // TODO: fix
 
         // TODO: We may want a command that constantly updates the shooter table and
         // runs the shooter/pivot based on that
@@ -275,6 +281,18 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Start Shooter",
                 runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST));
+
+        ShooterTableEntry fourP = new ShooterTableEntry(Feet.of(0), 0.0, 0.85);
+        NamedCommands.registerCommand("Start Shooter No Pivot",
+                shooter.runEntryCommand(() -> fourP, () -> ShotSpeeds.FAST));
+
+        // ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 12, 1.0);
+        NamedCommands.registerCommand("4 Piece Shooter Pivot", pivot.runToPositionCommand(13));
+
+        NamedCommands.registerCommand("4 Piece Mid Shooter Pivot", pivot.runToPositionCommand(17));
+
+        // ShooterTableEntry fourLastEntry = new ShooterTableEntry(Feet.of(0), 15, 1.0);
+        NamedCommands.registerCommand("4 Piece Last Shooter Pivot", pivot.runToPositionCommand(13));
 
         NamedCommands.registerCommand("Stop Shooter", shooter.stopCommand());
         NamedCommands.registerCommand("Stop Infeed", runBoth(0., 0.));
@@ -312,7 +330,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Wait For Shooter", Commands.waitUntil(shooterAndPivotReady()));
 
-        NamedCommands.registerCommand("4 piece align pivot", pivot.runToPositionCommand(2.5));
+        NamedCommands.registerCommand("4 piece align pivot", pivot.runToPositionCommand(16.0));
 
         /*
          * Spin up Shooter
@@ -388,7 +406,13 @@ public class RobotContainer {
 
         /* Add Vision Measurement */
         driverController.back()
-                .onTrue(drivetrain.addMeasurementCommand(() -> getBestPose()));
+                .onTrue(Commands.runOnce(() -> {
+                    var pose = getBestPose();
+                    if (pose.isPresent())
+                        drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
+
+                    getBestSTEntry();
+                }));
 
         /* Toggle Chassis Mode */
         driverController.rightBumper().onTrue(Commands.runOnce(() -> currentSpeed = SLOW_SPEED))
@@ -539,7 +563,7 @@ public class RobotContainer {
         /* TrapStar 5000 */
         emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS)).onFalse(m_fan.stopCommand());
 
-        emergencyController.back().whileTrue(m_fan.runPivotCommand(-FAN_PIVOT_VBUS));
+        emergencyController.back().onTrue(m_fan.runToPositionCommand(0.));
         emergencyController.start().whileTrue(m_fan.runPivotCommand(FAN_PIVOT_VBUS));
 
         /* ST test */
@@ -676,7 +700,7 @@ public class RobotContainer {
 
     /* Zeroing Command */
     public Command zeroCommand() {
-        return pivot.zeroCommand();
+        return pivot.zeroCommand().alongWith(m_fan.runToPositionCommand(0.));
     }
 
     /* Asynchronous Zero */
