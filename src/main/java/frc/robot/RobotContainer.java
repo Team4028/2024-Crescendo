@@ -62,6 +62,7 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Whippy;
+import frc.robot.utils.DashboardStore;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
@@ -166,8 +167,8 @@ public class RobotContainer {
     // ======================== //
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MAX_SPEED * 0.02).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.01)
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); 
-            
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
     private final Telemetry logger = new Telemetry(MAX_SPEED);
 
     private final SwerveRequest.SwerveDriveBrake xDrive = new SwerveDriveBrake();
@@ -178,6 +179,15 @@ public class RobotContainer {
     public RobotContainer() {
         snapDrive.HeadingController = new PhoenixPIDController(2., 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
+
+        /* Dashboard */
+        DashboardStore.add("Shooter Table Index", () -> currentIndex);
+        DashboardStore.add("Shooter Table Name",
+                () -> indexMap.containsKey(currentIndex) ? indexMap.get(currentIndex) : "Manual");
+
+        // this is weird
+        DashboardStore.add("Snapped", () -> drivetrain.getCurrentRequest().getClass().equals(snapDrive.getClass()));
+        DashboardStore.add("Manual Indexing", () -> useManual);
 
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
@@ -368,8 +378,7 @@ public class RobotContainer {
                         .withRotationalRate(
                                 scaleDriverController(-driverController.getRightX(),
                                         thetaLimiter, currentSpeed) *
-                                        MAX_ANGULAR_SPEED))
-                        .alongWith(Commands.runOnce(() -> SmartDashboard.putBoolean("Snapped", false))));
+                                        MAX_ANGULAR_SPEED)));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runMotorCommand(0.));
@@ -494,14 +503,14 @@ public class RobotContainer {
 
         // /* Run Pivot & Climber to Zero */
         // operatorController.a().onTrue(
-        //         climber.runToPositionCommand(ClimberPositions.HOME).andThen(
-        //                 Commands.waitUntil(climber.inPositionSupplier()),
-        //                 pivot.runToHomeCommand()));
+        // climber.runToPositionCommand(ClimberPositions.HOME).andThen(
+        // Commands.waitUntil(climber.inPositionSupplier()),
+        // pivot.runToHomeCommand()));
 
         // /* Prime Climber & Pivot */
         // operatorController.povUp().onTrue(pivot.runToClimbCommand().andThen(
-        //         Commands.waitUntil(pivot.inPositionSupplier()),
-        //         climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+        // Commands.waitUntil(pivot.inPositionSupplier()),
+        // climber.runToPositionCommand(Climber.ClimberPositions.READY)));
 
         // /* Tension Chain */
         // operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.TENSION));
@@ -543,13 +552,13 @@ public class RobotContainer {
 
         // /* Climber Up */
         // emergencyController.rightTrigger(0.2).whileTrue(
-        //         climber.runMotorCommand(CLIMBER_VBUS))
-        //         .onFalse(climber.runMotorCommand(0.0));
+        // climber.runMotorCommand(CLIMBER_VBUS))
+        // .onFalse(climber.runMotorCommand(0.0));
 
         // /* Climber Down */
         // emergencyController.leftTrigger(0.2).whileTrue(
-        //         climber.runMotorCommand(-CLIMBER_VBUS))
-        //         .onFalse(climber.runMotorCommand(0.0));
+        // climber.runMotorCommand(-CLIMBER_VBUS))
+        // .onFalse(climber.runMotorCommand(0.0));
 
         // ==== //
         /* Misc */
@@ -616,10 +625,10 @@ public class RobotContainer {
                 conveyor.stopCommand(),
                 shooter.stopCommand(),
                 // climber.runToPositionCommand(ClimberPositions.HOME)
-                //           .andThen(Commands.waitUntil(climber.inPositionSupplier()),
-                                pivot.runToHomeCommand()/*)*/,
+                // .andThen(Commands.waitUntil(climber.inPositionSupplier()),
+                pivot.runToHomeCommand()/* ) */,
                 m_fan.stopCommand().andThen(
-                m_fan.runToPositionCommand(0.)),
+                        m_fan.runToPositionCommand(0.)),
                 whippy.stopCommand());
     }
 
@@ -633,10 +642,6 @@ public class RobotContainer {
         } else {
             currentIndex = presetIndex;
         }
-
-        SmartDashboard.putNumber("Shooter Table Index", currentIndex);
-        SmartDashboard.putString("Shooter Table Name",
-                indexMap.containsKey(currentIndex) ? indexMap.get(currentIndex) : "Manual");
     }
 
     /* Set Snap Direction Toggle */
@@ -648,8 +653,7 @@ public class RobotContainer {
                 .withVelocityY(scaleDriverController(-driverController.getLeftX(),
                         yLimiter,
                         currentSpeed) * MAX_SPEED)
-                .withTargetDirection(Rotation2d.fromDegrees(direction.Angle)))
-                .alongWith(Commands.runOnce(() -> SmartDashboard.putBoolean("Snapped", true)));
+                .withTargetDirection(Rotation2d.fromDegrees(direction.Angle)));
     }
 
     /* Smart Infeed Command Generator */
@@ -780,12 +784,12 @@ public class RobotContainer {
         return Optional.empty();
     }
 
-    /* Test Shooter Table */
+    /* Get Shooter Table Entry */
     private ShooterTableEntry getBestSTEntry() {
         Pose2d pose = drivetrain.getState().Pose;
 
         Transform2d dist = pose.minus(Constants.SPEAKER_DISTANCE_TARGET);
-        Translation2d translation = dist.getTranslation(); // get everything in feet
+        Translation2d translation = dist.getTranslation();
 
         ShooterTableEntry entryPicked = ShooterTable
                 .calcShooterTableEntry(Meters.of(translation.getNorm()));

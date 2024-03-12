@@ -164,6 +164,7 @@ public class Shooter extends SubsystemBase {
         DashboardStore.add("Right Shooter Target", () -> rightTarget);
 
         DashboardStore.add("Running/Shooter", this::isRunning);
+        DashboardStore.add("At Target/Shooter", this::isReady);
     }
 
     // ==================================
