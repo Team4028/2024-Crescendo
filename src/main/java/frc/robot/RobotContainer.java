@@ -7,7 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Meters;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -110,7 +110,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command magicShootCommand, magicTrapCommand, ampPrep, ampShoot;
+    private final Command magicShootCommand, magicTrapCommand, ampPrep, conveyCommand;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -145,26 +145,21 @@ public class RobotContainer {
         }
     }
 
-    private enum ShooterTableIndex {
-        Close(4.2, "Close Shot"),
-        Protected(10.0, "Protected"),
-        Chain(13.0, "Chain"),
-        Truss(16.0, "Truss"),
-        Wing(19.0, "Wing"),
-        Neutral(22.0, "Neutral Zone");
+    private static double MAX_INDEX = 27.;
+    private static double MIN_INDEX = 4.2;
 
-        public double Index;
-        public String Name;
+    private final Map<Double, String> indexMap = Map.of(
+            4.2, "Speaker",
+            10.0, "Protected",
+            13.0, "Chain",
+            16.0, "Truss",
+            19.0, "Wing",
+            22.0, "Neutral");
 
-        private ShooterTableIndex(double index, String name) {
-            Index = index;
-            Name = name;
-        }
-    }
-
-    private List<ShooterTableIndex> indexList = List.of(ShooterTableIndex.values());
-
-    private int currentIndex = 0;
+    private double currentIndex = MIN_INDEX;
+    private double manualIndex = MIN_INDEX;
+    private int presetIndex = 0;
+    private boolean useManual = true;
 
     // ======================== //
     /* Swerve Control & Logging */
@@ -184,6 +179,9 @@ public class RobotContainer {
     public RobotContainer() {
         snapDrive.HeadingController = new PhoenixPIDController(2., 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
+
+        conveyCommand = conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS));
+
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
 
@@ -198,8 +196,7 @@ public class RobotContainer {
             pivot.runToPosition(entry.Angle);
         }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReadySupplier()))
                 .andThen(Commands.waitSeconds(0.5))
-                .andThen(conveyor.runXRotations(10)
-                        .alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS)))
+                .andThen(conveyCommand)
                 .andThen(Commands.waitSeconds(0.2))
                 .finallyDo(this::stopAll);
 
@@ -218,10 +215,6 @@ public class RobotContainer {
         ampPrep = pivot.runToClimbCommand()
                 .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
                 .alongWith(shooter.runShotCommand(ShotSpeeds.AMP));
-
-        ampShoot = conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(INFEED_VBUS))
-                .andThen(new WaitCommand(1.0))
-                .finallyDo(this::stopAll);
 
         configureBindings();
     }
@@ -255,8 +248,7 @@ public class RobotContainer {
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
 
         NamedCommands.registerCommand("Shoot Note",
-                conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS))
-                        .andThen(shooter.stopCommand()));
+                conveyCommand.andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("Spit Note", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
@@ -291,16 +283,14 @@ public class RobotContainer {
                 .pathFindCommand(new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.75, 0)
                 .alongWith(runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST).repeatedly()
                         .until(shooterAndPivotReady()))
-                .andThen(conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS))
-                        .withTimeout(1.0))
+                .andThen(conveyCommand.withTimeout(1.0))
                 .andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("Right Center Pathfinding Shot", drivetrain
                 .pathFindCommand(new Pose2d(4.3, 1.9, Rotation2d.fromDegrees(-40)), 0.75, 0)
                 .alongWith(runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST).repeatedly()
                         .until(shooterAndPivotReady()))
-                .andThen(conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS))
-                        .withTimeout(1.0))
+                .andThen(conveyCommand.withTimeout(1.0))
                 .andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("Note 3",
@@ -332,7 +322,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("2.5 Stationary Shot",
                 runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST)
                         .repeatedly().until(shooterAndPivotReady())
-                        .andThen(conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS)))
+                        .andThen(conveyCommand)
                         .andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("2.5 Final Note", drivetrain
@@ -439,33 +429,38 @@ public class RobotContainer {
         // ======================= //
 
         /* Spin Up Shooter */
-        operatorController.leftBumper()
+        operatorController.leftTrigger()
                 .onTrue(Commands.runOnce(() -> {
                     ShooterTableEntry entry = ShooterTable
-                            .calcShooterTableEntry(Feet.of(indexList.get(currentIndex).Index));
+                            .calcShooterTableEntry(Feet.of(currentIndex));
                     shooter.runEntry(entry, ShotSpeeds.FAST);
                     pivot.runToPosition(entry.Angle);
                 }, shooter, pivot))
                 .onFalse(stopAllCommand());
 
         /* Convey Note */
-        operatorController.rightBumper()
+        operatorController.rightTrigger()
                 .whileTrue(runBoth(FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS).repeatedly());
 
         /* Magic Shoot */
         operatorController.x().toggleOnTrue(magicShootCommand);
 
+        /* Manual/Preset Mode */
+        operatorController.back().onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));
+
         /* Shooter Table Index Down */
-        operatorController.leftTrigger(0.5).onTrue(new InstantCommand(() -> {
-            currentIndex = MathUtil.clamp(currentIndex - 1, 0, ShooterTableIndex.values().length - 1);
-            pushIndexData();
-        }));
+        operatorController.leftBumper().onTrue(
+                Commands.either(
+                        Commands.runOnce(() -> manualIndex += 1.0),
+                        Commands.runOnce(() -> presetIndex += 1),
+                        () -> useManual).andThen(this::pushIndexData));
 
         /* Shooter Table Index Up */
-        operatorController.rightTrigger(0.5).onTrue(new InstantCommand(() -> {
-            currentIndex = MathUtil.clamp(currentIndex + 1, 0, ShooterTableIndex.values().length - 1);
-            pushIndexData();
-        }));
+        operatorController.rightBumper().onTrue(
+                Commands.either(
+                        Commands.runOnce(() -> manualIndex -= 1.0),
+                        Commands.runOnce(() -> presetIndex -= 1),
+                        () -> useManual).andThen(this::pushIndexData));
 
         // ========================= //
         /* Climber & Zeroing Control */
@@ -480,16 +475,16 @@ public class RobotContainer {
                         Commands.waitUntil(climber.inPositionSupplier()),
                         pivot.runToHomeCommand()));
 
-        /* CLIMB */
-        operatorController.povDown().onTrue(climber.climbCommand());
-
-        /* Tension Chain */
-        operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.TENSION));
-
         /* Prime Climber & Pivot */
         operatorController.povUp().onTrue(pivot.runToClimbCommand().andThen(
                 Commands.waitUntil(pivot.inPositionSupplier()),
                 climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+
+        /* Tension Chain */
+        operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.TENSION));
+
+        /* CLIMB */
+        operatorController.povDown().onTrue(climber.climbCommand());
 
         // TODO: no explicit trap position command
         // trap, amp, climb sequences should all do this on their own
@@ -499,9 +494,8 @@ public class RobotContainer {
         /* Amp & Trap Magic */
         // ================ //
 
-        operatorController.b().onTrue(ampPrep).onFalse(ampShoot);
+        operatorController.b().onTrue(ampPrep).onFalse(stopAllCommand());
 
-        // operatorController.y().toggleOnTrue(magicTrapCommand);
         operatorController.y().onTrue(pivot.runToTrapCommand());
 
         // ==================== //
@@ -585,27 +579,36 @@ public class RobotContainer {
 
     /* Stop all motors and zero everything */
     private void stopAll() {
-        infeed.stop();
-        conveyor.stop();
-        shooter.stop();
-        climber.runToPositionCommand(ClimberPositions.HOME)
-                .andThen(Commands.waitUntil(climber.inPositionSupplier()),
-                        pivot.runToHomeCommand())
-                .schedule();
-        m_fan.stop();
-        m_fan.runToPosition(0.);
-        whippy.stop();
+        stopAllCommand().schedule();
     }
 
     private Command stopAllCommand() {
-        return Commands.runOnce(this::stopAll, infeed, conveyor, shooter, climber, m_fan, pivot, whippy);
+        return Commands.parallel(
+                infeed.stopCommand(),
+                conveyor.stopCommand(),
+                shooter.stopCommand(),
+                climber.runToPositionCommand(ClimberPositions.HOME)
+                        .andThen(Commands.waitUntil(climber.inPositionSupplier()),
+                                pivot.runToHomeCommand()),
+                m_fan.stopCommand(),
+                m_fan.runToPositionCommand(0.),
+                whippy.stopCommand());
     }
 
     /* Put Current ST Index Data to Dashboard */
     private void pushIndexData() {
-        ShooterTableIndex idx = indexList.get(currentIndex);
-        SmartDashboard.putNumber("Shooter Table Index", idx.Index);
-        SmartDashboard.putString("Shooter Table Name", idx.Name);
+        presetIndex = MathUtil.clamp(presetIndex, 0, indexMap.size() - 1);
+        manualIndex = MathUtil.clamp(manualIndex, MIN_INDEX, MAX_INDEX);
+
+        if (useManual) {
+            currentIndex = manualIndex;
+        } else {
+            currentIndex = presetIndex;
+        }
+
+        SmartDashboard.putNumber("Shooter Table Index", currentIndex);
+        SmartDashboard.putString("Shooter Table Name",
+                indexMap.containsKey(currentIndex) ? indexMap.get(currentIndex) : "Manual");
     }
 
     /* Set Snap Direction Toggle */
