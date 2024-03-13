@@ -135,6 +135,8 @@ public class RobotContainer {
     private static final double BASE_SPEED = 0.25;
     private static final double SLOW_SPEED = 0.07;
 
+    private static double angle_offset = 0;
+
     private double currentSpeed = BASE_SPEED;
 
     private enum SnapDirection {
@@ -218,13 +220,19 @@ public class RobotContainer {
         initAutonChooser();
 
         magicShootCommand = Commands.runOnce(() -> {
-            var pose = getBestPose();
-            if (pose.isPresent())
-                drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
+            // var pose = getBestPose();
+            // if (pose.isPresent())
+            // drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
 
-            getBestSTEntry();
-        }).andThen(Commands.waitSeconds(0.1)).andThen(new RotateToSpeaker(drivetrain).andThen(Commands.runOnce(() -> {
-            ShooterTableEntry entry = getBestSTEntry();
+            // getBestSTEntryNew();
+            angle_offset = Math.tan(10) /* <= -dy/dx */ * getBestSTEntryNew().Distance.in(Meters);
+        }).andThen(Commands.waitSeconds(0.1)).andThen(new RotateToSpeaker(drivetrain, () -> {
+            var res = trapVision.getTagDistance(DriverStation.getAlliance().get() == Alliance.Blue ? 7 : 4);
+            if (res.isEmpty())
+                return 0.0;
+            return res.get() - angle_offset;
+        }, () -> 0.0).andThen(Commands.runOnce(() -> {
+            ShooterTableEntry entry = getBestSTEntryNew();
             shooter.runEntry(entry, ShotSpeeds.FAST);
             pivot.runToPosition(entry.Angle);
         }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReadySupplier()))
@@ -307,7 +315,7 @@ public class RobotContainer {
                         .alongWith(infeed.runMotorCommand(0.)))
                 .andThen(shooter.stopCommand()));
 
-        ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0),
+        ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0), 0.0,
                 4.3, 1.0); // TODO: fix
 
         // TODO: We may want a command that constantly updates the shooter table and
@@ -317,7 +325,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Start Shooter",
                 runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST));
 
-        ShooterTableEntry fourP = new ShooterTableEntry(Feet.of(0), 0.0, 0.85);
+        ShooterTableEntry fourP = new ShooterTableEntry(Feet.of(0), 0.0, 0.0, 0.85);
         NamedCommands.registerCommand("Start Shooter No Pivot",
                 shooter.runEntryCommand(() -> fourP, () -> ShotSpeeds.FAST));
 
@@ -830,5 +838,12 @@ public class RobotContainer {
         SmartDashboard.putNumber("ST Left", entryPicked.Percent);
 
         return entryPicked;
+    }
+
+    private ShooterTableEntry getBestSTEntryNew() {
+        var res = trapVision.getTagDistance(DriverStation.getAlliance().get() == Alliance.Blue ? 7 : 4);
+        if (res.isEmpty())
+            return new ShooterTableEntry(Feet.of(0), 0, 0, 0);
+        return ShooterTable.calcShooterTableEntryCamera(res.get());
     }
 }
