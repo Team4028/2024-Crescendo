@@ -62,7 +62,7 @@ public class Pivot extends SubsystemBase {
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
 
-    public final static double HARD_STOP = 57.;//59.4;
+    public final static double HARD_STOP = 58.5;//59.4;
     public final static double STAGE_PIVOT = 54.;
 
     private final static double INCIDENT_OFFSET = (Math.PI / 2)
