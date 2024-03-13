@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -27,4 +29,6 @@ public final class Constants {
     public static final Pose2d LEFT_TRAP_TARGET = new Pose2d(4.4, 4.62  , new Rotation2d(Units.degreesToRadians(120)));
     public static final Pose2d MIDDLE_TRAP_Target = new Pose2d(4.4, 3.24, new Rotation2d(Units.degreesToRadians(-120)));
     public static final Pose2d RIGHT_TRAP_Target = new Pose2d(5.83, 4.11, new Rotation2d(0));
+
+    public static final Pose2d RIGHT_3_SHOOT_PATHFINDING_POSE = new Pose2d(4.3, 1.9, Rotation2d.fromDegrees(-45.));
 }

@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import org.photonvision.EstimatedRobotPose;
@@ -191,6 +192,17 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 desiredPose,
                 constraints,
                 endVel);
+    }
+
+    public Command mirrorablePathFindCommand(Pose2d desiredPose, double scale, double endVel) { // may end up being pathFindCommand
+        PathConstraints constraints = new PathConstraints(
+            PathFindPlannerConstants.kMaxSpeed * scale,
+            PathFindPlannerConstants.kMaxAccel * scale,
+            PathFindPlannerConstants.kMaxAngSpeed,
+            PathFindPlannerConstants.kMaxAngAccel
+        );
+
+        return AutoBuilder.pathfindToPoseFlipped(desiredPose, constraints, endVel);
     }
 
     public Command pathFindThenFollowCommand(PathPlannerPath path, double scale) {

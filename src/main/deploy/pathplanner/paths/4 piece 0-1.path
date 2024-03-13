@@ -70,6 +70,23 @@
           ]
         }
       }
+    },
+    {
+      "name": "Pivot",
+      "waypointRelativePos": 1.0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "4 Piece First Shooter Pivot"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "globalConstraints": {

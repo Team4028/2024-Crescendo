@@ -50,12 +50,6 @@
                       }
                     },
                     {
-                      "type": "named",
-                      "data": {
-                        "name": "4 Piece Mid Shooter Pivot"
-                      }
-                    },
-                    {
                       "type": "race",
                       "data": {
                         "commands": [

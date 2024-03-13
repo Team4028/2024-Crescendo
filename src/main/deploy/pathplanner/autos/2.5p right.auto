@@ -32,7 +32,13 @@
         {
           "type": "named",
           "data": {
-            "name": "2.5 Stationary Shot"
+            "name": "zeroApril"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "2.5 Right Stationary Shot"
           }
         },
         {
@@ -45,6 +51,12 @@
           "type": "named",
           "data": {
             "name": "Right Center Pathfinding Shot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "zeroApril"
           }
         },
         {

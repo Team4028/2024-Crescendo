@@ -97,7 +97,7 @@ public class Vision extends SubsystemBase {
         Optional<PhotonTrackedTarget> target = getTag(tagID);
 
         Optional<Double> yaw = getTagYaw(tagID);
-        if (yaw.isEmpty())
+        if (yaw.isEmpty() || target.isEmpty())
             return Optional.empty();
 
         double distance = PhotonUtils.calculateDistanceToTargetMeters(
@@ -132,7 +132,7 @@ public class Vision extends SubsystemBase {
     }
 
     public void setPipeline(int pipelineIndex) {
-        camera.setPipelineIndex(pipelineIndex);
+        // camera.setPipelineIndex(pipelineIndex);
     }
 
     public Command setPipelineCommand(int pipelineIndex) {

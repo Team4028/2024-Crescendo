@@ -64,8 +64,8 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Whippy;
-import frc.robot.subsystems.Climber;
-import frc.robot.subsystems.Climber.ClimberPositions;
+// import frc.robot.subsystems.Climber;
+// import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.utils.DashboardStore;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
@@ -103,7 +103,7 @@ public class RobotContainer {
     private final Infeed infeed = new Infeed();
     private final Shooter shooter = new Shooter();
     private final Conveyor conveyor = new Conveyor();
-    private final Climber climber = new Climber();
+    // private final Climber climber = new Climber();
     private final Autons autons;
     private final Pivot pivot = new Pivot();
     private final Fan m_fan = new Fan();
@@ -205,18 +205,18 @@ public class RobotContainer {
         DashboardStore.add("Manual Indexing", () -> useManual);
         DashboardStore.add("Climber Enabled", () -> enableClimber);
 
-        DashboardStore.add("Distance To Speaker", () -> {
-            int tagID = DriverStation.getAlliance().isPresent()
-                    && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
+        // DashboardStore.add("Distance To Speaker", () -> {
+        //     int tagID = DriverStation.getAlliance().isPresent()
+        //             && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
 
-            Optional<Double> dist = trapVision.getTagDistance(tagID);
+        //     Optional<Double> dist = trapVision.getTagDistance(tagID);
 
-            if (dist.isPresent()) {
-                return Units.metersToFeet(dist.get());
-            }
+        //     if (dist.isPresent()) {
+        //         return Units.metersToFeet(dist.get());
+        //     }
 
-            return 0.;
-        });
+        //     return 0.;
+        // });
 
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
@@ -321,6 +321,8 @@ public class RobotContainer {
         // ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 12, 1.0);
         NamedCommands.registerCommand("4 Piece Shooter Pivot", pivot.runToPositionCommand(13));
 
+        NamedCommands.registerCommand("4 Piece First Shooter Pivot", pivot.runToPositionCommand(11.0));
+
         NamedCommands.registerCommand("4 Piece Mid Shooter Pivot", pivot.runToPositionCommand(16.7));
 
         // ShooterTableEntry fourLastEntry = new ShooterTableEntry(Feet.of(0), 15, 1.0);
@@ -336,9 +338,11 @@ public class RobotContainer {
                 .andThen(conveyCommand().withTimeout(1.0))
                 .andThen(shooter.stopCommand()));
 
+        ShooterTableEntry twoHalfRightEntry = new ShooterTableEntry(Feet.of(0), 4.0, 1.0);
+
         NamedCommands.registerCommand("Right Center Pathfinding Shot", drivetrain
-                .pathFindCommand(new Pose2d(4.3, 1.9, Rotation2d.fromDegrees(-40)), 0.75, 0)
-                .alongWith(runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST).repeatedly()
+                .mirrorablePathFindCommand(Constants.RIGHT_3_SHOOT_PATHFINDING_POSE, 0.75, 0)
+                .alongWith(runEntryCommand(() -> twoHalfRightEntry, () -> ShotSpeeds.FAST).repeatedly()
                         .until(shooterAndPivotReady()))
                 .andThen(conveyCommand().withTimeout(1.0))
                 .andThen(shooter.stopCommand()));
@@ -375,10 +379,17 @@ public class RobotContainer {
                         .andThen(conveyCommand())
                         .andThen(shooter.stopCommand()));
 
+        /* 2.5 but right side */
+        NamedCommands.registerCommand("2.5 Right Stationary Shot",
+                runEntryCommand(() -> twoHalfRightEntry, () -> ShotSpeeds.FAST)
+                        .repeatedly().until(shooterAndPivotReady())
+                        .andThen(conveyCommand())
+                        .andThen(shooter.stopCommand()));
+
         NamedCommands.registerCommand("2.5 Final Note", drivetrain
                 .pathFindCommand(new Pose2d(3.71, 6.51, new Rotation2d(Units.degreesToRadians(-9.1))), 0.75, 0));
         NamedCommands.registerCommand("2.5 Final Note Right", drivetrain
-                .pathFindCommand(new Pose2d(3.71, 1.8, new Rotation2d(Units.degreesToRadians(9.1))), 0.75, 0.));
+                .pathFindCommand(new Pose2d(3.71, 1.8, new Rotation2d(Units.degreesToRadians(-20))), 0.75, 0.));
 
     }
 
@@ -468,7 +479,7 @@ public class RobotContainer {
         // ========================= //
 
         /* Snap to Amp */
-        operatorController.povDown().toggleOnTrue(Commands.either(
+        operatorController.povUp().toggleOnTrue(Commands.either(
                 snapCommand(SnapDirection.Left), snapCommand(SnapDirection.Right),
                 () -> {
                     var alliance = DriverStation.getAlliance();
@@ -565,14 +576,14 @@ public class RobotContainer {
         // ============================== //
 
         /* Climber Up */
-        emergencyController.rightTrigger(0.2).whileTrue(
-                climber.runMotorCommand(CLIMBER_VBUS))
-                .onFalse(climber.runMotorCommand(0.0));
+        // emergencyController.rightTrigger(0.2).whileTrue(
+        // climber.runMotorCommand(CLIMBER_VBUS))
+        // .onFalse(climber.runMotorCommand(0.0));
 
-        /* Climber Down */
-        emergencyController.leftTrigger(0.2).whileTrue(
-                climber.runMotorCommand(-CLIMBER_VBUS))
-                .onFalse(climber.runMotorCommand(0.0));
+        // /* Climber Down */
+        // emergencyController.leftTrigger(0.2).whileTrue(
+        // climber.runMotorCommand(-CLIMBER_VBUS))
+        // .onFalse(climber.runMotorCommand(0.0));
 
         // ==== //
         /* Misc */
@@ -583,7 +594,7 @@ public class RobotContainer {
                 .onFalse(whippy.stopCommand());
 
         /* TrapStar 5000 */
-        emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS)).onFalse(m_fan.stopCommand());
+        // emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS)).onFalse(m_fan.stopCommand());
 
         emergencyController.start().onTrue(m_fan.runToPositionCommand(0.));
 
@@ -626,13 +637,13 @@ public class RobotContainer {
         // ======= //
 
         /* Prime Climber */
-        emergencyController.povUp().onTrue(safeClimbCommand(Climber.ClimberPositions.READY));
+        // emergencyController.povUp().onTrue(safeClimbCommand(Climber.ClimberPositions.READY));
 
-        /* Tension Chain */
-        emergencyController.povRight().onTrue(safeClimbCommand(Climber.ClimberPositions.TENSION));
+        // /* Tension Chain */
+        // emergencyController.povRight().onTrue(safeClimbCommand(Climber.ClimberPositions.TENSION));
 
-        /* CLIMB */
-        emergencyController.povDown().onTrue(safeClimbCommand(ClimberPositions.CLIMB));
+        // /* CLIMB */
+        // emergencyController.povDown().onTrue(safeClimbCommand(ClimberPositions.CLIMB));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -647,15 +658,16 @@ public class RobotContainer {
     // =========================================== //
 
     /* Safe Climb */
-    private Command safeClimbCommand(ClimberPositions position) {
-        Command climbCommand = position == ClimberPositions.CLIMB ? climber.climbCommand()
-                : climber.runToPositionCommand(position);
+    // private Command safeClimbCommand(ClimberPositions position) {
+    // Command climbCommand = position == ClimberPositions.CLIMB ?
+    // climber.climbCommand()
+    // : climber.runToPositionCommand(position);
 
-        return Commands.either(
-                climbCommand,
-                Commands.none(),
-                () -> pivot.getPosition() > 50. && enableClimber);
-    }
+    // return Commands.either(
+    // climbCommand,
+    // Commands.none(),
+    // () -> pivot.getPosition() > 50. && enableClimber);
+    // }
 
     /* Convey the Note */
     private Command conveyCommand() {
@@ -779,7 +791,7 @@ public class RobotContainer {
         conveyor.logValues();
         infeed.logValues();
         shooter.logValues();
-        climber.logValues();
+        // climber.logValues();
         pivot.logValues();
         m_fan.logValues();
     }
