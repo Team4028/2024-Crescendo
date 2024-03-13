@@ -223,19 +223,7 @@ public class RobotContainer {
 
         initAutonChooser();
 
-        magicShootCommand = Commands.runOnce(() -> {
-            // var pose = getBestPose();
-            // if (pose.isPresent())
-            // drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
-
-            // getBestSTEntryNew();
-            angle_offset = Math.tan(10) /* <= -dy/dx */ * getBestSTEntryNew().Distance.in(Meters);
-        }).andThen(Commands.waitSeconds(0.1)).andThen(new RotateToSpeaker(drivetrain, () -> {
-            var res = trapVision.getTagDistance(DriverStation.getAlliance().get() == Alliance.Blue ? 7 : 4);
-            if (res.isEmpty())
-                return 0.0;
-            return res.get() - angle_offset;
-        }, () -> 0.0).andThen(Commands.runOnce(() -> {
+        magicShootCommand = new ShooterAlign(drivetrain, trapVision).andThen(Commands.runOnce(() -> {
             ShooterTableEntry entry = getBestSTEntryNew();
             shooter.runEntry(entry, ShotSpeeds.FAST);
             pivot.runToPosition(entry.Angle);
@@ -243,7 +231,7 @@ public class RobotContainer {
                 .andThen(Commands.waitSeconds(0.5))
                 .andThen(conveyCommand())
                 .andThen(Commands.waitSeconds(0.2))
-                .finallyDo(this::stopAll));
+                .finallyDo(this::stopAll);
 
         ampPrep = pivot.runToClimbCommand()
                 .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
@@ -833,9 +821,11 @@ public class RobotContainer {
     }
 
     private ShooterTableEntry getBestSTEntryNew() {
-        var res = trapVision.getTagDistance(DriverStation.getAlliance().get() == Alliance.Blue ? 7 : 4);
-        if (res.isEmpty())
+        Optional<Double> distance = trapVision
+                .getTagDistance(DriverStation.getAlliance().get() == Alliance.Blue ? 7 : 4);
+        if (distance.isEmpty())
             return new ShooterTableEntry(Feet.of(0), 0, 0, 0);
-        return ShooterTable.calcShooterTableEntryCamera(res.get());
+
+        return ShooterTable.calcShooterTableEntryCamera(distance.get());
     }
 }
