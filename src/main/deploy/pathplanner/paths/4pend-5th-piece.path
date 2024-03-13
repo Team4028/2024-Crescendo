@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.493344245947751,
-        "y": 6.244678472262928
+        "x": 2.8441688792209487,
+        "y": 7.074963437676163
       },
       "isLocked": false,
       "linkedName": "4pdr 3"
@@ -20,8 +20,8 @@
         "y": 4.081259900411539
       },
       "prevControl": {
-        "x": 6.57460414635929,
-        "y": 3.438081406077343
+        "x": 5.989896424237293,
+        "y": 2.385607506257749
       },
       "nextControl": null,
       "isLocked": false,
@@ -74,7 +74,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": 24.775140568831905,
     "rotateFast": false
   },
   "reversed": false,

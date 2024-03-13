@@ -10,7 +10,6 @@ import static edu.wpi.first.units.Units.Meters;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -36,6 +35,8 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -45,7 +46,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
@@ -88,6 +88,8 @@ public class RobotContainer {
     private static final double SHOOTER_BACKOUT_VBUS = -0.4;
     private static final double WHIPPY_VBUS = 0.2;
 
+    private static final Measure<Distance> DIST_TO_TRAP = Feet.of(1.0);
+
     private static final int OI_DRIVER_CONTROLLER = 0;
     private static final int OI_OPERATOR_CONTROLLER = 1;
     private static final int OI_EMERGENCY_CONTROLLER = 2;
@@ -116,7 +118,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command magicShootCommand, magicTrapCommand, ampPrep;
+    private final Command magicShootCommand, ampPrep;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -178,6 +180,8 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     public RobotContainer() {
+        trapVision.setPipeline(Vision.SHOOTER_PIPELINE_INDEX);
+
         snapDrive.HeadingController = new PhoenixPIDController(2., 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -240,18 +244,6 @@ public class RobotContainer {
                 .andThen(conveyCommand())
                 .andThen(Commands.waitSeconds(0.2))
                 .finallyDo(this::stopAll));
-
-        magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2,
-                0)
-                .andThen(shooter.setSlotCommand(Shooter.Slots.TRAP))
-                .andThen(new WaitCommand(2))
-                .andThen(pivot.runToTrapCommand())
-                .andThen(m_fan.runMotorCommand(FAN_VBUS))
-                .andThen(shooter.runShotCommand(ShotSpeeds.TRAP).repeatedly()
-                        .until(shooterAndPivotReady()).withTimeout(4))
-                .andThen(conveyor.runXRotations(20))
-                .andThen(shooter.stopCommand())
-                .andThen(pivot.runToHomeCommand());
 
         ampPrep = pivot.runToClimbCommand()
                 .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
@@ -316,7 +308,7 @@ public class RobotContainer {
                 .andThen(shooter.stopCommand()));
 
         ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0), 0.0,
-                4.3, 1.0); // TODO: fix
+                10.8, 1.0); // TODO: fix
 
         // TODO: We may want a command that constantly updates the shooter table and
         // runs the shooter/pivot based on that
@@ -332,7 +324,7 @@ public class RobotContainer {
         // ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 12, 1.0);
         NamedCommands.registerCommand("4 Piece Shooter Pivot", pivot.runToPositionCommand(13));
 
-        NamedCommands.registerCommand("4 Piece Mid Shooter Pivot", pivot.runToPositionCommand(17));
+        NamedCommands.registerCommand("4 Piece Mid Shooter Pivot", pivot.runToPositionCommand(16.7));
 
         // ShooterTableEntry fourLastEntry = new ShooterTableEntry(Feet.of(0), 15, 1.0);
         NamedCommands.registerCommand("4 Piece Last Shooter Pivot", pivot.runToPositionCommand(13));
@@ -538,10 +530,10 @@ public class RobotContainer {
         operatorController.start().onTrue(zeroCommand());
 
         // /* Run Pivot & Climber to Zero */
-        // operatorController.a().onTrue(
-        // climber.runToPositionCommand(ClimberPositions.HOME).andThen(
-        // Commands.waitUntil(climber.inPositionSupplier()),
-        // pivot.runToHomeCommand()));
+        operatorController.a().onTrue(
+        //         climber.runToPositionCommand(ClimberPositions.HOME).andThen(
+        //                 Commands.waitUntil(climber.inPositionSupplier()),
+                        pivot.runToHomeCommand());
 
         // /* Prime Climber & Pivot */
         // operatorController.povUp().onTrue(pivot.runToClimbCommand().andThen(
@@ -564,7 +556,7 @@ public class RobotContainer {
 
         operatorController.b().onTrue(ampPrep).onFalse(stopAllCommand());
 
-        operatorController.y().onTrue(pivot.runToTrapCommand());
+        operatorController.y().onTrue(pivot.runToTrapCommand().alongWith(trapVision.setPipelineCommand(Vision.TRAP_PIPELINE_INDEX)));
 
         // ==================== //
         /* EMERGENCY CONTROLLER */

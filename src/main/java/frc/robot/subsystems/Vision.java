@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -39,6 +40,9 @@ public class Vision extends SubsystemBase {
             0.,
             Units.inchesToMeters(18.75),
             new Rotation3d(0., Units.degreesToRadians(18.), 0.));
+
+    public static final int TRAP_PIPELINE_INDEX = 1;
+    public static final int SHOOTER_PIPELINE_INDEX = 0;
 
     // "2.5": 44 in (14 in)
     // "5.5": 80 in (14 in)
@@ -125,6 +129,14 @@ public class Vision extends SubsystemBase {
         }
 
         return null;
+    }
+
+    public void setPipeline(int pipelineIndex) {
+        camera.setPipelineIndex(pipelineIndex);
+    }
+
+    public Command setPipelineCommand(int pipelineIndex) {
+        return runOnce(() -> setPipeline(pipelineIndex));
     }
 
 }
