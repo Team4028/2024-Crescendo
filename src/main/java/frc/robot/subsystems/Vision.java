@@ -34,6 +34,12 @@ public class Vision extends SubsystemBase {
             new Rotation3d(0., Units.degreesToRadians(28.125),
                     Units.degreesToRadians(-150.)));
 
+    public static final Transform3d SHOOTER_ROBOT_TO_CAMERA = new Transform3d(
+            0.,
+            0.,
+            Units.inchesToMeters(18.75),
+            new Rotation3d(0., Units.degreesToRadians(18.), 0.));
+
     // "2.5": 44 in (14 in)
     // "5.5": 80 in (14 in)
     // "7.5": 104 in (14 in)
@@ -92,7 +98,7 @@ public class Vision extends SubsystemBase {
 
         double distance = PhotonUtils.calculateDistanceToTargetMeters(
                 offset.getZ(), layout.getTagPose(tagID).get().getZ(), offset.getRotation().getY(),
-                target.get().getPitch());
+                Units.degreesToRadians(target.get().getPitch()));
 
         return Optional.of(distance);
     }

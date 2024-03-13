@@ -53,6 +53,7 @@ import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
+import frc.robot.commands.vision.ShooterAlign;
 import frc.robot.generated.TunerConstants;
 // import frc.robot.subsystems.Climber;
 // import frc.robot.subsystems.Climber.ClimberPositions;
@@ -110,6 +111,7 @@ public class RobotContainer {
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
+    private final Vision trapVision = new Vision("Trap_AprilTag_Camera", Vision.SHOOTER_ROBOT_TO_CAMERA);
 
     // ====================== //
     /* Auton & Other Commands */
@@ -193,6 +195,19 @@ public class RobotContainer {
         // this is weird
         DashboardStore.add("Snapped", () -> drivetrain.getCurrentRequest().getClass().equals(snapDrive.getClass()));
         DashboardStore.add("Manual Indexing", () -> useManual);
+
+        DashboardStore.add("Distance To Speaker", () -> {
+            int tagID = DriverStation.getAlliance().isPresent()
+                    && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
+
+            Optional<Double> dist = trapVision.getTagDistance(tagID);
+
+            if (dist.isPresent()) {
+                return Units.metersToFeet(dist.get());
+            }
+
+            return 0.;
+        });
 
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
@@ -444,6 +459,8 @@ public class RobotContainer {
         /* End snap, limelight & stop all motors */
         driverController.rightStick().onTrue(stopAllCommand().alongWith(drivetrain.runOnce(() -> {
         })));
+
+        driverController.leftStick().whileTrue(new ShooterAlign(drivetrain, trapVision));
 
         // =================== //
         /* OPERATOR CONTROLLER */
