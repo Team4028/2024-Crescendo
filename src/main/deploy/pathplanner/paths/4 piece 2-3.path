@@ -47,6 +47,23 @@
           ]
         }
       }
+    },
+    {
+      "name": "Pivot",
+      "waypointRelativePos": 0.6,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "4 Piece Last Shooter Pivot"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "globalConstraints": {
