@@ -5,6 +5,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
@@ -34,12 +36,15 @@ public class LimelightSquare extends Command {
         m_ySupplier = ySupplier;
 
         addRequirements(drivetrain);
+        SmartDashboard.putBoolean("Limelight Seek", false);
     }
 
     @Override
     public void initialize() {
         m_controller = new PIDController(2., 0., 0.);
         m_controller.reset();
+
+        SmartDashboard.putBoolean("Limelight Seek", true);
     }
 
     @Override
@@ -65,6 +70,7 @@ public class LimelightSquare extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        drivetrain.setControl(drive.withSpeeds(new ChassisSpeeds()));
+        // drivetrain.setControl(drive.withSpeeds(new ChassisSpeeds()));
+        SmartDashboard.putBoolean("Limelight Seek", false);
     }
 }

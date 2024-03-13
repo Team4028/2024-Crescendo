@@ -157,7 +157,7 @@ public class RobotContainer {
     private double currentIndex = MIN_INDEX;
     private double manualIndex = MIN_INDEX;
     private int presetIndex = 0;
-    private boolean useManual = true;
+    private boolean useManual = false;
 
     // ======================== //
     /* Swerve Control & Logging */
@@ -202,7 +202,13 @@ public class RobotContainer {
 
         initAutonChooser();
 
-        magicShootCommand = new RotateToSpeaker(drivetrain).andThen(Commands.runOnce(() -> {
+        magicShootCommand = Commands.runOnce(() -> {
+            var pose = getBestPose();
+            if (pose.isPresent())
+                drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
+
+            getBestSTEntry();
+        }).andThen(Commands.waitSeconds(0.1)).andThen(new RotateToSpeaker(drivetrain).andThen(Commands.runOnce(() -> {
             ShooterTableEntry entry = getBestSTEntry();
             shooter.runEntry(entry, ShotSpeeds.FAST);
             pivot.runToPosition(entry.Angle);
@@ -210,7 +216,7 @@ public class RobotContainer {
                 .andThen(Commands.waitSeconds(0.5))
                 .andThen(conveyCommand())
                 .andThen(Commands.waitSeconds(0.2))
-                .finallyDo(this::stopAll);
+                .finallyDo(this::stopAll));
 
         magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2,
                 0)
