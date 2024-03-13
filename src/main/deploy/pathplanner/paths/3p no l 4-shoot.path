@@ -3,45 +3,51 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.6570624081419103,
-        "y": 6.887856966597124
+        "x": 5.896343188697773,
+        "y": 0.8536732742981157
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.6372746271968748,
-        "y": 6.3180220089528865
+        "x": 5.089446532169418,
+        "y": 1.6839582397113522
       },
       "isLocked": false,
-      "linkedName": "4pdr 1"
+      "linkedName": "3prnl4"
     },
     {
       "anchor": {
-        "x": 2.6570624081419103,
-        "y": 5.5430292057165325
+        "x": 4.0192228743943925,
+        "y": 2.576384040071932
       },
       "prevControl": {
-        "x": 1.9683347042956307,
-        "y": 5.298038160955556
+        "x": 4.69184528112646,
+        "y": 2.01139456409967
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "4pdr 2"
+      "linkedName": "3prnl3"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "zeroEnd",
-      "waypointRelativePos": 1.0,
+      "name": "Fix Note + Start Shooter",
+      "waypointRelativePos": 0.5,
       "command": {
-        "type": "parallel",
+        "type": "sequential",
         "data": {
           "commands": [
             {
               "type": "named",
               "data": {
-                "name": "zeroApril"
+                "name": "Run Back"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Start Shooter"
               }
             }
           ]
@@ -50,21 +56,21 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 6.0,
+    "maxAcceleration": 5.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -37.5,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 25.0,
+    "rotation": -46.5,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

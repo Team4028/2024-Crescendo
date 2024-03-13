@@ -7,6 +7,8 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Meters;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -33,6 +35,8 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -42,7 +46,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
@@ -50,9 +53,10 @@ import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
+import frc.robot.commands.vision.ShooterAlign;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Climber;
-import frc.robot.subsystems.Climber.ClimberPositions;
+// import frc.robot.subsystems.Climber;
+// import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Fan;
@@ -62,6 +66,7 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Whippy;
+import frc.robot.utils.DashboardStore;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
@@ -83,6 +88,8 @@ public class RobotContainer {
     private static final double SHOOTER_BACKOUT_VBUS = -0.4;
     private static final double WHIPPY_VBUS = 0.2;
 
+    private static final Measure<Distance> DIST_TO_TRAP = Feet.of(1.0);
+
     private static final int OI_DRIVER_CONTROLLER = 0;
     private static final int OI_OPERATOR_CONTROLLER = 1;
     private static final int OI_EMERGENCY_CONTROLLER = 2;
@@ -98,7 +105,7 @@ public class RobotContainer {
     private final Infeed infeed = new Infeed();
     private final Shooter shooter = new Shooter();
     private final Conveyor conveyor = new Conveyor();
-    private final Climber climber = new Climber();
+    // private final Climber climber = new Climber();
     private final Autons autons;
     private final Pivot pivot = new Pivot();
     private final Fan m_fan = new Fan();
@@ -106,11 +113,12 @@ public class RobotContainer {
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
+    private final Vision trapVision = new Vision("Trap_AprilTag_Camera", Vision.SHOOTER_ROBOT_TO_CAMERA);
 
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command magicShootCommand, magicTrapCommand, ampPrep, ampShoot;
+    private final Command magicShootCommand, ampPrep;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -145,35 +153,23 @@ public class RobotContainer {
         }
     }
 
-    private enum ShooterTableIndex {
-        Close(4.2, "Close Shot"),
-        Protected(10.0, "Protected"),
-        Chain(13.0, "Chain"),
-        Truss(16.0, "Truss"),
-        Wing(19.0, "Wing"),
-        Neutral(22.0, "Neutral Zone");
+    private static double MAX_INDEX = 27.;
+    private static double MIN_INDEX = 4.2;
 
-        public double Index;
-        public String Name;
+    private final LinkedHashMap<Double, String> indexMap = new LinkedHashMap<>();
 
-        private ShooterTableIndex(double index, String name) {
-            Index = index;
-            Name = name;
-        }
-    }
-
-    private List<ShooterTableIndex> indexList = List.of(ShooterTableIndex.values());
-
-    private int currentIndex = 0;
+    private double currentIndex = MIN_INDEX;
+    private double manualIndex = MIN_INDEX;
+    private int presetIndex = 0;
+    private boolean useManual = false;
 
     // ======================== //
     /* Swerve Control & Logging */
     // ======================== //
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MAX_SPEED * 0.02).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.01) // Add a 50%
-                                                                                             // deadband
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
-                                                                     // driving in open loop
+            .withDeadband(MAX_SPEED * 0.02).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.01)
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
     private final Telemetry logger = new Telemetry(MAX_SPEED);
 
     private final SwerveRequest.SwerveDriveBrake xDrive = new SwerveDriveBrake();
@@ -182,8 +178,41 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     public RobotContainer() {
+        trapVision.setPipeline(Vision.SHOOTER_PIPELINE_INDEX);
+
         snapDrive.HeadingController = new PhoenixPIDController(2., 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
+
+        /* Init Index Map */
+        indexMap.put(4.2, "Speaker");
+        indexMap.put(10.0, "Protected");
+        indexMap.put(13.0, "Chain");
+        indexMap.put(16.0, "Truss");
+        indexMap.put(19.0, "Wing");
+        indexMap.put(22.0, "Neutral");
+
+        /* Dashboard */
+        DashboardStore.add("Shooter Table Index", () -> currentIndex);
+        DashboardStore.add("Shooter Table Name",
+                () -> indexMap.containsKey(currentIndex) ? indexMap.get(currentIndex) : "Manual");
+
+        // this is weird
+        DashboardStore.add("Snapped", () -> drivetrain.getCurrentRequest().getClass().equals(snapDrive.getClass()));
+        DashboardStore.add("Manual Indexing", () -> useManual);
+
+        DashboardStore.add("Distance To Speaker", () -> {
+            int tagID = DriverStation.getAlliance().isPresent()
+                    && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
+
+            Optional<Double> dist = trapVision.getTagDistance(tagID);
+
+            if (dist.isPresent()) {
+                return Units.metersToFeet(dist.get());
+            }
+
+            return 0.;
+        });
+
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
 
@@ -192,36 +221,25 @@ public class RobotContainer {
 
         initAutonChooser();
 
-        magicShootCommand = new RotateToSpeaker(drivetrain).andThen(Commands.runOnce(() -> {
+        magicShootCommand = Commands.runOnce(() -> {
+            var pose = getBestPose();
+            if (pose.isPresent())
+                drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
+
+            getBestSTEntry();
+        }).andThen(Commands.waitSeconds(0.1)).andThen(new RotateToSpeaker(drivetrain).andThen(Commands.runOnce(() -> {
             ShooterTableEntry entry = getBestSTEntry();
             shooter.runEntry(entry, ShotSpeeds.FAST);
             pivot.runToPosition(entry.Angle);
         }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReadySupplier()))
                 .andThen(Commands.waitSeconds(0.5))
-                .andThen(conveyor.runXRotations(10)
-                        .alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS)))
+                .andThen(conveyCommand())
                 .andThen(Commands.waitSeconds(0.2))
-                .finallyDo(this::stopAll);
-
-        magicTrapCommand = drivetrain.pathFindCommand(Constants.LEFT_TRAP_TARGET, .2,
-                0)
-                .andThen(shooter.setSlotCommand(Shooter.Slots.TRAP))
-                .andThen(new WaitCommand(2))
-                .andThen(pivot.runToTrapCommand())
-                .andThen(m_fan.runMotorCommand(FAN_VBUS))
-                .andThen(shooter.runShotCommand(ShotSpeeds.TRAP).repeatedly()
-                        .until(shooterAndPivotReady()).withTimeout(4))
-                .andThen(conveyor.runXRotations(20))
-                .andThen(shooter.stopCommand())
-                .andThen(pivot.runToHomeCommand());
+                .finallyDo(this::stopAll));
 
         ampPrep = pivot.runToClimbCommand()
                 .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
                 .alongWith(shooter.runShotCommand(ShotSpeeds.AMP));
-
-        ampShoot = conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(INFEED_VBUS))
-                .andThen(new WaitCommand(1.0))
-                .finallyDo(this::stopAll);
 
         configureBindings();
     }
@@ -255,13 +273,14 @@ public class RobotContainer {
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
 
         NamedCommands.registerCommand("Shoot Note",
-                conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS))
-                        .andThen(shooter.stopCommand()));
+                conveyCommand().andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("Spit Note", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
                 .alongWith(shooter.spinBothCommand(0.15))
                 .repeatedly());
+
+        NamedCommands.registerCommand("Run Pivot To Home", pivot.runToHomeCommand());
 
         NamedCommands.registerCommand("Prepare Spit", shooter.spinBothCommand(0.15));
 
@@ -272,8 +291,16 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
 
+        NamedCommands.registerCommand("Dumb Infeed",
+                runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS).repeatedly().withTimeout(.25));
+
+        NamedCommands.registerCommand("Run Back", shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
+                .raceWith(conveyor.runXRotations(-2.5).withTimeout(0.2) // -1.5
+                        .alongWith(infeed.runMotorCommand(0.)))
+                .andThen(shooter.stopCommand()));
+
         ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0),
-                10.0, 1.0); // TODO: fix
+                10.8, 1.0); // TODO: fix
 
         // TODO: We may want a command that constantly updates the shooter table and
         // runs the shooter/pivot based on that
@@ -282,8 +309,17 @@ public class RobotContainer {
         NamedCommands.registerCommand("Start Shooter",
                 runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST));
 
-        ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 21.5, 1.0);
-        NamedCommands.registerCommand("4 Piece Shooter", runEntryCommand(() -> fourEntry, () -> ShotSpeeds.FAST));
+        ShooterTableEntry fourP = new ShooterTableEntry(Feet.of(0), 0.0, 0.85);
+        NamedCommands.registerCommand("Start Shooter No Pivot",
+                shooter.runEntryCommand(() -> fourP, () -> ShotSpeeds.FAST));
+
+        // ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 12, 1.0);
+        NamedCommands.registerCommand("4 Piece Shooter Pivot", pivot.runToPositionCommand(13));
+
+        NamedCommands.registerCommand("4 Piece Mid Shooter Pivot", pivot.runToPositionCommand(16.7));
+
+        // ShooterTableEntry fourLastEntry = new ShooterTableEntry(Feet.of(0), 15, 1.0);
+        NamedCommands.registerCommand("4 Piece Last Shooter Pivot", pivot.runToPositionCommand(13));
 
         NamedCommands.registerCommand("Stop Shooter", shooter.stopCommand());
         NamedCommands.registerCommand("Stop Infeed", runBoth(0., 0.));
@@ -292,16 +328,14 @@ public class RobotContainer {
                 .pathFindCommand(new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.75, 0)
                 .alongWith(runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST).repeatedly()
                         .until(shooterAndPivotReady()))
-                .andThen(conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS))
-                        .withTimeout(1.0))
+                .andThen(conveyCommand().withTimeout(1.0))
                 .andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("Right Center Pathfinding Shot", drivetrain
                 .pathFindCommand(new Pose2d(4.3, 1.9, Rotation2d.fromDegrees(-40)), 0.75, 0)
                 .alongWith(runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST).repeatedly()
                         .until(shooterAndPivotReady()))
-                .andThen(conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS))
-                        .withTimeout(1.0))
+                .andThen(conveyCommand().withTimeout(1.0))
                 .andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("Note 3",
@@ -333,7 +367,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("2.5 Stationary Shot",
                 runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST)
                         .repeatedly().until(shooterAndPivotReady())
-                        .andThen(conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS)))
+                        .andThen(conveyCommand())
                         .andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("2.5 Final Note", drivetrain
@@ -362,8 +396,7 @@ public class RobotContainer {
                         .withRotationalRate(
                                 scaleDriverController(-driverController.getRightX(),
                                         thetaLimiter, currentSpeed) *
-                                        MAX_ANGULAR_SPEED))
-                        .alongWith(Commands.runOnce(() -> SmartDashboard.putBoolean("Snapped", false))));
+                                        MAX_ANGULAR_SPEED)));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runMotorCommand(0.));
@@ -419,6 +452,8 @@ public class RobotContainer {
         driverController.rightStick().onTrue(stopAllCommand().alongWith(drivetrain.runOnce(() -> {
         })));
 
+        driverController.leftStick().whileTrue(new ShooterAlign(drivetrain, trapVision));
+
         // =================== //
         /* OPERATOR CONTROLLER */
         // =================== //
@@ -446,33 +481,38 @@ public class RobotContainer {
         // ======================= //
 
         /* Spin Up Shooter */
-        operatorController.leftBumper()
+        operatorController.leftTrigger()
                 .onTrue(Commands.runOnce(() -> {
                     ShooterTableEntry entry = ShooterTable
-                            .calcShooterTableEntry(Feet.of(indexList.get(currentIndex).Index));
+                            .calcShooterTableEntry(Feet.of(currentIndex));
                     shooter.runEntry(entry, ShotSpeeds.FAST);
                     pivot.runToPosition(entry.Angle);
                 }, shooter, pivot))
                 .onFalse(stopAllCommand());
 
         /* Convey Note */
-        operatorController.rightBumper()
+        operatorController.rightTrigger()
                 .whileTrue(runBoth(FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS).repeatedly());
 
         /* Magic Shoot */
         operatorController.x().toggleOnTrue(magicShootCommand);
 
-        /* Shooter Table Index Down */
-        operatorController.leftTrigger(0.5).onTrue(new InstantCommand(() -> {
-            currentIndex = MathUtil.clamp(currentIndex - 1, 0, ShooterTableIndex.values().length - 1);
-            pushIndexData();
-        }));
+        /* Manual/Preset Mode */
+        operatorController.back().onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));
 
         /* Shooter Table Index Up */
-        operatorController.rightTrigger(0.5).onTrue(new InstantCommand(() -> {
-            currentIndex = MathUtil.clamp(currentIndex + 1, 0, ShooterTableIndex.values().length - 1);
-            pushIndexData();
-        }));
+        operatorController.rightBumper().onTrue(
+                Commands.either(
+                        Commands.runOnce(() -> manualIndex += 1.0),
+                        Commands.runOnce(() -> presetIndex += 1),
+                        () -> useManual).andThen(this::pushIndexData));
+
+        /* Shooter Table Index Down */
+        operatorController.leftBumper().onTrue(
+                Commands.either(
+                        Commands.runOnce(() -> manualIndex -= 1.0),
+                        Commands.runOnce(() -> presetIndex -= 1),
+                        () -> useManual).andThen(this::pushIndexData));
 
         // ========================= //
         /* Climber & Zeroing Control */
@@ -481,22 +521,22 @@ public class RobotContainer {
         /* Zero Climber & Pivot */
         operatorController.start().onTrue(zeroCommand());
 
-        /* Run Pivot & Climber to Zero */
+        // /* Run Pivot & Climber to Zero */
         operatorController.a().onTrue(
-                climber.runToPositionCommand(ClimberPositions.HOME).andThen(
-                        Commands.waitUntil(climber.inPositionSupplier()),
-                        pivot.runToHomeCommand()));
+        //         climber.runToPositionCommand(ClimberPositions.HOME).andThen(
+        //                 Commands.waitUntil(climber.inPositionSupplier()),
+                        pivot.runToHomeCommand());
 
-        /* CLIMB */
-        operatorController.povDown().onTrue(climber.climbCommand());
+        // /* Prime Climber & Pivot */
+        // operatorController.povUp().onTrue(pivot.runToClimbCommand().andThen(
+        // Commands.waitUntil(pivot.inPositionSupplier()),
+        // climber.runToPositionCommand(Climber.ClimberPositions.READY)));
 
-        /* Tension Chain */
-        operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.TENSION));
+        // /* Tension Chain */
+        // operatorController.povRight().onTrue(climber.runToPositionCommand(Climber.ClimberPositions.TENSION));
 
-        /* Prime Climber & Pivot */
-        operatorController.povUp().onTrue(pivot.runToClimbCommand().andThen(
-                Commands.waitUntil(pivot.inPositionSupplier()),
-                climber.runToPositionCommand(Climber.ClimberPositions.READY)));
+        // /* CLIMB */
+        // operatorController.povDown().onTrue(climber.climbCommand());
 
         // TODO: no explicit trap position command
         // trap, amp, climb sequences should all do this on their own
@@ -506,10 +546,9 @@ public class RobotContainer {
         /* Amp & Trap Magic */
         // ================ //
 
-        operatorController.b().onTrue(ampPrep).onFalse(ampShoot);
+        operatorController.b().onTrue(ampPrep).onFalse(stopAllCommand());
 
-        // operatorController.y().toggleOnTrue(magicTrapCommand);
-        operatorController.y().onTrue(pivot.runToTrapCommand());
+        operatorController.y().onTrue(pivot.runToTrapCommand().alongWith(trapVision.setPipelineCommand(Vision.TRAP_PIPELINE_INDEX)));
 
         // ==================== //
         /* EMERGENCY CONTROLLER */
@@ -531,15 +570,15 @@ public class RobotContainer {
         /* Manual Climber/Outfeed Control */
         // ============================== //
 
-        /* Climber Up */
-        emergencyController.rightTrigger(0.2).whileTrue(
-                climber.runMotorCommand(CLIMBER_VBUS))
-                .onFalse(climber.runMotorCommand(0.0));
+        // /* Climber Up */
+        // emergencyController.rightTrigger(0.2).whileTrue(
+        // climber.runMotorCommand(CLIMBER_VBUS))
+        // .onFalse(climber.runMotorCommand(0.0));
 
-        /* Climber Down */
-        emergencyController.leftTrigger(0.2).whileTrue(
-                climber.runMotorCommand(-CLIMBER_VBUS))
-                .onFalse(climber.runMotorCommand(0.0));
+        // /* Climber Down */
+        // emergencyController.leftTrigger(0.2).whileTrue(
+        // climber.runMotorCommand(-CLIMBER_VBUS))
+        // .onFalse(climber.runMotorCommand(0.0));
 
         // ==== //
         /* Misc */
@@ -590,29 +629,41 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
+    /* Convey the Note */
+    private Command conveyCommand() {
+        return conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(SLOW_INFEED_VBUS));
+    }
+
     /* Stop all motors and zero everything */
     private void stopAll() {
-        infeed.stop();
-        conveyor.stop();
-        shooter.stop();
-        climber.runToPositionCommand(ClimberPositions.HOME)
-                .andThen(Commands.waitUntil(climber.inPositionSupplier()),
-                        pivot.runToHomeCommand())
-                .schedule();
-        m_fan.stop();
-        m_fan.runToPosition(0.);
-        whippy.stop();
+        stopAllCommand().schedule();
     }
 
     private Command stopAllCommand() {
-        return Commands.runOnce(this::stopAll, infeed, conveyor, shooter, climber, m_fan, pivot, whippy);
+        return Commands.parallel(
+                infeed.stopCommand(),
+                conveyor.stopCommand(),
+                shooter.stopCommand(),
+                // climber.runToPositionCommand(ClimberPositions.HOME)
+                // .andThen(Commands.waitUntil(climber.inPositionSupplier()),
+                pivot.runToHomeCommand()/* ) */,
+                m_fan.stopCommand().andThen(
+                        m_fan.runToPositionCommand(0.)),
+                whippy.stopCommand());
     }
 
     /* Put Current ST Index Data to Dashboard */
     private void pushIndexData() {
-        ShooterTableIndex idx = indexList.get(currentIndex);
-        SmartDashboard.putNumber("Shooter Table Index", idx.Index);
-        SmartDashboard.putString("Shooter Table Name", idx.Name);
+        presetIndex = MathUtil.clamp(presetIndex, 0, indexMap.size() - 1);
+        manualIndex = MathUtil.clamp(manualIndex, MIN_INDEX, MAX_INDEX);
+
+        if (useManual) {
+            currentIndex = manualIndex;
+        } else {
+            List<Double> keys = new ArrayList<>(indexMap.keySet());
+            currentIndex = keys.get(presetIndex);
+            manualIndex = currentIndex;
+        }
     }
 
     /* Set Snap Direction Toggle */
@@ -624,8 +675,7 @@ public class RobotContainer {
                 .withVelocityY(scaleDriverController(-driverController.getLeftX(),
                         yLimiter,
                         currentSpeed) * MAX_SPEED)
-                .withTargetDirection(Rotation2d.fromDegrees(direction.Angle)))
-                .alongWith(Commands.runOnce(() -> SmartDashboard.putBoolean("Snapped", true)));
+                .withTargetDirection(Rotation2d.fromDegrees(direction.Angle)));
     }
 
     /* Smart Infeed Command Generator */
@@ -703,7 +753,7 @@ public class RobotContainer {
         conveyor.logValues();
         infeed.logValues();
         shooter.logValues();
-        climber.logValues();
+        // climber.logValues();
         pivot.logValues();
         m_fan.logValues();
     }
@@ -756,12 +806,12 @@ public class RobotContainer {
         return Optional.empty();
     }
 
-    /* Test Shooter Table */
+    /* Get Shooter Table Entry */
     private ShooterTableEntry getBestSTEntry() {
         Pose2d pose = drivetrain.getState().Pose;
 
         Transform2d dist = pose.minus(Constants.SPEAKER_DISTANCE_TARGET);
-        Translation2d translation = dist.getTranslation(); // get everything in feet
+        Translation2d translation = dist.getTranslation();
 
         ShooterTableEntry entryPicked = ShooterTable
                 .calcShooterTableEntry(Meters.of(translation.getNorm()));

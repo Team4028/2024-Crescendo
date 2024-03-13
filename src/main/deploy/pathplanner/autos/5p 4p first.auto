@@ -81,12 +81,6 @@
                       }
                     },
                     {
-                      "type": "named",
-                      "data": {
-                        "name": "4 Piece Last Shooter Pivot"
-                      }
-                    },
-                    {
                       "type": "race",
                       "data": {
                         "commands": [
@@ -120,13 +114,49 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 0.5
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Stop Shooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Run Pivot To Home"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4pend-5th-piece"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4pend-5th-shoot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.15
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5p4pfirst-try6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Smart Infeed"
           }
         }
       ]

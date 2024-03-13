@@ -162,11 +162,20 @@ public class Shooter extends SubsystemBase {
 
         DashboardStore.add("Left Shooter Target", () -> leftTarget);
         DashboardStore.add("Right Shooter Target", () -> rightTarget);
+
+        DashboardStore.add("Running/Shooter", this::isRunning);
+        DashboardStore.add("At Target/Shooter", this::isReady);
     }
 
     // ==================================
     // SHOOTER COMMANDS
     // ==================================
+
+    /* Check if shooter is running */
+    public boolean isRunning() {
+        return Math.abs(leftMotor.getMotorVoltage().getValueAsDouble()) > 0.2
+                || Math.abs(rightMotor.getMotorVoltage().getValueAsDouble()) > 0.2;
+    }
 
     /* Check if shooter is spinned up */
     public BooleanSupplier isReadySupplier() {
@@ -286,6 +295,6 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        
+
     }
 }

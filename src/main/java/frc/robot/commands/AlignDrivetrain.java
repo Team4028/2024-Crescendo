@@ -30,10 +30,10 @@ public class AlignDrivetrain extends ProfiledPIDCommand {
     private static int m_taps = 0;
 
     /** Creates a new AlignDrivetrain. */
-    public AlignDrivetrain(CommandSwerveDrivetrain drivetrain, DoubleSupplier target, DoubleSupplier measurement) {
+    public AlignDrivetrain(CommandSwerveDrivetrain drivetrain, DoubleSupplier target, DoubleSupplier measurement, boolean slow) {
         super(
                 // The controller that the command will use
-                new ProfiledPIDController(1, 0, 0, new TrapezoidProfile.Constraints(5., 5.)),
+                new ProfiledPIDController(slow ? 0.2 : 1.0, 0, 0, new TrapezoidProfile.Constraints(slow ? 1. : 5., slow ? 1.: 5.)),
                 // This should return the measurement
                 measurement,
                 // This should return the setpoint (can also be a constant)

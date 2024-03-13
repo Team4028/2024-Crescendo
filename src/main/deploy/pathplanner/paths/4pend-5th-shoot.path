@@ -3,45 +3,51 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.989596833894521,
-        "y": 0.7718141932010376
+        "x": 8.036373451664282,
+        "y": 4.081259900411539
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.165308740878788,
-        "y": 1.5202400775238134
+        "x": 7.036373451664282,
+        "y": 4.081259900411539
       },
       "isLocked": false,
-      "linkedName": "3pr1"
+      "linkedName": "4p+1 line"
     },
     {
       "anchor": {
-        "x": 8.094844223876482,
-        "y": 2.268665961833349
+        "x": 3.5903725964221542,
+        "y": 6.2
       },
       "prevControl": {
-        "x": 7.386015173454848,
-        "y": 1.920619037453842
+        "x": 3.9317252423678632,
+        "y": 3.6485761860412613
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "3pr2"
+      "linkedName": "5p3"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Stop Shooter",
-      "waypointRelativePos": 0.6,
+      "name": "Fix Note + Start Shooter",
+      "waypointRelativePos": 0,
       "command": {
-        "type": "parallel",
+        "type": "sequential",
         "data": {
           "commands": [
             {
               "type": "named",
               "data": {
-                "name": "Stop Shooter"
+                "name": "Smart Infeed"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Start Shooter No Pivot"
               }
             }
           ]
@@ -49,8 +55,8 @@
       }
     },
     {
-      "name": "Spit Note",
-      "waypointRelativePos": 0.1,
+      "name": "Shoot Note",
+      "waypointRelativePos": 1.0,
       "command": {
         "type": "parallel",
         "data": {
@@ -58,7 +64,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Spit Note"
+                "name": "4pinfeed"
               }
             }
           ]
@@ -66,8 +72,8 @@
       }
     },
     {
-      "name": "Dumb Infeed",
-      "waypointRelativePos": 0.5,
+      "name": "Shooter Up",
+      "waypointRelativePos": 0.8,
       "command": {
         "type": "parallel",
         "data": {
@@ -75,7 +81,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Dumb Infeed"
+                "name": "Start Shooter"
               }
             }
           ]
@@ -91,8 +97,8 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 40.0,
-    "rotateFast": true
+    "rotation": 2.334411588150814,
+    "rotateFast": false
   },
   "reversed": false,
   "folder": null,

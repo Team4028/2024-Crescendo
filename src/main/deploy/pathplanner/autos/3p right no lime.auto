@@ -1,0 +1,91 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.4,
+      "y": 1.6
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3p 0-1 right"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3p 1-2 right"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3p 2-3 right"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "2.5 Stationary Shot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3p no l 3-4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3p no l 4-shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "2.5 Stationary Shot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3p no l 4-5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3p no l 5-shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "2.5 Stationary Shot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 2.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Shooter"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

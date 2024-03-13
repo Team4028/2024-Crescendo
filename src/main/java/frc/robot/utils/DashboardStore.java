@@ -11,46 +11,37 @@ import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableValue;
 
 /** Add your docs here. */
 public class DashboardStore {
-    private static Map<String, BooleanSupplier> boolMap = new HashMap<String, BooleanSupplier>();
-    private static Map<String, DoubleSupplier> doubleMap = new HashMap<String, DoubleSupplier>();
-    private static Map<String, IntSupplier> intMap = new HashMap<String, IntSupplier>();
-    private static Map<String, Supplier<String>> stringMap = new HashMap<String, Supplier<String>>();
+    private static Map<NetworkTableEntry, Supplier<NetworkTableValue>> values = new HashMap<NetworkTableEntry, Supplier<NetworkTableValue>>();
+
+    private static NetworkTableEntry smartDashboardEntry(String key) {
+        return NetworkTableInstance.getDefault().getEntry("/SmartDashboard/" + key);
+    }
 
     public static void add(String key, BooleanSupplier value) {
-        boolMap.put(key, value);
+        values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeBoolean(value.getAsBoolean()));
     }
 
     public static void add(String key, DoubleSupplier value) {
-        doubleMap.put(key, value);
+        values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeDouble(value.getAsDouble()));
     }
     
     public static void add(String key, IntSupplier value) {
-        intMap.put(key, value);
+        values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeInteger(value.getAsInt()));
     }
     
     public static void add(String key, Supplier<String> value) {
-        stringMap.put(key, value);
+        values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeString(value.get()));
     }
 
     public static void update() {
-        boolMap.forEach((key, value) -> {
-            SmartDashboard.putBoolean(key, value.getAsBoolean());
-        });
-
-        doubleMap.forEach((key, value) -> {
-            SmartDashboard.putNumber(key, value.getAsDouble());
-        });
-
-        intMap.forEach((key, value) -> {
-            SmartDashboard.putNumber(key, value.getAsInt());
-        });
-
-        stringMap.forEach((key, value) -> {
-            SmartDashboard.putString(key, value.get());
+        values.forEach((key, value) -> {
+            key.setValue(value.get());
         });
     }
     

@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.DashboardStore;
 
 public class Whippy extends SubsystemBase {
     private final CANSparkFlex motor;
@@ -22,6 +23,18 @@ public class Whippy extends SubsystemBase {
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
         motor.setInverted(true);
         motor.setSmartCurrentLimit(CURRENT_LIMIT);
+
+        /* Dashboard */
+        DashboardStore.add("Running/Whippy", this::isRunning);
+    }
+
+    // ==================================
+    // SHOOTER COMMANDS
+    // ==================================
+
+    /* Check if shooter is running */
+    public boolean isRunning() {
+        return Math.abs(motor.getAppliedOutput()) > 0.1;
     }
 
     public void whippyWheels(double vbus) {

@@ -12,7 +12,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import frc.robot.Constants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -34,11 +33,11 @@ public class RotateToSpeaker extends ProfiledPIDCommand {
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
                         // The PID gains
-                        4.,
+                        20.,
                         0,
                         0,
                         // The motion profile constraints
-                        new TrapezoidProfile.Constraints(6, 6)),
+                        new TrapezoidProfile.Constraints(2, 2)),
                 // This should return the measurement
                 () -> drivetrain.getState().Pose.getRotation().getRadians(),
                 // This should return the goal (can also be a constant)
@@ -47,7 +46,6 @@ public class RotateToSpeaker extends ProfiledPIDCommand {
                 (output, setpoint) -> {
                     // Use the output (and setpoint, if desired) here
                     drivetrain.setControl(drive.withRotationalRate(output + setpoint.velocity));
-                    SmartDashboard.putNumber("setpoint", setpoint.velocity);
                 });
         // Use addRequirements() here to declare subsystem dependencies.
         // Configure additional PID options by calling `getController` here.
@@ -76,6 +74,6 @@ public class RotateToSpeaker extends ProfiledPIDCommand {
     @Override
     public boolean isFinished() {
         return Math.abs(
-                target.getRadians() - drivetrain.getState().Pose.getRotation().getRadians()) < 0.1;
+                target.getDegrees() - drivetrain.getState().Pose.getRotation().getDegrees()) < 0.8;
     }
 }

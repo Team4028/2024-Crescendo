@@ -27,14 +27,14 @@ public class Fan extends SubsystemBase {
     private static final int FAN_CAN_ID = 14;
     private static final int PIVOT_CAN_ID = 17; // ? Actual id?
 
-    private static final double TRAP_POSITION = 0.46; // Find out the actual position for the trap angle.
+    private static final double TRAP_POSITION = 0.57; // Find out the actual position for the trap angle.
 
     /* Requests */
     private final PositionDutyCycle positionRequest = new PositionDutyCycle(0.)
             .withOverrideBrakeDurNeutral(true);
 
     private final Slot0Configs pidConfigs = new Slot0Configs()
-            .withKP(0.8)
+            .withKP(0.4)
             .withKI(0.0)
             .withKD(0.0); // needs to be testing
     
@@ -68,8 +68,18 @@ public class Fan extends SubsystemBase {
 
         DashboardStore.add("Fan Pivot Position", () -> pivot.getPosition().getValueAsDouble());
         DashboardStore.add("Fan Pivot Current", () -> pivot.getStatorCurrent().getValueAsDouble());
+
+        DashboardStore.add("Running/Fan", this::isRunning);
     }
 
+    // ==================================
+    // FAN STUFF
+    // ==================================
+
+    /* Check if shooter is running */
+    public boolean isRunning() {
+        return Math.abs(motor.getAppliedOutput()) > 0.2;
+    }
     // Fan Motor Controls //
 
     public void runMotor(double vbus) {

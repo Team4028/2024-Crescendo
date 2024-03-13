@@ -240,6 +240,10 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         return run(() -> this.setControl(requestSupplier.get()));
     }
 
+    public SwerveRequest getCurrentRequest() {
+        return m_requestToApply;
+    }
+
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();
 

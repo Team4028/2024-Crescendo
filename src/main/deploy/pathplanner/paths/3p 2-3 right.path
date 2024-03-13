@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.860377261410728,
-        "y": 2.359441488479177
+        "x": 8.094844223876482,
+        "y": 2.268665961833349
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.998354250631469,
-        "y": 1.3054661993588415
+        "x": 6.232821213097223,
+        "y": 1.2146906727130133
       },
       "isLocked": false,
       "linkedName": "3pr2"
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "3prnl3"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "Fix Note + Spin Shooter",
-      "waypointRelativePos": 0.0,
+      "waypointRelativePos": 0.5,
       "command": {
         "type": "sequential",
         "data": {
@@ -41,7 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Smart Infeed"
+                "name": "Run Back"
               }
             },
             {
@@ -56,21 +56,21 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 6.0,
+    "maxAcceleration": 5.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -39.80557109226519,
+    "rotation": -37.5,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 30.0,
+    "rotation": 40.0,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }
