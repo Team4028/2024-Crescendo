@@ -110,6 +110,11 @@ public class Vision extends SubsystemBase {
     public Optional<EstimatedRobotPose> getCameraResult(Pose2d prevPose) {
         estimator.setReferencePose(prevPose);
         Optional<EstimatedRobotPose> pose = estimator.update();
+        if (pose.isPresent() && !pose.get().strategy.equals(PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR)) {
+            int cameraTargetID = pose.get().targetsUsed.get(0).getFiducialId();
+            if (cameraTargetID != 7 && cameraTargetID != 8)
+                return Optional.empty();
+        }
         return pose;
     }
 
