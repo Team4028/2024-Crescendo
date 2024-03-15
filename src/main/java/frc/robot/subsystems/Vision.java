@@ -13,11 +13,15 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 
 public class Vision extends SubsystemBase {
     private final PhotonCamera camera;
@@ -72,6 +76,14 @@ public class Vision extends SubsystemBase {
         }
     }
 
+    public void configFieldOrigin() {
+        if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red) {
+            layout.setOrigin(OriginPosition.kRedAllianceWallRightSide);
+        } else {
+            layout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
+        }
+    }
+
     public Optional<PhotonTrackedTarget> getTag(int tagID) {
         for (PhotonTrackedTarget target : camera.getLatestResult().getTargets()) {
             if (target.getFiducialId() == tagID) {
@@ -116,6 +128,19 @@ public class Vision extends SubsystemBase {
                 return Optional.empty();
         }
         return pose;
+    }
+
+    public Optional<Translation2d> getBestTranslationToTarget(int tagID) {
+        var target = this.getTag(tagID);
+
+        // cam: 9'11.5" real: 9'1"
+        // 
+
+        if (target.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(target.get().getBestCameraToTarget().getTranslation().toTranslation2d());
     }
 
     public PhotonTrackedTarget getBestTarget() {

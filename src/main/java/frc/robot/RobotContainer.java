@@ -35,8 +35,6 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.units.Distance;
-import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -64,7 +62,8 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Whippy;
-// import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.Climber.ClimberPositions;
+import frc.robot.subsystems.Climber;
 // import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.utils.DashboardStore;
 import frc.robot.utils.ShooterTable;
@@ -103,7 +102,7 @@ public class RobotContainer {
     private final Infeed infeed = new Infeed();
     private final Shooter shooter = new Shooter();
     private final Conveyor conveyor = new Conveyor();
-    // private final Climber climber = new Climber();
+    private final Climber climber = new Climber();
     private final Autons autons;
     private final Pivot pivot = new Pivot();
     private final Fan m_fan = new Fan();
@@ -172,6 +171,10 @@ public class RobotContainer {
             .withDeadband(MAX_SPEED * 0.02).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.01)
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
+    private final SwerveRequest.RobotCentric robotRelativeDrive = new SwerveRequest.RobotCentric()
+            .withDeadband(MAX_SPEED * 0.02).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.01)
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
     private final Telemetry logger = new Telemetry(MAX_SPEED);
 
     private final SwerveRequest.SwerveDriveBrake xDrive = new SwerveDriveBrake();
@@ -202,20 +205,23 @@ public class RobotContainer {
 
         // this is weird
         DashboardStore.add("Snapped", () -> drivetrain.getCurrentRequest().getClass().equals(snapDrive.getClass()));
+        DashboardStore.add("Robot Relative",
+                () -> drivetrain.getCurrentRequest().getClass().equals(robotRelativeDrive.getClass()));
+
         DashboardStore.add("Manual Indexing", () -> useManual);
         DashboardStore.add("Climber Enabled", () -> enableClimber);
 
         // DashboardStore.add("Distance To Speaker", () -> {
-        //     int tagID = DriverStation.getAlliance().isPresent()
-        //             && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
+        // int tagID = DriverStation.getAlliance().isPresent()
+        // && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
 
-        //     Optional<Double> dist = trapVision.getTagDistance(tagID);
+        // Optional<Double> dist = trapVision.getTagDistance(tagID);
 
-        //     if (dist.isPresent()) {
-        //         return Units.metersToFeet(dist.get());
-        //     }
+        // if (dist.isPresent()) {
+        // return Units.metersToFeet(dist.get());
+        // }
 
-        //     return 0.;
+        // return 0.;
         // });
 
         // TODO: Failsafe timer based on Infeed ToF
@@ -244,7 +250,8 @@ public class RobotContainer {
 
         ampPrep = pivot.runToClimbCommand()
                 .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
-                .alongWith(shooter.runShotCommand(ShotSpeeds.AMP));
+                .alongWith(shooter.setSlotCommand(Shooter.Slots.AMP)
+                        .andThen(shooter.runShotCommand(ShotSpeeds.AMP)));
 
         configureBindings();
     }
@@ -254,6 +261,18 @@ public class RobotContainer {
     // ====================== //
     private void initAutonChooser() {
         autonChooser = AutoBuilder.buildAutoChooser();
+
+        autonChooser.addOption("Zero", zeroCommand());
+
+        autonChooser.addOption("Shoot Note", zeroCommand()
+                .andThen(runEntryCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(4.2)),
+                        () -> ShotSpeeds.FAST))
+                .andThen(Commands.waitUntil(shooterAndPivotReady()))
+                .andThen(conveyCommand())
+                .andThen(Commands.waitSeconds(1.0))
+                .andThen(pivot.runToHomeCommand())
+                .andThen(shooter.stopCommand()));
+
         autonChooser.addOption("2pdyn", autons.twoPieceAutonDynamic(StartPoses.TOP,
                 1, Notes.ONE, Notes.TWO));
         SmartDashboard.putData("Auto Chooser", autonChooser);
@@ -440,6 +459,19 @@ public class RobotContainer {
         /* Drivetain & Vision Control */
         // ========================== //
 
+        /* Robot-Relative Drive */
+        driverController.y().toggleOnTrue(drivetrain.applyRequest(() -> robotRelativeDrive
+                .withVelocityX(scaleDriverController(-driverController.getLeftY(),
+                        xLimiter,
+                        currentSpeed) * MAX_SPEED)
+                .withVelocityY(scaleDriverController(-driverController.getLeftX(),
+                        yLimiter,
+                        currentSpeed) * MAX_SPEED)
+                .withRotationalRate(
+                        scaleDriverController(-driverController.getRightX(),
+                                thetaLimiter, currentSpeed) *
+                                MAX_ANGULAR_SPEED)));
+
         /* X-Drive */
         driverController.x().whileTrue(drivetrain.applyRequest(() -> xDrive));
 
@@ -576,14 +608,14 @@ public class RobotContainer {
         // ============================== //
 
         /* Climber Up */
-        // emergencyController.rightTrigger(0.2).whileTrue(
-        // climber.runMotorCommand(CLIMBER_VBUS))
-        // .onFalse(climber.runMotorCommand(0.0));
+        emergencyController.rightTrigger(0.2).whileTrue(
+                climber.runMotorCommand(CLIMBER_VBUS))
+                .onFalse(climber.runMotorCommand(0.0));
 
-        // /* Climber Down */
-        // emergencyController.leftTrigger(0.2).whileTrue(
-        // climber.runMotorCommand(-CLIMBER_VBUS))
-        // .onFalse(climber.runMotorCommand(0.0));
+        /* Climber Down */
+        emergencyController.leftTrigger(0.2).whileTrue(
+                climber.runMotorCommand(-CLIMBER_VBUS))
+                .onFalse(climber.runMotorCommand(0.0));
 
         // ==== //
         /* Misc */
@@ -626,8 +658,9 @@ public class RobotContainer {
         emergencyController.x().onTrue(m_fan.runToTrapCommand().alongWith(pivot.runToTrapCommand()));
 
         /* Run Shooter at Trap Speeds */
-        emergencyController.y().onTrue(shooter.runShotCommand(ShotSpeeds.TRAP)
-                .alongWith(m_fan.runMotorCommand(FAN_VBUS)));
+        emergencyController.y().onTrue(shooter.setSlotCommand(Shooter.Slots.TRAP).andThen(
+                shooter.runShotCommand(ShotSpeeds.TRAP)
+                        .alongWith(m_fan.runMotorCommand(FAN_VBUS))));
 
         /* Trap Shoot */
         emergencyController.b().onTrue(conveyCommand()).onFalse(stopAllCommand());
@@ -637,13 +670,13 @@ public class RobotContainer {
         // ======= //
 
         /* Prime Climber */
-        // emergencyController.povUp().onTrue(safeClimbCommand(Climber.ClimberPositions.READY));
+        emergencyController.povUp().onTrue(safeClimbCommand(Climber.ClimberPositions.READY));
 
-        // /* Tension Chain */
-        // emergencyController.povRight().onTrue(safeClimbCommand(Climber.ClimberPositions.TENSION));
+        /* Tension Chain */
+        emergencyController.povRight().onTrue(safeClimbCommand(Climber.ClimberPositions.TENSION));
 
-        // /* CLIMB */
-        // emergencyController.povDown().onTrue(safeClimbCommand(ClimberPositions.CLIMB));
+        /* CLIMB */
+        emergencyController.povDown().onTrue(safeClimbCommand(ClimberPositions.CLIMB));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -657,17 +690,21 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
-    /* Safe Climb */
-    // private Command safeClimbCommand(ClimberPositions position) {
-    // Command climbCommand = position == ClimberPositions.CLIMB ?
-    // climber.climbCommand()
-    // : climber.runToPositionCommand(position);
+    /* Rezero climber */
+    public void rezeroClimber() {
+        climber.reZero();
+    }
 
-    // return Commands.either(
-    // climbCommand,
-    // Commands.none(),
-    // () -> pivot.getPosition() > 50. && enableClimber);
-    // }
+    /* Safe Climb */
+    private Command safeClimbCommand(ClimberPositions position) {
+        Command climbCommand = position == ClimberPositions.CLIMB ? climber.climbCommand()
+                : climber.runToPositionCommand(position);
+
+        return Commands.either(
+                climbCommand,
+                Commands.none(),
+                () -> pivot.getPosition() > 50. && enableClimber);
+    }
 
     /* Convey the Note */
     private Command conveyCommand() {
@@ -683,7 +720,7 @@ public class RobotContainer {
         return Commands.parallel(
                 infeed.stopCommand(),
                 conveyor.stopCommand(),
-                shooter.stopCommand(),
+                shooter.stopCommand().andThen(shooter.setSlotCommand(Shooter.Slots.FAST)),
                 pivot.runToHomeCommand()/* ) */,
                 m_fan.stopCommand().andThen(
                         m_fan.runToPositionCommand(0.)),
@@ -800,6 +837,13 @@ public class RobotContainer {
     /* Vision Utilities */
     // ================ //
 
+    /* Configure Field Origins */
+    public void configVisionFieldOrigins() {
+        trapVision.configFieldOrigin();
+        leftVision.configFieldOrigin();
+        rightVision.configFieldOrigin();
+    }
+
     /* Return approx. 3d pose */
     public Optional<EstimatedRobotPose> getBestPose() {
         Pose2d drivetrainPose = drivetrain.getState().Pose;
@@ -845,7 +889,7 @@ public class RobotContainer {
     }
 
     /* Get Shooter Table Entry */
-    private ShooterTableEntry getBestSTEntry() {
+    public ShooterTableEntry getBestSTEntry() {
         Pose2d pose = drivetrain.getState().Pose;
 
         Transform2d dist = pose.minus(Constants.SPEAKER_DISTANCE_TARGET);
@@ -860,5 +904,44 @@ public class RobotContainer {
         SmartDashboard.putNumber("ST Left", entryPicked.Percent);
 
         return entryPicked;
+    }
+
+    public void printDistanceValues() {
+        int tagID = DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
+
+        var right = rightVision.getBestTranslationToTarget(tagID);
+        var left = leftVision.getBestTranslationToTarget(tagID);
+
+        Translation2d tr;
+
+        if (right.isPresent()) {
+            tr = right.get();
+        } else if (left.isPresent()) {
+            tr = left.get();
+        } else {
+            tr = new Translation2d();
+        }
+
+        SmartDashboard.putNumber("Swerve Distance", tr.getNorm());
+        SmartDashboard.putNumber("Swerve Yaw",
+                tr.getAngle().getDegrees());
+
+        Optional<Double> yaw = trapVision.getTagYaw(tagID);
+
+        if (yaw.isPresent()) {
+            SmartDashboard.putNumber("Shooter Yaw", yaw.get());
+        } else {
+            SmartDashboard.putNumber("Shooter Yaw", 0.);
+        }
+
+        Optional<Double> dist = trapVision.getTagDistance(tagID);
+
+        if (dist.isPresent()) {
+            SmartDashboard.putNumber("Shooter Distance", Units.metersToFeet(dist.get()));
+        } else {
+            SmartDashboard.putNumber("Shooter Distance", 0.);
+        }
+
     }
 }

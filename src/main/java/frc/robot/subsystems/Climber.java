@@ -24,16 +24,16 @@ import frc.robot.utils.DashboardStore;
 
 public class Climber extends SubsystemBase {
     /** Creates a new Climber. */
-    // private final TalonFX motor;
+    private final TalonFX motor;
     private final DutyCycleEncoder encoder;
 
-    // private final DataLog log;
-    // private final DoubleLogEntry vbusLog, currentLog, positionLog, velocityLog;
+    private final DataLog log;
+    private final DoubleLogEntry vbusLog, currentLog, positionLog, velocityLog;
 
     private boolean oneShot = false;
     private double targetPosition = 0.;
 
-    private static final double ZERO_ABSOLUTE_ENCODER_POSITION = .9025;
+    private static final double ZERO_ABSOLUTE_ENCODER_POSITION = .933;
     private static final double ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT = 287.5;
 
     private static final int CAN_ID = 15;
@@ -65,9 +65,9 @@ public class Climber extends SubsystemBase {
     public enum ClimberPositions {
         CLIMB(-7.),
         HOME(0.),
-        TENSION(105.),
+        TENSION(100.),
         DOWN_TWO(115.), // unused
-        READY(120.);
+        READY(133.5);
 
         public double Position;
 
@@ -77,98 +77,107 @@ public class Climber extends SubsystemBase {
     }
 
     public Climber() {
-        // motor = new TalonFX(CAN_ID);
+        motor = new TalonFX(CAN_ID);
         encoder = new DutyCycleEncoder(9);
 
         // encoder.setPositionOffset(ZERO_ABSOLUTE_ENCODER_POSITION);
 
-        // motor.setNeutralMode(NeutralModeValue.Brake);
-        // motor.setInverted(true);
+        motor.setNeutralMode(NeutralModeValue.Brake);
+        motor.setInverted(true);
 
-        // /* ======= */
-        // /* CONFIGS */
-        // /* ======= */
-        // motor.getConfigurator().apply(motionMagicConfigs);
-        // motor.getConfigurator().apply(pidConfigs);
-        // motor.getConfigurator().apply(currentConfigs);
+        /* ======= */
+        /* CONFIGS */
+        /* ======= */
+        motor.getConfigurator().apply(motionMagicConfigs);
+        motor.getConfigurator().apply(pidConfigs);
+        motor.getConfigurator().apply(currentConfigs);
 
-        // log = DataLogManager.getLog();
-        // vbusLog = new DoubleLogEntry(log, "/Climber/Vbus");
-        // currentLog = new DoubleLogEntry(log, "/Climber/Current");
-        // positionLog = new DoubleLogEntry(log, "/Climber/Position");
-        // velocityLog = new DoubleLogEntry(log, "/Climber/Velocity");
+        log = DataLogManager.getLog();
+        vbusLog = new DoubleLogEntry(log, "/Climber/Vbus");
+        currentLog = new DoubleLogEntry(log, "/Climber/Current");
+        positionLog = new DoubleLogEntry(log, "/Climber/Position");
+        velocityLog = new DoubleLogEntry(log, "/Climber/Velocity");
 
         /* Dashboard */
-        // DashboardStore.add("Climber Position", () -> motor.getPosition().getValueAsDouble());
-        // DashboardStore.add("Climber Current", () -> motor.getStatorCurrent().getValueAsDouble());
-        // DashboardStore.add("Climber Velocity", () -> motor.getVelocity().getValueAsDouble());
+        DashboardStore.add("Climber Position", () -> motor.getPosition().getValueAsDouble());
+        DashboardStore.add("Climber Current", () -> motor.getStatorCurrent().getValueAsDouble());
+        DashboardStore.add("Climber Velocity", () -> motor.getVelocity().getValueAsDouble());
         DashboardStore.add("Absolute Encoder Position", () -> encoder.get());
     }
 
-    // public void runMotor(double vBus) {
-    //     motor.set(vBus);
-    // }
+    public void runMotor(double vBus) {
+        motor.set(vBus);
+    }
 
-    // public Command runMotorCommand(double vBus) {
-    //     return runOnce(() -> runMotor(vBus));
-    // }
+    public Command runMotorCommand(double vBus) {
+        return runOnce(() -> runMotor(vBus));
+    }
 
-    // public Command setEncoderZeroCmd() {
-    //     return runOnce(() -> motor.setPosition(0.0));
-    // }
+    public Command setEncoderZeroCmd() {
+        return runOnce(() -> motor.setPosition(0.0));
+    }
 
-    // public void runToPosition(double position) {
-    //     targetPosition = position;
-    //     motor.setControl(positionRequest.withPosition(position));
-    // }
+    public void runToPosition(double position) {
+        targetPosition = position;
+        motor.setControl(positionRequest.withPosition(position));
+    }
 
-    // public Command runToPositionCommand(double position) {
-    //     return runOnce(() -> runToPosition(position));
-    // }
+    public Command runToPositionCommand(double position) {
+        return runOnce(() -> runToPosition(position));
+    }
 
-    // public void climb() {
-    //     targetPosition = ClimberPositions.CLIMB.Position;
-    //     motor.setControl(motionMagicRequest.withPosition(ClimberPositions.CLIMB.Position));
-    // }
+    public void climb() {
+        targetPosition = ClimberPositions.CLIMB.Position;
+        motor.setControl(motionMagicRequest.withPosition(ClimberPositions.CLIMB.Position));
+    }
 
-    // public Command climbCommand() {
-    //     return runOnce(this::climb);
-    // }
+    public Command climbCommand() {
+        return runOnce(this::climb);
+    }
 
-    // public void runToPosition(ClimberPositions position) {
-    //     runToPosition(position.Position);
-    // }
+    public void runToPosition(ClimberPositions position) {
+        runToPosition(position.Position);
+    }
 
-    // public Command runToPositionCommand(ClimberPositions position) {
-    //     return runToPositionCommand(position.Position);
-    // }
+    public Command runToPositionCommand(ClimberPositions position) {
+        return runToPositionCommand(position.Position);
+    }
 
-    // public boolean inPosition() {
-    //     return Math.abs(targetPosition - motor.getPosition().getValueAsDouble()) < 1.5;
-    // }
+    public boolean inPosition() {
+        return Math.abs(targetPosition - motor.getPosition().getValueAsDouble()) < 1.5;
+    }
 
-    // public BooleanSupplier inPositionSupplier() {
-    //     return () -> inPosition();
-    // }
+    public BooleanSupplier inPositionSupplier() {
+        return () -> inPosition();
+    }
 
     public void logValues() {
-        // vbusLog.append(motor.get());
-        // currentLog.append(motor.getStatorCurrent().getValueAsDouble());
-        // positionLog.append(motor.getPosition().getValueAsDouble());
-        // velocityLog.append(motor.getVelocity().getValueAsDouble());
+        vbusLog.append(motor.get());
+        currentLog.append(motor.getStatorCurrent().getValueAsDouble());
+        positionLog.append(motor.getPosition().getValueAsDouble());
+        velocityLog.append(motor.getVelocity().getValueAsDouble());
+    }
+
+    public void reZero() {
+        motor.setPosition((encoder.get() - ZERO_ABSOLUTE_ENCODER_POSITION)
+                * ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT);
+
+        if (motor.getPosition().getValueAsDouble() < -10.) {
+            motor.setPosition(0.);
+        }
     }
 
     @Override
     public void periodic() {
-        // if (!oneShot) {
-        //     motor.setPosition(encoder.get()
-        //             * ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT);
-        //     oneShot = true;
+        if (!oneShot) {
+            motor.setPosition((encoder.get() - ZERO_ABSOLUTE_ENCODER_POSITION)
+                    * ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT);
+            oneShot = true;
 
-        //     if (motor.getPosition().getValueAsDouble() < -10.) {
-        //         motor.setPosition(0.);
-        //     }
-        // }
+            if (motor.getPosition().getValueAsDouble() < -10.) {
+                motor.setPosition(0.);
+            }
+        }
 
         // // This method will be called once per scheduler run
     }

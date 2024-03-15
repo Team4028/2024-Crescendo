@@ -70,6 +70,7 @@ public class Fan extends SubsystemBase {
         DashboardStore.add("Fan Pivot Current", () -> pivot.getStatorCurrent().getValueAsDouble());
 
         DashboardStore.add("Running/Fan", this::isRunning);
+        DashboardStore.add("Fan RPM", () -> encoder.getVelocity());
     }
 
     // ==================================
@@ -78,10 +79,10 @@ public class Fan extends SubsystemBase {
 
     /* Check if shooter is running */
     public boolean isRunning() {
-        return Math.abs(motor.getAppliedOutput()) > 0.2;
+        return Math.abs(encoder.getVelocity()) > 200.;
     }
-    // Fan Motor Controls //
 
+    // Fan Motor Controls //
     public void runMotor(double vbus) {
         motor.set(vbus);
     }

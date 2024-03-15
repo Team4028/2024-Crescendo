@@ -9,28 +9,34 @@ import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.DashboardStore;
 
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
 
-    private RobotContainer robotContainer;
+    private RobotContainer m_robotContainer;
 
     @Override
     public void robotInit() {
         DataLogManager.start();
-        robotContainer = new RobotContainer();
+        m_robotContainer = new RobotContainer();
         SignalLogger.setPath("/u/ctre");
 
         addPeriodic(() -> {
             DashboardStore.update();
         }, 0.1);
+
+        new WaitCommand(1.0).andThen(Commands.runOnce(() -> m_robotContainer.rezeroClimber()));
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+
+        m_robotContainer.printDistanceValues();
     }
 
     @Override
@@ -40,9 +46,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledPeriodic() {
-        // var pose = m_robotContainer.getBestPose();
-        // if (pose.isPresent())
-        // m_robotContainer.drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
     }
 
     @Override
@@ -53,18 +56,19 @@ public class Robot extends TimedRobot {
     public void autonomousInit() {
         DataLogManager.start();
 
-        m_autonomousCommand = robotContainer.getAutonomousCommand();
+        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
         }
 
         // m_robotContainer.zero();
+        // m_robotContainer.configVisionFieldOrigins();
     }
 
     @Override
     public void autonomousPeriodic() {
-        robotContainer.logValues();
+        m_robotContainer.logValues();
     }
 
     @Override
@@ -79,12 +83,13 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.cancel();
         }
 
-        robotContainer.zero();
+        m_robotContainer.zero();
+        // m_robotContainer.configVisionFieldOrigins();
     }
 
     @Override
     public void teleopPeriodic() {
-        robotContainer.logValues();
+        m_robotContainer.logValues();
     }
 
     @Override
