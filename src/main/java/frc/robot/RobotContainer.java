@@ -66,7 +66,6 @@ import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.subsystems.Climber;
 // import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.utils.DashboardStore;
-import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
@@ -184,7 +183,7 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     /* LL */
-    private static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(33.0);
+    private static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(32.0);
     private static final double SHOOTER_CAM_HEIGHT = Units.inchesToMeters(12.375);
 
     public RobotContainer() {
@@ -321,8 +320,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
 
         NamedCommands.registerCommand("Fix Note",
-                runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS).repeatedly().withTimeout(0.25).andThen(
-                        shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).alongWith(conveyor.runXRotations(-2.5)))
+                runBoth(FAST_CONVEYOR_VBUS, INFEED_VBUS).repeatedly().withTimeout(0.25).andThen(
+                        shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).alongWith(conveyor.runXRotations(-2.0)))
                         .andThen(Commands.waitSeconds(0.4)));
 
         NamedCommands.registerCommand("Dumb Infeed",
@@ -350,7 +349,7 @@ public class RobotContainer {
         // ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 12, 1.0);
         NamedCommands.registerCommand("4 Piece Shooter Pivot", pivot.runToPositionCommand(15.));
 
-        NamedCommands.registerCommand("4 Piece First Shooter Pivot", pivot.runToPositionCommand(11.0));
+        NamedCommands.registerCommand("4 Piece First Shooter Pivot", pivot.runToPositionCommand(11.6));
 
         NamedCommands.registerCommand("4 Piece Mid Shooter Pivot", pivot.runToPositionCommand(16.7));
 
@@ -441,12 +440,23 @@ public class RobotContainer {
 
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(() -> drive
-                        .withVelocityX(scaleDriverController(-driverController.getLeftY(),
-                                xLimiter,
-                                currentSpeed) * MAX_SPEED)
-                        .withVelocityY(scaleDriverController(-driverController.getLeftX(),
-                                yLimiter,
-                                currentSpeed) * MAX_SPEED)
+                        .withVelocityX(
+                                (DriverStation.getAlliance().isPresent()
+                                        && DriverStation.getAlliance().get() == Alliance.Red
+                                                ? -1
+                                                : 1)
+                                        * scaleDriverController(-driverController.getLeftY(),
+                                                xLimiter,
+                                                currentSpeed)
+                                        * MAX_SPEED)
+                        .withVelocityY((DriverStation.getAlliance().isPresent()
+                                && DriverStation.getAlliance().get() == Alliance.Red
+                                        ? -1
+                                        : 1)
+                                * scaleDriverController(-driverController.getLeftX(),
+                                        yLimiter,
+                                        currentSpeed)
+                                * MAX_SPEED)
                         .withRotationalRate(
                                 scaleDriverController(-driverController.getRightX(),
                                         thetaLimiter, currentSpeed) *
@@ -669,7 +679,7 @@ public class RobotContainer {
                         runThree(
                                 () -> -emergencyController.getLeftY(),
                                 () -> -emergencyController.getLeftY(),
-                                () -> emergencyController.getLeftY() > 0. ? -emergencyController.getLeftY() : 0.));
+                                () -> -emergencyController.getLeftY()));
 
         /* Cool Outfeed: right Y */
         emergencyController.axisLessThan(XboxController.Axis.kRightY.value, -0.2)
@@ -983,43 +993,44 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("Swerve Yaw", yaw);
 
-        var fiducials = LimelightHelpers.getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
+        // var fiducials =
+        // LimelightHelpers.getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
 
-        for (var fiducial : fiducials) {
-            if (fiducial.fiducialID == tagID) {
-                SmartDashboard.putNumber("Shooter Yaw", fiducial.tx);
+        // for (var fiducial : fiducials) {
+        // if (fiducial.fiducialID == tagID) {
+        // SmartDashboard.putNumber("Shooter Yaw", fiducial.tx);
 
-                double tagZMeters = trapVision.layout().getTagPose(tagID).get().getZ();
-                double angle = Units.degreesToRadians(fiducial.ty);
+        // double tagZMeters = trapVision.layout().getTagPose(tagID).get().getZ();
+        // double angle = Units.degreesToRadians(fiducial.ty);
 
-                double tangent = Math.tan(SHOOTER_CAM_PITCH + angle);
-                double deltaHeight = Units.metersToFeet(tagZMeters - SHOOTER_CAM_HEIGHT);
+        // double tangent = Math.tan(SHOOTER_CAM_PITCH + angle);
+        // double deltaHeight = Units.metersToFeet(tagZMeters - SHOOTER_CAM_HEIGHT);
 
-                SmartDashboard.putNumber("Shooter ty", angle);
-                SmartDashboard.putNumber("Shooter tangent", tangent);
-                SmartDashboard.putNumber("Shooter dh", deltaHeight);
+        // SmartDashboard.putNumber("Shooter ty", angle);
+        // SmartDashboard.putNumber("Shooter tangent", tangent);
+        // SmartDashboard.putNumber("Shooter dh", deltaHeight);
 
-                SmartDashboard.putNumber("Shooter Distance",
-                        deltaHeight / tangent);
-            }
+        // SmartDashboard.putNumber("Shooter Distance",
+        // deltaHeight / tangent);
+        // }
+        // }
+
+        Optional<Double> shooterYaw = trapVision.getTagYaw(tagID);
+
+        if (shooterYaw.isPresent()) {
+            SmartDashboard.putNumber("Shooter Yaw", shooterYaw.get());
+        } else {
+            SmartDashboard.putNumber("Shooter Yaw", 0.);
         }
 
-        // Optional<Double> shooterYaw = trapVision.getTagYaw(tagID);
+        Optional<Double> shooterDist = trapVision.getTagDistance(tagID);
 
-        // if (shooterYaw.isPresent()) {
-        // SmartDashboard.putNumber("Shooter Yaw", shooterYaw.get());
-        // } else {
-        // SmartDashboard.putNumber("Shooter Yaw", 0.);
-        // }
-
-        // Optional<Double> shooterDist = trapVision.getTagDistance(tagID);
-
-        // if (shooterDist.isPresent()) {
-        // SmartDashboard.putNumber("Shooter Distance",
-        // Units.metersToFeet(shooterDist.get()));
-        // } else {
-        // SmartDashboard.putNumber("Shooter Distance", 0.);
-        // }
+        if (shooterDist.isPresent()) {
+            SmartDashboard.putNumber("Shooter Distance",
+                    Units.metersToFeet(shooterDist.get()));
+        } else {
+            SmartDashboard.putNumber("Shooter Distance", 0.);
+        }
 
     }
 }

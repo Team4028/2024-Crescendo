@@ -32,7 +32,7 @@ public class Climber extends SubsystemBase {
 
     private double targetPosition = 0.;
 
-    private static final double ZERO_ABSOLUTE_ENCODER_POSITION = .933;
+    private static final double ZERO_ABSOLUTE_ENCODER_POSITION = 0.9375; //.933;
     private static final double ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT = 287.5;
 
     private static final int CAN_ID = 15;
