@@ -50,6 +50,12 @@
                       }
                     },
                     {
+                      "type": "named",
+                      "data": {
+                        "name": "4 Piece First Shooter Pivot"
+                      }
+                    },
+                    {
                       "type": "race",
                       "data": {
                         "commands": [
@@ -94,9 +100,9 @@
                       }
                     },
                     {
-                      "type": "path",
+                      "type": "named",
                       "data": {
-                        "pathName": "4 piece 2-3"
+                        "name": "4p 4th shoot"
                       }
                     }
                   ]
@@ -130,9 +136,9 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "4pend-5th-shoot"
+            "name": "4p 5th shoot"
           }
         },
         {

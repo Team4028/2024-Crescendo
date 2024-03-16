@@ -30,7 +30,6 @@ public class Climber extends SubsystemBase {
     private final DataLog log;
     private final DoubleLogEntry vbusLog, currentLog, positionLog, velocityLog;
 
-    private boolean oneShot = false;
     private double targetPosition = 0.;
 
     private static final double ZERO_ABSOLUTE_ENCODER_POSITION = .933;
@@ -45,9 +44,9 @@ public class Climber extends SubsystemBase {
             .withKD(0.0); // needs tuning
 
     private final MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(40.)
-            .withMotionMagicAcceleration(80.)
-            .withMotionMagicJerk(800.);
+            .withMotionMagicCruiseVelocity(50.)
+            .withMotionMagicAcceleration(100.)
+            .withMotionMagicJerk(1000.);
 
     private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(100.)
@@ -63,7 +62,7 @@ public class Climber extends SubsystemBase {
             .withOverrideBrakeDurNeutral(true);
 
     public enum ClimberPositions {
-        CLIMB(-7.),
+        CLIMB(-10.),
         HOME(0.),
         TENSION(100.),
         DOWN_TWO(115.), // unused
@@ -102,7 +101,7 @@ public class Climber extends SubsystemBase {
         DashboardStore.add("Climber Position", () -> motor.getPosition().getValueAsDouble());
         DashboardStore.add("Climber Current", () -> motor.getStatorCurrent().getValueAsDouble());
         DashboardStore.add("Climber Velocity", () -> motor.getVelocity().getValueAsDouble());
-        DashboardStore.add("Absolute Encoder Position", () -> encoder.get());
+        DashboardStore.add("Absolute Encoder Position", () -> encoder.getAbsolutePosition());
     }
 
     public void runMotor(double vBus) {
@@ -158,27 +157,22 @@ public class Climber extends SubsystemBase {
         velocityLog.append(motor.getVelocity().getValueAsDouble());
     }
 
-    public void reZero() {
-        motor.setPosition((encoder.get() - ZERO_ABSOLUTE_ENCODER_POSITION)
-                * ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT);
+    public boolean encoderReady() {
+        return encoder.isConnected() && Math.abs(encoder.getAbsolutePosition()) > 0.01;
+    }
 
-        if (motor.getPosition().getValueAsDouble() < -10.) {
+    public void reZero() {
+        double newPosition = (encoder.getAbsolutePosition() - ZERO_ABSOLUTE_ENCODER_POSITION)
+                * ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT;
+        motor.setPosition(newPosition);
+
+        if (newPosition < -10. || Math.abs(encoder.getAbsolutePosition()) < 0.01) {
             motor.setPosition(0.);
         }
     }
 
     @Override
     public void periodic() {
-        if (!oneShot) {
-            motor.setPosition((encoder.get() - ZERO_ABSOLUTE_ENCODER_POSITION)
-                    * ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT);
-            oneShot = true;
-
-            if (motor.getPosition().getValueAsDouble() < -10.) {
-                motor.setPosition(0.);
-            }
-        }
-
-        // // This method will be called once per scheduler run
+        // This method will be called once per scheduler run
     }
 }

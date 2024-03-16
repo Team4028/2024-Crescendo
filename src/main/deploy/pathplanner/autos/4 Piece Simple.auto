@@ -52,7 +52,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "4 Piece Mid Shooter Pivot"
+                        "name": "4 Piece First Shooter Pivot"
                       }
                     },
                     {
@@ -78,12 +78,6 @@
                       "type": "path",
                       "data": {
                         "pathName": "4 piece 1-2"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "4 Piece Last Shooter Pivot"
                       }
                     },
                     {

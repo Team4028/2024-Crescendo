@@ -29,7 +29,8 @@ public class Robot extends TimedRobot {
             DashboardStore.update();
         }, 0.1);
 
-        new WaitCommand(1.0).andThen(Commands.runOnce(() -> m_robotContainer.rezeroClimber()));
+        new WaitCommand(0.5).andThen(Commands.waitUntil(m_robotContainer::climberReady),
+                Commands.runOnce(() -> m_robotContainer.rezeroClimber()));
     }
 
     @Override
@@ -62,6 +63,8 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.schedule();
         }
 
+        m_robotContainer.rezeroClimber();
+
         // m_robotContainer.zero();
         // m_robotContainer.configVisionFieldOrigins();
     }
@@ -83,6 +86,7 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.cancel();
         }
 
+        m_robotContainer.rezeroClimber();
         m_robotContainer.zero();
         // m_robotContainer.configVisionFieldOrigins();
     }

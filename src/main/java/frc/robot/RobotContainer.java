@@ -66,6 +66,7 @@ import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.subsystems.Climber;
 // import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.utils.DashboardStore;
+import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
@@ -181,6 +182,10 @@ public class RobotContainer {
     private final SwerveRequest.FieldCentricFacingAngle snapDrive = new SwerveRequest.FieldCentricFacingAngle()
             .withDeadband(MAX_SPEED * 0.035)
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
+    /* LL */
+    private static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(33.0);
+    private static final double SHOOTER_CAM_HEIGHT = Units.inchesToMeters(12.375);
 
     public RobotContainer() {
         trapVision.setPipeline(Vision.SHOOTER_PIPELINE_INDEX);
@@ -315,6 +320,11 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
 
+        NamedCommands.registerCommand("Fix Note",
+                runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS).repeatedly().withTimeout(0.25).andThen(
+                        shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).alongWith(conveyor.runXRotations(-2.5)))
+                        .andThen(Commands.waitSeconds(0.4)));
+
         NamedCommands.registerCommand("Dumb Infeed",
                 runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS).repeatedly().withTimeout(.25));
 
@@ -324,7 +334,7 @@ public class RobotContainer {
                 .andThen(shooter.stopCommand()));
 
         ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0),
-                10.8, 1.0); // TODO: fix
+                10.2, 1.0); // TODO: fix
 
         // TODO: We may want a command that constantly updates the shooter table and
         // runs the shooter/pivot based on that
@@ -338,7 +348,7 @@ public class RobotContainer {
                 shooter.runEntryCommand(() -> fourP, () -> ShotSpeeds.FAST));
 
         // ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 12, 1.0);
-        NamedCommands.registerCommand("4 Piece Shooter Pivot", pivot.runToPositionCommand(13));
+        NamedCommands.registerCommand("4 Piece Shooter Pivot", pivot.runToPositionCommand(15.));
 
         NamedCommands.registerCommand("4 Piece First Shooter Pivot", pivot.runToPositionCommand(11.0));
 
@@ -387,6 +397,11 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("4 piece align pivot", pivot.runToPositionCommand(16.0));
 
+        NamedCommands.registerCommand("4p 4th shoot", AutoBuilder.followPath(PathPlannerPath
+                .fromPathFile(allianceIsBlue(DriverStation.getAlliance()) ? "4 piece 2-3" : "4 piece 2-3 red")));
+        NamedCommands.registerCommand("4p 5th shoot", AutoBuilder.followPath(PathPlannerPath.fromPathFile(
+                allianceIsBlue(DriverStation.getAlliance()) ? "4pend-5th-shoot" : "4pend-5th-shoot red")));
+
         /*
          * Spin up Shooter
          * When shooter ready, feed
@@ -410,6 +425,10 @@ public class RobotContainer {
         NamedCommands.registerCommand("2.5 Final Note Right", drivetrain
                 .pathFindCommand(new Pose2d(3.71, 1.8, new Rotation2d(Units.degreesToRadians(-20))), 0.75, 0.));
 
+    }
+
+    private boolean allianceIsBlue(Optional<Alliance> alliance) {
+        return alliance.isEmpty() || alliance.get() == Alliance.Blue;
     }
 
     // =========================== //
@@ -461,12 +480,20 @@ public class RobotContainer {
 
         /* Robot-Relative Drive */
         driverController.y().toggleOnTrue(drivetrain.applyRequest(() -> robotRelativeDrive
-                .withVelocityX(scaleDriverController(-driverController.getLeftY(),
-                        xLimiter,
-                        currentSpeed) * MAX_SPEED)
-                .withVelocityY(scaleDriverController(-driverController.getLeftX(),
-                        yLimiter,
-                        currentSpeed) * MAX_SPEED)
+                .withVelocityX(
+                        (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red
+                                ? -1
+                                : 1) * scaleDriverController(-driverController.getLeftY(),
+                                        xLimiter,
+                                        currentSpeed)
+                                * MAX_SPEED)
+                .withVelocityY(
+                        (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red
+                                ? -1
+                                : 1) * scaleDriverController(-driverController.getLeftX(),
+                                        yLimiter,
+                                        currentSpeed)
+                                * MAX_SPEED)
                 .withRotationalRate(
                         scaleDriverController(-driverController.getRightX(),
                                 thetaLimiter, currentSpeed) *
@@ -690,6 +717,11 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
+    /* Check if Climber encoder is ready */
+    public boolean climberReady() {
+        return climber.encoderReady();
+    }
+
     /* Rezero climber */
     public void rezeroClimber() {
         climber.reZero();
@@ -744,12 +776,20 @@ public class RobotContainer {
     /* Set Snap Direction Toggle */
     private Command snapCommand(SnapDirection direction) {
         return drivetrain.applyRequest(() -> snapDrive
-                .withVelocityX(scaleDriverController(-driverController.getLeftY(),
-                        xLimiter,
-                        currentSpeed) * MAX_SPEED)
-                .withVelocityY(scaleDriverController(-driverController.getLeftX(),
-                        yLimiter,
-                        currentSpeed) * MAX_SPEED)
+                .withVelocityX(
+                        (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red
+                                ? -1
+                                : 1) * scaleDriverController(-driverController.getLeftY(),
+                                        xLimiter,
+                                        currentSpeed)
+                                * MAX_SPEED)
+                .withVelocityY(
+                        (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red
+                                ? -1
+                                : 1) * scaleDriverController(-driverController.getLeftX(),
+                                        yLimiter,
+                                        currentSpeed)
+                                * MAX_SPEED)
                 .withTargetDirection(Rotation2d.fromDegrees(direction.Angle)));
     }
 
@@ -815,6 +855,7 @@ public class RobotContainer {
 
     /* Joystick Scaling */
     private double scaleDriverController(double controllerInput, SlewRateLimiter limiter, double baseSpeedPercent) {
+        // controls are reversed for red
         return limiter.calculate(
                 controllerInput * (baseSpeedPercent
                         + driverController.getRightTriggerAxis() * (1 - baseSpeedPercent)));
@@ -915,7 +956,9 @@ public class RobotContainer {
 
         Translation2d tr;
 
-        if (right.isPresent()) {
+        if (right.isPresent() && left.isPresent()) {
+            tr = right.get().plus(left.get()).div(2.);
+        } else if (right.isPresent()) {
             tr = right.get();
         } else if (left.isPresent()) {
             tr = left.get();
@@ -923,25 +966,60 @@ public class RobotContainer {
             tr = new Translation2d();
         }
 
-        SmartDashboard.putNumber("Swerve Distance", tr.getNorm());
-        SmartDashboard.putNumber("Swerve Yaw",
-                tr.getAngle().getDegrees());
+        SmartDashboard.putNumber("Swerve Distance", Units.metersToFeet(tr.getNorm()));
 
-        Optional<Double> yaw = trapVision.getTagYaw(tagID);
+        var rightYaw = rightVision.getTagYaw(tagID);
+        var leftYaw = leftVision.getTagYaw(tagID);
 
-        if (yaw.isPresent()) {
-            SmartDashboard.putNumber("Shooter Yaw", yaw.get());
-        } else {
-            SmartDashboard.putNumber("Shooter Yaw", 0.);
+        double yaw = 0.;
+
+        if (rightYaw.isPresent() && leftYaw.isPresent()) {
+            yaw = rightYaw.get() + leftYaw.get() / 2.;
+        } else if (rightYaw.isPresent()) {
+            yaw = rightYaw.get();
+        } else if (leftYaw.isPresent()) {
+            yaw = leftYaw.get();
         }
 
-        Optional<Double> dist = trapVision.getTagDistance(tagID);
+        SmartDashboard.putNumber("Swerve Yaw", yaw);
 
-        if (dist.isPresent()) {
-            SmartDashboard.putNumber("Shooter Distance", Units.metersToFeet(dist.get()));
-        } else {
-            SmartDashboard.putNumber("Shooter Distance", 0.);
+        var fiducials = LimelightHelpers.getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
+
+        for (var fiducial : fiducials) {
+            if (fiducial.fiducialID == tagID) {
+                SmartDashboard.putNumber("Shooter Yaw", fiducial.tx);
+
+                double tagZMeters = trapVision.layout().getTagPose(tagID).get().getZ();
+                double angle = Units.degreesToRadians(fiducial.ty);
+
+                double tangent = Math.tan(SHOOTER_CAM_PITCH + angle);
+                double deltaHeight = Units.metersToFeet(tagZMeters - SHOOTER_CAM_HEIGHT);
+
+                SmartDashboard.putNumber("Shooter ty", angle);
+                SmartDashboard.putNumber("Shooter tangent", tangent);
+                SmartDashboard.putNumber("Shooter dh", deltaHeight);
+
+                SmartDashboard.putNumber("Shooter Distance",
+                        deltaHeight / tangent);
+            }
         }
+
+        // Optional<Double> shooterYaw = trapVision.getTagYaw(tagID);
+
+        // if (shooterYaw.isPresent()) {
+        // SmartDashboard.putNumber("Shooter Yaw", shooterYaw.get());
+        // } else {
+        // SmartDashboard.putNumber("Shooter Yaw", 0.);
+        // }
+
+        // Optional<Double> shooterDist = trapVision.getTagDistance(tagID);
+
+        // if (shooterDist.isPresent()) {
+        // SmartDashboard.putNumber("Shooter Distance",
+        // Units.metersToFeet(shooterDist.get()));
+        // } else {
+        // SmartDashboard.putNumber("Shooter Distance", 0.);
+        // }
 
     }
 }

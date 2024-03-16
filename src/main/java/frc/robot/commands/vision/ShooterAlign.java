@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Vision;
+import frc.robot.utils.LimelightHelpers;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
@@ -38,17 +39,29 @@ public class ShooterAlign extends ProfiledPIDCommand {
                         new TrapezoidProfile.Constraints(1, 1)),
                 // This should return the measurement
                 () -> {
+                    // int tagID = DriverStation.getAlliance().isPresent()
+                    //         && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
+
+                    // Optional<Double> yaw = vision.getTagYaw(tagID);
+
+                    // if (yaw.isPresent()) {
+                    //     return Units.degreesToRadians(yaw.get());
+                    // }
+
+                    // return 0.;
                     int tagID = DriverStation.getAlliance().isPresent()
                             && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
 
-                    Optional<Double> yaw = vision.getTagYaw(tagID);
+                    var fiducials = LimelightHelpers.getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
 
-                    if (yaw.isPresent()) {
-                        return Units.degreesToRadians(yaw.get());
+                    for (var fiducial : fiducials) {
+                        if (fiducial.fiducialID == tagID) {
+                            return Units.degreesToRadians(fiducial.tx);
+                        }
                     }
 
-
                     return 0.;
+
                 },
                 // This should return the goal (can also be a constant)
                 () -> Units.degreesToRadians(OFFSET),

@@ -76,6 +76,10 @@ public class Vision extends SubsystemBase {
         }
     }
 
+    public AprilTagFieldLayout layout() {
+        return layout;
+    }
+
     public void configFieldOrigin() {
         if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red) {
             layout.setOrigin(OriginPosition.kRedAllianceWallRightSide);
