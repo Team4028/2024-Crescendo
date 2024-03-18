@@ -5,13 +5,21 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.led.CANdle;
+import com.ctre.phoenix.led.ColorFlowAnimation;
 import com.ctre.phoenix.led.CANdle.LEDStripType;
+import com.ctre.phoenix.led.ColorFlowAnimation.Direction;
+import com.ctre.phoenix.led.LarsonAnimation.BounceMode;
+import com.ctre.phoenix.led.TwinkleAnimation.TwinklePercent;
+import com.ctre.phoenix.led.TwinkleOffAnimation.TwinkleOffPercent;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 import com.ctre.phoenix.led.FireAnimation;
+import com.ctre.phoenix.led.LarsonAnimation;
 import com.ctre.phoenix.led.RainbowAnimation;
 import com.ctre.phoenix.led.SingleFadeAnimation;
+import com.ctre.phoenix.led.TwinkleAnimation;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -19,7 +27,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 public class Candle extends SubsystemBase {
     private final CANdle candle;
-    private final int NUM_LEDS = 69;
+    private final int NUM_LEDS = 68;
     private Color color;
 
     public enum Color {
@@ -73,11 +81,26 @@ public class Candle extends SubsystemBase {
     }
 
     public FireAnimation burnyBurn() {
-        return new FireAnimation(1, .5, NUM_LEDS, .5, .5);
+        return new FireAnimation(1, 0.5, NUM_LEDS, 0.5, 0.1);
     }
 
     public RainbowAnimation rainbow() {
-        return new RainbowAnimation();
+        return new RainbowAnimation(100.00, 0.9, NUM_LEDS, true, 0);
+    }
+
+    public SingleFadeAnimation fade(Color color) {
+        return new SingleFadeAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS);
+    }
+
+    public ColorFlowAnimation shootFlow(Color color) {
+        return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, Direction.Forward);
+    }
+    public ColorFlowAnimation infeedFlow(Color color) {
+        return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, Direction.Backward);
+    }
+
+    public TwinkleAnimation twinkle(Color color) {
+        return new TwinkleAnimation(color.r, color.g, color.b, 100, 0.5, NUM_LEDS, TwinklePercent.Percent88);
     }
 
     public Command runBurnyBurnCommand() {
@@ -88,41 +111,41 @@ public class Candle extends SubsystemBase {
         return runOnce(() -> candle.animate(rainbow()));
     }
 
-    public SingleFadeAnimation fadyFadePurple() {
-        return new SingleFadeAnimation(105, 35, 166, 0, 0.5, 60);
+    public Command runFade(Color color) {
+        return runOnce(() -> candle.animate(fade(color)));
     }
 
-    public Command runfadyFadePurple() {
-        return runOnce(() -> candle.animate(fadyFadePurple()));
+    
+    public Command runTwinkle(Color color) {
+        return runOnce(() -> candle.animate(twinkle(color)));
     }
-
+   
     //Blink command -> Use for anything
-public SequentialCommandGroup blink(Color color) {
+public Command blink(Color color, double cycles) {
     return new SequentialCommandGroup(
+       
         new InstantCommand(() -> setNoColor()),
-        new WaitCommand(0.02),
+        new WaitCommand(0.1),
         new InstantCommand(() -> setColor(color)),
-        new WaitCommand(0.02),
-        new InstantCommand(() -> setNoColor()),
-        new WaitCommand(0.02),
-        new InstantCommand(() -> setColor(color)),
-        new InstantCommand(() -> setNoColor()));
+        new WaitCommand(0.1)).repeatedly().withTimeout(cycles * 0.24);
 }
 
 
 
 
-    //TODO: Add following options: Blinking, quick-flash, fade/breathe mode, more colors???
+ public Command runShootFlow(Color color) {
+        return runOnce(() -> candle.animate(shootFlow(color)));
+    }
 
+    public Command runInfeedFlow(Color color) {
+        return runOnce(() -> candle.animate(infeedFlow(color)));
+    }
 
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
     }
 
-    // driverController.a().onTrue(CANdle.runRainbowAnimationCommnad()).onFalse(CANdle.runBurnyBurnCommand());
-    //     driverController.b().onTrue(CANdle.runfadyFadePurple()).onFalse(CANdle.runBurnyBurnCommand());
-    //     driverController.x().onTrue(CANdle.blink(Color.BLUE)).onFalse(CANdle.runBurnyBurnCommand());
 
         
 }

@@ -311,9 +311,10 @@ public class RobotContainer {
 
         // LED Triggers //
 
-        new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.RED)).onFalse(CANdle.runBurnyBurnCommand());
-        new Trigger(conveyor.hasInfedSupplier()).onTrue(CANdle.blink(Color.GREEN)).onFalse(CANdle.runBurnyBurnCommand());
-
+        new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.RED , 5));
+        new Trigger(conveyor.hasInfedSupplier()).onTrue(CANdle.blink(Color.GREEN, 5));
+        new Trigger(shooter.isReadySupplier()).onTrue(CANdle.blink(Color.ORANGE, 3));
+        //Add trigger for amp/trap mode with stick press on driver or operator.
 
         // TODO: Add reverse infeed in case of jams so driver can spit out note and
         // retry
@@ -321,6 +322,7 @@ public class RobotContainer {
         // TODO: Buttons should NOT be toggles. Commands should only be running while
         // buttons are being held
 
+        
         // ================ //
         /* Default Commands */
         // ================ //
@@ -341,6 +343,7 @@ public class RobotContainer {
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runMotorCommand(0.));
         m_fan.setDefaultCommand(m_fan.stopCommand());
+        CANdle.setDefaultCommand(CANdle.runBurnyBurnCommand());
 
         // ================= //
         /* DRIVER CONTROLLER */
