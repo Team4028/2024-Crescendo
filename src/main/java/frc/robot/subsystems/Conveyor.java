@@ -145,6 +145,7 @@ public class Conveyor extends SubsystemBase {
         return this::hasInfed;
     }
 
+
     private boolean hasJam() {
         return hasStrawbrryJam;
     }

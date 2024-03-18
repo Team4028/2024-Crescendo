@@ -8,18 +8,14 @@ import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix.led.ColorFlowAnimation;
 import com.ctre.phoenix.led.CANdle.LEDStripType;
 import com.ctre.phoenix.led.ColorFlowAnimation.Direction;
-import com.ctre.phoenix.led.LarsonAnimation.BounceMode;
-import com.ctre.phoenix.led.TwinkleAnimation.TwinklePercent;
-import com.ctre.phoenix.led.TwinkleOffAnimation.TwinkleOffPercent;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 import com.ctre.phoenix.led.FireAnimation;
-import com.ctre.phoenix.led.LarsonAnimation;
 import com.ctre.phoenix.led.RainbowAnimation;
 import com.ctre.phoenix.led.SingleFadeAnimation;
-import com.ctre.phoenix.led.TwinkleAnimation;
+import com.ctre.phoenix.led.StrobeAnimation;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -28,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 public class Candle extends SubsystemBase {
     private final CANdle candle;
     private final int NUM_LEDS = 68;
+    private final int STRIP_LEDS = 60;
     private Color color;
 
     public enum Color {
@@ -51,7 +48,7 @@ public class Candle extends SubsystemBase {
         }
     }
 
-    /** Creates a new light. */
+    /* Creates a new light. */
     public Candle() {
         candle = new CANdle(21, "rio");
         candle.configBrightnessScalar(.5);
@@ -59,6 +56,7 @@ public class Candle extends SubsystemBase {
         setColor(Color.WHITE);
     }
 
+    // Basic colors //
     public void setColor(Color color) {
         this.color = color;
         candle.animate(null);
@@ -76,9 +74,12 @@ public class Candle extends SubsystemBase {
     public Command setColorRedCommand() {
         return runOnce(() -> setColor(Color.RED));
     }
+
     public Command setNoColorCommand() {
         return runOnce(() -> setColor(Color.OFF));
     }
+
+    // Creates the complex animations //
 
     public FireAnimation burnyBurn() {
         return new FireAnimation(1, 0.5, NUM_LEDS, 0.5, 0.1);
@@ -95,14 +96,16 @@ public class Candle extends SubsystemBase {
     public ColorFlowAnimation shootFlow(Color color) {
         return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, Direction.Forward);
     }
+
     public ColorFlowAnimation infeedFlow(Color color) {
         return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, Direction.Backward);
     }
 
-    public TwinkleAnimation twinkle(Color color) {
-        return new TwinkleAnimation(color.r, color.g, color.b, 100, 0.5, NUM_LEDS, TwinklePercent.Percent88);
+    public StrobeAnimation strobe(Color color) {
+        return new StrobeAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, 0);
     }
 
+    // Commands for complex animations //
     public Command runBurnyBurnCommand() {
         return runOnce(() -> candle.animate(burnyBurn()));
     }
@@ -115,25 +118,7 @@ public class Candle extends SubsystemBase {
         return runOnce(() -> candle.animate(fade(color)));
     }
 
-    
-    public Command runTwinkle(Color color) {
-        return runOnce(() -> candle.animate(twinkle(color)));
-    }
-   
-    //Blink command -> Use for anything
-public Command blink(Color color, double cycles) {
-    return new SequentialCommandGroup(
-       
-        new InstantCommand(() -> setNoColor()),
-        new WaitCommand(0.1),
-        new InstantCommand(() -> setColor(color)),
-        new WaitCommand(0.1)).repeatedly().withTimeout(cycles * 0.24);
-}
-
-
-
-
- public Command runShootFlow(Color color) {
+    public Command runShootFlow(Color color) {
         return runOnce(() -> candle.animate(shootFlow(color)));
     }
 
@@ -141,11 +126,28 @@ public Command blink(Color color, double cycles) {
         return runOnce(() -> candle.animate(infeedFlow(color)));
     }
 
+    public Command runStrobe(Color color) {
+        return runOnce(() -> candle.animate(strobe(color)));
+    }
+
+    // Blink command -> Use for anything //
+    public Command blink(Color color, double cycles) {
+        SequentialCommandGroup commandGroup = new SequentialCommandGroup();
+
+        for (int i = 0; i < cycles; i++) {
+            commandGroup.addCommands(
+                    new InstantCommand(() -> setNoColor()),
+                    new WaitCommand(0.1),
+                    new InstantCommand(() -> setColor(color)),
+                    new WaitCommand(0.1));
+
+        }
+        return commandGroup;
+    }
+
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
     }
 
-
-        
 }

@@ -311,18 +311,23 @@ public class RobotContainer {
 
         // LED Triggers //
 
-        new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.RED , 5));
+        new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.ORANGE, 5));
         new Trigger(conveyor.hasInfedSupplier()).onTrue(CANdle.blink(Color.GREEN, 5));
-        new Trigger(shooter.isReadySupplier()).onTrue(CANdle.blink(Color.ORANGE, 3));
-        //Add trigger for amp/trap mode with stick press on driver or operator.
+        new Trigger(shooter.isReadySupplier()).onTrue(CANdle.blink(Color.PURPLE, 3));
+        new Trigger(shooter.isRunningSupplier()).onTrue(CANdle.runShootFlow(Color.WHITE));
+        new Trigger(shooter.checkShooterIsntWorkingSupplier()).onTrue(CANdle.blink(Color.RED, 5).andThen(() -> System.err.println("Fatal Shooter Error")));
+        
+        
 
-        // TODO: Add reverse infeed in case of jams so driver can spit out note and
-        // retry
+
+        
+
+
+        // Add trigger for amp/trap mode with stick press on driver or operator.
 
         // TODO: Buttons should NOT be toggles. Commands should only be running while
         // buttons are being held
 
-        
         // ================ //
         /* Default Commands */
         // ================ //
@@ -698,6 +703,7 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("ST Angle", entryPicked.Angle);
         SmartDashboard.putNumber("ST Left", entryPicked.Percent);
+
 
         return entryPicked;
     }
