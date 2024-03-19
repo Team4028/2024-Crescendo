@@ -184,8 +184,9 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     /* LL */
-    private static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(31 .0); // 32. //-4.65 ??
+    private static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(38.0); // 32. //-4.65 ??
     private static final double SHOOTER_CAM_HEIGHT = Units.inchesToMeters(12.375); // 12.375
+    private static final double SPEAKER_TAG_HEIGHT = Units.inchesToMeters(57.125);
 
     public RobotContainer() {
         trapVision.setPipeline(Vision.SHOOTER_PIPELINE_INDEX);
@@ -1004,7 +1005,7 @@ public class RobotContainer {
                 double angle = Units.degreesToRadians(fiducial.ty);
 
                 double tangent = Math.tan(SHOOTER_CAM_PITCH + angle);
-                double deltaHeight = Units.metersToFeet(tagZMeters - SHOOTER_CAM_HEIGHT);
+                double deltaHeight = Units.metersToFeet(tagZMeters/*SPEAKER_TAG_HEIGHT*/ - SHOOTER_CAM_HEIGHT);
 
                 SmartDashboard.putNumber("Shooter ty", angle);
                 SmartDashboard.putNumber("Shooter tangent", tangent);
