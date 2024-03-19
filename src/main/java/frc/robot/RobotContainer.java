@@ -66,6 +66,7 @@ import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.subsystems.Climber;
 // import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.utils.DashboardStore;
+import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
@@ -183,12 +184,12 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     /* LL */
-    private static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(32.0);
-    private static final double SHOOTER_CAM_HEIGHT = Units.inchesToMeters(12.375);
+    private static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(31 .0); // 32. //-4.65 ??
+    private static final double SHOOTER_CAM_HEIGHT = Units.inchesToMeters(12.375); // 12.375
 
     public RobotContainer() {
         trapVision.setPipeline(Vision.SHOOTER_PIPELINE_INDEX);
-
+                
         snapDrive.HeadingController = new PhoenixPIDController(3., 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -993,44 +994,43 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("Swerve Yaw", yaw);
 
-        // var fiducials =
-        // LimelightHelpers.getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
+        var fiducials = LimelightHelpers.getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
 
-        // for (var fiducial : fiducials) {
-        // if (fiducial.fiducialID == tagID) {
-        // SmartDashboard.putNumber("Shooter Yaw", fiducial.tx);
+        for (var fiducial : fiducials) {
+            if (fiducial.fiducialID == tagID) {
+                SmartDashboard.putNumber("Shooter Yaw", fiducial.tx);
 
-        // double tagZMeters = trapVision.layout().getTagPose(tagID).get().getZ();
-        // double angle = Units.degreesToRadians(fiducial.ty);
+                double tagZMeters = trapVision.layout().getTagPose(tagID).get().getZ();
+                double angle = Units.degreesToRadians(fiducial.ty);
 
-        // double tangent = Math.tan(SHOOTER_CAM_PITCH + angle);
-        // double deltaHeight = Units.metersToFeet(tagZMeters - SHOOTER_CAM_HEIGHT);
+                double tangent = Math.tan(SHOOTER_CAM_PITCH + angle);
+                double deltaHeight = Units.metersToFeet(tagZMeters - SHOOTER_CAM_HEIGHT);
 
-        // SmartDashboard.putNumber("Shooter ty", angle);
-        // SmartDashboard.putNumber("Shooter tangent", tangent);
-        // SmartDashboard.putNumber("Shooter dh", deltaHeight);
+                SmartDashboard.putNumber("Shooter ty", angle);
+                SmartDashboard.putNumber("Shooter tangent", tangent);
+                SmartDashboard.putNumber("Shooter dh", deltaHeight);
 
+                SmartDashboard.putNumber("Shooter Distance",
+                        deltaHeight / tangent);
+            }
+        }
+
+        // Optional<Double> shooterYaw = trapVision.getTagYaw(tagID);
+
+        // if (shooterYaw.isPresent()) {
+        // SmartDashboard.putNumber("Shooter Yaw", shooterYaw.get());
+        // } else {
+        // SmartDashboard.putNumber("Shooter Yaw", 0.);
+        // }
+
+        // Optional<Double> shooterDist = trapVision.getTagDistance(tagID);
+
+        // if (shooterDist.isPresent()) {
         // SmartDashboard.putNumber("Shooter Distance",
-        // deltaHeight / tangent);
+        // Units.metersToFeet(shooterDist.get()));
+        // } else {
+        // SmartDashboard.putNumber("Shooter Distance", 0.);
         // }
-        // }
-
-        Optional<Double> shooterYaw = trapVision.getTagYaw(tagID);
-
-        if (shooterYaw.isPresent()) {
-            SmartDashboard.putNumber("Shooter Yaw", shooterYaw.get());
-        } else {
-            SmartDashboard.putNumber("Shooter Yaw", 0.);
-        }
-
-        Optional<Double> shooterDist = trapVision.getTagDistance(tagID);
-
-        if (shooterDist.isPresent()) {
-            SmartDashboard.putNumber("Shooter Distance",
-                    Units.metersToFeet(shooterDist.get()));
-        } else {
-            SmartDashboard.putNumber("Shooter Distance", 0.);
-        }
 
     }
 }
