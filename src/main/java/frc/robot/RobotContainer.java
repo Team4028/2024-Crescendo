@@ -310,12 +310,16 @@ public class RobotContainer {
     private void configureBindings() {
 
         // LED Triggers //
-
+//has infeed jam
         new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.ORANGE, 5));
+//checks if it has a note
         new Trigger(conveyor.hasInfedSupplier()).onTrue(CANdle.blink(Color.GREEN, 5));
+//flashes purple 
         new Trigger(shooter.isReadySupplier()).onTrue(CANdle.blink(Color.PURPLE, 3));
+//Flashes white while shooting
         new Trigger(shooter.isRunningSupplier()).onTrue(CANdle.runShootFlow(Color.WHITE));
-        new Trigger(shooter.checkShooterIsntWorkingSupplier()).onTrue(CANdle.blink(Color.RED, 5).andThen(() -> System.err.println("Fatal Shooter Error")));
+//Turns red while the shooter is inoperable
+        new Trigger(shooter.checkShooterIsntWorkingSupplier()).onTrue(CANdle.setColorRedCommand().andThen(() -> System.err.println("Fatal Shooter Error")).withTimeout(4));
         
         
 

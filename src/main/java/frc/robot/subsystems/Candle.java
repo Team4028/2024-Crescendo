@@ -107,7 +107,7 @@ public class Candle extends SubsystemBase {
 
     // Commands for complex animations //
     public Command runBurnyBurnCommand() {
-        return runOnce(() -> candle.animate(burnyBurn()));
+return runOnce(() -> candle.clearAnimation(NUM_LEDS)).andThen(runOnce(() -> candle.animate(burnyBurn())));
     }
 
     public Command runRainbowAnimationCommnad() {
