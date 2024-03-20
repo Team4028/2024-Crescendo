@@ -475,7 +475,9 @@ public class RobotContainer {
 
         /* Dumb Infeed */
         driverController.leftTrigger().onTrue(
-                runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS).repeatedly())
+                shooter.setBrakeCommand(true).andThen(
+                        shooter.stopCommand(),
+                        runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS).repeatedly()))
                 .onFalse(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
                         .raceWith(conveyor.runXRotations(-2.5).withTimeout(0.2) // -1.5
                                 .alongWith(infeed.runMotorCommand(0.)))
@@ -805,8 +807,10 @@ public class RobotContainer {
 
     /* Smart Infeed Command Generator */
     private Command smartInfeedCommand() {
-        return runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS)
-                .repeatedly().until(conveyor.hasInfedSupplier())
+        return shooter.setBrakeCommand(true)
+                .andThen(shooter.stopCommand(),
+                        runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS)
+                                .repeatedly().until(conveyor.hasInfedSupplier()))
                 .andThen(runBoth(0., 0.)
                         .repeatedly().withTimeout(0.1))
                 .andThen(shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
@@ -836,6 +840,7 @@ public class RobotContainer {
         return new FunctionalCommand(() -> {
         },
                 () -> {
+                    shooter.setBrake(true);
                     infeed.runMotor(infeedVbus.get());
                     conveyor.runMotor(conveyorVbus.get());
                     shooter.spinMotorRight(0.3 * shooterVbus.get());
@@ -879,7 +884,7 @@ public class RobotContainer {
         conveyor.logValues();
         infeed.logValues();
         shooter.logValues();
-        // climber.logValues();
+        climber.logValues();
         pivot.logValues();
         m_fan.logValues();
     }
