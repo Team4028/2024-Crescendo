@@ -4,6 +4,9 @@
 
 package frc.robot.commands;
 
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -28,7 +31,7 @@ public class RotateToSpeaker extends ProfiledPIDCommand {
     private static Rotation2d target = new Rotation2d();
 
     /** Creates a new RotateToSpeaker. */
-    public RotateToSpeaker(CommandSwerveDrivetrain drivetrain) {
+    public RotateToSpeaker(CommandSwerveDrivetrain drivetrain, DoubleSupplier measureYaw, DoubleSupplier targetYaw) {
         super(
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
@@ -39,9 +42,9 @@ public class RotateToSpeaker extends ProfiledPIDCommand {
                         // The motion profile constraints
                         new TrapezoidProfile.Constraints(2, 2)),
                 // This should return the measurement
-                () -> drivetrain.getState().Pose.getRotation().getRadians(),
+                measureYaw,
                 // This should return the goal (can also be a constant)
-                () -> new TrapezoidProfile.State(target.getRadians(), 0.),
+                targetYaw,
                 // This uses the output
                 (output, setpoint) -> {
                     // Use the output (and setpoint, if desired) here

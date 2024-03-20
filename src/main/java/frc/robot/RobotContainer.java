@@ -69,6 +69,7 @@ import frc.robot.utils.DashboardStore;
 import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
+import frc.robot.utils.ShooterTable.ShooterTableEntry.CameraLerpStrat;
 
 public class RobotContainer {
     // =============================================== //
@@ -135,6 +136,8 @@ public class RobotContainer {
     private static final double BASE_SPEED = 0.25;
     private static final double SLOW_SPEED = 0.07;
 
+    private static double angle_offset = 0;
+
     private double currentSpeed = BASE_SPEED;
 
     private enum SnapDirection {
@@ -190,7 +193,7 @@ public class RobotContainer {
 
     public RobotContainer() {
         trapVision.setPipeline(Vision.SHOOTER_PIPELINE_INDEX);
-                
+
         snapDrive.HeadingController = new PhoenixPIDController(3., 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -238,21 +241,16 @@ public class RobotContainer {
 
         initAutonChooser();
 
-        magicShootCommand = Commands.runOnce(() -> {
-            var pose = getBestPose();
-            if (pose.isPresent())
-                drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
-
-            getBestSTEntry();
-        }).andThen(Commands.waitSeconds(0.1)).andThen(new RotateToSpeaker(drivetrain).andThen(Commands.runOnce(() -> {
-            ShooterTableEntry entry = getBestSTEntry();
-            shooter.runEntry(entry, ShotSpeeds.FAST);
-            pivot.runToPosition(entry.Angle);
-        }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReadySupplier()))
+        magicShootCommand = shooter.runShotCommand(ShotSpeeds.MEDIUM)
+                .alongWith(new ShooterAlign(drivetrain, trapVision)).andThen(Commands.runOnce(() -> {
+                    ShooterTableEntry entry = getBestSTEntryLLY();
+                    shooter.runEntry(entry, ShotSpeeds.FAST);
+                    pivot.runToPosition(Math.min(Math.abs(entry.Angle), 50));
+                }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReadySupplier()))
                 .andThen(Commands.waitSeconds(0.5))
                 .andThen(conveyCommand())
                 .andThen(Commands.waitSeconds(0.2))
-                .finallyDo(this::stopAll));
+                .finallyDo(this::stopAll);
 
         ampPrep = pivot.runToClimbCommand()
                 .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
@@ -334,8 +332,8 @@ public class RobotContainer {
                         .alongWith(infeed.runMotorCommand(0.)))
                 .andThen(shooter.stopCommand()));
 
-        ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0),
-                10.2, 1.0); // TODO: fix
+        ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0), 0.0, 0.0, 0.0,
+                10.8, 1.0); // TODO: fix
 
         // TODO: We may want a command that constantly updates the shooter table and
         // runs the shooter/pivot based on that
@@ -344,7 +342,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Start Shooter",
                 runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST));
 
-        ShooterTableEntry fourP = new ShooterTableEntry(Feet.of(0), 0.0, 0.85);
+        ShooterTableEntry fourP = new ShooterTableEntry(Feet.of(0), 0.0, 0.0, 0.0, 0.0, 0.85);
         NamedCommands.registerCommand("Start Shooter No Pivot",
                 shooter.runEntryCommand(() -> fourP, () -> ShotSpeeds.FAST));
 
@@ -368,7 +366,7 @@ public class RobotContainer {
                 .andThen(conveyCommand().withTimeout(1.0))
                 .andThen(shooter.stopCommand()));
 
-        ShooterTableEntry twoHalfRightEntry = new ShooterTableEntry(Feet.of(0), 4.0, 1.0);
+        ShooterTableEntry twoHalfRightEntry = new ShooterTableEntry(Feet.of(0), 0.0, 0.0, 0.0, 4.0, 1.0);
 
         NamedCommands.registerCommand("Right Center Pathfinding Shot", drivetrain
                 .mirrorablePathFindCommand(Constants.RIGHT_3_SHOOT_PATHFINDING_POSE, 0.75, 0)
@@ -959,6 +957,35 @@ public class RobotContainer {
         return entryPicked;
     }
 
+    private ShooterTableEntry getBestSTEntryLLY() {
+        var ste = ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTY("limelight-shooter"),
+                CameraLerpStrat.LimelightTY);
+
+        DashboardStore.add("Limelight TY distance", () -> ste.Distance.in(Feet));
+        return ste;
+    }
+
+    private ShooterTableEntry getBestSTEntryPhotonY() {
+        Optional<Double> distance = trapVision
+                .getTagDistance(DriverStation.getAlliance().get() == Alliance.Blue ? 7 : 4);
+        if (distance.isEmpty())
+            return new ShooterTableEntry(Feet.of(0), 0, 0, 0, 0, 0);
+
+        var ste = ShooterTable.calcShooterTableEntryCamera(distance.get(),
+                CameraLerpStrat.PhotonVisionDistance);
+
+        DashboardStore.add("PhotonVision 2d distance", () -> ste.Distance.in(Feet));
+        return ste;
+    }
+
+    private ShooterTableEntry getBestSTEntryLLArea() {
+        var ste = ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTA("limelight-shooter"),
+                CameraLerpStrat.LimelightArea);
+
+        DashboardStore.add("Limelight TA distance", () -> ste.Distance.in(Feet));
+        return ste;
+    }
+
     public void printDistanceValues() {
         int tagID = DriverStation.getAlliance().isPresent()
                 && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
@@ -1005,7 +1032,7 @@ public class RobotContainer {
                 double angle = Units.degreesToRadians(fiducial.ty);
 
                 double tangent = Math.tan(SHOOTER_CAM_PITCH + angle);
-                double deltaHeight = Units.metersToFeet(tagZMeters/*SPEAKER_TAG_HEIGHT*/ - SHOOTER_CAM_HEIGHT);
+                double deltaHeight = Units.metersToFeet(tagZMeters/* SPEAKER_TAG_HEIGHT */ - SHOOTER_CAM_HEIGHT);
 
                 SmartDashboard.putNumber("Shooter ty", angle);
                 SmartDashboard.putNumber("Shooter tangent", tangent);
