@@ -45,13 +45,13 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.commands.vision.ShooterAlign;
+import frc.robot.commands.vision.ShooterAlignWhileStrafing;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
@@ -117,7 +117,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command magicShootCommand, ampPrep;
+    private final Command ampPrep, magicShootNoLockCommand;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -139,6 +139,9 @@ public class RobotContainer {
     private static double angle_offset = 0;
 
     private double currentSpeed = BASE_SPEED;
+
+    private boolean isSnappedToSpeaker = false;
+    private boolean isInMagicShoot = false;
 
     private enum SnapDirection {
         None(Double.NaN),
@@ -220,6 +223,9 @@ public class RobotContainer {
         DashboardStore.add("Manual Indexing", () -> useManual);
         DashboardStore.add("Climber Enabled", () -> enableClimber);
 
+        DashboardStore.add("Aligned to Speaker", () -> isSnappedToSpeaker);
+        DashboardStore.add("Executing magic shoot", () -> isInMagicShoot);
+
         // DashboardStore.add("Distance To Speaker", () -> {
         // int tagID = DriverStation.getAlliance().isPresent()
         // && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
@@ -241,16 +247,17 @@ public class RobotContainer {
 
         initAutonChooser();
 
-        magicShootCommand = shooter.runShotCommand(ShotSpeeds.MEDIUM)
-                .alongWith(new ShooterAlign(drivetrain, trapVision)).andThen(Commands.runOnce(() -> {
+        magicShootNoLockCommand = new InstantCommand(() -> isInMagicShoot = true).andThen(
+                Commands.runOnce(() -> {
                     ShooterTableEntry entry = getBestSTEntryLLY();
                     shooter.runEntry(entry, ShotSpeeds.FAST);
                     pivot.runToPosition(Math.min(Math.abs(entry.Angle), 50));
-                }, shooter, pivot)).andThen(Commands.waitUntil(shooter.isReadySupplier()))
-                .andThen(Commands.waitSeconds(0.5))
-                .andThen(conveyCommand())
-                .andThen(Commands.waitSeconds(0.2))
-                .finallyDo(this::stopAll);
+                }, shooter, pivot).andThen(Commands.waitUntil(shooter.isReadySupplier()))
+                        // .andThen(Commands.waitSeconds(0.5))
+                        .andThen(conveyCommand())
+                        .andThen(Commands.waitSeconds(0.2))
+                        .andThen(new InstantCommand(() -> isInMagicShoot = false))
+                        .finallyDo(this::stopAll));
 
         ampPrep = pivot.runToClimbCommand()
                 .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
@@ -258,6 +265,24 @@ public class RobotContainer {
                         .andThen(shooter.runShotCommand(ShotSpeeds.AMP)));
 
         configureBindings();
+    }
+
+    private Command magicShootCommand() {
+        return new InstantCommand(() -> isInMagicShoot = true).andThen(shooter
+                .runShotCommand(ShotSpeeds.MEDIUM)
+                .alongWith(new ShooterAlign(drivetrain, trapVision)
+                        .alongWith(new InstantCommand(() -> isSnappedToSpeaker = true))
+                        .andThen(new InstantCommand(() -> isSnappedToSpeaker = false)))
+                .andThen(Commands.runOnce(() -> {
+                    ShooterTableEntry entry = getBestSTEntryLLY();
+                    shooter.runEntry(entry, ShotSpeeds.FAST);
+                    pivot.runToPosition(Math.min(Math.abs(entry.Angle), 50));
+                }, shooter, pivot))).andThen(Commands.waitUntil(shooter.isReadySupplier()))
+                // .andThen(Commands.waitSeconds(0.5))
+                .andThen(conveyCommand())
+                .andThen(Commands.waitSeconds(0.2))
+                .andThen(new InstantCommand(() -> isInMagicShoot = false))
+                .finallyDo(this::stopAll);
     }
 
     // ====================== //
@@ -370,10 +395,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Right Center Pathfinding Shot", drivetrain
                 .mirrorablePathFindCommand(Constants.RIGHT_3_SHOOT_PATHFINDING_POSE, 0.75, 0)
-                .alongWith(runEntryCommand(() -> twoHalfRightEntry, () -> ShotSpeeds.FAST).repeatedly()
-                        .until(shooterAndPivotReady()))
-                .andThen(conveyCommand().withTimeout(1.0))
-                .andThen(shooter.stopCommand()));
+                .andThen(magicShootCommand()));
 
         NamedCommands.registerCommand("Note 3",
                 drivetrain.pathFindCommand(new Pose2d(4.67, 6.7, Rotation2d.fromDegrees(-18)), 0.75, 2.5));
@@ -406,11 +428,7 @@ public class RobotContainer {
          * When shooter ready, feed
          * Stop shooter
          */
-        NamedCommands.registerCommand("2.5 Stationary Shot",
-                runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST)
-                        .repeatedly().until(shooterAndPivotReady())
-                        .andThen(conveyCommand())
-                        .andThen(shooter.stopCommand()));
+        NamedCommands.registerCommand("2.5 Stationary Shot", magicShootCommand());
 
         /* 2.5 but right side */
         NamedCommands.registerCommand("2.5 Right Stationary Shot",
@@ -537,7 +555,11 @@ public class RobotContainer {
         driverController.rightStick().onTrue(stopAllCommand().alongWith(drivetrain.runOnce(() -> {
         })));
 
-        driverController.leftStick().whileTrue(new ShooterAlign(drivetrain, trapVision));
+        driverController.leftStick().whileTrue(new ShooterAlignWhileStrafing(
+                () -> (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red ? -1
+                        : 1) * scaleDriverController(-driverController.getLeftX(), yLimiter, currentSpeed) * MAX_SPEED,
+                drivetrain, trapVision).alongWith(new InstantCommand(() -> isSnappedToSpeaker = true))
+                .andThen(new InstantCommand(() -> isSnappedToSpeaker = false)));
 
         // =================== //
         /* OPERATOR CONTROLLER */
@@ -585,7 +607,7 @@ public class RobotContainer {
                 .whileTrue(runBoth(FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS).repeatedly());
 
         /* Magic Shoot */
-        operatorController.x().toggleOnTrue(magicShootCommand);
+        operatorController.x().toggleOnTrue(magicShootNoLockCommand);
 
         /* Manual/Preset Mode */
         operatorController.back().onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));
