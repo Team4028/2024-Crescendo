@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -206,6 +207,10 @@ public class Pivot extends SubsystemBase {
     public void runToPosition(double position) {
         targetPosition = position;
         pid.setReference(position, ControlType.kPosition);
+    }
+
+    public Command runToPositionCommand(DoubleSupplier position) {
+        return runOnce(() -> runToPosition(position.getAsDouble()));
     }
 
     public Command runToPositionCommand(double position) {

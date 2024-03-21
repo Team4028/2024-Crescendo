@@ -124,8 +124,8 @@ public class Shooter extends SubsystemBase {
 
         leftMotor.setInverted(true);
 
-        leftMotor.setNeutralMode(NeutralModeValue.Brake);
-        rightMotor.setNeutralMode(NeutralModeValue.Brake);
+        leftMotor.setNeutralMode(NeutralModeValue.Coast);
+        rightMotor.setNeutralMode(NeutralModeValue.Coast);
 
         leftMotor.getConfigurator().apply(leftCurrentLimitsConfigs);
         rightMotor.getConfigurator().apply(rightCurrentLimitsConfigs);
@@ -141,6 +141,9 @@ public class Shooter extends SubsystemBase {
 
         leftMotor.getBridgeOutput().setUpdateFrequency(20.);
         rightMotor.getBridgeOutput().setUpdateFrequency(20.);
+
+        leftMotor.getDutyCycle().setUpdateFrequency(50.);
+        rightMotor.getDutyCycle().setUpdateFrequency(50.);
 
         leftMotor.optimizeBusUtilization();
         rightMotor.optimizeBusUtilization();
@@ -183,16 +186,6 @@ public class Shooter extends SubsystemBase {
     // SHOOTER COMMANDS
     // ==================================
 
-    /* Brake/Coast control */
-    public void setBrake(boolean brake) {
-        leftMotor.setNeutralMode(brake ? NeutralModeValue.Brake : NeutralModeValue.Coast);
-        rightMotor.setNeutralMode(brake ? NeutralModeValue.Brake : NeutralModeValue.Coast);
-    }
-
-    public Command setBrakeCommand(boolean brake) {
-        return runOnce(() -> setBrake(brake));
-    }
-
     /* Check if shooter is running */
     public boolean isRunning() {
         return Math.abs(leftMotor.getVelocity().getValueAsDouble()) > 100.0
@@ -231,7 +224,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShotSpeeds> shotSpeed) {
-        return setBrakeCommand(false).andThen(runOnce(() -> runEntry(entry.get(), shotSpeed.get())));
+        return runOnce(() -> runEntry(entry.get(), shotSpeed.get()));
     }
 
     public void stop() {
@@ -261,7 +254,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command runShotCommand(ShotSpeeds shot, double scale) {
-        return setBrakeCommand(false).andThen(runOnce(() -> runShot(shot, scale)));
+        return runOnce(() -> runShot(shot, scale));
     }
 
     public Command runShotCommand(ShotSpeeds shot) {

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.function.Function;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.ShooterTable.ShooterTableEntry.CameraLerpStrat;
 
 public class ShooterTable {
@@ -129,6 +130,7 @@ public class ShooterTable {
     }
 
     public static ShooterTableEntry calcShooterTableEntry(Measure<Distance> distance) {
+        SmartDashboard.putNumber("Index", distance.in(Feet));
         ShooterTableEntry closestLower = table.get(0);
         ShooterTableEntry closestHigher = table.get(table.size() - 1);
 

@@ -50,6 +50,7 @@ public class Infeed extends SubsystemBase {
         motor.getConfigurator().apply(motorOutputConfigs);
 
         /* CAN Bus */
+        motor.getDutyCycle().setUpdateFrequency(50.);
         motor.getVelocity().setUpdateFrequency(10.);
         motor.getStatorCurrent().setUpdateFrequency(10.);
         motor.optimizeBusUtilization();
