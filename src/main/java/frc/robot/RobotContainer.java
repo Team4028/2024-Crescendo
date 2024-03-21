@@ -55,6 +55,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Fan;
+import frc.robot.subsystems.FanPivot;
 import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
@@ -107,6 +108,7 @@ public class RobotContainer {
     private final Autons autons;
     private final Pivot pivot = new Pivot();
     private final Fan m_fan = new Fan();
+    private final FanPivot m_fanPivot = new FanPivot();
     private final Whippy whippy = new Whippy();
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
@@ -664,7 +666,7 @@ public class RobotContainer {
         /* TrapStar 5000 */
         // emergencyController.y().onTrue(m_fan.runMotorCommand(FAN_VBUS)).onFalse(m_fan.stopCommand());
 
-        emergencyController.start().onTrue(m_fan.runToPositionCommand(0.));
+        emergencyController.start().onTrue(m_fanPivot.runToPositionCommand(0.));
 
         emergencyController.back().onTrue(Commands.runOnce(() -> enableClimber = !enableClimber));
 
@@ -691,7 +693,7 @@ public class RobotContainer {
         /* TRAP STUFF */
 
         /* Prime Fan Pivot & Shooter Pivot */
-        emergencyController.x().onTrue(m_fan.runToTrapCommand().alongWith(pivot.runToTrapCommand()));
+        emergencyController.x().onTrue(m_fanPivot.runToTrapCommand().alongWith(pivot.runToTrapCommand()));
 
         /* Run Shooter at Trap Speeds */
         emergencyController.y().onTrue(shooter.setSlotCommand(Shooter.Slots.TRAP).andThen(
@@ -763,8 +765,8 @@ public class RobotContainer {
                 conveyor.stopCommand(),
                 shooter.stopCommand().andThen(shooter.setSlotCommand(Shooter.Slots.FAST)),
                 pivot.runToHomeCommand()/* ) */,
-                m_fan.stopCommand().andThen(
-                        m_fan.runToPositionCommand(0.)),
+                m_fan.stopCommand(),
+                m_fanPivot.runToPositionCommand(0.),
                 whippy.stopCommand());
     }
 
@@ -857,7 +859,7 @@ public class RobotContainer {
 
     /* Zeroing Command */
     public Command zeroCommand() {
-        return pivot.zeroCommand().alongWith(m_fan.runToPositionCommand(0.));
+        return pivot.zeroCommand().alongWith(m_fanPivot.runToPositionCommand(0.));
     }
 
     /* Asynchronous Zero */
@@ -963,7 +965,7 @@ public class RobotContainer {
         var ste = ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTY("limelight-shooter"),
                 CameraLerpStrat.LimelightTY);
 
-        DashboardStore.add("Limelight TY distance", () -> ste.Distance.in(Feet));
+        SmartDashboard.putNumber("Limelight TY distance", ste.Distance.in(Feet));
         return ste;
     }
 
@@ -976,7 +978,7 @@ public class RobotContainer {
         var ste = ShooterTable.calcShooterTableEntryCamera(distance.get(),
                 CameraLerpStrat.PhotonVisionDistance);
 
-        DashboardStore.add("PhotonVision 2d distance", () -> ste.Distance.in(Feet));
+        SmartDashboard.putNumber("PhotonVision 2d distance", ste.Distance.in(Feet));
         return ste;
     }
 
@@ -984,7 +986,7 @@ public class RobotContainer {
         var ste = ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTA("limelight-shooter"),
                 CameraLerpStrat.LimelightArea);
 
-        DashboardStore.add("Limelight TA distance", () -> ste.Distance.in(Feet));
+        SmartDashboard.putNumber("Limelight TA distance", ste.Distance.in(Feet));
         return ste;
     }
 

@@ -9,7 +9,6 @@ import edu.wpi.first.units.Measure;
 import frc.robot.utils.ShooterTable.ShooterTableEntry.CameraLerpStrat;
 
 public class ShooterTable {
-    // TODO: We may want P values here, or just tune kF
     public static final class ShooterTableEntry {
         public Measure<Distance> Distance;
         public double PhotonDistance;
@@ -27,7 +26,7 @@ public class ShooterTable {
         /**
          * Construct a shooter table entry.
          * 
-         * @param distance       Distance from the target, in feet (?)
+         * @param distance       Distance from the target
          * @param photonDistance The arb dist reported by garbage PV
          * @param llTY           The arb ty reported by garbage LL
          * @param angle          Angle of the shooter pivot, in rotations.
