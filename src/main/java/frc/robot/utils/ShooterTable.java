@@ -3,13 +3,9 @@ package frc.robot.utils;
 import static edu.wpi.first.units.Units.Feet;
 
 import java.util.ArrayList;
-import java.util.function.DoubleSupplier;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
-
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.UnaryFunction;
 import frc.robot.utils.ShooterTable.ShooterTableEntry.CameraLerpStrat;
 
 public class ShooterTable {

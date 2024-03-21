@@ -45,7 +45,6 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
@@ -135,8 +134,6 @@ public class RobotContainer {
 
     private static final double BASE_SPEED = 0.25;
     private static final double SLOW_SPEED = 0.07;
-
-    private static double angle_offset = 0;
 
     private double currentSpeed = BASE_SPEED;
 

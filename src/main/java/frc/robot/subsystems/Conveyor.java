@@ -55,20 +55,21 @@ public class Conveyor extends SubsystemBase {
     private static final int INFEED_TOF_CAN_ID = 1;
 
     private boolean conveyorHasSeenNote = false;
-    private boolean hasStrawbrryJam = false;
-
+    private boolean hasStrawberryJam = false;
 
     private double target;
     private final Timer conveyorTimer;
     private final Timer infeedTimer;
 
     public Conveyor() {
+        /* Timer Setup */
         conveyorTimer = new Timer();
         conveyorTimer.reset();
+
         infeedTimer = new Timer();
         infeedTimer.reset();
-        
 
+        /* Main Setup */
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
         motor.restoreFactoryDefaults();
 
@@ -76,6 +77,7 @@ public class Conveyor extends SubsystemBase {
         motor.setInverted(true);
         motor.setClosedLoopRampRate(.1);
 
+        /* CAN Bus */
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 20);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);
@@ -84,6 +86,7 @@ public class Conveyor extends SubsystemBase {
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 103);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
+
         encoder = motor.getEncoder();
 
         pid = motor.getPIDController();
@@ -112,7 +115,7 @@ public class Conveyor extends SubsystemBase {
 
         /* Dashboard */
         DashboardStore.add("ToF Sensor", () -> conveyorTofSensor.getRange());
-        
+
         DashboardStore.add("Running/Conveyor", this::isRunning);
     }
 
@@ -136,7 +139,7 @@ public class Conveyor extends SubsystemBase {
         if (infeedTofSensor.getRange() <= INFEED_DETECTION_RANGE_THRESHOLD) {
             infeedTimer.start();
         }
-        
+
         if (conveyorTofSensor.getRange() <= INITIAL_DETECTION_RANGE_THRESHOLD) {
             conveyorTimer.start();
             conveyorHasSeenNote = true;
@@ -145,10 +148,11 @@ public class Conveyor extends SubsystemBase {
         if (infeedTimer.get() >= INFEED_TIMER_THRESHOLD) {
             infeedTimer.stop();
             infeedTimer.reset();
-            hasStrawbrryJam = true;
+            hasStrawberryJam = true;
         }
 
-        if (conveyorHasSeenNote && (conveyorTimer.get() >= CONVEYOR_TIMER_THRESHOLD || conveyorTofSensor.getRange() >= NOTE_HELD_RANGE_THRESHOLD)) {
+        if (conveyorHasSeenNote && (conveyorTimer.get() >= CONVEYOR_TIMER_THRESHOLD
+                || conveyorTofSensor.getRange() >= NOTE_HELD_RANGE_THRESHOLD)) {
             conveyorHasSeenNote = false;
             conveyorTimer.stop();
             conveyorTimer.reset();
@@ -158,11 +162,17 @@ public class Conveyor extends SubsystemBase {
         return false;
     }
 
-    public BooleanSupplier hasInfedSupplier() { return this::hasInfed; }
+    public BooleanSupplier hasInfedSupplier() {
+        return this::hasInfed;
+    }
 
-    private boolean hasJam() { return hasStrawbrryJam; }
+    private boolean hasJam() {
+        return hasStrawberryJam;
+    }
 
-    public BooleanSupplier hasJamSupplier() { return this::hasJam; }
+    public BooleanSupplier hasJamSupplier() {
+        return this::hasJam;
+    }
 
     public Command runXRotations(double x) {
         return runOnce(() -> {

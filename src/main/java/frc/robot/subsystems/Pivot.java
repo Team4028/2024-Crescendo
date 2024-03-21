@@ -138,6 +138,7 @@ public class Pivot extends SubsystemBase {
         motor.setClosedLoopRampRate(RAMP_RATE);
         motor.setSoftLimit(SoftLimitDirection.kForward, (float) MAX_POSITION);
 
+        /* CAN Bus */
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 20);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);

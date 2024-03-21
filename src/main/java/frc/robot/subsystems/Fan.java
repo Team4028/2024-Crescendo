@@ -11,6 +11,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
@@ -48,6 +49,7 @@ public class Fan extends SubsystemBase {
 
     /** Creates a new Fan. */
     public Fan() {
+        /* Fan Setup */
         motor = new CANSparkFlex(FAN_CAN_ID, MotorType.kBrushless);
         encoder = motor.getEncoder();
 
@@ -56,11 +58,26 @@ public class Fan extends SubsystemBase {
         m_currentLog = new DoubleLogEntry(m_log, "/Fan/Current");
         m_velocityLog = new DoubleLogEntry(m_log, "/Fan/Velocity");
 
-        // Creates a new pivot
+        /* Pivot Setup */
         pivot = new TalonFX(PIVOT_CAN_ID);
-        pivot.getConfigurator().apply(pidConfigs); // See Pivot Pid and configs below
+        pivot.getConfigurator().apply(pidConfigs);
         pivot.getConfigurator().apply(closedLoopRampsConfigs);
         pivot.setPosition(0.);
+
+        /* CAN Bus */
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 50);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 51);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 52);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 101);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 102);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 103);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
+
+        pivot.getVelocity().setUpdateFrequency(20.);
+        pivot.getPosition().setUpdateFrequency(20.);
+        pivot.getStatorCurrent().setUpdateFrequency(10.);
+        pivot.optimizeBusUtilization();
 
         // LOGGGGGGGGGGGGGGGGG DA PIVOTTTTT
         m_pivotPositionLog = new DoubleLogEntry(m_log, "/Fan/Pivot/Position");

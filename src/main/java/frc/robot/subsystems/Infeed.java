@@ -49,6 +49,11 @@ public class Infeed extends SubsystemBase {
         motor.getConfigurator().apply(currentLimitsConfigs);
         motor.getConfigurator().apply(motorOutputConfigs);
 
+        /* CAN Bus */
+        motor.getVelocity().setUpdateFrequency(10.);
+        motor.getStatorCurrent().setUpdateFrequency(10.);
+        motor.optimizeBusUtilization();
+
         tofSensor = new TimeOfFlight(TOF_CAN_ID);
 
         tofSensor.setRangingMode(RangingMode.Short, TOF_SAMPLE_TIME);

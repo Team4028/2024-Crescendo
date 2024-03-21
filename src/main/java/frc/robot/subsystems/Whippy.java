@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
@@ -29,6 +30,15 @@ public class Whippy extends SubsystemBase {
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
         motor.setInverted(true);
         motor.setSmartCurrentLimit(CURRENT_LIMIT);
+
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 21);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 50);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 107);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 101);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 102);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 103);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
 
         /* Logging */
         log = DataLogManager.getLog();

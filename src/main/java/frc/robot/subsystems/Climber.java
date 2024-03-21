@@ -76,10 +76,9 @@ public class Climber extends SubsystemBase {
     }
 
     public Climber() {
+        /* Setup */
         motor = new TalonFX(CAN_ID);
         encoder = new DutyCycleEncoder(9);
-
-        // encoder.setPositionOffset(ZERO_ABSOLUTE_ENCODER_POSITION);
 
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setInverted(true);
@@ -91,6 +90,14 @@ public class Climber extends SubsystemBase {
         motor.getConfigurator().apply(pidConfigs);
         motor.getConfigurator().apply(currentConfigs);
 
+        /* CAN Bus */
+        motor.getVelocity().setUpdateFrequency(20.);
+        motor.getPosition().setUpdateFrequency(20.);
+        motor.getStatorCurrent().setUpdateFrequency(20.);
+        motor.getDutyCycle().setUpdateFrequency(20.);
+        motor.optimizeBusUtilization();
+
+        /* Logs */
         log = DataLogManager.getLog();
         vbusLog = new DoubleLogEntry(log, "/Climber/Vbus");
         currentLog = new DoubleLogEntry(log, "/Climber/Current");
