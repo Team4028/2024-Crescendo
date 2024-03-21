@@ -64,6 +64,6 @@ public class LimelightAcquire extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return (LimelightHelpers.getTY("") < NOTE_PICKUP_THRESH);
+        return false; //(LimelightHelpers.getTY("") < NOTE_PICKUP_THRESH);
     }
 }

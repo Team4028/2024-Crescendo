@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 4.3,
-        "y": 1.9
+        "x": 3.75,
+        "y": 2.7
       },
       "prevControl": {
-        "x": 4.807930440710282,
-        "y": 1.294672072495561
+        "x": 4.257930440710287,
+        "y": 2.094672072495561
       },
       "nextControl": null,
       "isLocked": false,
@@ -47,7 +47,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Start Shooter"
+                "name": "Start Shooter No Pivot"
               }
             }
           ]

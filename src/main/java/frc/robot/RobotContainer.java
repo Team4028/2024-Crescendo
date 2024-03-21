@@ -226,19 +226,6 @@ public class RobotContainer {
         DashboardStore.add("Aligned to Speaker", () -> isSnappedToSpeaker);
         DashboardStore.add("Executing magic shoot", () -> isInMagicShoot);
 
-        // DashboardStore.add("Distance To Speaker", () -> {
-        // int tagID = DriverStation.getAlliance().isPresent()
-        // && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
-
-        // Optional<Double> dist = trapVision.getTagDistance(tagID);
-
-        // if (dist.isPresent()) {
-        // return Units.metersToFeet(dist.get());
-        // }
-
-        // return 0.;
-        // });
-
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
 
@@ -265,24 +252,6 @@ public class RobotContainer {
                         .andThen(shooter.runShotCommand(ShotSpeeds.AMP)));
 
         configureBindings();
-    }
-
-    private Command magicShootCommand() {
-        return new InstantCommand(() -> isInMagicShoot = true).andThen(shooter
-                .runShotCommand(ShotSpeeds.MEDIUM)
-                .alongWith(new ShooterAlign(drivetrain, trapVision)
-                        .alongWith(new InstantCommand(() -> isSnappedToSpeaker = true))
-                        .andThen(new InstantCommand(() -> isSnappedToSpeaker = false)))
-                .andThen(Commands.runOnce(() -> {
-                    ShooterTableEntry entry = getBestSTEntryLLY();
-                    shooter.runEntry(entry, ShotSpeeds.FAST);
-                    pivot.runToPosition(Math.min(Math.abs(entry.Angle), 50));
-                }, shooter, pivot))).andThen(Commands.waitUntil(shooter.isReadySupplier()))
-                // .andThen(Commands.waitSeconds(0.5))
-                .andThen(conveyCommand())
-                .andThen(Commands.waitSeconds(0.2))
-                .andThen(new InstantCommand(() -> isInMagicShoot = false))
-                .finallyDo(this::stopAll);
     }
 
     // ====================== //
@@ -337,17 +306,18 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Prepare Spit", shooter.spinBothCommand(0.15));
 
+        NamedCommands.registerCommand("Fix Note",
+        runBoth(FAST_CONVEYOR_VBUS, INFEED_VBUS).repeatedly().withTimeout(0.25).andThen(
+                shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).alongWith(conveyor.runXRotations(-2.0)))
+                .andThen(Commands.waitSeconds(0.4)));
+
         NamedCommands.registerCommand("Limelight Acquire",
-                new LimelightAcquire(() -> xLimeAquireLimiter.calculate(0.5),
+                new LimelightAcquire(() -> 0.6, // xLimeAquireLimiter.calculate(0.5),
                         drivetrain)
-                        .alongWith(smartInfeedCommand()));
+                        .until(conveyor.hasInfedSupplier())
+                        .raceWith(smartInfeedCommand()));
 
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
-
-        NamedCommands.registerCommand("Fix Note",
-                runBoth(FAST_CONVEYOR_VBUS, INFEED_VBUS).repeatedly().withTimeout(0.25).andThen(
-                        shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).alongWith(conveyor.runXRotations(-2.0)))
-                        .andThen(Commands.waitSeconds(0.4)));
 
         NamedCommands.registerCommand("Dumb Infeed",
                 runBoth(SLOW_CONVEYOR_VBUS, INFEED_VBUS).repeatedly().withTimeout(.25));
@@ -395,6 +365,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Right Center Pathfinding Shot", drivetrain
                 .mirrorablePathFindCommand(Constants.RIGHT_3_SHOOT_PATHFINDING_POSE, 0.75, 0)
+                .alongWith(NamedCommands.getCommand("Fix Note"))
                 .andThen(magicShootCommand()));
 
         NamedCommands.registerCommand("Note 3",
@@ -432,15 +403,12 @@ public class RobotContainer {
 
         /* 2.5 but right side */
         NamedCommands.registerCommand("2.5 Right Stationary Shot",
-                runEntryCommand(() -> twoHalfRightEntry, () -> ShotSpeeds.FAST)
-                        .repeatedly().until(shooterAndPivotReady())
-                        .andThen(conveyCommand())
-                        .andThen(shooter.stopCommand()));
+                magicShootCommand());
 
         NamedCommands.registerCommand("2.5 Final Note", drivetrain
                 .pathFindCommand(new Pose2d(3.71, 6.51, new Rotation2d(Units.degreesToRadians(-9.1))), 0.75, 0));
         NamedCommands.registerCommand("2.5 Final Note Right", drivetrain
-                .pathFindCommand(new Pose2d(3.71, 1.8, new Rotation2d(Units.degreesToRadians(-20))), 0.75, 0.));
+                .pathFindCommand(new Pose2d(3.8, 1.6, new Rotation2d(Units.degreesToRadians(-20))), 0.75, 0.));
 
     }
 
@@ -741,6 +709,10 @@ public class RobotContainer {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
         }
 
+        emergencyController.rightStick().onTrue(new LimelightAcquire(() -> 0.3, // xLimeAquireLimiter.calculate(0.5),
+                drivetrain)
+                .alongWith(smartInfeedCommand()));
+
         drivetrain.registerTelemetry(logger::telemeterize);
 
     }
@@ -748,6 +720,28 @@ public class RobotContainer {
     // =========================================== //
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
+
+    /* Magic shoot ut awesome */
+    private Command magicShootCommand() {
+        return new InstantCommand(() -> isInMagicShoot = true).andThen(shooter
+                .runShotCommand(ShotSpeeds.MEDIUM)
+                .alongWith(new ShooterAlign(drivetrain, trapVision)
+                        .alongWith(new InstantCommand(() -> isSnappedToSpeaker = true))
+                        .andThen(new InstantCommand(() -> isSnappedToSpeaker = false)))
+                .andThen(Commands.runOnce(() -> {
+                    ShooterTableEntry entry = getBestSTEntryLLY();
+                    shooter.runEntry(entry, ShotSpeeds.FAST);
+                    pivot.runToPosition(Math.min(Math.abs(entry.Angle), 50));
+                }, shooter, pivot))).andThen(Commands.waitUntil(shooterAndPivotReady()))
+                // .andThen(Commands.either(Commands.waitSeconds(0.15), Commands.none(), () -> DriverStation.isAutonomousEnabled()))
+                .andThen(conveyCommand())
+                .andThen(Commands.waitSeconds(0.2))
+                .andThen(new InstantCommand(() -> isInMagicShoot = false))
+                .finallyDo(() -> {
+                    shooter.stop();
+                    pivot.runToPosition(pivot.HOLD_POSITION);
+                });
+    }
 
     /* Check if Climber encoder is ready */
     public boolean climberReady() {
