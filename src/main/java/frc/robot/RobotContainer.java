@@ -190,8 +190,8 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     /* LL */
-    private static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(38.0); // 32. //-4.65 ??
-    private static final double SHOOTER_CAM_HEIGHT = Units.inchesToMeters(12.375); // 12.375
+    private static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(36.15); // 32. //-4.65 ??
+    private static final double SHOOTER_CAM_HEIGHT = Units.inchesToMeters(13.125); // 12.375
     private static final double SPEAKER_TAG_HEIGHT = Units.inchesToMeters(57.125);
 
     public RobotContainer() {
@@ -307,9 +307,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("Prepare Spit", shooter.spinBothCommand(0.15));
 
         NamedCommands.registerCommand("Fix Note",
-        runBoth(FAST_CONVEYOR_VBUS, INFEED_VBUS).repeatedly().withTimeout(0.25).andThen(
-                shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).alongWith(conveyor.runXRotations(-2.0)))
-                .andThen(Commands.waitSeconds(0.4)));
+                runBoth(FAST_CONVEYOR_VBUS, INFEED_VBUS).repeatedly().withTimeout(0.25).andThen(
+                        shooter.spinMotorRightCommand(SHOOTER_BACKOUT_VBUS).alongWith(conveyor.runXRotations(-2.0)))
+                        .andThen(Commands.waitSeconds(0.4)));
 
         NamedCommands.registerCommand("Limelight Acquire",
                 new LimelightAcquire(() -> 0.6, // xLimeAquireLimiter.calculate(0.5),
@@ -733,7 +733,8 @@ public class RobotContainer {
                     shooter.runEntry(entry, ShotSpeeds.FAST);
                     pivot.runToPosition(Math.min(Math.abs(entry.Angle), 50));
                 }, shooter, pivot))).andThen(Commands.waitUntil(shooterAndPivotReady()))
-                // .andThen(Commands.either(Commands.waitSeconds(0.15), Commands.none(), () -> DriverStation.isAutonomousEnabled()))
+                // .andThen(Commands.either(Commands.waitSeconds(0.15), Commands.none(), () ->
+                // DriverStation.isAutonomousEnabled()))
                 .andThen(conveyCommand())
                 .andThen(Commands.waitSeconds(0.2))
                 .andThen(new InstantCommand(() -> isInMagicShoot = false))
@@ -977,7 +978,7 @@ public class RobotContainer {
         var ste = ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTY("limelight-shooter"),
                 CameraLerpStrat.LimelightTY);
 
-        DashboardStore.add("Limelight TY distance", () -> ste.Distance.in(Feet));
+        SmartDashboard.putNumber("Limelight TY distance", ste.Distance.in(Feet));
         return ste;
     }
 
@@ -990,7 +991,7 @@ public class RobotContainer {
         var ste = ShooterTable.calcShooterTableEntryCamera(distance.get(),
                 CameraLerpStrat.PhotonVisionDistance);
 
-        DashboardStore.add("PhotonVision 2d distance", () -> ste.Distance.in(Feet));
+        SmartDashboard.putNumber("PhotonVision 2d distance", ste.Distance.in(Feet));
         return ste;
     }
 
@@ -998,7 +999,7 @@ public class RobotContainer {
         var ste = ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTA("limelight-shooter"),
                 CameraLerpStrat.LimelightArea);
 
-        DashboardStore.add("Limelight TA distance", () -> ste.Distance.in(Feet));
+        SmartDashboard.putNumber("Limelight TA distance", ste.Distance.in(Feet));
         return ste;
     }
 

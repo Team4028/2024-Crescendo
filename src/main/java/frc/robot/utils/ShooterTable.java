@@ -10,6 +10,7 @@ import java.util.function.UnaryOperator;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.UnaryFunction;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.ShooterTable.ShooterTableEntry.CameraLerpStrat;
 
 public class ShooterTable {
@@ -55,16 +56,16 @@ public class ShooterTable {
     private static void fillInTable() {
         // put entries here
         // Distances must go from top to bottom: shortest to longest
-        table.add(new ShooterTableEntry(Feet.of(4.2), 0.0, 16.29, 0.772, 30.9, 0.6)); // 55 degrees
-        table.add(new ShooterTableEntry(Feet.of(5.0), 0.0, 10.27, 0.65, 27.0, 0.7)); // 50 degrees
-        table.add(new ShooterTableEntry(Feet.of(6.0), 0.0, 3.35, 0.541, 22.8, 0.8)); // 45 degrees
-        table.add(new ShooterTableEntry(Feet.of(8.0), 0.0, -5.8, 0.386, 16., 1.0)); // 36 degrees
-        table.add(new ShooterTableEntry(Feet.of(10.), 0.0, -11.26, 0.289, 12.1, 1.0)); // 31 degrees
-        table.add(new ShooterTableEntry(Feet.of(13.), 0.0, -17.5, 0.191, 6.7, 1.0)); // 25 degrees
-        table.add(new ShooterTableEntry(Feet.of(16.), 0.0, -20.96, 0.142, 4.3, 1.0)); // 23 degrees
-        table.add(new ShooterTableEntry(Feet.of(19.), 0.0, -22.33, 0.106, 3.25, 1.0)); // 21.5 degrees
-        table.add(new ShooterTableEntry(Feet.of(22.), 0.0, -30, 0.1, 2.24, 1.0)); // 20.5 degrees
-        table.add(new ShooterTableEntry(Feet.of(27.), 0.0, -35, 0.08, 0.25, 0.95)); // 20 degrees
+        table.add(new ShooterTableEntry(Feet.of(4.2), 0.0, 11.71, 0, 30.9, 0.6)); // 55 degrees
+        table.add(new ShooterTableEntry(Feet.of(5.0), 0.0, 5.92, 0, 27.0, 0.7)); // 50 degrees
+        table.add(new ShooterTableEntry(Feet.of(6.0), 0.0, -1.09, 0, 22.8, 0.8)); // 45 degrees
+        table.add(new ShooterTableEntry(Feet.of(8.0), 0.0, -9.88, 0, 16., 1.0)); // 36 degrees
+        table.add(new ShooterTableEntry(Feet.of(10.), 0.0, -14.92, 0, 12.1, 1.0)); // 31 degrees
+        table.add(new ShooterTableEntry(Feet.of(13.), 0.0, -20.44, 0, 6.7, 1.0)); // 25 degrees
+        table.add(new ShooterTableEntry(Feet.of(16.), 0.0, -25.2, 0, 4.3, 1.0)); // 23 degrees
+        table.add(new ShooterTableEntry(Feet.of(19.), 0.0, -30, 0, 3.25, 1.0)); // 21.5 degrees
+        table.add(new ShooterTableEntry(Feet.of(22.), 0.0, -35, 0, 2.24, 1.0)); // 20.5 degrees
+        table.add(new ShooterTableEntry(Feet.of(27.), 0.0, -40, 0, 0.25, 0.95)); // 20 degrees
     }
 
     static {
@@ -103,10 +104,14 @@ public class ShooterTable {
             return closestHigher;
 
         for (var entry : table) {
+            // entry is less than distancce
+            // delta b/t lower & dist > entry & dist (entry closer to dist than lower)
             if (cameraDistanceGetter.apply(entry) < cameraDistance
                     && (Math.abs(cameraDistance - cameraDistanceGetter.apply(closestLower)) > Math
                             .abs(cameraDistance - cameraDistanceGetter.apply(entry)))) {
                 closestLower = entry;
+                // entry is greater than distancce
+                // delta b/t higher & dist > entry & dist (entry closer to dist than higher)
             } else if (cameraDistanceGetter.apply(entry) > cameraDistance
                     && (Math.abs(cameraDistance - cameraDistanceGetter.apply(closestHigher)) > Math
                             .abs(cameraDistance - cameraDistanceGetter.apply(entry)))) {
@@ -116,13 +121,22 @@ public class ShooterTable {
             }
         }
 
+        // 20.5 - 20.44 = 0.06
+        // 26.2 - 20.5 = 5.7
+
         double scaleFactor = (cameraDistance - cameraDistanceGetter.apply(closestLower))
                 / (cameraDistanceGetter.apply(closestHigher) - cameraDistanceGetter.apply(closestLower));
+
+        SmartDashboard.putNumber("Scale Factor", scaleFactor);
 
         scaleFactor = Math.abs(scaleFactor);
 
         Measure<Distance> interpolatedDistance = closestHigher.Distance.minus(closestLower.Distance).times(scaleFactor)
                 .plus(closestLower.Distance);
+
+        SmartDashboard.putNumber("Interpolated Distance", interpolatedDistance.in(Feet));
+        SmartDashboard.putNumber("Higher", closestHigher.Distance.in(Feet));
+        SmartDashboard.putNumber("Lower", closestLower.Distance.in(Feet));
 
         double interpolatedAngle = scaleFactor * (closestHigher.Angle - closestLower.Angle) + closestLower.Angle;
 
