@@ -45,6 +45,7 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
@@ -516,6 +517,16 @@ public class RobotContainer {
         /* Toggle Chassis Mode */
         driverController.rightBumper().onTrue(Commands.runOnce(() -> currentSpeed = SLOW_SPEED))
                 .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
+
+        /* bruh */
+        driverController.povUp().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kForward))
+                .onFalse(drivetrain.applyRequest(() -> xDrive));
+        driverController.povDown().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kReverse))
+                .onFalse(drivetrain.applyRequest(() -> xDrive));
+        driverController.povUp().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kForward))
+                .onFalse(drivetrain.applyRequest(() -> xDrive));
+        driverController.povDown().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kReverse))
+                .onFalse(drivetrain.applyRequest(() -> xDrive));
 
         // ========================= //
         /* Misc */
