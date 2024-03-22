@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.265711906984267,
-        "y": 1.5202400775238134
+        "x": 6.716217186629004,
+        "y": 0.9359316747156999
       },
       "isLocked": false,
       "linkedName": "3pr1"
@@ -20,8 +20,8 @@
         "y": 2.385607506257749
       },
       "prevControl": {
-        "x": 7.514650872321687,
-        "y": 2.037560581878242
+        "x": 6.975286517687129,
+        "y": 2.3279114595141954
       },
       "nextControl": null,
       "isLocked": false,
@@ -29,7 +29,19 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "New Constraints Zone",
+      "minWaypointRelativePos": 0.0,
+      "maxWaypointRelativePos": 0.5,
+      "constraints": {
+        "maxVelocity": 3.0,
+        "maxAcceleration": 3.5,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0
+      }
+    }
+  ],
   "eventMarkers": [
     {
       "name": "Stop Shooter",

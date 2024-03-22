@@ -38,7 +38,13 @@
         {
           "type": "named",
           "data": {
-            "name": "2.5 Right Stationary Shot"
+            "name": "2.5 Right Align"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stationary Shot"
           }
         },
         {
@@ -57,12 +63,6 @@
           "type": "named",
           "data": {
             "name": "zeroApril"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "2.5 Final Note Right"
           }
         },
         {

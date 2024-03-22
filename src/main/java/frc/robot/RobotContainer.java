@@ -46,6 +46,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.commands.AlignDrivetrain;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
 import frc.robot.commands.Autons.StartPoses;
@@ -299,7 +300,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Spit Note", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
-                .alongWith(shooter.spinBothCommand(0.15))
+                .alongWith(shooter.spinBothCommand(0.21))
                 .repeatedly());
 
         NamedCommands.registerCommand("Run Pivot To Home", pivot.runToHomeCommand());
@@ -352,17 +353,17 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Center Pathfinding Shot", drivetrain
                 .pathFindCommand(new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.75, 0)
-                .alongWith(runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST).repeatedly()
-                        .until(shooterAndPivotReady()))
-                .andThen(conveyCommand().withTimeout(1.0))
-                .andThen(shooter.stopCommand()));
-
-        ShooterTableEntry twoHalfRightEntry = new ShooterTableEntry(Feet.of(0), 0.0, 0.0, 0.0, 4.0, 1.0);
+                .andThen(NamedCommands.getCommand("zeroApril"))
+                .andThen(odometryShotCommand()));
 
         NamedCommands.registerCommand("Right Center Pathfinding Shot", drivetrain
                 .mirrorablePathFindCommand(Constants.RIGHT_3_SHOOT_PATHFINDING_POSE, 0.75, 0)
                 .alongWith(NamedCommands.getCommand("Fix Note"))
-                .andThen(magicShootCommand()));
+                .andThen(NamedCommands.getCommand("zeroApril"))
+                .andThen(odometryShotCommand()));
+
+        NamedCommands.registerCommand("2.5 Right Align", new AlignDrivetrain(drivetrain, () -> Units.degreesToRadians(-38.),
+                        () -> drivetrain.getState().Pose.getRotation().getRadians(), true).withTimeout(0.4));
 
         NamedCommands.registerCommand("Note 3",
                 drivetrain.pathFindCommand(new Pose2d(4.67, 6.7, Rotation2d.fromDegrees(-18)), 0.75, 2.5));
@@ -395,7 +396,7 @@ public class RobotContainer {
          * When shooter ready, feed
          * Stop shooter
          */
-        NamedCommands.registerCommand("2.5 Stationary Shot", magicShootCommand());
+        NamedCommands.registerCommand("Stationary Shot", odometryShotCommand());
 
         /* 2.5 but right side */
         NamedCommands.registerCommand("2.5 Right Stationary Shot",
@@ -404,7 +405,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("2.5 Final Note", drivetrain
                 .pathFindCommand(new Pose2d(3.71, 6.51, new Rotation2d(Units.degreesToRadians(-9.1))), 0.75, 0));
         NamedCommands.registerCommand("2.5 Final Note Right", drivetrain
-                .pathFindCommand(new Pose2d(3.8, 1.6, new Rotation2d(Units.degreesToRadians(-20))), 0.75, 0.));
+                .pathFindCommand(new Pose2d(3.4, 2.2, new Rotation2d(Units.degreesToRadians(-46))), 0.75, 0.));
 
     }
 
@@ -719,6 +720,14 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
+    /* Odometry shot */
+    private Command odometryShotCommand() {
+        return runEntryCommand(() -> getBestAutonEntry(), () -> ShotSpeeds.FAST)
+                .andThen(Commands.waitUntil(shooterAndPivotReady()))
+                .andThen(conveyCommand().withTimeout(1.0))
+                .andThen(shooter.stopCommand().alongWith(pivot.runToHomeCommand()));
+    }
+
     /* Magic shoot ut awesome */
     private Command magicShootCommand() {
         return shooter.runShotCommand(ShotSpeeds.MEDIUM)
@@ -953,6 +962,23 @@ public class RobotContainer {
         }
 
         return Optional.empty();
+    }
+
+    public ShooterTableEntry getBestAutonEntry() {
+        Pose2d pose = drivetrain.getState().Pose;
+
+        Transform2d dist = pose.minus(Constants.SPEAKER_DISTANCE_TARGET);
+        Translation2d translation = dist.getTranslation();
+
+        ShooterTableEntry entryPicked = ShooterTable
+                .calcShooterTableEntry(Meters.of(translation.getNorm() - 0.25));
+
+        SmartDashboard.putNumber("Distance", Units.metersToFeet(translation.getNorm()));
+
+        SmartDashboard.putNumber("ST Angle", entryPicked.Angle);
+        SmartDashboard.putNumber("ST Left", entryPicked.Percent);
+
+        return entryPicked;
     }
 
     /* Get Shooter Table Entry */
