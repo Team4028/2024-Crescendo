@@ -124,14 +124,29 @@ public class Shooter extends SubsystemBase {
 
         leftMotor.setInverted(true);
 
-        leftMotor.setNeutralMode(NeutralModeValue.Brake);
-        rightMotor.setNeutralMode(NeutralModeValue.Brake);
+        leftMotor.setNeutralMode(NeutralModeValue.Coast);
+        rightMotor.setNeutralMode(NeutralModeValue.Coast);
 
         leftMotor.getConfigurator().apply(leftCurrentLimitsConfigs);
         rightMotor.getConfigurator().apply(rightCurrentLimitsConfigs);
 
         leftMotor.getConfigurator().apply(leftRampConfigs);
         rightMotor.getConfigurator().apply(rightRampConfigs);
+
+        leftMotor.getVelocity().setUpdateFrequency(50.);
+        rightMotor.getVelocity().setUpdateFrequency(50.);
+
+        leftMotor.getStatorCurrent().setUpdateFrequency(10.);
+        rightMotor.getStatorCurrent().setUpdateFrequency(10.);
+
+        leftMotor.getBridgeOutput().setUpdateFrequency(20.);
+        rightMotor.getBridgeOutput().setUpdateFrequency(20.);
+
+        leftMotor.getDutyCycle().setUpdateFrequency(50.);
+        rightMotor.getDutyCycle().setUpdateFrequency(50.);
+
+        leftMotor.optimizeBusUtilization();
+        rightMotor.optimizeBusUtilization();
 
         // ==================================
         // SHOOTER PID
@@ -173,8 +188,8 @@ public class Shooter extends SubsystemBase {
 
     /* Check if shooter is running */
     public boolean isRunning() {
-        return Math.abs(leftMotor.getMotorVoltage().getValueAsDouble()) > 0.2
-                || Math.abs(rightMotor.getMotorVoltage().getValueAsDouble()) > 0.2;
+        return Math.abs(leftMotor.getVelocity().getValueAsDouble()) > 100.0
+                || Math.abs(rightMotor.getVelocity().getValueAsDouble()) > 100.0;
     }
 
     /* Check if shooter is spinned up */
@@ -289,8 +304,8 @@ public class Shooter extends SubsystemBase {
         leftVelocity.append(leftMotor.getVelocity().getValueAsDouble() * 60.);
         rightVelocity.append(rightMotor.getVelocity().getValueAsDouble() * 60.);
 
-        leftVoltage.append(leftMotor.getDutyCycle().getValueAsDouble());
-        rightVoltage.append(rightMotor.getDutyCycle().getValueAsDouble());
+        leftVoltage.append(leftMotor.getBridgeOutput().getValueAsDouble());
+        rightVoltage.append(rightMotor.getBridgeOutput().getValueAsDouble());
     }
 
     @Override

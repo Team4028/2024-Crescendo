@@ -23,7 +23,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 public class AlignDrivetrain extends ProfiledPIDCommand {
 
     private static final SwerveRequest.FieldCentric m_drive = new SwerveRequest.FieldCentric()
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+            .withDriveRequestType(DriveRequestType.Velocity);
 
     private static final LinearFilter m_filter = LinearFilter.movingAverage(5);
 

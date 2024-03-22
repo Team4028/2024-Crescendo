@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -138,6 +139,7 @@ public class Pivot extends SubsystemBase {
         motor.setClosedLoopRampRate(RAMP_RATE);
         motor.setSoftLimit(SoftLimitDirection.kForward, (float) MAX_POSITION);
 
+        /* CAN Bus */
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 20);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);
@@ -205,6 +207,10 @@ public class Pivot extends SubsystemBase {
     public void runToPosition(double position) {
         targetPosition = position;
         pid.setReference(position, ControlType.kPosition);
+    }
+
+    public Command runToPositionCommand(DoubleSupplier position) {
+        return runOnce(() -> runToPosition(position.getAsDouble()));
     }
 
     public Command runToPositionCommand(double position) {

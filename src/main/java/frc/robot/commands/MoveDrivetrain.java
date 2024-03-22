@@ -14,7 +14,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class MoveDrivetrain extends ProfiledPIDCommand {
     private static final SwerveRequest.ApplyChassisSpeeds drive = new SwerveRequest.ApplyChassisSpeeds()
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+            .withDriveRequestType(DriveRequestType.Velocity);
 
     private static final LinearFilter filter = LinearFilter.movingAverage(5);
 
@@ -34,7 +34,6 @@ public class MoveDrivetrain extends ProfiledPIDCommand {
                 });
 
         addRequirements(drivetrain);
-        getController().enableContinuousInput(-1., 1.);
     }
 
     @Override

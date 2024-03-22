@@ -3,18 +3,13 @@ package frc.robot.utils;
 import static edu.wpi.first.units.Units.Feet;
 
 import java.util.ArrayList;
-import java.util.function.DoubleSupplier;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
-
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.UnaryFunction;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.ShooterTable.ShooterTableEntry.CameraLerpStrat;
 
 public class ShooterTable {
-    // TODO: We may want P values here, or just tune kF
     public static final class ShooterTableEntry {
         public Measure<Distance> Distance;
         public double PhotonDistance;
@@ -32,7 +27,7 @@ public class ShooterTable {
         /**
          * Construct a shooter table entry.
          * 
-         * @param distance       Distance from the target, in feet (?)
+         * @param distance       Distance from the target
          * @param photonDistance The arb dist reported by garbage PV
          * @param llTY           The arb ty reported by garbage LL
          * @param angle          Angle of the shooter pivot, in rotations.
@@ -148,6 +143,7 @@ public class ShooterTable {
     }
 
     public static ShooterTableEntry calcShooterTableEntry(Measure<Distance> distance) {
+        SmartDashboard.putNumber("Index", distance.in(Feet));
         ShooterTableEntry closestLower = table.get(0);
         ShooterTableEntry closestHigher = table.get(table.size() - 1);
 

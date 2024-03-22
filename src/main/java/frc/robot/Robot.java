@@ -30,7 +30,7 @@ public class Robot extends TimedRobot {
         }, 0.1);
 
         new WaitCommand(0.5).andThen(Commands.waitUntil(m_robotContainer::climberReady),
-                Commands.runOnce(() -> m_robotContainer.rezeroClimber()));
+                Commands.runOnce(() -> m_robotContainer.rezeroClimber())).schedule();
     }
 
     @Override
@@ -43,6 +43,7 @@ public class Robot extends TimedRobot {
     @Override
     public void disabledInit() {
         DataLogManager.stop();
+        SignalLogger.stop();
     }
 
     @Override
@@ -81,6 +82,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         DataLogManager.start();
+        SignalLogger.start();
 
         if (m_autonomousCommand != null) {
             m_autonomousCommand.cancel();
