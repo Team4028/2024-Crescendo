@@ -30,11 +30,11 @@ public class ShooterAlign extends ProfiledPIDCommand {
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
                         // The PID gains
-                        10.5,
+                        6.0,
                         0.0,
                         0.0,
                         // The motion profile constraints
-                        new TrapezoidProfile.Constraints(1, 1)),
+                        new TrapezoidProfile.Constraints(2.0, 2.0)),
                 // This should return the measurement
                 () -> {
                     // int tagID = DriverStation.getAlliance().isPresent()

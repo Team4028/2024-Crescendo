@@ -21,6 +21,7 @@ import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.DashboardStore;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
@@ -234,6 +235,13 @@ public class Shooter extends SubsystemBase {
 
     public Command stopCommand() {
         return runOnce(this::stop);
+    }
+
+    public Command brakeStopCommand() {
+        return runShotCommand(ShotSpeeds.AMP, 0.0).andThen(
+            Commands.waitSeconds(0.2),
+            stopCommand()
+        );
     }
 
     public void setSlot(int slot) {

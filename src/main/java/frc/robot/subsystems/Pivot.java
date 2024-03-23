@@ -254,7 +254,7 @@ public class Pivot extends SubsystemBase {
     }
 
     public boolean inPosition() {
-        return Math.abs(getPosition() - targetPosition) < 1.0;
+        return Math.abs(getPosition() - targetPosition) < 0.6;
     }
 
     public BooleanSupplier inPositionSupplier() {

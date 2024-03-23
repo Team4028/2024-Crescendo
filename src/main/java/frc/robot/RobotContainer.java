@@ -239,7 +239,6 @@ public class RobotContainer {
             isInMagicShoot = true;
             getBestSTEntryLLY();
         }).andThen(
-            Commands.waitSeconds(2.0),
                 Commands.runOnce(() -> {
                     ShooterTableEntry entry = getBestSTEntryLLY();
                     shooter.runEntry(entry, ShotSpeeds.FAST);
@@ -532,11 +531,13 @@ public class RobotContainer {
         driverController.rightStick().onTrue(stopAllCommand().alongWith(drivetrain.runOnce(() -> {
         })));
 
-        driverController.leftStick().whileTrue(new ShooterAlignWhileStrafing(
-                () -> (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red ? -1
-                        : 1) * scaleDriverController(-driverController.getLeftX(), yLimiter, currentSpeed) * MAX_SPEED,
-                drivetrain, trapVision).alongWith(new InstantCommand(() -> isSnappedToSpeaker = true))
-                .andThen(new InstantCommand(() -> isSnappedToSpeaker = false)));
+        // driverController.leftStick().whileTrue(new ShooterAlignWhileStrafing(
+        //         () -> (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red ? -1
+        //                 : 1) * scaleDriverController(-driverController.getLeftX(), yLimiter, currentSpeed) * MAX_SPEED,
+        //         drivetrain, trapVision).alongWith(new InstantCommand(() -> isSnappedToSpeaker = true))
+        //         .andThen(new InstantCommand(() -> isSnappedToSpeaker = false)));
+
+        driverController.leftStick().whileTrue(new ShooterAlign(drivetrain, leftVision).withTimeout(0.5));
 
         // =================== //
         /* OPERATOR CONTROLLER */
@@ -736,11 +737,11 @@ public class RobotContainer {
 
     /* Magic shoot ut awesome */
     private Command magicShootCommand() {
-        return shooter.runShotCommand(ShotSpeeds.MEDIUM)
-                .alongWith(new ShooterAlign(drivetrain, trapVision))
+        return shooter.runShotCommand(ShotSpeeds.FAST)
+                .alongWith(new ShooterAlign(drivetrain, trapVision)).withTimeout(0.4)
                 .andThen(runEntryCommand(() -> getBestSTEntryLLY(), () -> ShotSpeeds.FAST))
                 .andThen(Commands.waitUntil(shooter.isReadySupplier()))
-                .andThen(Commands.waitSeconds(0.5))
+                .andThen(Commands.waitSeconds(0.1))
                 .andThen(conveyCommand())
                 .andThen(Commands.waitSeconds(0.2))
                 .finallyDo(() -> {
@@ -861,7 +862,7 @@ public class RobotContainer {
 
     /* Run both Conveyor and Infeed */
     private Command runBoth(boolean stopShooter, double conveyorVbus, double infeedVbus) {
-        return Commands.either(shooter.stopCommand(), Commands.none(), () -> stopShooter)
+        return Commands.either(shooter.brakeStopCommand(), Commands.none(), () -> stopShooter)
                 .alongWith(infeed.runMotorCommand(infeedVbus)
                         .alongWith(conveyor.runMotorCommand(conveyorVbus)).repeatedly());
     }
@@ -1010,6 +1011,8 @@ public class RobotContainer {
     }
 
     private ShooterTableEntry getBestSTEntryLLY() {
+        SmartDashboard.putNumber("Raw TY", LimelightHelpers.getTY("limelight-shooter"));
+
         var ste = ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTY("limelight-shooter"),
                 CameraLerpStrat.LimelightTY);
 

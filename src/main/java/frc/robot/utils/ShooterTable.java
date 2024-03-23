@@ -55,16 +55,16 @@ public class ShooterTable {
     private static void fillInTable() {
         // put entries here
         // Distances must go from top to bottom: shortest to longest
-        table.add(new ShooterTableEntry(Feet.of(4.2), 0.0, 21.02, 0.985, 4.5, 30.9, 0.6)); // 55 degrees
-        table.add(new ShooterTableEntry(Feet.of(5.0), 0.0, 14.55, 0.8, 3.6, 27.0, 0.7)); // 50 degrees
-        table.add(new ShooterTableEntry(Feet.of(6.0), 0.0, 6.9, 0.59, 2.75, 22.8, 0.8)); // 45 degrees
-        table.add(new ShooterTableEntry(Feet.of(8.0), 0.0, -2.46, 0.367, 1.711, 16., 1.0)); // 36 degrees
-        table.add(new ShooterTableEntry(Feet.of(10.), 0.0, -7.84, 0.254, 1.16, 12.1, 1.0)); // 31 degrees
-        table.add(new ShooterTableEntry(Feet.of(13.), 0.0, -13.62, 0.164, 0.737, 6.7, 1.0)); // 25 degrees
-        table.add(new ShooterTableEntry(Feet.of(16.), 0.0, -16.88, 0.112, 0.562, 4.3, 1.0)); // 23 degrees
-        table.add(new ShooterTableEntry(Feet.of(19.), 0.0, -17.9, 0.082, 0.376, 3.25, 1.0)); // 21.5 degrees
-        table.add(new ShooterTableEntry(Feet.of(22.), 0.0, -19.63, 0.066, 0.3, 2.24, 1.0)); // 20.5 degrees
-        table.add(new ShooterTableEntry(Feet.of(27.), 0.0, -22, 0.045, 0.25, 0.25, 0.95)); // 20 degrees
+        table.add(new ShooterTableEntry(Feet.of(4.2), 0.0, 20.11, 0.97, 4.5, 30.9, 0.6)); // 55 degrees
+        table.add(new ShooterTableEntry(Feet.of(5.0), 0.0, 13.63, 0.785, 3.757, 27.0, 0.7)); // 50 degrees
+        table.add(new ShooterTableEntry(Feet.of(6.0), 0.0, 6.25, 0.598, 2.796, 22.8, 0.8)); // 45 degrees
+        table.add(new ShooterTableEntry(Feet.of(8.0), 0.0, -3.13, 0.368, 1.761, 16., 1.0)); // 36 degrees
+        table.add(new ShooterTableEntry(Feet.of(10.), 0.0, -8.3, 0.257, 1.195, 12.1, 1.0)); // 31 degrees
+        table.add(new ShooterTableEntry(Feet.of(13.), 0.0, -14.06, 0.166, 0.78, 6.7, 1.0)); // 25 degrees
+        table.add(new ShooterTableEntry(Feet.of(16.), 0.0, -17.5, 0.114, 0.528, 4.3, 1.0)); // 23 degrees
+        table.add(new ShooterTableEntry(Feet.of(19.), 0.0, -18.59, 0.082, 0.38, 3.25, 1.0)); // 21.5 degrees
+        table.add(new ShooterTableEntry(Feet.of(22.), 0.0, -20.26, 0.064, 0.29, 2.24, 1.0)); // 20.5 degrees
+        table.add(new ShooterTableEntry(Feet.of(27.), 0.0, -22, 0.045, 0.25, 0.25, 1.0)); // 20 degrees
     }
 
     static {
@@ -81,6 +81,8 @@ public class ShooterTable {
         ShooterTableEntry closestHigher = table.get(table.size() - 1);
 
         Function<ShooterTableEntry, Double> cameraValueGetter;
+
+        SmartDashboard.putNumber("epic ty", cameraValue);
 
         switch (strategy) {
             case LimelightTY:
@@ -128,8 +130,6 @@ public class ShooterTable {
 
         double scaleFactor = (cameraValue - cameraValueGetter.apply(closestLower))
                 / (cameraValueGetter.apply(closestHigher) - cameraValueGetter.apply(closestLower));
-
-        SmartDashboard.putNumber("epic ty", cameraValue);
 
         SmartDashboard.putNumber("Scale Factor", scaleFactor);
 
