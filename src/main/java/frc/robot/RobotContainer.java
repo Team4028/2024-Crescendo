@@ -235,7 +235,11 @@ public class RobotContainer {
 
         initAutonChooser();
 
-        magicShootNoLockCommand = new InstantCommand(() -> isInMagicShoot = true).andThen(
+        magicShootNoLockCommand = new InstantCommand(() -> {
+            isInMagicShoot = true;
+            getBestSTEntryLLY();
+        }).andThen(
+            Commands.waitSeconds(2.0),
                 Commands.runOnce(() -> {
                     ShooterTableEntry entry = getBestSTEntryLLY();
                     shooter.runEntry(entry, ShotSpeeds.FAST);
@@ -324,19 +328,21 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Run Back", conveyBackCommand(-2.5, 0.25));
 
-        ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0), 0.0, 0.0, 0.0,
-                10.8, 1.0); // TODO: fix
+        // ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0), 0.0, 0.0,
+        // 0.0,
+        // 10.8, 1.0); // TODO: fix
 
         // TODO: We may want a command that constantly updates the shooter table and
         // runs the shooter/pivot based on that
         // makes shooting on the move/faster autons much easier
 
         NamedCommands.registerCommand("Start Shooter",
-                runEntryCommand(() -> twoHalfEntry, () -> ShotSpeeds.FAST));
+                runShooterAndPivotCommand(ShotSpeeds.FAST, 1.0, 10.8));
 
-        ShooterTableEntry fourP = new ShooterTableEntry(Feet.of(0), 0.0, 0.0, 0.0, 0.0, 0.85);
+        // ShooterTableEntry fourP = new ShooterTableEntry(Feet.of(0), 0.0, 0.0, 0.0,
+        // 0.0, 0.85);
         NamedCommands.registerCommand("Start Shooter No Pivot",
-                shooter.runEntryCommand(() -> fourP, () -> ShotSpeeds.FAST));
+                shooter.runShotCommand(ShotSpeeds.FAST, 0.85));
 
         // ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 12, 1.0);
         NamedCommands.registerCommand("4 Piece Shooter Pivot", pivot.runToPositionCommand(15.));
@@ -743,6 +749,10 @@ public class RobotContainer {
                 });
     }
 
+    private Command runShooterAndPivotCommand(ShotSpeeds shotType, double shooterPercent, double pivotPosition) {
+        return shooter.runShotCommand(shotType, shooterPercent).alongWith(pivot.runToPositionCommand(pivotPosition));
+    }
+
     /* Check if Climber encoder is ready */
     public boolean climberReady() {
         // return climber.encoderReady();
@@ -1011,7 +1021,7 @@ public class RobotContainer {
         Optional<Double> distance = trapVision
                 .getTagDistance(DriverStation.getAlliance().get() == Alliance.Blue ? 7 : 4);
         if (distance.isEmpty())
-            return new ShooterTableEntry(Feet.of(0), 0, 0, 0, 0, 0);
+            return new ShooterTableEntry(Feet.of(0), 0, 0, 0, 0, 0, 0);
 
         var ste = ShooterTable.calcShooterTableEntryCamera(distance.get(),
                 CameraLerpStrat.PhotonVisionDistance);
@@ -1021,10 +1031,21 @@ public class RobotContainer {
     }
 
     private ShooterTableEntry getBestSTEntryLLArea() {
+        LimelightHelpers.setPipelineIndex("limelight-shooter", 0);
         var ste = ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTA("limelight-shooter"),
                 CameraLerpStrat.LimelightArea);
 
         SmartDashboard.putNumber("Limelight TA distance", ste.Distance.in(Feet));
+        return ste;
+    }
+
+    private ShooterTableEntry getBestSTEntryLLAreaMulti() {
+        LimelightHelpers.setPipelineIndex("limelight-shooter", 1);
+        var ste = ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTA("limelight-shooter"),
+                CameraLerpStrat.LimelightMultiTagArea);
+
+        SmartDashboard.putNumber("Limelight MultiTag TA distance", ste.Distance.in(Feet));
+        LimelightHelpers.setPipelineIndex("limelight-shooter", 0);
         return ste;
     }
 

@@ -304,8 +304,8 @@ public class Shooter extends SubsystemBase {
         leftVelocity.append(leftMotor.getVelocity().getValueAsDouble() * 60.);
         rightVelocity.append(rightMotor.getVelocity().getValueAsDouble() * 60.);
 
-        leftVoltage.append(leftMotor.getBridgeOutput().getValueAsDouble());
-        rightVoltage.append(rightMotor.getBridgeOutput().getValueAsDouble());
+        leftVoltage.append(leftMotor.getMotorVoltage().getValueAsDouble());
+        rightVoltage.append(rightMotor.getMotorVoltage().getValueAsDouble());
     }
 
     @Override
