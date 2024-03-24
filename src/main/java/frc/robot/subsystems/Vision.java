@@ -42,8 +42,8 @@ public class Vision extends SubsystemBase {
     public static final Transform3d SHOOTER_ROBOT_TO_CAMERA = new Transform3d(
             0.,
             0.,
-            Units.inchesToMeters(18.75),
-            new Rotation3d(0., Units.degreesToRadians(18.), 0.));
+            Units.inchesToMeters(16.75),
+            new Rotation3d(0., Units.degreesToRadians(28.), 0.));
 
     public static final int TRAP_PIPELINE_INDEX = 1;
     public static final int SHOOTER_PIPELINE_INDEX = 0;

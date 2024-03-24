@@ -21,7 +21,7 @@ public class FanPivot extends SubsystemBase {
 
     private static final int CAN_ID = 17;
 
-    private static final double TRAP_POSITION = 0.57;
+    public static final double TRAP_POSITION = 0.57;
 
     /* Requests */
     private final PositionDutyCycle positionRequest = new PositionDutyCycle(0.)

@@ -130,10 +130,10 @@ public class Conveyor extends SubsystemBase {
 
     public boolean hasInfed() {
         /*
-         * inffeeeddd tof sees -> sstart infedd timer, set infeedddshasseenNote = true
-         * connnvveryyre tof sees -> stop infeddd timre, settt convashasseennote = true
-         * ingffeed timre expires -> sayyy strawbry jam
-         * coveyorTimre exxpriess -> return truee;
+         * infeed tof sees -> start infeed timer, set infeedhasSeenNote = true
+         * conveyor tof sees -> stop infeed timer, set ConveyorHasSeenNote = true
+         * infeed timer expires -> say strawbry jam
+         * conveyorTimer exprires -> return true;
          * else -> https://www.wikihow.com/Be-Better-at-Something
          */
         if (infeedTofSensor.getRange() <= INFEED_DETECTION_RANGE_THRESHOLD) {
