@@ -44,7 +44,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignDrivetrain;
@@ -317,9 +316,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Prepare Spit", shooter.spinBothCommand(0.15));
 
-        NamedCommands.registerCommand("Fix Note",
-                runBoth(true, FAST_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(0.25).andThen(
-                        conveyBackCommand(-2.0, 0.2)));
+        NamedCommands.registerCommand("Fix Note", fixNoteCommand());
 
         NamedCommands.registerCommand("Limelight Acquire",
                 new LimelightAcquire(() -> 0.6, // xLimeAquireLimiter.calculate(0.5),
@@ -350,6 +347,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("Start Shooter No Pivot",
                 shooter.runShotCommand(ShotSpeeds.FAST, 0.85));
 
+        // TODO: get rid of this garbage and use shooter table
+
         // ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 12, 1.0);
         NamedCommands.registerCommand("4 Piece Shooter Pivot", pivot.runToPositionCommand(15.));
 
@@ -363,16 +362,11 @@ public class RobotContainer {
         NamedCommands.registerCommand("Stop Shooter", shooter.stopCommand());
         NamedCommands.registerCommand("Stop Infeed", runBoth(false, 0., 0.));
 
-        NamedCommands.registerCommand("Center Pathfinding Shot", drivetrain
-                .pathFindCommand(new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.75, 0)
-                .andThen(NamedCommands.getCommand("zeroApril"))
-                .andThen(magicShootCommand()));
+        NamedCommands.registerCommand("Center Pathfinding Shot",
+                pathfindingShotCommand(new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.75, 0));
 
-        NamedCommands.registerCommand("Right Center Pathfinding Shot", drivetrain
-                .mirrorablePathFindCommand(Constants.RIGHT_3_SHOOT_PATHFINDING_POSE, 0.75, 0)
-                .alongWith(NamedCommands.getCommand("Fix Note"))
-                .andThen(NamedCommands.getCommand("zeroApril"))
-                .andThen(magicShootCommand()));
+        NamedCommands.registerCommand("Right Center Pathfinding Shot",
+                pathfindingShotCommand(Constants.RIGHT_3_SHOOT_PATHFINDING_POSE, 0.75, 0.));
 
         NamedCommands.registerCommand("2.5 Right Align",
                 new AlignDrivetrain(drivetrain, () -> Units.degreesToRadians(-38.),
@@ -768,6 +762,22 @@ public class RobotContainer {
     // =========================================== //
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
+
+    // FIXME: this needs to be mirrorable w/ rotation
+    /* Pathfinding Auton Shot */
+    private Command pathfindingShotCommand(Pose2d target, double scale, double endVelocity) {
+        return drivetrain
+                .mirrorablePathFindCommand(target, scale, endVelocity)
+                .alongWith(fixNoteCommand())
+                .andThen(NamedCommands.getCommand("zeroApril"))
+                .andThen(odometryShotCommand());
+    }
+
+    /* Fix Note Sequence */
+    private Command fixNoteCommand() {
+        return runBoth(true, FAST_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(0.25).andThen(
+                conveyBackCommand(-2.0, 0.2));
+    }
 
     /* Odometry shot */
     private Command odometryShotCommand() {
