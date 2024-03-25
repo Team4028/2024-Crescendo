@@ -331,10 +331,6 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Run Back", conveyBackCommand(-2.5, 0.25));
 
-        // ShooterTableEntry twoHalfEntry = new ShooterTableEntry(Feet.of(0), 0.0, 0.0,
-        // 0.0,
-        // 10.8, 1.0); // TODO: fix
-
         // TODO: We may want a command that constantly updates the shooter table and
         // runs the shooter/pivot based on that
         // makes shooting on the move/faster autons much easier
@@ -762,6 +758,36 @@ public class RobotContainer {
     // =========================================== //
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
+
+    private void updatePoseByLimelight() {
+        ShooterTableEntry entry = getBestSTEntryLLY();
+
+        double distance = entry.Distance.in(Meters);
+        Rotation2d angle = drivetrain.getState().Pose.getRotation();
+
+        Translation2d goalTranslation = new Translation2d(distance, angle);
+
+        Pose2d currentPose = new Pose2d(Constants.SPEAKER_DISTANCE_TARGET.getTranslation().plus(goalTranslation),
+                angle);
+
+        var speeds = drivetrain.getCurrentRobotChassisSpeeds();
+
+        double vx = speeds.vxMetersPerSecond;
+        double vy = speeds.vyMetersPerSecond;
+        double w = speeds.omegaRadiansPerSecond;
+
+        double dt = 1.0;
+
+        double dx = vx * dt;
+        double dy = vy * dt;
+        double dw = w * dt;
+
+        Pose2d newPose = new Pose2d(
+            currentPose.getX() + dx,
+            currentPose.getY() + dy,
+            currentPose.getRotation().plus(new Rotation2d(dw))
+        );
+    }
 
     // FIXME: this needs to be mirrorable w/ rotation
     /* Pathfinding Auton Shot */
