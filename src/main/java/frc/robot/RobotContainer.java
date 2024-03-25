@@ -477,17 +477,23 @@ public class RobotContainer {
     // =========================== //
     private void configureBindings() {
 
-        // LED Triggers //
-//has infeed jam
-        new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.ORANGE, 5));
-//checks if it has a note
-        new Trigger(conveyor.hasInfedSupplier()).onTrue(CANdle.blink(Color.GREEN, 5));
-//flashes purple 
-        new Trigger(shooter.isReadySupplier()).onTrue(CANdle.blink(Color.PURPLE, 3));
-//Flashes white while shooting
-        new Trigger(shooter.isRunningSupplier()).onTrue(CANdle.runShootFlow(Color.WHITE));
-//Turns red while the shooter is inoperable
-        new Trigger(shooter.isWorkingSupplier()).onTrue(CANdle.setColorRedCommand().andThen(() -> System.err.println("Fatal Shooter Error")).withTimeout(4));
+        // // LED Triggers //
+        // // has infeed jam
+        // new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.ORANGE, 5))
+        //         .onFalse(CANdle.runBurnyBurnCommand());
+        // // checks if it has a note
+        // new Trigger(conveyor.hasInfedSupplier()).onTrue(CANdle.blink(Color.GREEN, 5))
+        //         .onFalse(CANdle.runBurnyBurnCommand());
+        // // flashes purple
+        // new Trigger(shooter.isReadySupplier()).onTrue(CANdle.blink(Color.PURPLE, 3))
+        //         .onFalse(CANdle.runBurnyBurnCommand());
+        // // Flashes white while shooting
+        // new Trigger(shooter.isRunningSupplier()).onTrue(CANdle.runShootFlow(Color.WHITE))
+        //         .onFalse(CANdle.runBurnyBurnCommand());
+        // // Turns red while the shooter is inoperable
+        // new Trigger(shooter.isWorkingSupplier())
+        //         .onTrue(CANdle.runBurnyBurnCommand())
+        //         .onFalse(CANdle.blink(Color.RED, 10));
 
         // Add trigger for amp/trap mode with stick press on driver or operator.
 
@@ -587,13 +593,13 @@ public class RobotContainer {
 
         /* bruh */
         // driverController.povUp().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kForward))
-        //         .onFalse(drivetrain.applyRequest(() -> xDrive));
+        // .onFalse(drivetrain.applyRequest(() -> xDrive));
         // driverController.povDown().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kReverse))
-        //         .onFalse(drivetrain.applyRequest(() -> xDrive));
+        // .onFalse(drivetrain.applyRequest(() -> xDrive));
         // driverController.povUp().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kForward))
-        //         .onFalse(drivetrain.applyRequest(() -> xDrive));
+        // .onFalse(drivetrain.applyRequest(() -> xDrive));
         // driverController.povDown().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kReverse))
-        //         .onFalse(drivetrain.applyRequest(() -> xDrive));
+        // .onFalse(drivetrain.applyRequest(() -> xDrive));
 
         // ========================= //
         /* Misc */

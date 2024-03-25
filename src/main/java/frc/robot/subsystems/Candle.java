@@ -10,7 +10,7 @@ import com.ctre.phoenix.led.CANdle.LEDStripType;
 import com.ctre.phoenix.led.ColorFlowAnimation.Direction;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.utils.BeakCommands;
 
 import com.ctre.phoenix.led.FireAnimation;
 import com.ctre.phoenix.led.RainbowAnimation;
@@ -18,8 +18,7 @@ import com.ctre.phoenix.led.SingleFadeAnimation;
 import com.ctre.phoenix.led.StrobeAnimation;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 public class Candle extends SubsystemBase {
     private final CANdle candle;
@@ -107,7 +106,7 @@ public class Candle extends SubsystemBase {
 
     // Commands for complex animations //
     public Command runBurnyBurnCommand() {
-return runOnce(() -> candle.clearAnimation(NUM_LEDS)).andThen(runOnce(() -> candle.animate(burnyBurn())));
+        return runOnce(() -> candle.clearAnimation(NUM_LEDS)).andThen(runOnce(() -> candle.animate(burnyBurn())));
     }
 
     public Command runRainbowAnimationCommnad() {
@@ -131,18 +130,13 @@ return runOnce(() -> candle.clearAnimation(NUM_LEDS)).andThen(runOnce(() -> cand
     }
 
     // Blink command -> Use for anything //
-    public Command blink(Color color, double cycles) {
-        SequentialCommandGroup commandGroup = new SequentialCommandGroup();
-
-        for (int i = 0; i < cycles; i++) {
-            commandGroup.addCommands(
-                    new InstantCommand(() -> setNoColor()),
-                    new WaitCommand(0.1),
-                    new InstantCommand(() -> setColor(color)),
-                    new WaitCommand(0.1));
-
-        }
-        return commandGroup;
+    public Command blink(Color color, int cycles) {
+        return BeakCommands.repeatCommand(
+            setNoColorCommand().andThen(
+                Commands.waitSeconds(0.25),
+                runOnce(() -> setColor(color)),
+                Commands.waitSeconds(0.25)
+            ), cycles);
     }
 
     @Override
