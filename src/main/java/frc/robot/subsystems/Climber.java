@@ -167,7 +167,7 @@ public class Climber extends SubsystemBase {
             m_target = position;
             m_targetSign = Math.signum(getError());
         })
-                .andThen(runOnce(() -> runMotor(m_targetSign * output, true)))
+                .andThen(runOnce(() -> runMotor(m_targetSign * Math.abs(output), true)))
                 // make sure overdrives aren't (generally) possible
                 .andThen(Commands.waitUntil(() -> m_targetSign == -1 ? //
                         getError() > -2.0 : getError() < 2.0))
