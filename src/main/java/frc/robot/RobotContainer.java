@@ -45,7 +45,6 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignDrivetrain;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
@@ -196,6 +195,11 @@ public class RobotContainer {
             .withDeadband(MAX_SPEED * 0.035)
             .withDriveRequestType(DriveRequestType.Velocity);
 
+    private double currentVx;
+    private double currentVy;
+    private Rotation2d futureRot;
+    private Translation2d futureTranslation;
+
     /* LL */
     private static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(36.15); // 32. //-4.65 ??
     private static final double SHOOTER_CAM_HEIGHT = Units.inchesToMeters(13.125); // 12.375
@@ -204,7 +208,7 @@ public class RobotContainer {
     public RobotContainer() {
         trapVision.setPipeline(Vision.SHOOTER_PIPELINE_INDEX);
 
-        snapDrive.HeadingController = new PhoenixPIDController(3., 0., 0.);
+        snapDrive.HeadingController = new PhoenixPIDController(6., 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
         /* Init Index Map */
@@ -511,15 +515,8 @@ public class RobotContainer {
         driverController.rightBumper().onTrue(Commands.runOnce(() -> currentSpeed = SLOW_SPEED))
                 .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
 
-        /* bruh */
-        driverController.povUp().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kForward))
-                .onFalse(drivetrain.applyRequest(() -> xDrive));
-        driverController.povDown().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kReverse))
-                .onFalse(drivetrain.applyRequest(() -> xDrive));
-        driverController.povUp().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kForward))
-                .onFalse(drivetrain.applyRequest(() -> xDrive));
-        driverController.povDown().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kReverse))
-                .onFalse(drivetrain.applyRequest(() -> xDrive));
+        /* Moving Shot */
+        driverController.a().toggleOnTrue(movingShotCommand());
 
         // ========================= //
         /* Misc */
@@ -759,7 +756,18 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
-    private void updatePoseByLimelight() {
+    private Command movingShotCommand() {
+        return drivetrain.applyRequest(() -> snapDrive
+                .withVelocityX(currentVx)
+                .withVelocityY(currentVy)
+                .withTargetDirection(futureRot))
+                .alongWith(runEntryCommand(() -> getBestSTEntry(new Pose2d(futureTranslation, futureRot)),
+                        () -> ShotSpeeds.FAST))
+                .beforeStarting(this::getMovingLLData)
+                .finallyDo(this::stopAll);
+    }
+
+    private void getMovingLLData() {
         ShooterTableEntry entry = getBestSTEntryLLY();
 
         double distance = entry.Distance.in(Meters);
@@ -772,21 +780,23 @@ public class RobotContainer {
 
         var speeds = drivetrain.getCurrentRobotChassisSpeeds();
 
-        double vx = speeds.vxMetersPerSecond;
-        double vy = speeds.vyMetersPerSecond;
-        double w = speeds.omegaRadiansPerSecond;
+        currentVx = speeds.vxMetersPerSecond;
+        currentVx = speeds.vyMetersPerSecond;
 
         double dt = 1.0;
 
-        double dx = vx * dt;
-        double dy = vy * dt;
-        double dw = w * dt;
+        double dx = currentVx * dt;
+        double dy = currentVx * dt;
 
         Pose2d newPose = new Pose2d(
-            currentPose.getX() + dx,
-            currentPose.getY() + dy,
-            currentPose.getRotation().plus(new Rotation2d(dw))
-        );
+                currentPose.getX() + dx,
+                currentPose.getY() + dy,
+                currentPose.getRotation());
+
+        Translation2d newTranslation = translationToGoal(newPose);
+
+        futureTranslation = newTranslation;
+        futureRot = newTranslation.getAngle();
     }
 
     // FIXME: this needs to be mirrorable w/ rotation
@@ -1081,11 +1091,8 @@ public class RobotContainer {
     }
 
     /* Get Shooter Table Entry */
-    public ShooterTableEntry getBestSTEntry() {
-        Pose2d pose = drivetrain.getState().Pose;
-
-        Transform2d dist = pose.minus(Constants.SPEAKER_DISTANCE_TARGET);
-        Translation2d translation = dist.getTranslation();
+    public ShooterTableEntry getBestSTEntry(Pose2d pose) {
+        Translation2d translation = translationToGoal(pose);
 
         ShooterTableEntry entryPicked = ShooterTable
                 .calcShooterTableEntry(Meters.of(translation.getNorm()));
@@ -1096,6 +1103,19 @@ public class RobotContainer {
         SmartDashboard.putNumber("ST Left", entryPicked.Percent);
 
         return entryPicked;
+    }
+
+    public ShooterTableEntry getBestSTEntry() {
+        return getBestSTEntry(drivetrain.getState().Pose);
+    }
+
+    // TODO: change distance target based on alliance
+
+    /* Helpers for ST entry stuff */
+    public Translation2d translationToGoal(Pose2d pose) {
+        Transform2d dist = pose.minus(Constants.SPEAKER_DISTANCE_TARGET);
+
+        return dist.getTranslation();
     }
 
     private ShooterTableEntry getBestSTEntryLLY() {
