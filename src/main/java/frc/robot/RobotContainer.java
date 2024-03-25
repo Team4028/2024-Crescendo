@@ -46,8 +46,6 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignDrivetrain;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
@@ -56,7 +54,6 @@ import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.commands.vision.ShooterAlign;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Candle;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
@@ -69,7 +66,6 @@ import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.subsystems.Shooter.Slots;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Whippy;
-import frc.robot.subsystems.Candle.Color;
 import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.utils.BeakCommands;
 import frc.robot.utils.DashboardStore;
@@ -82,16 +78,16 @@ public class RobotContainer {
     // =============================================== //
     /* Magic numbers, Vbus constants, and OI constants */
     // =============================================== //
-    private static final double CLIMBER_VBUS = 0.5;
+    private static final double CLIMBER_VBUS = 0.75;
     private static final double INFEED_VBUS = 0.8;
     private static final double SLOW_INFEED_VBUS = 0.5;
 
-    private static final double PIVOT_VBUS = 0.15;
+    // private static final double PIVOT_VBUS = 0.15;
     private static final double SLOW_CONVEYOR_VBUS = 0.5;
     private static final double FAST_CONVEYOR_VBUS = 0.85;
 
     private static final double FAN_VBUS = 1.;
-    private static final double FAN_PIVOT_VBUS = 0.2;
+    // private static final double FAN_PIVOT_VBUS = 0.2;
 
     private static final double SHOOTER_BACKOUT_VBUS = -0.4;
     private static final double WHIPPY_VBUS = 0.2;
@@ -101,7 +97,7 @@ public class RobotContainer {
     private static final int OI_EMERGENCY_CONTROLLER = 2;
 
     private static final int SHOOTING_PIPELINE = 0;
-    private static final int TRAP_PIPELINE = 2;
+    // private static final int TRAP_PIPELINE = 2;
 
     private static final String SHOOTER_LIMELIGHT = "limelight-shooter";
 
@@ -122,7 +118,7 @@ public class RobotContainer {
     private final Fan m_fan = new Fan();
     private final FanPivot m_fanPivot = new FanPivot();
     private final Whippy whippy = new Whippy();
-    private final Candle CANdle = new Candle();
+    // private final Candle CANdle = new Candle();
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
@@ -157,7 +153,7 @@ public class RobotContainer {
     private double currentSpeed = BASE_SPEED;
 
     private boolean isSnappedToSpeaker = false;
-    private boolean isInMagicShoot = false;
+    // private boolean isInMagicShoot = false;
 
     private enum SnapDirection {
         None(Double.NaN),
@@ -248,9 +244,12 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.Velocity);
 
     /* LL */
-    private static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(36.15); // 32. //-4.65 ??
-    private static final double SHOOTER_CAM_HEIGHT = Units.inchesToMeters(13.125); // 12.375
-    private static final double SPEAKER_TAG_HEIGHT = Units.inchesToMeters(57.125);
+    // private static final double SHOOTER_CAM_PITCH =
+    // Units.degreesToRadians(36.15); // 32. //-4.65 ??
+    // private static final double SHOOTER_CAM_HEIGHT =
+    // Units.inchesToMeters(13.125); // 12.375
+    // private static final double SPEAKER_TAG_HEIGHT =
+    // Units.inchesToMeters(57.125);
 
     public RobotContainer() {
         trapVision.setPipeline(Vision.SHOOTER_PIPELINE_INDEX);
@@ -282,6 +281,8 @@ public class RobotContainer {
         DashboardStore.add("Climber Enabled", () -> enableClimber);
         DashboardStore.add("Trap Enabled", () -> enableTrap);
 
+        DashboardStore.add("Sequence", () -> currentSequence.name());
+
         DashboardStore.add("Aligned to Speaker", () -> isSnappedToSpeaker);
         // DashboardStore.add("Executing magic shoot", () -> isInMagicShoot);
 
@@ -293,20 +294,14 @@ public class RobotContainer {
 
         initAutonChooser();
 
-        magicShootNoLockCommand = new InstantCommand(() -> {
-            isInMagicShoot = true;
-            // getBestSTEntryLLY();
-        }).andThen(
-                Commands.runOnce(() -> {
-                    ShooterTableEntry entry = getBestSTEntryLLY();
-                    shooter.runEntry(entry, ShotSpeeds.FAST);
-                    pivot.runToPosition(Math.min(Math.abs(entry.Angle), 50));
-                }, shooter, pivot).andThen(Commands.waitUntil(shooter.isReadySupplier()))
-                        // .andThen(Commands.waitSeconds(0.5))
-                        .andThen(conveyCommand())
-                        .andThen(Commands.waitSeconds(0.2))
-                        .andThen(new InstantCommand(() -> isInMagicShoot = false))
-                        .finallyDo(this::stopAll));
+        magicShootNoLockCommand = Commands.runOnce(() -> {
+            ShooterTableEntry entry = getBestSTEntryLLY();
+            shooter.runEntry(entry, ShotSpeeds.FAST);
+            pivot.runToPosition(Math.min(Math.abs(entry.Angle), 50));
+        }, shooter, pivot).andThen(Commands.waitUntil(shooter.isReadySupplier()))
+                .andThen(conveyCommand())
+                .andThen(Commands.waitSeconds(0.2))
+                .finallyDo(this::stopAll);
 
         ampPrep = pivot.runToClimbCommand()
                 .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
@@ -480,20 +475,21 @@ public class RobotContainer {
         // // LED Triggers //
         // // has infeed jam
         // new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.ORANGE, 5))
-        //         .onFalse(CANdle.runBurnyBurnCommand());
+        // .onFalse(CANdle.runBurnyBurnCommand());
         // // checks if it has a note
         // new Trigger(conveyor.hasInfedSupplier()).onTrue(CANdle.blink(Color.GREEN, 5))
-        //         .onFalse(CANdle.runBurnyBurnCommand());
+        // .onFalse(CANdle.runBurnyBurnCommand());
         // // flashes purple
         // new Trigger(shooter.isReadySupplier()).onTrue(CANdle.blink(Color.PURPLE, 3))
-        //         .onFalse(CANdle.runBurnyBurnCommand());
+        // .onFalse(CANdle.runBurnyBurnCommand());
         // // Flashes white while shooting
-        // new Trigger(shooter.isRunningSupplier()).onTrue(CANdle.runShootFlow(Color.WHITE))
-        //         .onFalse(CANdle.runBurnyBurnCommand());
+        // new
+        // Trigger(shooter.isRunningSupplier()).onTrue(CANdle.runShootFlow(Color.WHITE))
+        // .onFalse(CANdle.runBurnyBurnCommand());
         // // Turns red while the shooter is inoperable
         // new Trigger(shooter.isWorkingSupplier())
-        //         .onTrue(CANdle.runBurnyBurnCommand())
-        //         .onFalse(CANdle.blink(Color.RED, 10));
+        // .onTrue(CANdle.runBurnyBurnCommand())
+        // .onFalse(CANdle.blink(Color.RED, 10));
 
         // Add trigger for amp/trap mode with stick press on driver or operator.
 
@@ -825,6 +821,7 @@ public class RobotContainer {
                 break;
             case End:
                 seq = enableClimber ? ClimbSequence.Climb : ClimbSequence.Default;
+                break;
             default:
                 seq = ClimbSequence.Default;
                 break;
@@ -919,29 +916,6 @@ public class RobotContainer {
         return shooter.runShotCommand(shotType, shooterPercent).alongWith(pivot.runToPositionCommand(pivotPosition));
     }
 
-    /* Check if Climber encoder is ready */
-    public boolean climberReady() {
-        // return climber.encoderReady();
-        return false;
-    }
-
-    /* Rezero climber */
-    public void rezeroClimber() {
-        // climber.reZero();
-    }
-
-    /* Safe Climb */
-    // private Command safeClimbCommand(ClimberPositions position) {
-    // Command climbCommand = position == ClimberPositions.CLIMB ?
-    // climber.climbCommand()
-    // : climber.runToPositionCommand(position);
-
-    // return Commands.either(
-    // climbCommand,
-    // Commands.none(),
-    // () -> pivot.getPosition() > 50. && enableClimber);
-    // }
-
     /* Fix Note Backwards */
     private Command conveyBackCommand(double rotations, double timeout) {
         return shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
@@ -965,11 +939,12 @@ public class RobotContainer {
                 infeed.stopCommand(),
                 conveyor.stopCommand(),
                 shooter.stopCommand().andThen(shooter.setSlotCommand(Shooter.Slots.FAST)),
-                pivot.runToHomeCommand()/* ) */,
+                pivot.runToHomeCommand(),
                 m_fan.stopCommand(),
                 m_fanPivot.runToPositionCommand(0.),
                 whippy.stopCommand(),
-                setShooterPipelineCommand(SHOOTING_PIPELINE));
+                setShooterPipelineCommand(SHOOTING_PIPELINE),
+                Commands.runOnce(() -> currentSequence = ClimbSequence.Default));
     }
 
     /* Put Current ST Index Data to Dashboard */
@@ -1067,7 +1042,6 @@ public class RobotContainer {
 
     /* Joystick Scaling */
     private double scaleDriverController(double controllerInput, SlewRateLimiter limiter, double baseSpeedPercent) {
-        // controls are reversed for red
         return limiter.calculate(
                 controllerInput * (baseSpeedPercent
                         + driverController.getRightTriggerAxis() * (1 - baseSpeedPercent)));
@@ -1081,7 +1055,7 @@ public class RobotContainer {
         conveyor.logValues();
         infeed.logValues();
         shooter.logValues();
-        // climber.logValues();
+        climber.logValues();
         pivot.logValues();
         m_fan.logValues();
     }

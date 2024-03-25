@@ -9,8 +9,6 @@ import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.DashboardStore;
 
@@ -28,9 +26,6 @@ public class Robot extends TimedRobot {
         addPeriodic(() -> {
             DashboardStore.update();
         }, 0.1);
-
-        new WaitCommand(0.5).andThen(Commands.waitUntil(m_robotContainer::climberReady),
-                Commands.runOnce(() -> m_robotContainer.rezeroClimber())).schedule();
     }
 
     @Override
@@ -64,8 +59,6 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.schedule();
         }
 
-        m_robotContainer.rezeroClimber();
-
         // m_robotContainer.zero();
         // m_robotContainer.configVisionFieldOrigins();
     }
@@ -88,7 +81,6 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.cancel();
         }
 
-        m_robotContainer.rezeroClimber();
         m_robotContainer.zero();
         // m_robotContainer.configVisionFieldOrigins();
     }

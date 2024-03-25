@@ -67,9 +67,7 @@ public class Fan extends SubsystemBase {
     }
 
     public Command runMotorCommand(double vbus) {
-        return startEnd(
-                () -> runMotor(vbus),
-                () -> runMotor(0.));
+        return runOnce(() -> runMotor(vbus));
     }
 
     public void stop() {
