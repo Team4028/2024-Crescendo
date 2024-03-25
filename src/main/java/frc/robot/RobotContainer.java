@@ -46,6 +46,7 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignDrivetrain;
 import frc.robot.commands.Autons;
@@ -55,6 +56,8 @@ import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.commands.vision.ShooterAlign;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Candle;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Fan;
@@ -66,9 +69,8 @@ import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.subsystems.Shooter.Slots;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Whippy;
+import frc.robot.subsystems.Candle.Color;
 import frc.robot.subsystems.Climber.ClimberPositions;
-// import frc.robot.subsystems.Climber.ClimberPositions;
-import frc.robot.subsystems.Climber;
 import frc.robot.utils.BeakCommands;
 import frc.robot.utils.DashboardStore;
 import frc.robot.utils.LimelightHelpers;
@@ -120,10 +122,15 @@ public class RobotContainer {
     private final Fan m_fan = new Fan();
     private final FanPivot m_fanPivot = new FanPivot();
     private final Whippy whippy = new Whippy();
+    private final Candle CANdle = new Candle();
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
     private final Vision trapVision = new Vision("Shooter-OV2311", Vision.SHOOTER_ROBOT_TO_CAMERA);
+
+    public Conveyor getConveyor() {
+        return conveyor;
+    }
 
     // ====================== //
     /* Auton & Other Commands */
@@ -469,6 +476,24 @@ public class RobotContainer {
     /* Bindings & Default Commands */
     // =========================== //
     private void configureBindings() {
+
+        // LED Triggers //
+//has infeed jam
+        new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.ORANGE, 5));
+//checks if it has a note
+        new Trigger(conveyor.hasInfedSupplier()).onTrue(CANdle.blink(Color.GREEN, 5));
+//flashes purple 
+        new Trigger(shooter.isReadySupplier()).onTrue(CANdle.blink(Color.PURPLE, 3));
+//Flashes white while shooting
+        new Trigger(shooter.isRunningSupplier()).onTrue(CANdle.runShootFlow(Color.WHITE));
+//Turns red while the shooter is inoperable
+        new Trigger(shooter.isWorkingSupplier()).onTrue(CANdle.setColorRedCommand().andThen(() -> System.err.println("Fatal Shooter Error")).withTimeout(4));
+
+        // Add trigger for amp/trap mode with stick press on driver or operator.
+
+        // TODO: Buttons should NOT be toggles. Commands should only be running while
+        // buttons are being held
+
         // ================ //
         /* Default Commands */
         // ================ //
@@ -561,14 +586,14 @@ public class RobotContainer {
                 .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
 
         /* bruh */
-        driverController.povUp().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kForward))
-                .onFalse(drivetrain.applyRequest(() -> xDrive));
-        driverController.povDown().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kReverse))
-                .onFalse(drivetrain.applyRequest(() -> xDrive));
-        driverController.povUp().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kForward))
-                .onFalse(drivetrain.applyRequest(() -> xDrive));
-        driverController.povDown().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kReverse))
-                .onFalse(drivetrain.applyRequest(() -> xDrive));
+        // driverController.povUp().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kForward))
+        //         .onFalse(drivetrain.applyRequest(() -> xDrive));
+        // driverController.povDown().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kReverse))
+        //         .onFalse(drivetrain.applyRequest(() -> xDrive));
+        // driverController.povUp().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kForward))
+        //         .onFalse(drivetrain.applyRequest(() -> xDrive));
+        // driverController.povDown().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kReverse))
+        //         .onFalse(drivetrain.applyRequest(() -> xDrive));
 
         // ========================= //
         /* Misc */
