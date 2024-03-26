@@ -73,7 +73,7 @@ public class Conveyor extends SubsystemBase {
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
         motor.restoreFactoryDefaults();
 
-        motor.setIdleMode(IdleMode.kBrake);
+        motor.setIdleMode(IdleMode.kCoast);
         motor.setInverted(true);
         motor.setClosedLoopRampRate(.1);
 
