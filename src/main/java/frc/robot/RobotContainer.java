@@ -37,6 +37,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -177,6 +178,8 @@ public class RobotContainer {
 
     private boolean enableClimber = false;
 
+    private final Field2d field = new Field2d();
+
     // ======================== //
     /* Swerve Control & Logging */
     // ======================== //
@@ -208,7 +211,7 @@ public class RobotContainer {
     public RobotContainer() {
         trapVision.setPipeline(Vision.SHOOTER_PIPELINE_INDEX);
 
-        snapDrive.HeadingController = new PhoenixPIDController(6., 0., 0.);
+        snapDrive.HeadingController = new PhoenixPIDController(3.0, 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
         /* Init Index Map */
@@ -757,12 +760,14 @@ public class RobotContainer {
     // =========================================== //
 
     private Command movingShotCommand() {
-        return drivetrain.applyRequest(() -> snapDrive
+        return Commands.waitSeconds(10.0).andThen(drivetrain.applyRequest(() -> snapDrive
                 .withVelocityX(currentVx)
                 .withVelocityY(currentVy)
                 .withTargetDirection(futureRot))
                 .alongWith(runEntryCommand(() -> getBestSTEntry(new Pose2d(futureTranslation, futureRot)),
                         () -> ShotSpeeds.FAST))
+                .alongWith(Commands.waitUntil(shooterAndPivotReady())
+                        .andThen(conveyCommand())))
                 .beforeStarting(this::getMovingLLData)
                 .finallyDo(this::stopAll);
     }
@@ -775,10 +780,11 @@ public class RobotContainer {
 
         Translation2d goalTranslation = new Translation2d(distance, angle);
 
-        Pose2d currentPose = new Pose2d(Constants.SPEAKER_DISTANCE_TARGET.getTranslation().plus(goalTranslation),
+        Pose2d currentPose = new Pose2d(
+                Constants.SPEAKER_DISTANCE_TARGET.getTranslation().plus(goalTranslation),
                 angle);
 
-        var speeds = drivetrain.getCurrentRobotChassisSpeeds();
+        var speeds = drivetrain.getFieldRelativeChassisSpeeds();
 
         currentVx = speeds.vxMetersPerSecond;
         currentVx = speeds.vyMetersPerSecond;
@@ -791,12 +797,19 @@ public class RobotContainer {
         Pose2d newPose = new Pose2d(
                 currentPose.getX() + dx,
                 currentPose.getY() + dy,
-                currentPose.getRotation());
+                new Rotation2d());
 
         Translation2d newTranslation = translationToGoal(newPose);
 
-        futureTranslation = newTranslation;
+        futureTranslation = newPose.getTranslation();
         futureRot = newTranslation.getAngle();
+
+        field.setRobotPose(newPose);
+        SmartDashboard.putData("Future", field);
+
+        SmartDashboard.putNumber("Future Rot", futureRot.getDegrees());
+
+        SmartDashboard.putNumber("Dx", dx);
     }
 
     // FIXME: this needs to be mirrorable w/ rotation

@@ -193,13 +193,13 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 endVel);
     }
 
-    public Command mirrorablePathFindCommand(Pose2d desiredPose, double scale, double endVel) { // may end up being pathFindCommand
+    public Command mirrorablePathFindCommand(Pose2d desiredPose, double scale, double endVel) { // may end up being
+                                                                                                // pathFindCommand
         PathConstraints constraints = new PathConstraints(
-            PathFindPlannerConstants.kMaxSpeed * scale,
-            PathFindPlannerConstants.kMaxAccel * scale,
-            PathFindPlannerConstants.kMaxAngSpeed,
-            PathFindPlannerConstants.kMaxAngAccel
-        );
+                PathFindPlannerConstants.kMaxSpeed * scale,
+                PathFindPlannerConstants.kMaxAccel * scale,
+                PathFindPlannerConstants.kMaxAngSpeed,
+                PathFindPlannerConstants.kMaxAngAccel);
 
         return AutoBuilder.pathfindToPoseFlipped(desiredPose, constraints, endVel);
     }
@@ -237,6 +237,15 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
 
     public ChassisSpeeds getCurrentRobotChassisSpeeds() {
         return m_kinematics.toChassisSpeeds(getState().ModuleStates);
+    }
+
+    public ChassisSpeeds getFieldRelativeChassisSpeeds() {
+        return new ChassisSpeeds(
+                getCurrentRobotChassisSpeeds().vxMetersPerSecond * getState().Pose.getRotation().getCos()
+                        - getCurrentRobotChassisSpeeds().vyMetersPerSecond * getState().Pose.getRotation().getSin(),
+                getCurrentRobotChassisSpeeds().vyMetersPerSecond * getState().Pose.getRotation().getCos()
+                        + getCurrentRobotChassisSpeeds().vxMetersPerSecond * getState().Pose.getRotation().getSin(),
+                getCurrentRobotChassisSpeeds().omegaRadiansPerSecond);
     }
 
     public Command runQuasiTest(SysIdRoutine.Direction dir) {

@@ -4,7 +4,6 @@
 
 package frc.robot.commands.vision;
 
-import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
