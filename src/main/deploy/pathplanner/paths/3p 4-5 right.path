@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.7,
-        "y": 2.75
+        "x": 5.194693922151377,
+        "y": 2.01139456409967
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.48135050116254,
-        "y": 2.1868068807362695
+        "x": 5.976044423313916,
+        "y": 1.4482014448359397
       },
       "isLocked": false,
       "linkedName": "3prnl3"
@@ -38,8 +38,8 @@
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 3.0,
-    "rotation": -45.169792012894725,
+    "velocity": 1.0,
+    "rotation": -46.02303018866776,
     "rotateFast": false
   },
   "reversed": false,

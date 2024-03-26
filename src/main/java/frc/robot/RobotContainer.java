@@ -131,7 +131,27 @@ public class RobotContainer {
     private final Command ampPrep, magicShootNoLockCommand;
     private SendableChooser<Command> autonChooser;
 
-    private final Supplier<Command> AUTON_SHOOT_COMMAND = this::magicShootCommand;
+    private final Supplier<Command> FIRST_3P_SHOOT_COMMAND = () -> runEntryCommand(
+            () -> ShooterTable.calcShooterTableEntry(Feet.of(20.8)), () -> ShotSpeeds.FAST)
+            .andThen(Commands.waitUntil(shooter.isReadySupplier()))
+            .andThen(Commands.waitSeconds(0.1))
+            .andThen(conveyCommand())
+            .andThen(Commands.waitSeconds(0.2))
+            .finallyDo(() -> {
+                shooter.stop();
+                pivot.runToHomeCommand();
+            });
+
+    private final Supplier<Command> SECOND_3P_SHOOT_COMMAND = () -> runEntryCommand(
+        () -> ShooterTable.calcShooterTableEntry(Feet.of(19.5)), () -> ShotSpeeds.FAST)
+        .andThen(Commands.waitUntil(shooter.isReadySupplier()))
+        .andThen(Commands.waitSeconds(0.1))
+        .andThen(conveyCommand())
+        .andThen(Commands.waitSeconds(0.2))
+        .finallyDo(() -> {
+            shooter.stop();
+            pivot.runToHomeCommand();
+        });
 
     // ====================================================== //
     /* Drivetrain Constants, Magic numbers, and Slew Limiters */
@@ -313,7 +333,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Spit Note", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
-                .alongWith(shooter.spinBothCommand(0.21))
+                .alongWith(shooter.spinBothCommand(0.15))
                 .repeatedly());
 
         NamedCommands.registerCommand("Run Pivot To Home", pivot.runToHomeCommand());
@@ -325,7 +345,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Limelight Acquire",
                 new LimelightAcquire(() -> 0.6, // xLimeAquireLimiter.calculate(0.5),
                         drivetrain)
-                        // .until(conveyor.hasInfedSupplier())
+                        .until(conveyor.hasInfedSupplier())
                         .raceWith(smartInfeedCommand()));
 
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
@@ -373,7 +393,9 @@ public class RobotContainer {
                 pathfindingShotCommand(Constants.RIGHT_3_SHOOT_PATHFINDING_POSE, 0.75, 0.));
 
         NamedCommands.registerCommand("2.5 Right Align",
-                new AlignDrivetrain(drivetrain, () -> Units.degreesToRadians(-38.),
+                new AlignDrivetrain(drivetrain,
+                        () -> Units.degreesToRadians(DriverStation.getAlliance().isPresent()
+                                && DriverStation.getAlliance().get() == Alliance.Red ? -30. : -36.),
                         () -> drivetrain.getState().Pose.getRotation().getRadians(), true).withTimeout(0.4));
 
         NamedCommands.registerCommand("Note 3",
@@ -402,16 +424,18 @@ public class RobotContainer {
         NamedCommands.registerCommand("4p 5th shoot", AutoBuilder.followPath(PathPlannerPath.fromPathFile(
                 allianceIsBlue(DriverStation.getAlliance()) ? "4pend-5th-shoot" : "4pend-5th-shoot red")));
 
-        // var target3Entry = ShooterTable.calcShooterTableEntry(Meters.of(Constants.RIGHT_3_SHOOT_PATHFINDING_POSE
-        //         .minus(Constants.SPEAKER_DISTANCE_TARGET).getTranslation().getNorm()));
-        // NamedCommands.registerCommand("2.5 ready to shoot command", pivot.runToPositionCommand(target3Entry.Angle));
+        // var target3Entry =
+        // ShooterTable.calcShooterTableEntry(Meters.of(Constants.RIGHT_3_SHOOT_PATHFINDING_POSE
+        // .minus(Constants.SPEAKER_DISTANCE_TARGET).getTranslation().getNorm()));
+        // NamedCommands.registerCommand("2.5 ready to shoot command",
+        // pivot.runToPositionCommand(target3Entry.Angle));
 
         /*
          * Spin up Shooter
          * When shooter ready, feed
          * Stop shooter
          */
-        NamedCommands.registerCommand("Stationary Shot", AUTON_SHOOT_COMMAND.get());
+        NamedCommands.registerCommand("Stationary Shot", FIRST_3P_SHOOT_COMMAND.get());
 
         /* 2.5 but right side */
         NamedCommands.registerCommand("2.5 Right Stationary Shot",
@@ -774,11 +798,14 @@ public class RobotContainer {
     // FIXME: this needs to be mirrorable w/ rotation
     /* Pathfinding Auton Shot */
     private Command pathfindingShotCommand(Pose2d target, double scale, double endVelocity) {
+        if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red)
+            target.rotateBy(Rotation2d.fromDegrees(6)); // apply offset from red to blue alliance
         return drivetrain
                 .mirrorablePathFindCommand(target, scale, endVelocity)
                 .alongWith(fixNoteCommand())
                 .andThen(NamedCommands.getCommand("zeroApril"))
-                .andThen(AUTON_SHOOT_COMMAND.get());
+                .andThen(NamedCommands.getCommand("2.5 Right Align"))
+                .andThen(SECOND_3P_SHOOT_COMMAND.get());
     }
 
     /* Fix Note Sequence */
@@ -801,7 +828,7 @@ public class RobotContainer {
                 // .alongWith(new ShooterAlign(drivetrain, trapVision)).withTimeout(0.4)
                 .andThen(runEntryCommand(() -> getBestSTEntryLLY(), () -> ShotSpeeds.FAST))
                 .andThen(Commands.waitUntil(shooter.isReadySupplier()))
-                .andThen(Commands.waitSeconds(0.1))
+                .andThen(Commands.waitSeconds(0.3))
                 .andThen(conveyCommand())
                 .andThen(Commands.waitSeconds(0.2))
                 .finallyDo(() -> {

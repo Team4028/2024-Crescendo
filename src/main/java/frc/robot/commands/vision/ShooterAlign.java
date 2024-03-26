@@ -4,6 +4,8 @@
 
 package frc.robot.commands.vision;
 
+import java.util.Optional;
+
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -38,12 +40,12 @@ public class ShooterAlign extends ProfiledPIDCommand {
                 // This should return the measurement
                 () -> {
                     // int tagID = DriverStation.getAlliance().isPresent()
-                    // && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
+                    //     && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
 
                     // Optional<Double> yaw = vision.getTagYaw(tagID);
 
                     // if (yaw.isPresent()) {
-                    // return Units.degreesToRadians(yaw.get());
+                    //     return Units.degreesToRadians(yaw.get());
                     // }
 
                     // return 0.;
