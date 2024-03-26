@@ -89,7 +89,7 @@ public class RobotContainer {
     private static final double FAN_VBUS = 1.;
     private static final double FAN_PIVOT_VBUS = 0.2;
 
-    private static final double SHOOTER_BACKOUT_VBUS = -0.4;
+    private static final double SHOOTER_BACKOUT_VBUS = -0.2;
     private static final double WHIPPY_VBUS = 0.2;
 
     private static final int OI_DRIVER_CONTROLLER = 0;
@@ -465,7 +465,9 @@ public class RobotContainer {
 
         /* Dumb Infeed */
         driverController.leftTrigger().onTrue(runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS))
-                .onFalse(conveyBackCommand(-2.5, 0.25));
+                .onFalse(conveyBackCommand(-0.5, 0.15));
+                        // .andThen(Commands.waitSeconds(0.4),
+                        // conveyor.runMotorCommand(0.1).repeatedly().withTimeout(0.05)));
 
         /* Smart Infeed */
         driverController.leftBumper().toggleOnTrue(smartInfeedCommand());
@@ -776,7 +778,7 @@ public class RobotContainer {
     /* Fix Note Sequence */
     private Command fixNoteCommand() {
         return runBoth(true, FAST_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(0.25).andThen(
-                conveyBackCommand(-2.0, 0.2));
+                conveyBackCommand(-2.0, 0.1));
     }
 
     /* Odometry shot */
@@ -806,35 +808,14 @@ public class RobotContainer {
         return shooter.runShotCommand(shotType, shooterPercent).alongWith(pivot.runToPositionCommand(pivotPosition));
     }
 
-    /* Check if Climber encoder is ready */
-    public boolean climberReady() {
-        // return climber.encoderReady();
-        return false;
-    }
-
-    /* Rezero climber */
-    public void rezeroClimber() {
-        // climber.reZero();
-    }
-
-    /* Safe Climb */
-    // private Command safeClimbCommand(ClimberPositions position) {
-    // Command climbCommand = position == ClimberPositions.CLIMB ?
-    // climber.climbCommand()
-    // : climber.runToPositionCommand(position);
-
-    // return Commands.either(
-    // climbCommand,
-    // Commands.none(),
-    // () -> pivot.getPosition() > 50. && enableClimber);
-    // }
-
     /* Fix Note Backwards */
     private Command conveyBackCommand(double rotations, double timeout) {
         return shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-                .raceWith(conveyor.runXRotations(rotations).withTimeout(timeout) // -1.5
-                        .alongWith(infeed.runMotorCommand(0.)))
-                .andThen(shooter.brakeStopCommand());
+                // .raceWith(conveyor.runXRotations(rotations).withTimeout(timeout)
+                .alongWith(conveyor.runMotorCommand(-0.2)).withTimeout(timeout)
+                .alongWith(infeed.runMotorCommand(0.))
+                .andThen(shooter.stopCommand())
+                .andThen(conveyor.brakeStopCommand());
     }
 
     /* Convey the Note */
@@ -915,7 +896,7 @@ public class RobotContainer {
 
     /* Run both Conveyor and Infeed */
     private Command runBoth(boolean stopShooter, double conveyorVbus, double infeedVbus) {
-        return Commands.either(shooter.brakeStopCommand(), Commands.none(), () -> stopShooter)
+        return shooter.brakeStopCommand().onlyIf(() -> stopShooter)
                 .alongWith(infeed.runMotorCommand(infeedVbus)
                         .alongWith(conveyor.runMotorCommand(conveyorVbus)).repeatedly());
     }
