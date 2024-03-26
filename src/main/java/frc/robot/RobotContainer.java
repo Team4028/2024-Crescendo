@@ -45,6 +45,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.AlignDrivetrain;
 import frc.robot.commands.Autons;
@@ -658,7 +659,7 @@ public class RobotContainer {
                 .whileTrue(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS));
 
         /* Magic Shoot */
-        operatorController.x().toggleOnTrue(magicShootNoLockCommand);
+        operatorController.x().toggleOnTrue(magicShootCommand());
 
         /* Manual/Preset Mode */
         operatorController.back().onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));

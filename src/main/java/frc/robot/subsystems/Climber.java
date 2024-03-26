@@ -5,9 +5,14 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.ForwardLimitSourceValue;
+import com.ctre.phoenix6.signals.ForwardLimitTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
+import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
 
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
@@ -32,10 +37,32 @@ public class Climber extends SubsystemBase {
 
     private static final int CAN_ID = 15;
 
-    // /* Configs */
+    /* Configs */
     private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(100.)
             .withSupplyCurrentLimit(80.);
+
+    private final HardwareLimitSwitchConfigs limitSwitchConfigs = new HardwareLimitSwitchConfigs()
+    
+            /* Forward */
+            .withForwardLimitAutosetPositionEnable(true)
+            .withForwardLimitAutosetPositionValue(140.) // tune
+
+            .withForwardLimitEnable(true)
+            .withForwardLimitRemoteSensorID(9)
+
+            .withForwardLimitSource(ForwardLimitSourceValue.LimitSwitchPin)
+            .withForwardLimitType(ForwardLimitTypeValue.NormallyClosed)
+
+            /* Reverse */
+            .withReverseLimitAutosetPositionEnable(true)
+            .withReverseLimitAutosetPositionValue(0.) // tune
+
+            .withReverseLimitEnable(true)
+            .withReverseLimitRemoteSensorID(8)
+
+            .withReverseLimitSource(ReverseLimitSourceValue.LimitSwitchPin)
+            .withReverseLimitType(ReverseLimitTypeValue.NormallyClosed);
 
     /* Requests */
     private final DutyCycleOut m_focRequest = new DutyCycleOut(0.)
@@ -66,6 +93,7 @@ public class Climber extends SubsystemBase {
         /* CONFIGS */
         /* ======= */
         motor.getConfigurator().apply(currentConfigs);
+        // motor.getConfigurator().apply(limitSwitchConfigs);
 
         /* CAN Bus */
         motor.getVelocity().setUpdateFrequency(20.);
