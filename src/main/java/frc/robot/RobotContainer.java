@@ -486,9 +486,7 @@ public class RobotContainer {
 
         /* Dumb Infeed */
         driverController.leftTrigger().onTrue(runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS))
-                .onFalse(conveyBackCommand(-0.5, 0.15));
-                        // .andThen(Commands.waitSeconds(0.4),
-                        // conveyor.runMotorCommand(0.1).repeatedly().withTimeout(0.05)));
+                .onFalse(coolNoteFixCommand(0.15));
 
         /* Smart Infeed */
         driverController.leftBumper().toggleOnTrue(smartInfeedCommand());
@@ -793,7 +791,7 @@ public class RobotContainer {
             target.rotateBy(Rotation2d.fromDegrees(6)); // apply offset from red to blue alliance
         return drivetrain
                 .mirrorablePathFindCommand(target, scale, endVelocity)
-                .alongWith(fixNoteCommand())
+                .alongWith(coolNoteFixCommand(0.1))
                 .andThen(NamedCommands.getCommand("zeroApril"))
                 .andThen(magicShootCommand());
     }
@@ -815,7 +813,7 @@ public class RobotContainer {
     /* Magic shoot ut awesome */
     private Command magicShootCommand() {
         return shooter.runShotCommand(ShotSpeeds.FAST)
-                // .alongWith(new ShooterAlign(drivetrain, trapVision)).withTimeout(0.4)
+                .alongWith(new ShooterAlign(drivetrain, trapVision)).withTimeout(0.4)
                 .andThen(runEntryCommand(() -> getBestSTEntryLLY(), () -> ShotSpeeds.FAST))
                 .andThen(Commands.waitUntil(shooter.isReadySupplier()))
                 .andThen(Commands.waitSeconds(0.3))
@@ -834,7 +832,14 @@ public class RobotContainer {
     /* Fix Note Backwards */
     private Command conveyBackCommand(double rotations, double timeout) {
         return shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-                // .raceWith(conveyor.runXRotations(rotations).withTimeout(timeout)
+                .raceWith(conveyor.runXRotations(rotations).withTimeout(timeout))
+                .alongWith(infeed.runMotorCommand(0.))
+                .andThen(shooter.stopCommand());
+    }
+
+    /* Special Note Fix */
+    private Command coolNoteFixCommand(double timeout) {
+        return shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
                 .alongWith(conveyor.runMotorCommand(-0.2)).withTimeout(timeout)
                 .alongWith(infeed.runMotorCommand(0.))
                 .andThen(shooter.stopCommand())
