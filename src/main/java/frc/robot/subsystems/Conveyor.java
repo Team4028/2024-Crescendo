@@ -37,7 +37,7 @@ public class Conveyor extends SubsystemBase {
     private final DoubleLogEntry currentLog, vbusLog, positionLog, velocityLog;
 
     private final static class PIDConstants {
-        private static final double kP = 0.8;
+        private static final double kP = 0.2;
         private static final double kI = 0.0;
         private static final double kD = 0.0;
         private static final double[] kOutputRange = new double[] { -0.3, 0.6 };
@@ -73,7 +73,7 @@ public class Conveyor extends SubsystemBase {
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
         motor.restoreFactoryDefaults();
 
-        motor.setIdleMode(IdleMode.kCoast);
+        motor.setIdleMode(IdleMode.kBrake);
         motor.setInverted(true);
         motor.setClosedLoopRampRate(.1);
 
@@ -195,6 +195,12 @@ public class Conveyor extends SubsystemBase {
 
     public Command stopCommand() {
         return runMotorCommand(0.);
+    }
+
+    public Command brakeStopCommand() {
+        return runOnce(() -> pid.setReference(encoder.getPosition(), ControlType.kPosition))
+                .andThen(Commands.waitSeconds(0.2))
+                .andThen(stopCommand());
     }
 
     public void logValues() {
