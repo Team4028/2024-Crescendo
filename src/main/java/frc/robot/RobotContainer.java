@@ -142,17 +142,6 @@ public class RobotContainer {
                 pivot.runToHomeCommand();
             });
 
-    private final Supplier<Command> SECOND_3P_SHOOT_COMMAND = () -> runEntryCommand(
-        () -> ShooterTable.calcShooterTableEntry(Feet.of(19.5)), () -> ShotSpeeds.FAST)
-        .andThen(Commands.waitUntil(shooter.isReadySupplier()))
-        .andThen(Commands.waitSeconds(0.1))
-        .andThen(conveyCommand())
-        .andThen(Commands.waitSeconds(0.2))
-        .finallyDo(() -> {
-            shooter.stop();
-            pivot.runToHomeCommand();
-        });
-
     // ====================================================== //
     /* Drivetrain Constants, Magic numbers, and Slew Limiters */
     // ====================================================== //
@@ -804,8 +793,7 @@ public class RobotContainer {
                 .mirrorablePathFindCommand(target, scale, endVelocity)
                 .alongWith(fixNoteCommand())
                 .andThen(NamedCommands.getCommand("zeroApril"))
-                .andThen(NamedCommands.getCommand("2.5 Right Align"))
-                .andThen(SECOND_3P_SHOOT_COMMAND.get());
+                .andThen(magicShootCommand());
     }
 
     /* Fix Note Sequence */

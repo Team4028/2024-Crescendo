@@ -48,12 +48,6 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "3p 3-4 right"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "Limelight Acquire"
@@ -72,9 +66,9 @@
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Limelight Acquire"
+            "pathName": "3p 4-5 right"
           }
         },
         {
