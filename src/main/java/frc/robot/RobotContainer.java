@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.photonvision.EstimatedRobotPose;
@@ -26,6 +27,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -129,6 +131,8 @@ public class RobotContainer {
     private final Command ampPrep, magicShootNoLockCommand;
     private SendableChooser<Command> autonChooser;
 
+    private final Supplier<Command> AUTON_SHOOT_COMMAND = this::magicShootCommand;
+
     // ====================================================== //
     /* Drivetrain Constants, Magic numbers, and Slew Limiters */
     // ====================================================== //
@@ -197,9 +201,9 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.Velocity);
 
     /* LL */
-    private static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(36.15); // 32. //-4.65 ??
-    private static final double SHOOTER_CAM_HEIGHT = Units.inchesToMeters(13.125); // 12.375
-    private static final double SPEAKER_TAG_HEIGHT = Units.inchesToMeters(57.125);
+    public static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(36.15); // 32. //-4.65 ??
+    public static final double SHOOTER_CAM_HEIGHT = Units.inchesToMeters(13.125); // 12.375
+    public static final double SPEAKER_TAG_HEIGHT = Units.inchesToMeters(57.125);
 
     public RobotContainer() {
         trapVision.setPipeline(Vision.SHOOTER_PIPELINE_INDEX);
@@ -246,7 +250,7 @@ public class RobotContainer {
             // getBestSTEntryLLY();
         }).andThen(
                 Commands.runOnce(() -> {
-                    ShooterTableEntry entry = getBestSTEntryLLY();
+                    ShooterTableEntry entry = getBestSTEntryAllStrats()[0];
                     shooter.runEntry(entry, ShotSpeeds.FAST);
                     pivot.runToPosition(Math.min(Math.abs(entry.Angle), 50));
                 }, shooter, pivot).andThen(Commands.waitUntil(shooter.isReadySupplier()))
@@ -398,12 +402,16 @@ public class RobotContainer {
         NamedCommands.registerCommand("4p 5th shoot", AutoBuilder.followPath(PathPlannerPath.fromPathFile(
                 allianceIsBlue(DriverStation.getAlliance()) ? "4pend-5th-shoot" : "4pend-5th-shoot red")));
 
+        // var target3Entry = ShooterTable.calcShooterTableEntry(Meters.of(Constants.RIGHT_3_SHOOT_PATHFINDING_POSE
+        //         .minus(Constants.SPEAKER_DISTANCE_TARGET).getTranslation().getNorm()));
+        // NamedCommands.registerCommand("2.5 ready to shoot command", pivot.runToPositionCommand(target3Entry.Angle));
+
         /*
          * Spin up Shooter
          * When shooter ready, feed
          * Stop shooter
          */
-        NamedCommands.registerCommand("Stationary Shot", odometryShotCommand());
+        NamedCommands.registerCommand("Stationary Shot", AUTON_SHOOT_COMMAND.get());
 
         /* 2.5 but right side */
         NamedCommands.registerCommand("2.5 Right Stationary Shot",
@@ -724,7 +732,7 @@ public class RobotContainer {
 
         // TODO:
         /*
-         * Run Shoote up
+         * Run Shooter up
          * Wait a second or so
          * Run fan up & start fan
          * Double juggle
@@ -770,7 +778,7 @@ public class RobotContainer {
                 .mirrorablePathFindCommand(target, scale, endVelocity)
                 .alongWith(fixNoteCommand())
                 .andThen(NamedCommands.getCommand("zeroApril"))
-                .andThen(odometryShotCommand());
+                .andThen(AUTON_SHOOT_COMMAND.get());
     }
 
     /* Fix Note Sequence */
@@ -790,7 +798,7 @@ public class RobotContainer {
     /* Magic shoot ut awesome */
     private Command magicShootCommand() {
         return shooter.runShotCommand(ShotSpeeds.FAST)
-                .alongWith(new ShooterAlign(drivetrain, trapVision)).withTimeout(0.4)
+                // .alongWith(new ShooterAlign(drivetrain, trapVision)).withTimeout(0.4)
                 .andThen(runEntryCommand(() -> getBestSTEntryLLY(), () -> ShotSpeeds.FAST))
                 .andThen(Commands.waitUntil(shooter.isReadySupplier()))
                 .andThen(Commands.waitSeconds(0.1))
@@ -1070,6 +1078,27 @@ public class RobotContainer {
         SmartDashboard.putNumber("ST Left", entryPicked.Percent);
 
         return entryPicked;
+    }
+
+    public ShooterTableEntry[] getBestSTEntryAllStrats() {
+        ShooterTableEntry[] steArr = new ShooterTableEntry[5];
+
+        steArr[0] = getBestSTEntryLLYDistance();
+        steArr[1] = getBestSTEntryLLY();
+        steArr[2] = getBestSTEntryPhotonY();
+        steArr[3] = getBestSTEntryLLArea();
+        steArr[4] = getBestSTEntryLLAreaMulti();
+        return steArr;
+    }
+
+    private ShooterTableEntry getBestSTEntryLLYDistance() {
+        double deltaH = Units.metersToFeet(SPEAKER_TAG_HEIGHT - SHOOTER_CAM_HEIGHT);
+        double angle = Units.degreesToRadians(LimelightHelpers.getTY(SHOOTER_LIMELIGHT));
+        var ste = ShooterTable.calcShooterTableEntryCamera(deltaH / Math.tan(angle + SHOOTER_CAM_PITCH),
+                CameraLerpStrat.LimeLightTYDistance);
+
+        SmartDashboard.putNumber("Limelight TY tangented distance", ste.Distance.in(Feet));
+        return ste;
     }
 
     private ShooterTableEntry getBestSTEntryLLY() {

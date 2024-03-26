@@ -79,6 +79,7 @@ public class ShooterAlign extends ProfiledPIDCommand {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return getController().atGoal();
+        // return getController().atGoal();
+        return false;
     }
 }

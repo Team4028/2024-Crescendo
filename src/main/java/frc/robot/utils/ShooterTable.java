@@ -4,9 +4,12 @@ import static edu.wpi.first.units.Units.Feet;
 
 import java.util.ArrayList;
 import java.util.function.Function;
+
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.RobotContainer;
 import frc.robot.utils.ShooterTable.ShooterTableEntry.CameraLerpStrat;
 
 public class ShooterTable {
@@ -21,6 +24,7 @@ public class ShooterTable {
 
         public static enum CameraLerpStrat {
             LimelightTY,
+            LimeLightTYDistance,
             LimelightArea,
             LimelightMultiTagArea,
             PhotonVisionDistance;
@@ -77,7 +81,6 @@ public class ShooterTable {
     }
 
     public static ShooterTableEntry calcShooterTableEntryCamera(double cameraValue, CameraLerpStrat strategy) {
-        System.out.println("bruv, " + cameraValue);
         ShooterTableEntry closestLower = table.get(0);
         ShooterTableEntry closestHigher = table.get(table.size() - 1);
 
@@ -91,13 +94,21 @@ public class ShooterTable {
                 cameraValueGetter = (ste) -> -ste.LLTY;
                 cameraValue = -cameraValue;
                 break;
+            case LimeLightTYDistance:
+                // redo bc this is lazy and will destroy runtime performance
+                cameraValueGetter = (ste) -> Units
+                        .metersToFeet(RobotContainer.SPEAKER_TAG_HEIGHT - RobotContainer.SHOOTER_CAM_HEIGHT)
+                        / Math.tan(RobotContainer.SHOOTER_CAM_PITCH + Units.degreesToRadians(ste.LLTY));
+                break;
             case LimelightArea:
                 // negate everything because TA is inversely proportional to distance
                 cameraValueGetter = (ste) -> -ste.LLTA;
                 cameraValue = -cameraValue;
+                break;
             case LimelightMultiTagArea:
                 cameraValueGetter = (ste) -> -ste.LLTAMulti;
                 cameraValue = -cameraValue;
+                break;
             default:
                 cameraValueGetter = (ste) -> ste.PhotonDistance;
                 break;
