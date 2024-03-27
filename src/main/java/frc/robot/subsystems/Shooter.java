@@ -188,9 +188,13 @@ public class Shooter extends SubsystemBase {
     // ==================================
 
     /* Check if shooter is running */
+    public BooleanSupplier isRunningSupplier() {
+        return this::isRunning;
+    }
+
     public boolean isRunning() {
-        return Math.abs(leftMotor.getVelocity().getValueAsDouble()) > 100.0
-                || Math.abs(rightMotor.getVelocity().getValueAsDouble()) > 100.0;
+        return leftMotor.getAppliedControl().getName() == "VelocityVoltage" &&
+                rightMotor.getAppliedControl().getName() == "VelocityVoltage";
     }
 
     /* Check if shooter is spinned up */
@@ -201,6 +205,14 @@ public class Shooter extends SubsystemBase {
     public boolean isReady() {
         return Math.abs(leftMotor.getVelocity().getValueAsDouble() * 60. - leftTarget) < 100.
                 && Math.abs(rightMotor.getVelocity().getValueAsDouble() * 60. - rightTarget) < 100.;
+    }
+
+    public BooleanSupplier isWorkingSupplier() {
+        return this::isWorking;
+    }
+
+    private boolean isWorking() {
+        return leftMotor.isAlive() && rightMotor.isAlive();
     }
 
     /**

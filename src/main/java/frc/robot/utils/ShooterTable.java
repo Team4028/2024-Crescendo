@@ -96,9 +96,10 @@ public class ShooterTable {
                 break;
             case LimeLightTYDistance:
                 // redo bc this is lazy and will destroy runtime performance
-                cameraValueGetter = (ste) -> Units
-                        .metersToFeet(RobotContainer.SPEAKER_TAG_HEIGHT - RobotContainer.SHOOTER_CAM_HEIGHT)
-                        / Math.tan(RobotContainer.SHOOTER_CAM_PITCH + Units.degreesToRadians(ste.LLTY));
+                cameraValueGetter = (ste) -> ste.LLTA;
+                // cameraValueGetter = (ste) -> Units
+                //         .metersToFeet(RobotContainer.SPEAKER_TAG_HEIGHT - RobotContainer.SHOOTER_CAM_HEIGHT)
+                //         / Math.tan(RobotContainer.SHOOTER_CAM_PITCH + Units.degreesToRadians(ste.LLTY));
                 break;
             case LimelightArea:
                 // negate everything because TA is inversely proportional to distance

@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.Meters;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
@@ -46,8 +47,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignDrivetrain;
 import frc.robot.commands.Autons;
 import frc.robot.commands.Autons.Notes;
@@ -56,6 +57,7 @@ import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.commands.vision.ShooterAlign;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
 import frc.robot.subsystems.Fan;
@@ -68,8 +70,7 @@ import frc.robot.subsystems.Shooter.Slots;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Whippy;
 import frc.robot.subsystems.Climber.ClimberPositions;
-// import frc.robot.subsystems.Climber.ClimberPositions;
-import frc.robot.subsystems.Climber;
+import frc.robot.utils.BeakCommands;
 import frc.robot.utils.DashboardStore;
 import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.ShooterTable;
@@ -80,16 +81,16 @@ public class RobotContainer {
     // =============================================== //
     /* Magic numbers, Vbus constants, and OI constants */
     // =============================================== //
-    private static final double CLIMBER_VBUS = 0.5;
+    private static final double CLIMBER_VBUS = 0.75;
     private static final double INFEED_VBUS = 0.8;
     private static final double SLOW_INFEED_VBUS = 0.5;
 
-    private static final double PIVOT_VBUS = 0.15;
+    // private static final double PIVOT_VBUS = 0.15;
     private static final double SLOW_CONVEYOR_VBUS = 0.5;
     private static final double FAST_CONVEYOR_VBUS = 0.85;
 
     private static final double FAN_VBUS = 1.;
-    private static final double FAN_PIVOT_VBUS = 0.2;
+    // private static final double FAN_PIVOT_VBUS = 0.2;
 
     private static final double SHOOTER_BACKOUT_VBUS = -0.2;
     private static final double WHIPPY_VBUS = 0.2;
@@ -99,7 +100,7 @@ public class RobotContainer {
     private static final int OI_EMERGENCY_CONTROLLER = 2;
 
     private static final int SHOOTING_PIPELINE = 0;
-    private static final int TRAP_PIPELINE = 2;
+    // private static final int TRAP_PIPELINE = 2;
 
     private static final String SHOOTER_LIMELIGHT = "limelight-shooter";
 
@@ -120,10 +121,15 @@ public class RobotContainer {
     private final Fan m_fan = new Fan();
     private final FanPivot m_fanPivot = new FanPivot();
     private final Whippy whippy = new Whippy();
+    // private final Candle CANdle = new Candle();
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
     private final Vision trapVision = new Vision("Shooter-OV2311", Vision.SHOOTER_ROBOT_TO_CAMERA);
+
+    public Conveyor getConveyor() {
+        return conveyor;
+    }
 
     // ====================== //
     /* Auton & Other Commands */
@@ -150,7 +156,7 @@ public class RobotContainer {
     private double currentSpeed = BASE_SPEED;
 
     private boolean isSnappedToSpeaker = false;
-    private boolean isInMagicShoot = false;
+    // private boolean isInMagicShoot = false;
 
     private enum SnapDirection {
         None(Double.NaN),
@@ -168,6 +174,35 @@ public class RobotContainer {
         }
     }
 
+    private enum ClimbSequence {
+        /* Default State */
+        Default,
+
+        /* Shooter Position & Juggle */
+        Prep,
+
+        /* Fan, Fan Position, Shooter, Climber Up (if climbing) */
+        Fan,
+
+        /* Shoot */
+        Shoot,
+
+        /* End of Sequence */
+        End,
+
+        /* Climb */
+        Climb
+    }
+
+    private ClimbSequence currentSequence = ClimbSequence.Default;
+    private final Map<ClimbSequence, Command> sequenceCommandMap = Map.of(
+            ClimbSequence.Default, Commands.none(),
+            ClimbSequence.Prep, prepClimbCommand(),
+            ClimbSequence.Fan, fanReadyCommand(),
+            ClimbSequence.Shoot, trapShootCommand(),
+            ClimbSequence.End, endSequenceCommand(),
+            ClimbSequence.Climb, climbCommand());
+
     private static double MAX_INDEX = 27.;
     private static double MIN_INDEX = 4.2;
 
@@ -179,6 +214,7 @@ public class RobotContainer {
     private boolean useManual = false;
 
     private boolean enableClimber = false;
+    private boolean enableTrap = false;
 
     // ======================== //
     /* Swerve Control & Logging */
@@ -199,9 +235,12 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.Velocity);
 
     /* LL */
-    public static final double SHOOTER_CAM_PITCH = Units.degreesToRadians(36.15); // 32. //-4.65 ??
-    public static final double SHOOTER_CAM_HEIGHT = Units.inchesToMeters(13.125); // 12.375
-    public static final double SPEAKER_TAG_HEIGHT = Units.inchesToMeters(57.125);
+    // private static final double SHOOTER_CAM_PITCH =
+    // Units.degreesToRadians(36.15); // 32. //-4.65 ??
+    // private static final double SHOOTER_CAM_HEIGHT =
+    // Units.inchesToMeters(13.125); // 12.375
+    // private static final double SPEAKER_TAG_HEIGHT =
+    // Units.inchesToMeters(57.125);
 
     public RobotContainer() {
         trapVision.setPipeline(Vision.SHOOTER_PIPELINE_INDEX);
@@ -211,13 +250,11 @@ public class RobotContainer {
 
         /* Init Index Map */
         indexMap.put(4.2, "Speaker");
-        indexMap.put(6.0, "Line");
         indexMap.put(10.0, "Protected");
-        indexMap.put(12.0, "Midfield");
         indexMap.put(13.0, "Chain");
         indexMap.put(16.0, "Truss");
-        indexMap.put(19.0, "Wing");
-        // indexMap.put(22.0, "Neutral");
+        indexMap.put(19.0, "Left Wing");
+        indexMap.put(22.0, "Right Wing");
 
         /* Dashboard */
         DashboardStore.add("Shooter Table Index", () -> currentIndex);
@@ -231,9 +268,12 @@ public class RobotContainer {
 
         DashboardStore.add("Manual Indexing", () -> useManual);
         DashboardStore.add("Climber Enabled", () -> enableClimber);
+        DashboardStore.add("Trap Enabled", () -> enableTrap);
+
+        DashboardStore.add("Sequence", () -> currentSequence.name());
 
         DashboardStore.add("Aligned to Speaker", () -> isSnappedToSpeaker);
-        DashboardStore.add("Executing magic shoot", () -> isInMagicShoot);
+        // DashboardStore.add("Executing magic shoot", () -> isInMagicShoot);
 
         // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
@@ -243,20 +283,14 @@ public class RobotContainer {
 
         initAutonChooser();
 
-        magicShootNoLockCommand = new InstantCommand(() -> {
-            isInMagicShoot = true;
-            // getBestSTEntryLLY();
-        }).andThen(
-                Commands.runOnce(() -> {
-                    ShooterTableEntry entry = getBestSTEntryAllStrats()[0];
-                    shooter.runEntry(entry, ShotSpeeds.FAST);
-                    pivot.runToPosition(Math.min(Math.abs(entry.Angle), 50));
-                }, shooter, pivot).andThen(Commands.waitUntil(shooter.isReadySupplier()))
-                        // .andThen(Commands.waitSeconds(0.5))
-                        .andThen(conveyCommand())
-                        .andThen(Commands.waitSeconds(0.2))
-                        .andThen(new InstantCommand(() -> isInMagicShoot = false))
-                        .finallyDo(this::stopAll));
+        magicShootNoLockCommand = Commands.runOnce(() -> {
+            ShooterTableEntry entry = getBestSTEntryLLY();
+            shooter.runEntry(entry, ShotSpeeds.FAST);
+            pivot.runToPosition(Math.min(Math.abs(entry.Angle), 50));
+        }, shooter, pivot).andThen(Commands.waitUntil(shooter.isReadySupplier()))
+                .andThen(conveyCommand())
+                .andThen(Commands.waitSeconds(0.2))
+                .finallyDo(this::stopAll);
 
         ampPrep = pivot.runToClimbCommand()
                 .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
@@ -428,6 +462,31 @@ public class RobotContainer {
     /* Bindings & Default Commands */
     // =========================== //
     private void configureBindings() {
+
+        // // LED Triggers //
+        // // has infeed jam
+        // new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.ORANGE, 5))
+        // .onFalse(CANdle.runBurnyBurnCommand());
+        // // checks if it has a note
+        // new Trigger(conveyor.hasInfedSupplier()).onTrue(CANdle.blink(Color.GREEN, 5))
+        // .onFalse(CANdle.runBurnyBurnCommand());
+        // // flashes purple
+        // new Trigger(shooter.isReadySupplier()).onTrue(CANdle.blink(Color.PURPLE, 3))
+        // .onFalse(CANdle.runBurnyBurnCommand());
+        // // Flashes white while shooting
+        // new
+        // Trigger(shooter.isRunningSupplier()).onTrue(CANdle.runShootFlow(Color.WHITE))
+        // .onFalse(CANdle.runBurnyBurnCommand());
+        // // Turns red while the shooter is inoperable
+        // new Trigger(shooter.isWorkingSupplier())
+        // .onTrue(CANdle.runBurnyBurnCommand())
+        // .onFalse(CANdle.blink(Color.RED, 10));
+
+        // Add trigger for amp/trap mode with stick press on driver or operator.
+
+        // TODO: Buttons should NOT be toggles. Commands should only be running while
+        // buttons are being held
+
         // ================ //
         /* Default Commands */
         // ================ //
@@ -520,14 +579,14 @@ public class RobotContainer {
                 .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
 
         /* bruh */
-        driverController.povUp().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kForward))
-                .onFalse(drivetrain.applyRequest(() -> xDrive));
-        driverController.povDown().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kReverse))
-                .onFalse(drivetrain.applyRequest(() -> xDrive));
-        driverController.povUp().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kForward))
-                .onFalse(drivetrain.applyRequest(() -> xDrive));
-        driverController.povDown().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kReverse))
-                .onFalse(drivetrain.applyRequest(() -> xDrive));
+        // driverController.povUp().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kForward))
+        // .onFalse(drivetrain.applyRequest(() -> xDrive));
+        // driverController.povDown().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kReverse))
+        // .onFalse(drivetrain.applyRequest(() -> xDrive));
+        // driverController.povUp().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kForward))
+        // .onFalse(drivetrain.applyRequest(() -> xDrive));
+        // driverController.povDown().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kReverse))
+        // .onFalse(drivetrain.applyRequest(() -> xDrive));
 
         // ========================= //
         /* Misc */
@@ -590,7 +649,7 @@ public class RobotContainer {
                 .whileTrue(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS));
 
         /* Magic Shoot */
-        operatorController.x().toggleOnTrue(magicShootNoLockCommand);
+        operatorController.x().toggleOnTrue(magicShootCommand());
 
         /* Manual/Preset Mode */
         operatorController.back().onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));
@@ -610,13 +669,13 @@ public class RobotContainer {
                         () -> useManual).andThen(this::pushIndexData));
 
         // ========================= //
-        /* Climber & Zeroing Control */
+        /* Pivot Control */
         // ========================= //
 
         /* Zero Pivot */
         operatorController.start().onTrue(zeroCommand());
 
-        /* Run Pivot & Climber to Zero */
+        /* Run Pivot Zero */
         operatorController.a().onTrue(pivot.runToHomeCommand()
                 .alongWith(trapVision.setPipelineCommand(Vision.SHOOTER_PIPELINE_INDEX)));
 
@@ -645,9 +704,9 @@ public class RobotContainer {
         emergencyController.leftBumper()
                 .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 2)));
 
-        // ============================== //
-        /* Manual Climber/Outfeed Control */
-        // ============================== //
+        // ============== //
+        /* Manual Climber */
+        // ============== //
 
         /* Climber Up */
         emergencyController.rightTrigger(0.2).whileTrue(
@@ -663,43 +722,22 @@ public class RobotContainer {
         emergencyController.povUp().onTrue(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY))
                 .onFalse(climber.stopCommand());
 
-        /* SEND IT */
+        /* Climb */
         emergencyController.povDown().onTrue(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.CLIMB))
                 .onFalse(climber.stopCommand());
 
-        // ==== //
-        /* Misc */
-        // ==== //
+        // ======================= //
+        /* Trap & Climb Sequencing */
+        // ======================= //
 
-        /* whippyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy */
-        // emergencyController.a().onTrue(whippy.whippyWheelsCommand(WHIPPY_VBUS))
-        // .onFalse(whippy.stopCommand());
-        emergencyController.a().onTrue(m_fanPivot.runToPositionCommand(0.));
+        /* Enable Trap */
+        emergencyController.start().onTrue(Commands.runOnce(() -> enableTrap = !enableTrap));
 
-        /* TrapStar 1738 */
-        // emergencyController.start().onTrue(m_fanPivot.runToPositionCommand(0.));
-        emergencyController.start().onTrue(climber.zeroCommand());
-
+        /* Enable Climber */
         emergencyController.back().onTrue(Commands.runOnce(() -> enableClimber = !enableClimber));
 
-        /* Full Outfeed: left Y */
-        emergencyController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
-                .or(emergencyController.axisLessThan(XboxController.Axis.kLeftY.value, -0.2))
-                .whileTrue(
-                        runThree(
-                                () -> -emergencyController.getLeftY(),
-                                () -> -emergencyController.getLeftY(),
-                                () -> -emergencyController.getLeftY()));
-
-        /* Cool Outfeed: right Y */
-        emergencyController.axisLessThan(XboxController.Axis.kRightY.value, -0.2)
-                .whileTrue(
-                        runThree(
-                                () -> emergencyController.getRightY(),
-                                () -> -emergencyController.getRightY(),
-                                () -> emergencyController.getRightY()));
-
-        /* TRAP STUFF */
+        /* Climb Sequence */
+        emergencyController.a().onTrue(sequenceCommand());
 
         /* Prime Fan Pivot & Shooter Pivot */
         emergencyController.x().toggleOnTrue(
@@ -726,13 +764,26 @@ public class RobotContainer {
                 .onFalse(shooter.setSlotCommand(Slots.FAST).andThen(shooter.stopCommand())
                         .alongWith(m_fan.stopCommand()));
 
+        /* Full Outfeed: left Y */
+        emergencyController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
+                .or(emergencyController.axisLessThan(XboxController.Axis.kLeftY.value, -0.2))
+                .whileTrue(
+                        runThree(
+                                () -> -emergencyController.getLeftY(),
+                                () -> -emergencyController.getLeftY(),
+                                () -> -emergencyController.getLeftY()));
+
+        /* Cool Outfeed: right Y */
+        emergencyController.axisLessThan(XboxController.Axis.kRightY.value, -0.2)
+                .whileTrue(
+                        runThree(
+                                () -> emergencyController.getRightY(),
+                                () -> -emergencyController.getRightY(),
+                                () -> emergencyController.getRightY()));
+
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
         }
-
-        emergencyController.rightStick().onTrue(new LimelightAcquire(() -> 0.3, // xLimeAquireLimiter.calculate(0.5),
-                drivetrain)
-                .alongWith(smartInfeedCommand()));
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
@@ -742,6 +793,78 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
+    /* Climb Sequence */
+    private void updateSequence() {
+        ClimbSequence seq = ClimbSequence.Default;
+
+        switch (currentSequence) {
+            case Default:
+                seq = enableTrap || enableClimber ? ClimbSequence.Prep : ClimbSequence.Default;
+                break;
+            case Prep:
+                seq = ClimbSequence.Fan;
+                break;
+            case Fan:
+                seq = enableTrap ? ClimbSequence.Shoot : ClimbSequence.End;
+                break;
+            case Shoot:
+                seq = ClimbSequence.End;
+                break;
+            case End:
+                seq = enableClimber ? ClimbSequence.Climb : ClimbSequence.Default;
+                break;
+            default:
+                seq = ClimbSequence.Default;
+                break;
+        }
+
+        currentSequence = seq;
+    }
+
+    private Command prepClimbCommand() {
+        return pivot.runToTrapCommand()
+                .alongWith(shooter.setSlotCommand(Slots.TRAP));
+    }
+
+    private Command fanReadyCommand() {
+        return m_fanPivot.runToTrapCommand()
+                .alongWith(Commands.either(
+                        m_fan.runMotorCommand(FAN_VBUS)
+                                .andThen(BeakCommands.repeatCommand(fixNoteCommand(), 2))
+                                .andThen(shooter.runShotCommand(ShotSpeeds.TRAP)),
+                        Commands.none(),
+                        () -> enableTrap))
+                .alongWith(Commands.either(
+                        climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY),
+                        Commands.none(),
+                        () -> enableClimber));
+    }
+
+    private Command trapShootCommand() {
+        return conveyCommand();
+    }
+
+    private Command endSequenceCommand() {
+        return m_fanPivot.runToPositionCommand(0.0)
+                .alongWith(m_fan.stopCommand())
+                .alongWith(shooter.stopCommand().andThen(shooter.setSlotCommand(Slots.FAST)))
+                .alongWith(
+                        Commands.either(
+                                Commands.none(),
+                                pivot.runToHomeCommand(),
+                                () -> enableClimber));
+    }
+
+    private Command climbCommand() {
+        return climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.CLIMB);
+    }
+
+    private Command sequenceCommand() {
+        return Commands.runOnce(this::updateSequence)
+                .andThen(Commands.select(sequenceCommandMap, () -> currentSequence));
+    }
+
+    // FIXME: this needs to be mirrorable w/ rotation
     /* Pathfinding Auton Shot */
     private Command pathfindingShotCommand(double targetDistance, Pose2d target, double scale, double endVelocity) {
         return drivetrain
@@ -784,11 +907,13 @@ public class RobotContainer {
                 .alongWith(new ShooterAlign(drivetrain, trapVision)).withTimeout(0.4)
                 .andThen(runEntryCommand(() -> getBestSTEntryLLY(), () -> ShotSpeeds.FAST))
                 .andThen(Commands.waitUntil(shooterAndPivotReady()))
-                .andThen(Commands.waitSeconds(0.3))
+                .andThen(Commands.waitSeconds(0.1))
                 .andThen(conveyCommand())
                 .andThen(Commands.waitSeconds(0.2))
-                .andThen(shooter.stopCommand())
-                .andThen(pivot.runToHomeCommand());
+                .finallyDo(() -> {
+                    shooter.stop();
+                    pivot.runToPosition(Pivot.HOLD_POSITION);
+                });
     }
 
     private Command runShooterAndPivotCommand(ShotSpeeds shotType, double shooterPercent, double pivotPosition) {
@@ -827,11 +952,12 @@ public class RobotContainer {
                 infeed.stopCommand(),
                 conveyor.stopCommand(),
                 shooter.stopCommand().andThen(shooter.setSlotCommand(Shooter.Slots.FAST)),
-                pivot.runToHomeCommand()/* ) */,
+                pivot.runToHomeCommand(),
                 m_fan.stopCommand(),
                 m_fanPivot.runToPositionCommand(0.),
                 whippy.stopCommand(),
-                setShooterPipelineCommand(SHOOTING_PIPELINE));
+                setShooterPipelineCommand(SHOOTING_PIPELINE),
+                Commands.runOnce(() -> currentSequence = ClimbSequence.Default));
     }
 
     /* Put Current ST Index Data to Dashboard */
@@ -929,7 +1055,6 @@ public class RobotContainer {
 
     /* Joystick Scaling */
     private double scaleDriverController(double controllerInput, SlewRateLimiter limiter, double baseSpeedPercent) {
-        // controls are reversed for red
         return limiter.calculate(
                 controllerInput * (baseSpeedPercent
                         + driverController.getRightTriggerAxis() * (1 - baseSpeedPercent)));
@@ -943,7 +1068,7 @@ public class RobotContainer {
         conveyor.logValues();
         infeed.logValues();
         shooter.logValues();
-        // climber.logValues();
+        climber.logValues();
         pivot.logValues();
         m_fan.logValues();
     }
@@ -1047,26 +1172,26 @@ public class RobotContainer {
         return entryPicked;
     }
 
-    public ShooterTableEntry[] getBestSTEntryAllStrats() {
-        ShooterTableEntry[] steArr = new ShooterTableEntry[5];
+    // public ShooterTableEntry[] getBestSTEntryAllStrats() {
+    //     ShooterTableEntry[] steArr = new ShooterTableEntry[5];
 
-        steArr[0] = getBestSTEntryLLYDistance();
-        steArr[1] = getBestSTEntryLLY();
-        steArr[2] = getBestSTEntryPhotonY();
-        steArr[3] = getBestSTEntryLLArea();
-        steArr[4] = getBestSTEntryLLAreaMulti();
-        return steArr;
-    }
+    //     steArr[0] = getBestSTEntryLLYDistance();
+    //     steArr[1] = getBestSTEntryLLY();
+    //     steArr[2] = getBestSTEntryPhotonY();
+    //     steArr[3] = getBestSTEntryLLArea();
+    //     steArr[4] = getBestSTEntryLLAreaMulti();
+    //     return steArr;
+    // }
 
-    private ShooterTableEntry getBestSTEntryLLYDistance() {
-        double deltaH = Units.metersToFeet(SPEAKER_TAG_HEIGHT - SHOOTER_CAM_HEIGHT);
-        double angle = Units.degreesToRadians(LimelightHelpers.getTY(SHOOTER_LIMELIGHT));
-        var ste = ShooterTable.calcShooterTableEntryCamera(deltaH / Math.tan(angle + SHOOTER_CAM_PITCH),
-                CameraLerpStrat.LimeLightTYDistance);
+    // private ShooterTableEntry getBestSTEntryLLYDistance() {
+    //     double deltaH = Units.metersToFeet(SPEAKER_TAG_HEIGHT - SHOOTER_CAM_HEIGHT);
+    //     double angle = Units.degreesToRadians(LimelightHelpers.getTY(SHOOTER_LIMELIGHT));
+    //     var ste = ShooterTable.calcShooterTableEntryCamera(deltaH / Math.tan(angle + SHOOTER_CAM_PITCH),
+    //             CameraLerpStrat.LimeLightTYDistance);
 
-        SmartDashboard.putNumber("Limelight TY tangented distance", ste.Distance.in(Feet));
-        return ste;
-    }
+    //     SmartDashboard.putNumber("Limelight TY tangented distance", ste.Distance.in(Feet));
+    //     return ste;
+    // }
 
     private ShooterTableEntry getBestSTEntryLLY() {
         SmartDashboard.putNumber("Raw TY", LimelightHelpers.getTY(SHOOTER_LIMELIGHT));

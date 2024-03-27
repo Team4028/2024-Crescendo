@@ -5,22 +5,28 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.led.CANdle;
+import com.ctre.phoenix.led.ColorFlowAnimation;
 import com.ctre.phoenix.led.CANdle.LEDStripType;
+import com.ctre.phoenix.led.ColorFlowAnimation.Direction;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.utils.BeakCommands;
 
 import com.ctre.phoenix.led.FireAnimation;
 import com.ctre.phoenix.led.RainbowAnimation;
+import com.ctre.phoenix.led.SingleFadeAnimation;
+import com.ctre.phoenix.led.StrobeAnimation;
+
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 public class Candle extends SubsystemBase {
     private final CANdle candle;
-    private final int NUM_LEDS = 69;
+    private final int NUM_LEDS = 68;
+    private final int STRIP_LEDS = 60;
     private Color color;
 
-    enum Color {
+    public enum Color {
 
         GREEN(0, 254, 0),
         PURPLE(118, 0, 254),
@@ -41,14 +47,15 @@ public class Candle extends SubsystemBase {
         }
     }
 
-    /** Creates a new light. */
-    private Candle() {
+    /* Creates a new light. */
+    public Candle() {
         candle = new CANdle(21, "rio");
         candle.configBrightnessScalar(.5);
         candle.configLEDType(LEDStripType.GRB);
         setColor(Color.WHITE);
     }
 
+    // Basic colors //
     public void setColor(Color color) {
         this.color = color;
         candle.animate(null);
@@ -66,48 +73,75 @@ public class Candle extends SubsystemBase {
     public Command setColorRedCommand() {
         return runOnce(() -> setColor(Color.RED));
     }
+
     public Command setNoColorCommand() {
         return runOnce(() -> setColor(Color.OFF));
     }
 
+    // Creates the complex animations //
+
     public FireAnimation burnyBurn() {
-        return new FireAnimation(1, .5, NUM_LEDS, .5, .5);
+        return new FireAnimation(1, 0.5, NUM_LEDS, 0.5, 0.1);
     }
 
     public RainbowAnimation rainbow() {
-        return new RainbowAnimation();
+        return new RainbowAnimation(100.00, 0.9, NUM_LEDS, true, 0);
     }
 
+    public SingleFadeAnimation fade(Color color) {
+        return new SingleFadeAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS);
+    }
+
+    public ColorFlowAnimation shootFlow(Color color) {
+        return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, Direction.Forward);
+    }
+
+    public ColorFlowAnimation infeedFlow(Color color) {
+        return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, Direction.Backward);
+    }
+
+    public StrobeAnimation strobe(Color color) {
+        return new StrobeAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, 0);
+    }
+
+    // Commands for complex animations //
     public Command runBurnyBurnCommand() {
-        return runOnce(() -> candle.animate(burnyBurn()));
+        return runOnce(() -> candle.clearAnimation(NUM_LEDS)).andThen(runOnce(() -> candle.animate(burnyBurn())));
     }
 
     public Command runRainbowAnimationCommnad() {
         return runOnce(() -> candle.animate(rainbow()));
     }
 
-    //Blink command -> Use for anything
-public SequentialCommandGroup blink(Color color) {
-    return new SequentialCommandGroup(
-        new InstantCommand(() -> setNoColor()),
-        new WaitCommand(0.02),
-        new InstantCommand(() -> setColor(color)),
-        new WaitCommand(0.02),
-        new InstantCommand(() -> setNoColor()),
-        new WaitCommand(0.02),
-        new InstantCommand(() -> setColor(color)),
-        new InstantCommand(() -> setNoColor()));
-}
+    public Command runFade(Color color) {
+        return runOnce(() -> candle.animate(fade(color)));
+    }
 
+    public Command runShootFlow(Color color) {
+        return runOnce(() -> candle.animate(shootFlow(color)));
+    }
 
+    public Command runInfeedFlow(Color color) {
+        return runOnce(() -> candle.animate(infeedFlow(color)));
+    }
 
+    public Command runStrobe(Color color) {
+        return runOnce(() -> candle.animate(strobe(color)));
+    }
 
-
-    //TODO: Add following options: Blinking, quick-flash, fade/breathe mode, more colors???
-
+    // Blink command -> Use for anything //
+    public Command blink(Color color, int cycles) {
+        return BeakCommands.repeatCommand(
+            setNoColorCommand().andThen(
+                Commands.waitSeconds(0.25),
+                runOnce(() -> setColor(color)),
+                Commands.waitSeconds(0.25)
+            ), cycles);
+    }
 
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
     }
+
 }

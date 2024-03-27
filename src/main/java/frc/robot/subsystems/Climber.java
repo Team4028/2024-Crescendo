@@ -4,21 +4,19 @@
 
 package frc.robot.subsystems;
 
-import java.util.function.BooleanSupplier;
-
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
 import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.ForwardLimitSourceValue;
+import com.ctre.phoenix6.signals.ForwardLimitTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
+import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
 
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -26,17 +24,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.DashboardStore;
 
 public class Climber extends SubsystemBase {
-    /** Creates a new Climber. */
     private final TalonFX motor;
-    // private final DutyCycleEncoder encoder;
 
     private final DataLog log;
     private final DoubleLogEntry vbusLog, currentLog, positionLog, velocityLog;
-
-    private double targetPosition = 0.;
-
-    // private static final double ZERO_ABSOLUTE_ENCODER_POSITION = 0.9375; // .933;
-    // private static final double ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT = 287.5;
 
     private static final double ZERO_CURRENT_THRESHOLD = 7;
     private static final double ZERO_VBUS = -0.05;
@@ -46,41 +37,43 @@ public class Climber extends SubsystemBase {
 
     private static final int CAN_ID = 15;
 
-    // /* Configs */
-    // private final Slot0Configs pidConfigs = new Slot0Configs()
-    // .withKP(0.66)
-    // .withKI(0.0)
-    // .withKD(0.0); // needs tuning
-
-    // private final MotionMagicConfigs motionMagicConfigs = new
-    // MotionMagicConfigs()
-    // .withMotionMagicCruiseVelocity(50.)
-    // .withMotionMagicAcceleration(100.)
-    // .withMotionMagicJerk(1000.);
-
+    /* Configs */
     private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(100.)
             .withSupplyCurrentLimit(80.);
+
+    private final HardwareLimitSwitchConfigs limitSwitchConfigs = new HardwareLimitSwitchConfigs()
+    
+            /* Forward */
+            .withForwardLimitAutosetPositionEnable(true)
+            .withForwardLimitAutosetPositionValue(140.) // tune
+
+            .withForwardLimitEnable(true)
+            .withForwardLimitRemoteSensorID(9)
+
+            .withForwardLimitSource(ForwardLimitSourceValue.LimitSwitchPin)
+            .withForwardLimitType(ForwardLimitTypeValue.NormallyClosed)
+
+            /* Reverse */
+            .withReverseLimitAutosetPositionEnable(true)
+            .withReverseLimitAutosetPositionValue(0.) // tune
+
+            .withReverseLimitEnable(true)
+            .withReverseLimitRemoteSensorID(8)
+
+            .withReverseLimitSource(ReverseLimitSourceValue.LimitSwitchPin)
+            .withReverseLimitType(ReverseLimitTypeValue.NormallyClosed);
 
     /* Requests */
     private final DutyCycleOut m_focRequest = new DutyCycleOut(0.)
             .withEnableFOC(true);
 
-    // private final PositionVoltage positionRequest = new PositionVoltage(0.)
-    // .withEnableFOC(true)
-    // .withOverrideBrakeDurNeutral(true);
-
-    // private final MotionMagicVoltage motionMagicRequest = new
-    // MotionMagicVoltage(0.)
-    // .withEnableFOC(true)
-    // .withOverrideBrakeDurNeutral(true);
-
     private double m_target = 0.;
     private double m_targetSign = 1;
 
     public enum ClimberPositions {
-        CLIMB(16),
-        READY(135.);
+        CLIMB(8.),
+        READY(124.);
 
         public double Position;
 
@@ -92,7 +85,6 @@ public class Climber extends SubsystemBase {
     public Climber() {
         /* Setup */
         motor = new TalonFX(CAN_ID);
-        // encoder = new DutyCycleEncoder(9);
 
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setInverted(false);
@@ -100,9 +92,8 @@ public class Climber extends SubsystemBase {
         /* ======= */
         /* CONFIGS */
         /* ======= */
-        // motor.getConfigurator().apply(motionMagicConfigs);
-        // motor.getConfigurator().apply(pidConfigs);
         motor.getConfigurator().apply(currentConfigs);
+        // motor.getConfigurator().apply(limitSwitchConfigs);
 
         /* CAN Bus */
         motor.getVelocity().setUpdateFrequency(20.);
@@ -122,8 +113,6 @@ public class Climber extends SubsystemBase {
         DashboardStore.add("Climber Position", () -> motor.getPosition().getValueAsDouble());
         DashboardStore.add("Climber Current", () -> motor.getStatorCurrent().getValueAsDouble());
         DashboardStore.add("Climber Velocity", () -> motor.getVelocity().getValueAsDouble());
-        // DashboardStore.add("Absolute Encoder Position", () ->
-        // encoder.getAbsolutePosition());
 
         /* Timer */
         m_zeroTimer = new Timer();
@@ -167,7 +156,7 @@ public class Climber extends SubsystemBase {
             m_target = position;
             m_targetSign = Math.signum(getError());
         })
-                .andThen(runOnce(() -> runMotor(m_targetSign * output, true)))
+                .andThen(runOnce(() -> runMotor(m_targetSign * Math.abs(output), true)))
                 // make sure overdrives aren't (generally) possible
                 .andThen(Commands.waitUntil(() -> m_targetSign == -1 ? //
                         getError() > -2.0 : getError() < 2.0))
@@ -178,63 +167,12 @@ public class Climber extends SubsystemBase {
         return runToPositionCommand(output, position.Position);
     }
 
-    // public void runToPosition(double position) {
-    // targetPosition = position;
-    // motor.setControl(positionRequest.withPosition(position));
-    // }
-
-    // public Command runToPositionCommand(double position) {
-    // return runOnce(() -> runToPosition(position));
-    // }
-
-    // public void climb() {
-    // targetPosition = ClimberPositions.CLIMB.Position;
-    // motor.setControl(motionMagicRequest.withPosition(ClimberPositions.CLIMB.Position));
-    // }
-
-    // public Command climbCommand() {
-    // return runOnce(this::climb);
-    // }
-
-    // public void runToPosition(ClimberPositions position) {
-    // runToPosition(position.Position);
-    // }
-
-    // public Command runToPositionCommand(ClimberPositions position) {
-    // return runToPositionCommand(position.Position);
-    // }
-
-    // public boolean inPosition() {
-    // return Math.abs(targetPosition - motor.getPosition().getValueAsDouble()) <
-    // 1.5;
-    // }
-
-    // public BooleanSupplier inPositionSupplier() {
-    // return this::inPosition;
-    // }
-
     public void logValues() {
         vbusLog.append(motor.get());
         currentLog.append(motor.getStatorCurrent().getValueAsDouble());
         positionLog.append(motor.getPosition().getValueAsDouble());
         velocityLog.append(motor.getVelocity().getValueAsDouble());
     }
-
-    // public boolean encoderReady() {
-    // return encoder.isConnected() && Math.abs(encoder.getAbsolutePosition()) >
-    // 0.01;
-    // }
-
-    // public void reZero() {
-    // double newPosition = (encoder.getAbsolutePosition() -
-    // ZERO_ABSOLUTE_ENCODER_POSITION)
-    // * ABSOLUTE_ENCODER_ROT_TO_MOTOR_ROT;
-    // motor.setPosition(newPosition);
-
-    // if (newPosition < -10. || Math.abs(encoder.getAbsolutePosition()) < 0.01) {
-    // motor.setPosition(0.);
-    // }
-    // }
 
     public Command zeroCommand() {
         return runOnce(m_zeroTimer::restart)
