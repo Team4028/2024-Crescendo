@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.photonvision.EstimatedRobotPose;
@@ -25,10 +24,6 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.PathPlannerPath;
-
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -44,10 +39,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.AlignDrivetrain;
 import frc.robot.commands.Autons;
@@ -326,22 +319,15 @@ public class RobotContainer {
         NamedCommands.registerCommand("pivotZero", pivot.zeroCommand());
 
         NamedCommands.registerCommand("zeroApril", new InstantCommand(() -> {
-            Optional<EstimatedRobotPose> poseOpt = getBestPose();
-            if (poseOpt.isEmpty())
+            Optional<EstimatedRobotPose> pose = getBestPose();
+            if (pose.isEmpty())
                 return;
 
-            drivetrain.seedFieldRelative(poseOpt.get().estimatedPose.toPose2d());
+            drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
         }, leftVision, rightVision));
 
-        NamedCommands.registerCommand("Go to 4 piece path",
-                drivetrain.pathFindCommand(PathPlannerAuto.getStaringPoseFromAutoFile("4 Piece Simple"), 1., 0.));
-
-        // TODO: change this stuff for shooter table
-        NamedCommands.registerCommand("4pinfeed", infeed.runMotorCommand(INFEED_VBUS)
+        NamedCommands.registerCommand("Infeed", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
-
-        NamedCommands.registerCommand("Shoot Note",
-                conveyCommand().andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("Spit Note", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
@@ -355,7 +341,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Fix Note", fixNoteCommand());
 
         NamedCommands.registerCommand("Limelight Acquire",
-                new LimelightAcquire(() -> 0.6, // xLimeAquireLimiter.calculate(0.5),
+                new LimelightAcquire(() -> 0.6,
                         drivetrain)
                         .until(conveyor.hasInfedSupplier())
                         .raceWith(smartInfeedCommand()));
@@ -365,40 +351,22 @@ public class RobotContainer {
         NamedCommands.registerCommand("Dumb Infeed",
                 runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(.25));
 
-        NamedCommands.registerCommand("Run Back", conveyBackCommand(-2.5, 0.25));
-
-        // TODO: We may want a command that constantly updates the shooter table and
-        // runs the shooter/pivot based on that
-        // makes shooting on the move/faster autons much easier
-
         NamedCommands.registerCommand("Start Shooter",
                 runShooterAndPivotCommand(ShotSpeeds.FAST, 1.0, 10.8));
 
-        // ShooterTableEntry fourP = new ShooterTableEntry(Feet.of(0), 0.0, 0.0, 0.0,
-        // 0.0, 0.85);
         NamedCommands.registerCommand("Start Shooter No Pivot",
                 shooter.runShotCommand(ShotSpeeds.FAST, 0.85));
 
-        // TODO: get rid of this garbage and use shooter table
-
-        // // ShooterTableEntry fourEntry = new ShooterTableEntry(Feet.of(0), 12, 1.0);
-        // NamedCommands.registerCommand("4 Piece Shooter Pivot", pivot.runToPositionCommand(15.));
-
-        // NamedCommands.registerCommand("4 Piece First Shooter Pivot", pivot.runToPositionCommand(11.6));
-
-        // NamedCommands.registerCommand("4 Piece Mid Shooter Pivot", pivot.runToPositionCommand(16.7));
-
-        // // ShooterTableEntry fourLastEntry = new ShooterTableEntry(Feet.of(0), 15, 1.0);
-        // NamedCommands.registerCommand("4 Piece Last Shooter Pivot", pivot.runToPositionCommand(13));
-
         NamedCommands.registerCommand("Stop Shooter", shooter.stopCommand());
-        NamedCommands.registerCommand("Stop Infeed", runBoth(false, 0., 0.));
 
-        NamedCommands.registerCommand("Center Pathfinding Shot",
-                pathfindingShotCommand(12.0, new Pose2d(4.99, 6.66, new Rotation2d(Units.degreesToRadians(13.3))), 0.75, 0));
+        NamedCommands.registerCommand("Left Pathfinding Shot", pathfindingShotCommand(
+                14.0, Constants.LEFT_SHOT, 0.8, 0.));
 
-        NamedCommands.registerCommand("Right Center Pathfinding Shot",
-                pathfindingShotCommand(20.8, Constants.RIGHT_3_SHOOT_PATHFINDING_POSE, 0.75, 0.));
+        NamedCommands.registerCommand("Center Pathfinding Shot", pathfindingShotCommand(
+                13.0, Constants.CENTER_SHOT, 0.8, 0.));
+
+        NamedCommands.registerCommand("Right Pathfinding Shot",
+                pathfindingShotCommand(20.8, Constants.RIGHT_SHOT, 0.75, 0.));
 
         NamedCommands.registerCommand("2.5 Right Align",
                 new AlignDrivetrain(drivetrain,
@@ -406,51 +374,20 @@ public class RobotContainer {
                                 && DriverStation.getAlliance().get() == Alliance.Red ? -30. : -36.),
                         () -> drivetrain.getState().Pose.getRotation().getRadians(), true).withTimeout(0.4));
 
-        NamedCommands.registerCommand("Note 3",
-                drivetrain.pathFindCommand(new Pose2d(4.67, 6.7, Rotation2d.fromDegrees(-18)), 0.75, 2.5));
-
-        NamedCommands.registerCommand("Note 3 Right",
-                drivetrain.pathFindCommand(new Pose2d(4.67, 1.5, Rotation2d.fromDegrees(18)), 0.75, 2.5));
-
-        NamedCommands.registerCommand("Note 4",
-                drivetrain.pathFindCommand(new Pose2d(3.66, 6.93, Rotation2d.fromDegrees(70.)), 0.75, 0));
-
-        NamedCommands.registerCommand("Note 4 Right",
-                drivetrain.pathFindCommand(new Pose2d(3.66, 1.2, Rotation2d.fromDegrees(-70.)), 0.75, 0));
-
-        NamedCommands.registerCommand("follow2pchoice",
-                new ConditionalCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pleft")),
-                        AutoBuilder.followPath(PathPlannerPath.fromPathFile("2pright")),
-                        () -> true));
-
-        NamedCommands.registerCommand("Wait For Shooter", Commands.waitUntil(shooterAndPivotReady()));
-
-        NamedCommands.registerCommand("4 piece align pivot", pivot.runToPositionCommand(16.0));
-
-        NamedCommands.registerCommand("4p 4th shoot", AutoBuilder.followPath(PathPlannerPath
-                .fromPathFile(allianceIsBlue(DriverStation.getAlliance()) ? "4 piece 2-3" : "4 piece 2-3 red")));
-        NamedCommands.registerCommand("4p 5th shoot", AutoBuilder.followPath(PathPlannerPath.fromPathFile(
-                allianceIsBlue(DriverStation.getAlliance()) ? "4pend-5th-shoot" : "4pend-5th-shoot red")));
-
-        /*
-         * Spin up Shooter
-         * When shooter ready, feed
-         * Stop shooter
-         */
-        NamedCommands.registerCommand("Stationary Shot",
+        NamedCommands.registerCommand("Right Stationary Shot",
                 shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(20.8))));
 
-        /* 2.5 but right side */
-        NamedCommands.registerCommand("2.5 Right Stationary Shot",
-                magicShootCommand());
-
-        NamedCommands.registerCommand("2.5 Final Note", drivetrain
-                .pathFindCommand(new Pose2d(3.71, 6.51, new Rotation2d(Units.degreesToRadians(-9.1))), 0.75, 0));
-        NamedCommands.registerCommand("2.5 Final Note Right", drivetrain
-                .pathFindCommand(new Pose2d(3.4, 2.2, new Rotation2d(Units.degreesToRadians(-46))), 0.75, 0.));
+        NamedCommands.registerCommand("Preload Shot", zeroCommand()
+                .andThen(runEntryCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(4.2)),
+                        () -> ShotSpeeds.FAST))
+                .andThen(Commands.waitUntil(shooterAndPivotReady()))
+                .andThen(conveyCommand())
+                .andThen(Commands.waitSeconds(0.2))
+                .andThen(pivot.runToHomeCommand())
+                .andThen(shooter.stopCommand()));
 
         NamedCommands.registerCommand("Update Shooter Table",
-            runEntryCommand(() -> getBestSTEntry(), () -> ShotSpeeds.FAST).repeatedly());
+                runEntryCommand(() -> getBestSTEntry(), () -> ShotSpeeds.FAST).repeatedly());
 
     }
 
@@ -577,16 +514,6 @@ public class RobotContainer {
         /* Toggle Chassis Mode */
         driverController.rightBumper().onTrue(Commands.runOnce(() -> currentSpeed = SLOW_SPEED))
                 .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
-
-        /* bruh */
-        // driverController.povUp().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kForward))
-        // .onFalse(drivetrain.applyRequest(() -> xDrive));
-        // driverController.povDown().and(driverController.a()).onTrue(drivetrain.runDynamTest(Direction.kReverse))
-        // .onFalse(drivetrain.applyRequest(() -> xDrive));
-        // driverController.povUp().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kForward))
-        // .onFalse(drivetrain.applyRequest(() -> xDrive));
-        // driverController.povDown().and(driverController.b()).onTrue(drivetrain.runQuasiTest(Direction.kReverse))
-        // .onFalse(drivetrain.applyRequest(() -> xDrive));
 
         // ========================= //
         /* Misc */
@@ -1173,24 +1100,27 @@ public class RobotContainer {
     }
 
     // public ShooterTableEntry[] getBestSTEntryAllStrats() {
-    //     ShooterTableEntry[] steArr = new ShooterTableEntry[5];
+    // ShooterTableEntry[] steArr = new ShooterTableEntry[5];
 
-    //     steArr[0] = getBestSTEntryLLYDistance();
-    //     steArr[1] = getBestSTEntryLLY();
-    //     steArr[2] = getBestSTEntryPhotonY();
-    //     steArr[3] = getBestSTEntryLLArea();
-    //     steArr[4] = getBestSTEntryLLAreaMulti();
-    //     return steArr;
+    // steArr[0] = getBestSTEntryLLYDistance();
+    // steArr[1] = getBestSTEntryLLY();
+    // steArr[2] = getBestSTEntryPhotonY();
+    // steArr[3] = getBestSTEntryLLArea();
+    // steArr[4] = getBestSTEntryLLAreaMulti();
+    // return steArr;
     // }
 
     // private ShooterTableEntry getBestSTEntryLLYDistance() {
-    //     double deltaH = Units.metersToFeet(SPEAKER_TAG_HEIGHT - SHOOTER_CAM_HEIGHT);
-    //     double angle = Units.degreesToRadians(LimelightHelpers.getTY(SHOOTER_LIMELIGHT));
-    //     var ste = ShooterTable.calcShooterTableEntryCamera(deltaH / Math.tan(angle + SHOOTER_CAM_PITCH),
-    //             CameraLerpStrat.LimeLightTYDistance);
+    // double deltaH = Units.metersToFeet(SPEAKER_TAG_HEIGHT - SHOOTER_CAM_HEIGHT);
+    // double angle =
+    // Units.degreesToRadians(LimelightHelpers.getTY(SHOOTER_LIMELIGHT));
+    // var ste = ShooterTable.calcShooterTableEntryCamera(deltaH / Math.tan(angle +
+    // SHOOTER_CAM_PITCH),
+    // CameraLerpStrat.LimeLightTYDistance);
 
-    //     SmartDashboard.putNumber("Limelight TY tangented distance", ste.Distance.in(Feet));
-    //     return ste;
+    // SmartDashboard.putNumber("Limelight TY tangented distance",
+    // ste.Distance.in(Feet));
+    // return ste;
     // }
 
     private ShooterTableEntry getBestSTEntryLLY() {

@@ -3,53 +3,59 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.4,
-        "y": 6.15
+        "x": 0.6668003436678019,
+        "y": 4.378836643579328
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4,
-        "y": 6.15
+        "x": 2.3084874525453754,
+        "y": 2.0671203800461306
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "2p center start"
     },
     {
       "anchor": {
-        "x": 4.5,
-        "y": 6.15
+        "x": 5.418287908723468,
+        "y": 3.892066085306668
       },
       "prevControl": {
-        "x": 3.3412811867811545,
-        "y": 6.15
+        "x": 4.22979726412473,
+        "y": 3.119216267794953
       },
       "nextControl": {
-        "x": 5.66,
-        "y": 6.15
+        "x": 7.485534999000728,
+        "y": 5.236352255108043
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.0,
-        "y": 7.4
+        "x": 7.966744578623385,
+        "y": 5.6373809266074915
       },
       "prevControl": {
-        "x": 7.0,
-        "y": 7.4
+        "x": 6.978622405231388,
+        "y": 4.920541737056629
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "3p1"
+      "linkedName": "Mid Amp Piece"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 40.0,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Spit Note",
-      "waypointRelativePos": 0.25,
+      "name": "Infeed",
+      "waypointRelativePos": 0.8,
       "command": {
         "type": "parallel",
         "data": {
@@ -57,24 +63,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Spit Note"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Spin Shooter",
-      "waypointRelativePos": 0.0,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "Prepare Spit"
+                "name": "Smart Infeed"
               }
             }
           ]
@@ -83,21 +72,21 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 5.0,
+    "maxVelocity": 6.0,
     "maxAcceleration": 5.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": 25.81561254799611,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -61.327270737884014,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

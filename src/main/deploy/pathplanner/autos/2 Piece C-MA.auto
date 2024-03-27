@@ -2,25 +2,31 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4,
-      "y": 6.2
+      "x": 0.6668003436678019,
+      "y": 4.378836643579328
     },
-    "rotation": 0
+    "rotation": -60.11374138408448
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "Preload Shot"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "2pbeginning"
+            "pathName": "2 Piece CMA"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "follow2pchoice"
+            "name": "Center Pathfinding Shot"
           }
         }
       ]

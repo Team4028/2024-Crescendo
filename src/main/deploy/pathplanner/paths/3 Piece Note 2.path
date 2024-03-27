@@ -3,37 +3,55 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.1,
-        "y": 1.9
+        "x": 7.802490362815484,
+        "y": 0.7601200387585969
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.8664752326143565,
-        "y": 2.8903330648722507
+        "x": 6.428707549444488,
+        "y": 0.9242375202732592
       },
       "isLocked": false,
-      "linkedName": "3prnl3"
+      "linkedName": "Source Piece"
     },
     {
       "anchor": {
-        "x": 2.820780570336069,
-        "y": 1.1694154442439941
+        "x": 7.802490362815484,
+        "y": 2.3388308884879883
       },
       "prevControl": {
-        "x": 2.820780570336069,
-        "y": 2.1985010351787078
+        "x": 6.6915456907836885,
+        "y": 2.2452776529484684
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "3prnl5"
+      "linkedName": "Mid Source Piece"
     }
   ],
-  "rotationTargets": [],
-  "constraintZones": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.3,
+      "rotationDegrees": 15.38,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "New Constraints Zone",
+      "minWaypointRelativePos": 0.0,
+      "maxWaypointRelativePos": 0.5,
+      "constraints": {
+        "maxVelocity": 3.0,
+        "maxAcceleration": 3.5,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0
+      }
+    }
+  ],
   "eventMarkers": [
     {
       "name": "Stop Shooter",
-      "waypointRelativePos": 0.1,
+      "waypointRelativePos": 0.6,
       "command": {
         "type": "parallel",
         "data": {
@@ -49,8 +67,25 @@
       }
     },
     {
+      "name": "Spit Note",
+      "waypointRelativePos": 0.1,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Spit Note"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
       "name": "Dumb Infeed",
-      "waypointRelativePos": 0.7,
+      "waypointRelativePos": 0.5,
       "command": {
         "type": "parallel",
         "data": {
@@ -74,13 +109,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.0,
+    "rotation": 30.0,
     "rotateFast": true
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": -37.5,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": false

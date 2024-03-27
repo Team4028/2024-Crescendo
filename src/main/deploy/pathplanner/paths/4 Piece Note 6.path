@@ -3,36 +3,76 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.4,
+        "x": 4.4,
         "y": 6.2
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4,
-        "y": 6.2
+        "x": 6.8356283444110515,
+        "y": 7.018745173564174
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "5p3"
     },
     {
       "anchor": {
-        "x": 4.5,
-        "y": 6.2
+        "x": 8.597692864901399,
+        "y": 5.695053213468251
       },
       "prevControl": {
-        "x": 3.5,
-        "y": 6.2
+        "x": 7.849850854202197,
+        "y": 6.142867595569332
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "5p1"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Start Shooter",
+      "name": "Stop Shooter",
+      "waypointRelativePos": 0.25,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Stop Shooter"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Run Pivot To Home"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Smart Infeed",
+      "waypointRelativePos": 0.7,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Smart Infeed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Zero",
       "waypointRelativePos": 0,
       "command": {
         "type": "parallel",
@@ -41,24 +81,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Start Shooter"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Shoot Note",
-      "waypointRelativePos": 1.0,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "4pinfeed"
+                "name": "zeroApril"
               }
             }
           ]
@@ -67,20 +90,20 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 5.0,
+    "maxVelocity": 6.0,
     "maxAcceleration": 5.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 5.0,
-    "rotation": 8.197359487315987,
-    "rotateFast": false
+    "velocity": 0,
+    "rotation": -34.82448915695676,
+    "rotateFast": true
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 12.57508745858063,
     "velocity": 0
   },
   "useDefaultConstraints": false

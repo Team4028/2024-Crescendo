@@ -36,9 +36,9 @@
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "4p 4th shoot"
+            "pathName": "4 piece 2-3"
           }
         },
         {
@@ -56,13 +56,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "4pend-5th-piece"
+            "pathName": "4 Piece Note 5"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "4p 5th shoot"
+            "name": "Left Pathfinding Shot"
           }
         },
         {
@@ -74,7 +74,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "5p4pfirst-try6"
+            "pathName": "4 Piece Note 6"
           }
         },
         {

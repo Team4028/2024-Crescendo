@@ -3,36 +3,36 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.223479922743321,
-        "y": 4.1046482092964185
+        "x": 1.3,
+        "y": 1.6
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.757072305191994,
-        "y": 5.076647642596285
+        "x": 2.3,
+        "y": 1.6
       },
       "isLocked": false,
-      "linkedName": "3pr3"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.1480420763979895,
-        "y": 2.1899264340611406
+        "x": 7.802490362815484,
+        "y": 0.7601200387585969
       },
       "prevControl": {
-        "x": 3.1480420763979895,
-        "y": 2.1899264340611406
+        "x": 6.802490362815484,
+        "y": 0.7601200387585969
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Source Piece"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Smart Infeed",
+      "name": "Start Shooter",
       "waypointRelativePos": 0,
       "command": {
         "type": "parallel",
@@ -41,7 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Smart Infeed"
+                "name": "Prepare Spit"
               }
             }
           ]
@@ -49,8 +49,8 @@
       }
     },
     {
-      "name": "Stop Infeed",
-      "waypointRelativePos": 0.4,
+      "name": "Spit Note",
+      "waypointRelativePos": 0.45,
       "command": {
         "type": "parallel",
         "data": {
@@ -58,7 +58,24 @@
             {
               "type": "named",
               "data": {
-                "name": "Stop Infeed"
+                "name": "Spit Note"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Pivot zero",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "pivotZero"
               }
             }
           ]
@@ -68,13 +85,13 @@
   ],
   "globalConstraints": {
     "maxVelocity": 6.0,
-    "maxAcceleration": 5.0,
+    "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -37.1998121158183,
+    "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,
@@ -83,5 +100,5 @@
     "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

@@ -3,53 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.0,
-        "y": 5.88
+        "x": 0.6668003436678019,
+        "y": 4.378836643579328
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.720631281718404,
-        "y": 5.170180564691614
+        "x": 5.218780311721698,
+        "y": 0.6658323929063981
       },
       "isLocked": false,
-      "linkedName": "3p2"
+      "linkedName": "2p center start"
     },
     {
       "anchor": {
-        "x": 8.0,
-        "y": 4.05
+        "x": 7.863923915767295,
+        "y": 4.097707411018849
       },
       "prevControl": {
-        "x": 7.0,
-        "y": 4.05
+        "x": 3.3919514441377876,
+        "y": 5.225129791702536
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "3+p3"
+      "linkedName": "Center Piece"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.2,
-      "rotationDegrees": -33.04704371738193,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Smart Infeed",
-      "waypointRelativePos": 0.25,
+      "name": "Infeed",
+      "waypointRelativePos": 0.8,
       "command": {
-        "type": "sequential",
+        "type": "parallel",
         "data": {
           "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "Stop Shooter"
-              }
-            },
             {
               "type": "named",
               "data": {
@@ -63,7 +51,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 5.0,
-    "maxAcceleration": 4.25,
+    "maxAcceleration": 5.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
@@ -75,7 +63,7 @@
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -61.327270737884014,
     "velocity": 0
   },
   "useDefaultConstraints": false

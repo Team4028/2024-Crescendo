@@ -28,5 +28,7 @@ public final class Constants {
     public static final Pose2d MIDDLE_TRAP_Target = new Pose2d(4.4, 3.24, new Rotation2d(Units.degreesToRadians(-120)));
     public static final Pose2d RIGHT_TRAP_Target = new Pose2d(5.83, 4.11, new Rotation2d(0));
 
-    public static final Pose2d RIGHT_3_SHOOT_PATHFINDING_POSE = new Pose2d(5.1, 1.9, Rotation2d.fromDegrees(-38.));
+    public static final Pose2d RIGHT_SHOT = new Pose2d(5.1, 1.9, Rotation2d.fromDegrees(-38.));
+    public static final Pose2d CENTER_SHOT = new Pose2d(4.5, 4.7, Rotation2d.fromDegrees(-15.5));
+    public static final Pose2d LEFT_SHOT = new Pose2d(4.4, 6.2, Rotation2d.fromDegrees(18.5));
 }

@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.3,
-      "y": 3.33
+      "x": 0.6668003436678019,
+      "y": 4.378836643579328
     },
-    "rotation": 0
+    "rotation": -60.11374138408448
   },
   "command": {
     "type": "sequential",
@@ -14,25 +14,19 @@
         {
           "type": "named",
           "data": {
-            "name": "pivotZero"
+            "name": "Preload Shot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "2p center 0-1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "2p center 1-2"
+            "pathName": "2 Piece CC"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Shoot Note"
+            "name": "Center Pathfinding Shot"
           }
         }
       ]
