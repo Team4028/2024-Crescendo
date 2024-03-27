@@ -448,6 +448,8 @@ public class RobotContainer {
                 .pathFindCommand(new Pose2d(3.71, 6.51, new Rotation2d(Units.degreesToRadians(-9.1))), 0.75, 0));
         NamedCommands.registerCommand("2.5 Final Note Right", drivetrain
                 .pathFindCommand(new Pose2d(3.4, 2.2, new Rotation2d(Units.degreesToRadians(-46))), 0.75, 0.));
+        NamedCommands.registerCommand("6p Wing Shot",
+                magicShootCommand());
 
         NamedCommands.registerCommand("Update Shooter Table",
             runEntryCommand(() -> getBestSTEntry(), () -> ShotSpeeds.FAST).repeatedly());

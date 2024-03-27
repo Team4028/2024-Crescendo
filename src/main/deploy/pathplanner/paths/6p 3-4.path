@@ -1,0 +1,70 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.896343188697772,
+        "y": 6.700750495518085
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.264559258463246,
+        "y": 6.268066781147808
+      },
+      "isLocked": false,
+      "linkedName": "6p pick up second peice"
+    },
+    {
+      "anchor": {
+        "x": 8.012985142779401,
+        "y": 5.917242147874609
+      },
+      "prevControl": {
+        "x": 6.948817088517365,
+        "y": 6.338231707802447
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "6p come back to start 4p"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "Start infeed",
+      "waypointRelativePos": 0.6,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Smart Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 5.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -30.0,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}
