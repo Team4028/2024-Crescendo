@@ -1,0 +1,76 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.012985142779401,
+        "y": 5.917242147874609
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 4.773704362223539,
+        "y": 6.595503105536126
+      },
+      "isLocked": false,
+      "linkedName": "6p come back to start 4p"
+    },
+    {
+      "anchor": {
+        "x": 2.5518150181599504,
+        "y": 6.291455090032687
+      },
+      "prevControl": {
+        "x": 4.118831713446903,
+        "y": 6.1511252367234075
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "6p go to 4p start"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "Smart infeed and fix note",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Smart Infeed"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Fix Note"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 5.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 3.0,
+    "rotation": 0,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": -30.0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}
