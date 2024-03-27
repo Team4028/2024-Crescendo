@@ -52,10 +52,11 @@ public class Conveyor extends SubsystemBase {
 
     private static final int CAN_ID = 11;
     private static final int CONVEYOR_TOF_CAN_ID = 21;
-    private static final int INFEED_TOF_CAN_ID = 1;
+    private static final int INFEED_TOF_CAN_ID = 0;
 
     private boolean conveyorHasSeenNote = false;
     private boolean hasStrawberryJam = false;
+    private boolean infeedHasSeenNote = false;
 
     private double target;
     private final Timer conveyorTimer;
@@ -99,11 +100,11 @@ public class Conveyor extends SubsystemBase {
         motor.burnFlash();
 
         conveyorTofSensor = new TimeOfFlight(CONVEYOR_TOF_CAN_ID);
-        conveyorTofSensor.setRangingMode(RangingMode.Short, 24.0);
+        conveyorTofSensor.setRangingMode(RangingMode.Short, 20.0);
         conveyorTofSensor.setRangeOfInterest(4, 4, 11, 11);
 
         infeedTofSensor = new TimeOfFlight(INFEED_TOF_CAN_ID);
-        infeedTofSensor.setRangingMode(RangingMode.Short, 24.0);
+        infeedTofSensor.setRangingMode(RangingMode.Short, 20.0);
         infeedTofSensor.setRangeOfInterest(4, 4, 11, 11);
 
         log = DataLogManager.getLog();
@@ -138,6 +139,7 @@ public class Conveyor extends SubsystemBase {
          */
         if (infeedTofSensor.getRange() <= INFEED_DETECTION_RANGE_THRESHOLD) {
             infeedTimer.start();
+            infeedHasSeenNote = true;
         }
 
         if (conveyorTofSensor.getRange() <= INITIAL_DETECTION_RANGE_THRESHOLD) {
@@ -154,6 +156,7 @@ public class Conveyor extends SubsystemBase {
         if (conveyorHasSeenNote && (conveyorTimer.get() >= CONVEYOR_TIMER_THRESHOLD
                 || conveyorTofSensor.getRange() >= NOTE_HELD_RANGE_THRESHOLD)) {
             conveyorHasSeenNote = false;
+            infeedHasSeenNote = false;
             conveyorTimer.stop();
             conveyorTimer.reset();
             return true;
@@ -166,12 +169,20 @@ public class Conveyor extends SubsystemBase {
         return this::hasInfed;
     }
 
-    private boolean hasJam() {
+    public boolean hasJam() {
         return hasStrawberryJam;
     }
 
     public BooleanSupplier hasJamSupplier() {
         return this::hasJam;
+    }
+
+    public boolean infeedSeesNote() {
+        return infeedHasSeenNote;
+    }
+
+    public BooleanSupplier infeedSeesNoteSupplier() {
+        return this::infeedSeesNote;
     }
 
     public Command runXRotations(double x) {

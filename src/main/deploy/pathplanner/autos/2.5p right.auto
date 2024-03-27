@@ -32,12 +32,6 @@
         {
           "type": "named",
           "data": {
-            "name": "zeroApril"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "2.5 Right Align"
           }
         },
@@ -60,15 +54,15 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "zeroApril"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "3p 4-5 right"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Fix Note"
           }
         },
         {

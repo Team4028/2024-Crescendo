@@ -72,8 +72,7 @@ public class Pivot extends SubsystemBase {
 
     /* PID */
     private class PIDConstants {
-        // TODO: three different zones
-        private final static double kP = 0.05;
+        private final static double kP = 0.06;
         private final static double kD = 0.5;
 
         private final static double MIN_OUTPUT = -0.5;
@@ -254,7 +253,7 @@ public class Pivot extends SubsystemBase {
     }
 
     public boolean inPosition() {
-        return Math.abs(getPosition() - targetPosition) < 0.6;
+        return Math.abs(getPosition() - targetPosition) < 0.3;
     }
 
     public BooleanSupplier inPositionSupplier() {

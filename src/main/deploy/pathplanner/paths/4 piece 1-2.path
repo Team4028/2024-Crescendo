@@ -49,8 +49,8 @@
       }
     },
     {
-      "name": "Pivot",
-      "waypointRelativePos": 0.3,
+      "name": "Shooter Table & Infeed",
+      "waypointRelativePos": 0.0,
       "command": {
         "type": "parallel",
         "data": {
@@ -58,7 +58,13 @@
             {
               "type": "named",
               "data": {
-                "name": "4 Piece Mid Shooter Pivot"
+                "name": "Update Shooter Table"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "4pinfeed"
               }
             }
           ]
@@ -67,8 +73,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 6.0,
+    "maxAcceleration": 5.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
