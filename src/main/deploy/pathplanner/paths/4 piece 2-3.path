@@ -50,7 +50,7 @@
     },
     {
       "name": "Pivot",
-      "waypointRelativePos": 0.0,
+      "waypointRelativePos": 0.7,
       "command": {
         "type": "parallel",
         "data": {
@@ -58,9 +58,20 @@
             {
               "type": "named",
               "data": {
-                "name": "Update Shooter Table"
+                "name": "4 Piece Note 4"
               }
-            },
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "infeed",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
             {
               "type": "named",
               "data": {
@@ -80,7 +91,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -38.5,
+    "rotation": -33.316243584192804,
     "rotateFast": false
   },
   "reversed": false,

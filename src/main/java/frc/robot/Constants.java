@@ -30,5 +30,5 @@ public final class Constants {
 
     public static final Pose2d RIGHT_SHOT = new Pose2d(5.1, 1.9, Rotation2d.fromDegrees(-38.));
     public static final Pose2d CENTER_SHOT = new Pose2d(4.5, 4.7, Rotation2d.fromDegrees(-15.5));
-    public static final Pose2d LEFT_SHOT = new Pose2d(4.4, 6.2, Rotation2d.fromDegrees(18.5));
+    public static final Pose2d LEFT_SHOT = new Pose2d(5.3, 6.5, Rotation2d.fromDegrees(14.));
 }

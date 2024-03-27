@@ -30,15 +30,33 @@
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.2
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "4 piece 1-2"
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.2
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "4 piece 2-3"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.4
           }
         },
         {
@@ -66,12 +84,6 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.15
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "4 Piece Note 6"
@@ -80,7 +92,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Smart Infeed"
+            "name": "Second Left Pathfinding Shot"
           }
         }
       ]

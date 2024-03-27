@@ -203,8 +203,8 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean isReady() {
-        return Math.abs(leftMotor.getVelocity().getValueAsDouble() * 60. - leftTarget) < 100.
-                && Math.abs(rightMotor.getVelocity().getValueAsDouble() * 60. - rightTarget) < 100.;
+        return Math.abs(leftMotor.getVelocity().getValueAsDouble() * 60. - leftTarget) < 130.
+                && Math.abs(rightMotor.getVelocity().getValueAsDouble() * 60. - rightTarget) < 130.;
     }
 
     public BooleanSupplier isWorkingSupplier() {

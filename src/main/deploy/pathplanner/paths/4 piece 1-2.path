@@ -49,7 +49,7 @@
       }
     },
     {
-      "name": "Shooter Table & Infeed",
+      "name": "Infeed",
       "waypointRelativePos": 0.0,
       "command": {
         "type": "parallel",
@@ -58,13 +58,24 @@
             {
               "type": "named",
               "data": {
-                "name": "Update Shooter Table"
+                "name": "Infeed"
               }
-            },
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Pivot",
+      "waypointRelativePos": 0.7,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
             {
               "type": "named",
               "data": {
-                "name": "Infeed"
+                "name": "4 Piece Note 3"
               }
             }
           ]

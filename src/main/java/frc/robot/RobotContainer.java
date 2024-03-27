@@ -43,9 +43,6 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.AlignDrivetrain;
-import frc.robot.commands.Autons;
-import frc.robot.commands.Autons.Notes;
-import frc.robot.commands.Autons.StartPoses;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.commands.vision.ShooterAlign;
@@ -109,7 +106,6 @@ public class RobotContainer {
     private final Shooter shooter = new Shooter();
     private final Conveyor conveyor = new Conveyor();
     private final Climber climber = new Climber();
-    private final Autons autons;
     private final Pivot pivot = new Pivot();
     private final Fan m_fan = new Fan();
     private final FanPivot m_fanPivot = new FanPivot();
@@ -127,7 +123,7 @@ public class RobotContainer {
     // ====================== //
     /* Auton & Other Commands */
     // ====================== //
-    private final Command ampPrep, magicShootNoLockCommand;
+    private final Command ampPrep;
     private SendableChooser<Command> autonChooser;
 
     // ====================================================== //
@@ -268,22 +264,9 @@ public class RobotContainer {
         DashboardStore.add("Aligned to Speaker", () -> isSnappedToSpeaker);
         // DashboardStore.add("Executing magic shoot", () -> isInMagicShoot);
 
-        // TODO: Failsafe timer based on Infeed ToF
         initNamedCommands();
 
-        autons = new Autons(drivetrain, shooter, conveyor, infeed,
-                smartInfeedCommand());
-
         initAutonChooser();
-
-        magicShootNoLockCommand = Commands.runOnce(() -> {
-            ShooterTableEntry entry = getBestSTEntryLLY();
-            shooter.runEntry(entry, ShotSpeeds.FAST);
-            pivot.runToPosition(Math.min(Math.abs(entry.Angle), 50));
-        }, shooter, pivot).andThen(Commands.waitUntil(shooter.isReadySupplier()))
-                .andThen(conveyCommand())
-                .andThen(Commands.waitSeconds(0.2))
-                .finallyDo(this::stopAll);
 
         ampPrep = pivot.runToClimbCommand()
                 .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
@@ -310,8 +293,6 @@ public class RobotContainer {
                 .andThen(pivot.runToHomeCommand())
                 .andThen(shooter.stopCommand()));
 
-        autonChooser.addOption("2pdyn", autons.twoPieceAutonDynamic(StartPoses.TOP,
-                1, Notes.ONE, Notes.TWO));
         SmartDashboard.putData("Auto Chooser", autonChooser);
     }
 
@@ -352,15 +333,24 @@ public class RobotContainer {
                 runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(.25));
 
         NamedCommands.registerCommand("Start Shooter",
-                runShooterAndPivotCommand(ShotSpeeds.FAST, 1.0, 10.8));
+                runShooterAndPivotCommand(ShotSpeeds.FAST, 1.0, 17.5));
 
         NamedCommands.registerCommand("Start Shooter No Pivot",
                 shooter.runShotCommand(ShotSpeeds.FAST, 0.85));
 
+        /* 4 piece pivots */
+        NamedCommands.registerCommand("4 Piece Note 1", pivot.runToPositionCommand(16.5));
+        NamedCommands.registerCommand("4 Piece Note 2", pivot.runToPositionCommand(13.));
+        NamedCommands.registerCommand("4 Piece Note 3", pivot.runToPositionCommand(14.));
+        NamedCommands.registerCommand("4 Piece Note 4", pivot.runToPositionCommand(12.));
+
         NamedCommands.registerCommand("Stop Shooter", shooter.stopCommand());
 
         NamedCommands.registerCommand("Left Pathfinding Shot", pathfindingShotCommand(
-                14.0, Constants.LEFT_SHOT, 0.8, 0.));
+                17.0, Constants.LEFT_SHOT, 0.875, 0.));
+
+        NamedCommands.registerCommand("Second Left Pathfinding Shot", pathfindingShotCommand(
+                15.75, Constants.LEFT_SHOT, 0.875, 0.));
 
         NamedCommands.registerCommand("Center Pathfinding Shot", pathfindingShotCommand(
                 13.0, Constants.CENTER_SHOT, 0.8, 0.));
@@ -377,22 +367,12 @@ public class RobotContainer {
         NamedCommands.registerCommand("Right Stationary Shot",
                 shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(20.8))));
 
-        NamedCommands.registerCommand("Preload Shot", zeroCommand()
-                .andThen(runEntryCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(4.2)),
-                        () -> ShotSpeeds.FAST))
-                .andThen(Commands.waitUntil(shooterAndPivotReady()))
-                .andThen(conveyCommand())
-                .andThen(Commands.waitSeconds(0.2))
-                .andThen(pivot.runToHomeCommand())
-                .andThen(shooter.stopCommand()));
+        NamedCommands.registerCommand("Preload Shot", shooter.runShotCommand(ShotSpeeds.MEDIUM).alongWith(zeroCommand())
+                .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(5.2)))));
 
         NamedCommands.registerCommand("Update Shooter Table",
                 runEntryCommand(() -> getBestSTEntry(), () -> ShotSpeeds.FAST).repeatedly());
 
-    }
-
-    private boolean allianceIsBlue(Optional<Alliance> alliance) {
-        return alliance.isEmpty() || alliance.get() == Alliance.Blue;
     }
 
     // =========================== //
@@ -796,7 +776,9 @@ public class RobotContainer {
     private Command pathfindingShotCommand(double targetDistance, Pose2d target, double scale, double endVelocity) {
         return drivetrain
                 .mirrorablePathFindCommand(target, scale, endVelocity)
-                .deadlineWith(smartInfeedCommand().withTimeout(0.6).andThen(coolNoteFixCommand(0.2)))
+                .deadlineWith(smartInfeedCommand().withTimeout(0.6).andThen(coolNoteFixCommand(0.2))
+                        .andThen(runEntryCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(targetDistance)),
+                                () -> ShotSpeeds.FAST)))
                 .andThen(new ShooterAlign(drivetrain, trapVision).withTimeout(0.4))
                 .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(targetDistance))));
     }
@@ -810,25 +792,13 @@ public class RobotContainer {
     /* Entry Shot Sequence */
     private Command shotSequence(Supplier<ShooterTableEntry> entry) {
         return runEntryCommand(entry, () -> ShotSpeeds.FAST)
-                .andThen(Commands.waitUntil(shooter.isReadySupplier()))
-                .andThen(Commands.waitSeconds(0.1))
-                .andThen(conveyCommand())
-                .andThen(Commands.waitSeconds(0.2))
-                .finallyDo(() -> {
-                    shooter.stop();
-                    pivot.runToHomeCommand();
-                });
-    }
-
-    /* Odometry shot */
-    private Command odometryShotCommand() {
-        return runEntryCommand(() -> getBestAutonEntry(), () -> ShotSpeeds.FAST)
                 .andThen(Commands.waitUntil(shooterAndPivotReady()))
-                .andThen(conveyCommand().withTimeout(1.0))
+                .andThen(conveyCommand())
+                .andThen(Commands.waitSeconds(0.1))
                 .andThen(shooter.stopCommand().alongWith(pivot.runToHomeCommand()));
     }
 
-    /* Magic shoot ut awesome */
+    /* Magic shoot but awesome */
     private Command magicShootCommand() {
         return shooter.runShotCommand(ShotSpeeds.FAST)
                 .alongWith(new ShooterAlign(drivetrain, trapVision)).withTimeout(0.4)
@@ -870,10 +840,6 @@ public class RobotContainer {
     }
 
     /* Stop all motors and zero everything */
-    private void stopAll() {
-        stopAllCommand().schedule();
-    }
-
     private Command stopAllCommand() {
         return Commands.parallel(
                 infeed.stopCommand(),
@@ -1064,23 +1030,6 @@ public class RobotContainer {
         return Optional.empty();
     }
 
-    public ShooterTableEntry getBestAutonEntry() {
-        Pose2d pose = drivetrain.getState().Pose;
-
-        Transform2d dist = pose.minus(Constants.SPEAKER_DISTANCE_TARGET);
-        Translation2d translation = dist.getTranslation();
-
-        ShooterTableEntry entryPicked = ShooterTable
-                .calcShooterTableEntry(Meters.of(translation.getNorm() - 0.25));
-
-        SmartDashboard.putNumber("Distance", Units.metersToFeet(translation.getNorm()));
-
-        SmartDashboard.putNumber("ST Angle", entryPicked.Angle);
-        SmartDashboard.putNumber("ST Left", entryPicked.Percent);
-
-        return entryPicked;
-    }
-
     /* Get Shooter Table Entry */
     public ShooterTableEntry getBestSTEntry() {
         Pose2d pose = drivetrain.getState().Pose;
@@ -1133,35 +1082,40 @@ public class RobotContainer {
         return ste;
     }
 
-    private ShooterTableEntry getBestSTEntryPhotonY() {
-        Optional<Double> distance = trapVision
-                .getTagDistance(DriverStation.getAlliance().get() == Alliance.Blue ? 7 : 4);
+    // private ShooterTableEntry getBestSTEntryPhotonY() {
+    // Optional<Double> distance = trapVision
+    // .getTagDistance(DriverStation.getAlliance().get() == Alliance.Blue ? 7 : 4);
 
-        var ste = ShooterTable.calcShooterTableEntryCamera(Units.metersToFeet(distance.isEmpty() ? 0 : distance.get()),
-                CameraLerpStrat.PhotonVisionDistance);
+    // var ste =
+    // ShooterTable.calcShooterTableEntryCamera(Units.metersToFeet(distance.isEmpty()
+    // ? 0 : distance.get()),
+    // CameraLerpStrat.PhotonVisionDistance);
 
-        SmartDashboard.putNumber("PhotonVision 2d distance", ste.Distance.in(Feet));
-        return ste;
-    }
+    // SmartDashboard.putNumber("PhotonVision 2d distance", ste.Distance.in(Feet));
+    // return ste;
+    // }
 
-    private ShooterTableEntry getBestSTEntryLLArea() {
-        LimelightHelpers.setPipelineIndex(SHOOTER_LIMELIGHT, 0);
-        var ste = ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTA(SHOOTER_LIMELIGHT),
-                CameraLerpStrat.LimelightArea);
+    // private ShooterTableEntry getBestSTEntryLLArea() {
+    // LimelightHelpers.setPipelineIndex(SHOOTER_LIMELIGHT, 0);
+    // var ste =
+    // ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTA(SHOOTER_LIMELIGHT),
+    // CameraLerpStrat.LimelightArea);
 
-        SmartDashboard.putNumber("Limelight TA distance", ste.Distance.in(Feet));
-        return ste;
-    }
+    // SmartDashboard.putNumber("Limelight TA distance", ste.Distance.in(Feet));
+    // return ste;
+    // }
 
-    private ShooterTableEntry getBestSTEntryLLAreaMulti() {
-        LimelightHelpers.setPipelineIndex(SHOOTER_LIMELIGHT, 1);
-        var ste = ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTA(SHOOTER_LIMELIGHT),
-                CameraLerpStrat.LimelightMultiTagArea);
+    // private ShooterTableEntry getBestSTEntryLLAreaMulti() {
+    // LimelightHelpers.setPipelineIndex(SHOOTER_LIMELIGHT, 1);
+    // var ste =
+    // ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTA(SHOOTER_LIMELIGHT),
+    // CameraLerpStrat.LimelightMultiTagArea);
 
-        SmartDashboard.putNumber("Limelight MultiTag TA distance", ste.Distance.in(Feet));
-        LimelightHelpers.setPipelineIndex(SHOOTER_LIMELIGHT, 0);
-        return ste;
-    }
+    // SmartDashboard.putNumber("Limelight MultiTag TA distance",
+    // ste.Distance.in(Feet));
+    // LimelightHelpers.setPipelineIndex(SHOOTER_LIMELIGHT, 0);
+    // return ste;
+    // }
 
     public void printDistanceValues() {
         int tagID = DriverStation.getAlliance().isPresent()

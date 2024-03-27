@@ -63,7 +63,7 @@ public class Pivot extends SubsystemBase {
     public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
 
-    public final static double HARD_STOP = 58.5;//59.4;
+    public final static double HARD_STOP = 58.3;//59.4;
     public final static double STAGE_PIVOT = 54.;
 
     private final static double INCIDENT_OFFSET = (Math.PI / 2)
@@ -72,8 +72,8 @@ public class Pivot extends SubsystemBase {
 
     /* PID */
     private class PIDConstants {
-        private final static double kP = 0.06;
-        private final static double kD = 0.5;
+        private final static double kP = 0.075;
+        private final static double kD = 1.5;
 
         private final static double MIN_OUTPUT = -0.5;
         private final static double MAX_OUTPUT = 0.85;
@@ -253,7 +253,7 @@ public class Pivot extends SubsystemBase {
     }
 
     public boolean inPosition() {
-        return Math.abs(getPosition() - targetPosition) < 0.3;
+        return Math.abs(getPosition() - targetPosition) < 0.6;
     }
 
     public BooleanSupplier inPositionSupplier() {

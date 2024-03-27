@@ -4,8 +4,6 @@
 
 package frc.robot.commands.vision;
 
-import java.util.Optional;
-
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;

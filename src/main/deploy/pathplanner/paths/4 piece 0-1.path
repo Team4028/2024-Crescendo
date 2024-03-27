@@ -72,8 +72,8 @@
       }
     },
     {
-      "name": "Shooter Table",
-      "waypointRelativePos": 0,
+      "name": "Pivot",
+      "waypointRelativePos": 0.85,
       "command": {
         "type": "parallel",
         "data": {
@@ -81,7 +81,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Update Shooter Table"
+                "name": "4 Piece Note 2"
               }
             }
           ]
