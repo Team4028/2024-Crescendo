@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 1.4,
-        "y": 6.0
+        "x": 1.35,
+        "y": 6.037364604091624
       },
       "prevControl": {
-        "x": 1.5952918504173743,
-        "y": 6.043140388970869
+        "x": 1.5452918504173745,
+        "y": 6.080504993062493
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "4pdr start"
     }
   ],
   "rotationTargets": [],
