@@ -346,7 +346,7 @@ public class RobotContainer {
 
         /* Pathfinding Shots */
         NamedCommands.registerCommand("Amp Shot", pathfindingShotCommand(
-                16.5, Constants.LEFT_SHOT, 0.875, 0.));
+                15.5, Constants.LEFT_SHOT, 0.875, 0.));
 
         NamedCommands.registerCommand("Second Amp Shot", pathfindingShotCommand(
                 15.25, Constants.LEFT_SHOT, 0.875, 0.));
