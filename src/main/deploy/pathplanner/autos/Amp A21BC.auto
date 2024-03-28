@@ -14,19 +14,25 @@
         {
           "type": "named",
           "data": {
-            "name": "zeroApril"
+            "name": "AprilTag Zero"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Start Shooter"
+            "name": "Shooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Preload Note"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "4 piece 0-1"
+            "pathName": "Amp Preload-A"
           }
         },
         {
@@ -38,37 +44,43 @@
         {
           "type": "path",
           "data": {
-            "pathName": "6 Piece Note 3"
+            "pathName": "Amp A-2"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Left Pathfinding Shot"
+            "name": "Amp Shot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "6 Piece Note 4"
+            "pathName": "Amp 2-1"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Left Pathfinding Shot"
+            "name": "Amp Shot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "zeroApril"
+            "name": "AprilTag Zero"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "6 Piece Notes 5-6"
+            "pathName": "Amp Shot-B-C"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Infeed"
           }
         }
       ]

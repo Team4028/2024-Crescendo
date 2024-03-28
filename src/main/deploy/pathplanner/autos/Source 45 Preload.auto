@@ -14,19 +14,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "3 Piece Start"
+            "pathName": "Source Preload-5"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "3 Piece Note 2"
+            "pathName": "Source 5-4"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Right Pathfinding Shot"
+            "name": "Source Shot"
           }
         },
         {
@@ -38,25 +38,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Right Pathfinding Shot"
+            "name": "Source Shot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "3 Piece Final Note"
+            "pathName": "Source Preload Pickup"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Fix Note"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Right Pathfinding Shot"
+            "name": "Source Shot"
           }
         }
       ]

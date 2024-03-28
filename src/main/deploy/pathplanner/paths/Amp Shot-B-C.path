@@ -12,7 +12,7 @@
         "y": 7.176570200459162
       },
       "isLocked": false,
-      "linkedName": "5p3"
+      "linkedName": "Amp Shot"
     },
     {
       "anchor": {
@@ -28,7 +28,7 @@
         "y": 5.4328694982893335
       },
       "isLocked": false,
-      "linkedName": "4pdr 3"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -75,13 +75,13 @@
             {
               "type": "named",
               "data": {
-                "name": "4 Piece Note 3"
+                "name": "Note B"
               }
             },
             {
               "type": "named",
               "data": {
-                "name": "Start Shooter No Pivot"
+                "name": "Shooter"
               }
             },
             {
@@ -113,7 +113,7 @@
                         {
                           "type": "named",
                           "data": {
-                            "name": "4 Piece Note 4"
+                            "name": "Note C"
                           }
                         }
                       ]

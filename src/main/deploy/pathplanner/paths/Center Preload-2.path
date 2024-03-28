@@ -12,7 +12,7 @@
         "y": 1.8502837364668023
       },
       "isLocked": false,
-      "linkedName": "2p center start"
+      "linkedName": "Center Start"
     },
     {
       "anchor": {
@@ -32,16 +32,16 @@
     },
     {
       "anchor": {
-        "x": 7.966905992536818,
-        "y": 7.159245107080818
+        "x": 8.30356161131978,
+        "y": 5.6517467648996185
       },
       "prevControl": {
-        "x": 6.97878381914482,
-        "y": 6.442405917529956
+        "x": 7.315439437927783,
+        "y": 4.934907575348756
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Note 2"
     }
   ],
   "rotationTargets": [
@@ -79,7 +79,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 55.58831234492683,
+    "rotation": 25.81561254799611,
     "rotateFast": false
   },
   "reversed": false,

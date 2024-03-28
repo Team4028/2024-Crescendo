@@ -12,7 +12,7 @@
         "y": 1.8502837364668023
       },
       "isLocked": false,
-      "linkedName": "2p center start"
+      "linkedName": "Center Start"
     },
     {
       "anchor": {
@@ -32,16 +32,16 @@
     },
     {
       "anchor": {
-        "x": 7.966744578623385,
-        "y": 5.6373809266074915
+        "x": 8.249541754955994,
+        "y": 7.381781089065534
       },
       "prevControl": {
-        "x": 6.978622405231388,
-        "y": 4.920541737056629
+        "x": 7.261419581563996,
+        "y": 6.664941899514671
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Mid Amp Piece"
+      "linkedName": "Note 1"
     }
   ],
   "rotationTargets": [
@@ -79,7 +79,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 25.81561254799611,
+    "rotation": 55.58831234492683,
     "rotateFast": false
   },
   "reversed": false,

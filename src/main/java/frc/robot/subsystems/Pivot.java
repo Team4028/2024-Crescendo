@@ -27,7 +27,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Robot;
 import frc.robot.utils.DashboardStore;
 
 public class Pivot extends SubsystemBase {
@@ -53,7 +52,7 @@ public class Pivot extends SubsystemBase {
     private final StringLogEntry sysIDTestMode;
 
     private final Timer zeroTimer;
-    private final double ZERO_TIMER_THRESHOLD = 0.2; // 7 scans
+    private final double ZERO_TIMER_THRESHOLD = 0.2; // 10 scans
     private final double ZERO_VELOCITY_THRESHOLD = 200;
 
     private static final int CAN_ID = 13;
@@ -61,11 +60,12 @@ public class Pivot extends SubsystemBase {
     public final static double MAX_POSITION = 60.0;
     public final static double MIN_POSITION = 1.0;
 
-    public final static double CLIMB_POSITION = MAX_POSITION - 5.;
     public final static double HOLD_POSITION = MIN_POSITION;
 
-    public final static double HARD_STOP = 58.3;//59.4;
+    public final static double HARD_STOP = 58.3;// 59.4;
     public final static double STAGE_PIVOT = 54.;
+
+    private static final double IN_POSITION_THRESHOLD = 0.9;
 
     private final static double INCIDENT_OFFSET = (Math.PI / 2)
             - Math.acos(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT_DY
@@ -73,8 +73,8 @@ public class Pivot extends SubsystemBase {
 
     /* PID */
     private class PIDConstants {
-        private final static double kP = 0.085;
-        private final static double kD = 1.5;
+        private final static double kP = 0.06;
+        private final static double kD = 0.5;
 
         private final static double MIN_OUTPUT = -0.5;
         private final static double MAX_OUTPUT = 0.85;
@@ -258,7 +258,7 @@ public class Pivot extends SubsystemBase {
     }
 
     public boolean inPosition() {
-        return Math.abs(getPosition() - targetPosition) < 0.6;
+        return Math.abs(getPosition() - targetPosition) < IN_POSITION_THRESHOLD;
     }
 
     public BooleanSupplier inPositionSupplier() {

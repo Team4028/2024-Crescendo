@@ -3,37 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.6570624081419103,
-        "y": 6.887856966597124
+        "x": 5.3,
+        "y": 6.5
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.6372746271968748,
-        "y": 6.3180220089528865
+        "x": 1.754407292371632,
+        "y": 6.418193830515179
       },
       "isLocked": false,
-      "linkedName": "4pdr 1"
+      "linkedName": "Amp Shot"
     },
     {
       "anchor": {
-        "x": 2.6570624081419103,
-        "y": 5.5430292057165325
+        "x": 2.6514382139502537,
+        "y": 4.353279440619285
       },
       "prevControl": {
-        "x": 1.9683347042956307,
-        "y": 5.298038160955556
+        "x": 1.5248767074715361,
+        "y": 5.206674800933496
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "4pdr 2"
+      "linkedName": "Note C"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "zeroEnd",
-      "waypointRelativePos": 1.0,
+      "name": "Shooter & Infeed",
+      "waypointRelativePos": 0.65,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,41 +41,19 @@
             {
               "type": "named",
               "data": {
-                "name": "zeroApril"
+                "name": "Shooter"
               }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Infeed",
-      "waypointRelativePos": 0.0,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Note C"
+              }
+            },
             {
               "type": "named",
               "data": {
                 "name": "Infeed"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Pivot",
-      "waypointRelativePos": 0.7,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "4 Piece Note 3"
               }
             }
           ]
@@ -91,13 +69,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -37.781689838086436,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 25.0,
+    "rotation": 19.705375774837755,
     "velocity": 0
   },
   "useDefaultConstraints": true

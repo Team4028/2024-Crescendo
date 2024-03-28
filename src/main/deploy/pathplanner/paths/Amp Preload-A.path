@@ -3,34 +3,57 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.6570624081419103,
-        "y": 5.5430292057165325
+        "x": 1.35,
+        "y": 6.037364604091624
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4050196431503403,
-        "y": 5.154508443305881
+        "x": 1.8622201519570822,
+        "y": 6.309293243586486
       },
       "isLocked": false,
-      "linkedName": "4pdr 2"
+      "linkedName": "Amp 4 Piece Start"
     },
     {
       "anchor": {
-        "x": 2.8459957842734482,
-        "y": 6.029724345522517
+        "x": 2.6570624081419103,
+        "y": 6.887856966597124
       },
       "prevControl": {
-        "x": 2.217880442472295,
-        "y": 6.401352978880456
+        "x": 2.079631035158359,
+        "y": 6.611301128250549
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "4pdr 3"
+      "linkedName": "Note A"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.0,
+      "rotationDegrees": 25.0,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [
+    {
+      "name": "infeed",
+      "waypointRelativePos": 0.55,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Infeed"
+              }
+            }
+          ]
+        }
+      }
+    },
     {
       "name": "zeroEnd",
       "waypointRelativePos": 1.0,
@@ -41,7 +64,7 @@
             {
               "type": "named",
               "data": {
-                "name": "zeroApril"
+                "name": "AprilTag Zero"
               }
             }
           ]
@@ -50,7 +73,7 @@
     },
     {
       "name": "Pivot",
-      "waypointRelativePos": 0.7,
+      "waypointRelativePos": 0.85,
       "command": {
         "type": "parallel",
         "data": {
@@ -58,24 +81,7 @@
             {
               "type": "named",
               "data": {
-                "name": "4 Piece Note 4"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "infeed",
-      "waypointRelativePos": 0,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "Infeed"
+                "name": "Note A"
               }
             }
           ]
@@ -91,13 +97,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -33.316243584192804,
+    "rotation": 25.0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 0.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

@@ -42,7 +42,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.AlignDrivetrain;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.commands.vision.ShooterAlign;
@@ -299,13 +298,25 @@ public class RobotContainer {
     private void initNamedCommands() {
         NamedCommands.registerCommand("Pivot Zero", pivot.zeroCommand());
 
-        NamedCommands.registerCommand("zeroApril", new InstantCommand(() -> {
+        NamedCommands.registerCommand("AprilTag Zero", new InstantCommand(() -> {
             Optional<EstimatedRobotPose> pose = getBestPose();
             if (pose.isEmpty())
                 return;
 
             drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
         }, leftVision, rightVision));
+
+        NamedCommands.registerCommand("Limelight Acquire",
+                new LimelightAcquire(() -> 0.6,
+                        drivetrain)
+                        .until(conveyor.hasInfedSupplier())
+                        .raceWith(smartInfeedCommand()));
+
+        /* Infeed & Spit */
+        NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
+
+        NamedCommands.registerCommand("Dumb Infeed",
+                runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(.25));
 
         NamedCommands.registerCommand("Infeed", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
@@ -315,62 +326,36 @@ public class RobotContainer {
                 .alongWith(shooter.spinBothCommand(0.15))
                 .repeatedly());
 
-        NamedCommands.registerCommand("Run Pivot To Home", pivot.runToHomeCommand());
-
         NamedCommands.registerCommand("Prepare Spit", shooter.spinBothCommand(0.15));
 
         NamedCommands.registerCommand("Fix Note", fixNoteCommand());
 
-        NamedCommands.registerCommand("Limelight Acquire",
-                new LimelightAcquire(() -> 0.6,
-                        drivetrain)
-                        .until(conveyor.hasInfedSupplier())
-                        .raceWith(smartInfeedCommand()));
-
-        NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
-
-        NamedCommands.registerCommand("Dumb Infeed",
-                runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(.25));
-
-        NamedCommands.registerCommand("Start Shooter",
-                runShooterAndPivotCommand(ShotSpeeds.FAST, 1.0, 17.5));
-
-        NamedCommands.registerCommand("Start Shooter No Pivot",
+        /* Shooter & Pivot */
+        NamedCommands.registerCommand("Shooter",
                 shooter.runShotCommand(ShotSpeeds.FAST, 0.85));
-
-        /* 4 piece epicness pivots */
-        NamedCommands.registerCommand("4 Piece Restart Shooter",
-                runShooterAndPivotCommand(ShotSpeeds.FAST, 1.0, 15.0));
-        NamedCommands.registerCommand("4 Piece Epic Note 2", pivot.runToPositionCommand(11.5));
-
-        /* 4 piece pivots */
-        NamedCommands.registerCommand("4 Piece Note 1", pivot.runToPositionCommand(16.5));
-        NamedCommands.registerCommand("4 Piece Note 2", pivot.runToPositionCommand(13.));
-        NamedCommands.registerCommand("4 Piece Note 3", pivot.runToPositionCommand(14.));
-        NamedCommands.registerCommand("4 Piece Note 4", pivot.runToPositionCommand(12.));
 
         NamedCommands.registerCommand("Stop Shooter", shooter.stopCommand());
 
-        NamedCommands.registerCommand("Left Pathfinding Shot", pathfindingShotCommand(
-                17.0, Constants.LEFT_SHOT, 0.875, 0.));
+        NamedCommands.registerCommand("Home Pivot", pivot.runToHomeCommand());
 
-        NamedCommands.registerCommand("Second Left Pathfinding Shot", pathfindingShotCommand(
-                15.75, Constants.LEFT_SHOT, 0.875, 0.));
+        /* 4 piece pivots */
+        NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(17.5));
+        NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(13.));
+        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(14.));
+        NamedCommands.registerCommand("Note C", pivot.runToPositionCommand(12.));
+
+        /* Pathfinding Shots */
+        NamedCommands.registerCommand("Amp Shot", pathfindingShotCommand(
+                16.5, Constants.LEFT_SHOT, 0.875, 0.));
+
+        NamedCommands.registerCommand("Second Amp Shot", pathfindingShotCommand(
+                15.25, Constants.LEFT_SHOT, 0.875, 0.));
 
         NamedCommands.registerCommand("Center Pathfinding Shot", pathfindingShotCommand(
                 13.0, Constants.CENTER_SHOT, 0.8, 0.));
 
-        NamedCommands.registerCommand("Right Pathfinding Shot",
+        NamedCommands.registerCommand("Source Shot",
                 pathfindingShotCommand(20.8, Constants.RIGHT_SHOT, 0.75, 0.));
-
-        NamedCommands.registerCommand("2.5 Right Align",
-                new AlignDrivetrain(drivetrain,
-                        () -> Units.degreesToRadians(DriverStation.getAlliance().isPresent()
-                                && DriverStation.getAlliance().get() == Alliance.Red ? -30. : -36.),
-                        () -> drivetrain.getState().Pose.getRotation().getRadians(), true).withTimeout(0.4));
-
-        NamedCommands.registerCommand("Right Stationary Shot",
-                shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(20.8))));
 
         NamedCommands.registerCommand("Right Preload", pivot.runOnce(pivot::zeroEncoder)
                 .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(5.2)))));
@@ -821,10 +806,6 @@ public class RobotContainer {
                 });
     }
 
-    private Command runShooterAndPivotCommand(ShotSpeeds shotType, double shooterPercent, double pivotPosition) {
-        return shooter.runShotCommand(shotType, shooterPercent).alongWith(pivot.runToPositionCommand(pivotPosition));
-    }
-
     /* Fix Note Backwards */
     private Command conveyBackCommand(double rotations, double timeout) {
         return shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
@@ -940,7 +921,7 @@ public class RobotContainer {
     /* Auton Command */
     public Command getAutonomousCommand() {
         return new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d()))
-                .andThen(NamedCommands.getCommand("zeroApril"))
+                .andThen(NamedCommands.getCommand("AprilTag Zero"))
                 .andThen(autonChooser.getSelected());
     }
 

@@ -12,7 +12,7 @@
         "y": 7.3187451735641735
       },
       "isLocked": false,
-      "linkedName": "5p3"
+      "linkedName": "Amp Shot"
     },
     {
       "anchor": {
@@ -47,7 +47,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Run Pivot To Home"
+                "name": "Home Pivot"
               }
             }
           ]
@@ -81,7 +81,7 @@
             {
               "type": "named",
               "data": {
-                "name": "zeroApril"
+                "name": "AprilTag Zero"
               }
             }
           ]

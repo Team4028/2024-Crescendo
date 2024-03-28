@@ -3,38 +3,32 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.8459957842734482,
-        "y": 6.029724345522517
+        "x": 2.6570624081419103,
+        "y": 5.5430292057165325
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0331022553524867,
-        "y": 8.871403875035423
+        "x": 6.131468382905136,
+        "y": 7.230321033625337
       },
       "isLocked": false,
-      "linkedName": "4pdr 3"
+      "linkedName": "Note B"
     },
     {
       "anchor": {
-        "x": 8.3,
-        "y": 4.075647509516497
+        "x": 8.30356161131978,
+        "y": 5.6517467648996185
       },
       "prevControl": {
-        "x": 6.253522972573012,
-        "y": 2.379995115362706
+        "x": 6.76222015195901,
+        "y": 6.588539313820286
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "4p+1 line"
+      "linkedName": "Note 2"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": -2.112078646432258,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
@@ -80,13 +74,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 24.775140568831905,
+    "rotation": -31.11216128773135,
     "rotateFast": true
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": -33.47000000000003,
+    "rotation": 0.24690908129501102,
     "velocity": 0
   },
   "useDefaultConstraints": false

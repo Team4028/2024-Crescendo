@@ -3,55 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.802490362815484,
-        "y": 0.7601200387585969
+        "x": 2.6570624081419103,
+        "y": 5.5430292057165325
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.428707549444488,
-        "y": 0.9242375202732592
+        "x": 2.4050196431503403,
+        "y": 5.154508443305881
       },
       "isLocked": false,
-      "linkedName": "Source Piece"
+      "linkedName": "Note B"
     },
     {
       "anchor": {
-        "x": 7.802490362815484,
-        "y": 2.3388308884879883
+        "x": 2.6514382139502537,
+        "y": 4.353279440619285
       },
       "prevControl": {
-        "x": 6.6915456907836885,
-        "y": 2.2452776529484684
+        "x": 2.0233228721491003,
+        "y": 4.724908073977224
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Mid Source Piece"
+      "linkedName": "Note C"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.3,
-      "rotationDegrees": 15.38,
-      "rotateFast": false
-    }
-  ],
-  "constraintZones": [
-    {
-      "name": "New Constraints Zone",
-      "minWaypointRelativePos": 0.0,
-      "maxWaypointRelativePos": 0.5,
-      "constraints": {
-        "maxVelocity": 3.0,
-        "maxAcceleration": 3.5,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0
-      }
-    }
-  ],
+  "rotationTargets": [],
+  "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Stop Shooter",
-      "waypointRelativePos": 0.6,
+      "name": "zeroEnd",
+      "waypointRelativePos": 1.0,
       "command": {
         "type": "parallel",
         "data": {
@@ -59,7 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Stop Shooter"
+                "name": "AprilTag Zero"
               }
             }
           ]
@@ -67,8 +49,8 @@
       }
     },
     {
-      "name": "Spit Note",
-      "waypointRelativePos": 0.1,
+      "name": "Pivot",
+      "waypointRelativePos": 0.7,
       "command": {
         "type": "parallel",
         "data": {
@@ -76,7 +58,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Spit Note"
+                "name": "Note C"
               }
             }
           ]
@@ -84,8 +66,8 @@
       }
     },
     {
-      "name": "Dumb Infeed",
-      "waypointRelativePos": 0.5,
+      "name": "infeed",
+      "waypointRelativePos": 0,
       "command": {
         "type": "parallel",
         "data": {
@@ -93,7 +75,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Dumb Infeed"
+                "name": "Infeed"
               }
             }
           ]
@@ -109,8 +91,8 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 30.0,
-    "rotateFast": true
+    "rotation": -33.316243584192804,
+    "rotateFast": false
   },
   "reversed": false,
   "folder": null,
@@ -118,5 +100,5 @@
     "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

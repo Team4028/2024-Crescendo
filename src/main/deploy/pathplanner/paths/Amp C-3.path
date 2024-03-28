@@ -3,37 +3,43 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.6570624081419103,
-        "y": 6.887856966597124
+        "x": 2.6514382139502537,
+        "y": 4.353279440619285
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.6570624081419103,
-        "y": 6.887856966597124
+        "x": 2.838544685029292,
+        "y": 7.19495897013219
       },
       "isLocked": false,
-      "linkedName": "4pdr 1"
+      "linkedName": "Note C"
     },
     {
       "anchor": {
-        "x": 8.451147732832379,
-        "y": 5.467089247936886
+        "x": 8.3,
+        "y": 4.075647509516497
       },
       "prevControl": {
-        "x": 7.162365243354648,
-        "y": 6.323659081881922
+        "x": 6.253522972573012,
+        "y": 2.379995115362706
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "6 Piece Note 3"
+      "linkedName": "Note 3"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -2.112078646432258,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Infeed",
-      "waypointRelativePos": 0.75,
+      "name": "Smart Infeed",
+      "waypointRelativePos": 0.8,
       "command": {
         "type": "parallel",
         "data": {
@@ -49,8 +55,8 @@
       }
     },
     {
-      "name": "Pivot",
-      "waypointRelativePos": 0,
+      "name": "Stop Shooter",
+      "waypointRelativePos": 0.15,
       "command": {
         "type": "parallel",
         "data": {
@@ -58,7 +64,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Run Pivot To Home"
+                "name": "Stop Shooter"
               }
             }
           ]
@@ -68,19 +74,19 @@
   ],
   "globalConstraints": {
     "maxVelocity": 6.0,
-    "maxAcceleration": 5.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 720.0,
+    "maxAngularAcceleration": 1080.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -31.996201927894013,
+    "rotation": 24.775140568831905,
     "rotateFast": true
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -33.47000000000003,
     "velocity": 0
   },
   "useDefaultConstraints": false

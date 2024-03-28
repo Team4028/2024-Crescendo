@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.882391469859978,
-        "y": 6.9545259678352975
+        "x": 6.671075095505896,
+        "y": 7.004018726997186
       },
       "isLocked": false,
-      "linkedName": "5p3"
+      "linkedName": "Amp Shot"
     },
     {
       "anchor": {
-        "x": 8.053627270992866,
-        "y": 7.353032430944458
+        "x": 8.249541754955994,
+        "y": 7.381781089065534
       },
       "prevControl": {
-        "x": 7.235091417132601,
-        "y": 7.116535843600907
+        "x": 7.259805442429676,
+        "y": 7.189752336719439
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Note 1"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "Infeed",
-      "waypointRelativePos": 0.65,
+      "waypointRelativePos": 0.45,
       "command": {
         "type": "parallel",
         "data": {
@@ -51,20 +51,20 @@
   ],
   "globalConstraints": {
     "maxVelocity": 6.0,
-    "maxAcceleration": 5.0,
+    "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 22.11114703906286,
-    "rotateFast": true
+    "rotation": 18.51464635467318,
+    "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 15.748868735461917,
+    "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }
