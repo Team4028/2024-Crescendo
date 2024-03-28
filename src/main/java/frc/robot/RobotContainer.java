@@ -351,12 +351,15 @@ public class RobotContainer {
         NamedCommands.registerCommand("Amp Shot", pathfindingShotCommand(15.5, Constants.LEFT_SHOT, 0.875, 0));
 
         NamedCommands.registerCommand("Stationary Amp Shot", stationaryShot(15.5));
+        NamedCommands.registerCommand("Epic Amp Shot", stationaryShot(7.5));
 
         NamedCommands.registerCommand("Center Pathfinding Shot", pathfindingShotCommand(
                 13.0, Constants.CENTER_SHOT, 0.8, 0.));
 
         NamedCommands.registerCommand("Source Shot",
                 pathfindingShotCommand(20.8, Constants.RIGHT_SHOT, 0.75, 0.));
+
+        NamedCommands.registerCommand("Stationary Source Shot", stationaryShot(20.8));
 
         NamedCommands.registerCommand("Right Preload", pivot.runOnce(pivot::zeroEncoder)
                 .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(5.2)))));

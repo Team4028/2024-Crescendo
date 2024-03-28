@@ -25,9 +25,9 @@ public class LimelightAcquire extends Command {
 
     private final DoubleSupplier xSpeed;
 
-    private static final double NOTE_PICKUP_THRESH = -19;
+    // private static final double NOTE_PICKUP_THRESH = -19;
     // private static final double DRIVE_TO_NOTE_THRESH = 5;
-    private static final double NOTE_ANGLE_THRESH = 1.;
+    private static final double NOTE_ANGLE_THRESHOLD = 1.;
 
     /** Creates a new LimelightDrive. */
     public LimelightAcquire(DoubleSupplier xSpeed, CommandSwerveDrivetrain drivetrain) {
@@ -49,7 +49,7 @@ public class LimelightAcquire extends Command {
                 drive.withSpeeds(new ChassisSpeeds(
                         (LimelightHelpers.getTV("") ? xSpeed.getAsDouble() : 0) * TunerConstants.kSpeedAt12VoltsMps,
                         0,
-                        Math.abs(LimelightHelpers.getTX("")) > NOTE_ANGLE_THRESH
+                        Math.abs(LimelightHelpers.getTX("")) > NOTE_ANGLE_THRESHOLD
                                 ? controller.calculate(Units.degreesToRadians(LimelightHelpers.getTX("")))
                                 : 0.)));
     }
