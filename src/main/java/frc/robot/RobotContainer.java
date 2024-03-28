@@ -330,6 +330,9 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Fix Note", fixNoteCommand());
 
+        NamedCommands.registerCommand("Finish Infeed", smartInfeedCommand().withTimeout(0.6)
+                .andThen(coolNoteFixCommand(0.2)).andThen(shooter.runShotCommand(ShotSpeeds.MEDIUM)));
+
         /* Shooter & Pivot */
         NamedCommands.registerCommand("Shooter",
                 shooter.runShotCommand(ShotSpeeds.FAST, 0.85));
@@ -345,11 +348,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("Note C", pivot.runToPositionCommand(12.));
 
         /* Pathfinding Shots */
-        NamedCommands.registerCommand("Amp Shot", pathfindingShotCommand(
-                15.5, Constants.LEFT_SHOT, 0.875, 0.));
+        NamedCommands.registerCommand("Amp Shot", pathfindingShotCommand(15.5, Constants.LEFT_SHOT, 0.875, 0));
 
-        NamedCommands.registerCommand("Second Amp Shot", pathfindingShotCommand(
-                15.25, Constants.LEFT_SHOT, 0.875, 0.));
+        NamedCommands.registerCommand("Stationary Amp Shot", stationaryShot(15.5));
 
         NamedCommands.registerCommand("Center Pathfinding Shot", pathfindingShotCommand(
                 13.0, Constants.CENTER_SHOT, 0.8, 0.));
@@ -772,7 +773,11 @@ public class RobotContainer {
                 .mirrorablePathFindCommand(target, scale, endVelocity)
                 .deadlineWith(smartInfeedCommand().withTimeout(0.6).andThen(coolNoteFixCommand(0.2))
                         .andThen(shooter.runShotCommand(ShotSpeeds.FAST)))
-                .andThen(new ShooterAlign(drivetrain, trapVision).withTimeout(0.4))
+                .andThen(stationaryShot(targetDistance));
+    }
+
+    private Command stationaryShot(double targetDistance) {
+        return new ShooterAlign(drivetrain, trapVision).withTimeout(0.4)
                 .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(targetDistance))));
     }
 

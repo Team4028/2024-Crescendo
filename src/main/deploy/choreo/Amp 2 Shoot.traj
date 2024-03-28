@@ -370,5 +370,15 @@
       "timestamp": 1.2520663113279975
     }
   ],
-  "eventMarkers": []
+  "eventMarkers": [
+    {
+      "timestamp": 0,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Finish Infeed"
+        }
+      }
+    }
+  ]
 }

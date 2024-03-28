@@ -50,7 +50,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.2
+            "waitTime": 0.4
           }
         },
         {
@@ -80,7 +80,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Amp Shot"
+            "name": "Stationary Amp Shot"
           }
         },
         {
@@ -98,7 +98,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Second Amp Shot"
+            "name": "Stationary Amp Shot"
           }
         },
         {
