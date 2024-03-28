@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4,
-      "y": 6.25
+      "x": 1.35,
+      "y": 6.037364604091624
     },
     "rotation": 0
   },
@@ -12,45 +12,51 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "6p 0-1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "6p 1-2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "6p 2-3"
+            "name": "zeroApril"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Run Back"
+            "name": "Start Shooter"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "6p 3-4"
+            "pathName": "4 piece 0-1"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.2
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "6p 4-5"
+            "pathName": "6 Piece Note 3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Left Pathfinding Shot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "6p 5-6"
+            "pathName": "6 Piece Note 4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Left Pathfinding Shot"
           }
         },
         {
@@ -62,19 +68,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "4 piece 0-1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "4 piece 1-2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "4 piece 2-3"
+            "pathName": "6 Piece Notes 5-6"
           }
         }
       ]

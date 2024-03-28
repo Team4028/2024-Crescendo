@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Robot;
 import frc.robot.utils.DashboardStore;
 
 public class Pivot extends SubsystemBase {
@@ -72,7 +73,7 @@ public class Pivot extends SubsystemBase {
 
     /* PID */
     private class PIDConstants {
-        private final static double kP = 0.075;
+        private final static double kP = 0.085;
         private final static double kD = 1.5;
 
         private final static double MIN_OUTPUT = -0.5;
@@ -190,6 +191,10 @@ public class Pivot extends SubsystemBase {
     // ==================================
     // PIVOT COMMANDS
     // ==================================
+
+    public void zeroEncoder() {
+        encoder.setPosition(0.);
+    }
 
     public double getPosition() {
         return encoder.getPosition();

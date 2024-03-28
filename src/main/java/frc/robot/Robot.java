@@ -17,6 +17,8 @@ public class Robot extends TimedRobot {
 
     private RobotContainer m_robotContainer;
 
+    private boolean hasZeroedPivot = false;
+
     @Override
     public void robotInit() {
         DataLogManager.start();
@@ -51,6 +53,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        hasZeroedPivot = true;
         DataLogManager.start();
 
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
@@ -81,7 +84,9 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.cancel();
         }
 
-        m_robotContainer.zero();
+        m_robotContainer.stopShooter();
+        if (!hasZeroedPivot)
+            m_robotContainer.zero();
         // m_robotContainer.configVisionFieldOrigins();
     }
 

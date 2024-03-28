@@ -11,6 +11,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Vision;
@@ -66,6 +67,8 @@ public class ShooterAlign extends ProfiledPIDCommand {
                 () -> Units.degreesToRadians(OFFSET),
                 // This uses the output
                 (output, setpoint) -> {
+                    System.out.println("The thing is doing >:D");
+                    SmartDashboard.putNumber("output", output + setpoint.velocity);
                     drivetrain.setControl(drive.withRotationalRate(output + setpoint.velocity));
                 });
         // Use addRequirements() here to declare subsystem dependencies.

@@ -3,39 +3,39 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.896343188697772,
-        "y": 6.700750495518085
+        "x": 5.3,
+        "y": 6.5
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.264559258463246,
-        "y": 6.268066781147808
+        "x": 6.882391469859978,
+        "y": 6.9545259678352975
       },
       "isLocked": false,
-      "linkedName": "6p pick up second peice"
+      "linkedName": "5p3"
     },
     {
       "anchor": {
-        "x": 8.012985142779401,
-        "y": 5.917242147874609
+        "x": 8.053627270992866,
+        "y": 7.353032430944458
       },
       "prevControl": {
-        "x": 6.948817088517365,
-        "y": 6.338231707802447
+        "x": 7.235091417132601,
+        "y": 7.116535843600907
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "6p come back to start 4p"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Start infeed",
-      "waypointRelativePos": 0.6,
+      "name": "Infeed",
+      "waypointRelativePos": 0.65,
       "command": {
-        "type": "sequential",
+        "type": "parallel",
         "data": {
           "commands": [
             {
@@ -57,13 +57,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -30.0,
+    "rotation": 22.11114703906286,
     "rotateFast": true
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 15.748868735461917,
     "velocity": 0
   },
   "useDefaultConstraints": true

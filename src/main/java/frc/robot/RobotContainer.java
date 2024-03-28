@@ -297,7 +297,7 @@ public class RobotContainer {
     }
 
     private void initNamedCommands() {
-        NamedCommands.registerCommand("pivotZero", pivot.zeroCommand());
+        NamedCommands.registerCommand("Pivot Zero", pivot.zeroCommand());
 
         NamedCommands.registerCommand("zeroApril", new InstantCommand(() -> {
             Optional<EstimatedRobotPose> pose = getBestPose();
@@ -338,6 +338,11 @@ public class RobotContainer {
         NamedCommands.registerCommand("Start Shooter No Pivot",
                 shooter.runShotCommand(ShotSpeeds.FAST, 0.85));
 
+        /* 4 piece epicness pivots */
+        NamedCommands.registerCommand("4 Piece Restart Shooter",
+                runShooterAndPivotCommand(ShotSpeeds.FAST, 1.0, 15.0));
+        NamedCommands.registerCommand("4 Piece Epic Note 2", pivot.runToPositionCommand(11.5));
+
         /* 4 piece pivots */
         NamedCommands.registerCommand("4 Piece Note 1", pivot.runToPositionCommand(16.5));
         NamedCommands.registerCommand("4 Piece Note 2", pivot.runToPositionCommand(13.));
@@ -367,12 +372,11 @@ public class RobotContainer {
         NamedCommands.registerCommand("Right Stationary Shot",
                 shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(20.8))));
 
-        NamedCommands.registerCommand("Preload Shot", shooter.runShotCommand(ShotSpeeds.MEDIUM).alongWith(zeroCommand())
+        NamedCommands.registerCommand("Right Preload", pivot.runOnce(pivot::zeroEncoder)
                 .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(5.2)))));
 
-        NamedCommands.registerCommand("Update Shooter Table",
-                runEntryCommand(() -> getBestSTEntry(), () -> ShotSpeeds.FAST).repeatedly());
-
+        NamedCommands.registerCommand("Center Preload", pivot.runOnce(pivot::zeroEncoder)
+                .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(4.2)))));
     }
 
     // =========================== //
@@ -700,6 +704,11 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
+    /* Stop Shooter */
+    public void stopShooter() {
+        shooter.stop();
+    }
+
     /* Climb Sequence */
     private void updateSequence() {
         ClimbSequence seq = ClimbSequence.Default;
@@ -777,8 +786,7 @@ public class RobotContainer {
         return drivetrain
                 .mirrorablePathFindCommand(target, scale, endVelocity)
                 .deadlineWith(smartInfeedCommand().withTimeout(0.6).andThen(coolNoteFixCommand(0.2))
-                        .andThen(runEntryCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(targetDistance)),
-                                () -> ShotSpeeds.FAST)))
+                        .andThen(shooter.runShotCommand(ShotSpeeds.FAST)))
                 .andThen(new ShooterAlign(drivetrain, trapVision).withTimeout(0.4))
                 .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(targetDistance))));
     }
@@ -792,7 +800,7 @@ public class RobotContainer {
     /* Entry Shot Sequence */
     private Command shotSequence(Supplier<ShooterTableEntry> entry) {
         return runEntryCommand(entry, () -> ShotSpeeds.FAST)
-                .andThen(Commands.waitUntil(shooterAndPivotReady()))
+                .andThen(Commands.waitUntil(shooterAndPivotReady()).withTimeout(0.5))
                 .andThen(conveyCommand())
                 .andThen(Commands.waitSeconds(0.1))
                 .andThen(shooter.stopCommand().alongWith(pivot.runToHomeCommand()));
@@ -828,8 +836,8 @@ public class RobotContainer {
     /* Special Note Fix */
     private Command coolNoteFixCommand(double timeout) {
         return shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-                .alongWith(conveyor.runMotorCommand(-0.2)).withTimeout(timeout)
                 .alongWith(infeed.runMotorCommand(0.))
+                .alongWith(conveyor.runMotorCommand(-0.2)).withTimeout(timeout)
                 .andThen(shooter.stopCommand())
                 .andThen(conveyor.brakeStopCommand());
     }
