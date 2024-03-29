@@ -94,6 +94,12 @@
           "data": {
             "pathName": "Amp 1-C"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Infeed"
+          }
         }
       ]
     }
