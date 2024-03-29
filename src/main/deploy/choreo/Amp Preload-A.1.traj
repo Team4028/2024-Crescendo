@@ -372,20 +372,11 @@
   ],
   "eventMarkers": [
     {
-      "timestamp": 0.44,
+      "timestamp": 0.5,
       "command": {
         "type": "named",
         "data": {
           "name": "Infeed"
-        }
-      }
-    },
-    {
-      "timestamp": 0.8793771583809383,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "AprilTag Zero"
         }
       }
     },

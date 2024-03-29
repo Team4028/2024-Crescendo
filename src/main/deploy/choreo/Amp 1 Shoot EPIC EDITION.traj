@@ -739,15 +739,6 @@
           "name": "Finish Infeed"
         }
       }
-    },
-    {
-      "timestamp": 2.071797461679762,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "AprilTag Zero"
-        }
-      }
     }
   ]
 }

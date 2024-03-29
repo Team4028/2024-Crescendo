@@ -344,7 +344,7 @@ public class RobotContainer {
         /* 4 piece pivots */
         NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(17.5));
         NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(13.));
-        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(14.));
+        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(12.));
         NamedCommands.registerCommand("Note C", pivot.runToPositionCommand(12.));
 
         /* Pathfinding Shots */

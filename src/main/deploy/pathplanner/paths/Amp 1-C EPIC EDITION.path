@@ -3,70 +3,36 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.6570624081419103,
-        "y": 6.887856966597124
+        "x": 2.159,
+        "y": 4.646
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.6372746271968748,
-        "y": 6.3180220089528865
+        "x": 2.361903061098285,
+        "y": 4.533637570838088
       },
       "isLocked": false,
-      "linkedName": "Note A"
+      "linkedName": "Note 1 Shoot EPIC"
     },
     {
       "anchor": {
-        "x": 2.800799888512529,
-        "y": 5.6517467648996185
+        "x": 2.742143631555673,
+        "y": 4.221645307898693
       },
       "prevControl": {
-        "x": 2.1120721846662494,
-        "y": 5.406755720138642
+        "x": 2.433108962269992,
+        "y": 4.421502954551208
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Note B"
+      "linkedName": "Note C"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "zeroEnd",
-      "waypointRelativePos": 1.0,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "AprilTag Zero"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Infeed",
-      "waypointRelativePos": 0.0,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "Infeed"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Pivot",
+      "name": "Shooter & Infeed",
       "waypointRelativePos": 0.5,
       "command": {
         "type": "parallel",
@@ -75,7 +41,19 @@
             {
               "type": "named",
               "data": {
-                "name": "Note B"
+                "name": "Shooter"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Note C"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Infeed"
               }
             }
           ]
@@ -91,13 +69,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -28.87700000000001,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 25.0,
+    "rotation": -28.87700000000001,
     "velocity": 0
   },
   "useDefaultConstraints": true

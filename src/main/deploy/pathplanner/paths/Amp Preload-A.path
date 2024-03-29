@@ -39,7 +39,7 @@
   "eventMarkers": [
     {
       "name": "infeed",
-      "waypointRelativePos": 0.55,
+      "waypointRelativePos": 0.4,
       "command": {
         "type": "parallel",
         "data": {

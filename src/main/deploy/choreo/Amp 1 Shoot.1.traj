@@ -379,15 +379,6 @@
           "name": "Finish Infeed"
         }
       }
-    },
-    {
-      "timestamp": 0,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": ""
-        }
-      }
     }
   ]
 }
