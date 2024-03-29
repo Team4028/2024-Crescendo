@@ -505,7 +505,7 @@ public class RobotContainer {
         // = true))
         // .andThen(new InstantCommand(() -> isSnappedToSpeaker = false)));
 
-        driverController.leftStick().whileTrue(new ShooterAlign(drivetrain, leftVision).withTimeout(0.5));
+        driverController.leftStick().whileTrue(new ShooterAlign(drivetrain, trapVision).withTimeout(0.5));
 
         // =================== //
         /* OPERATOR CONTROLLER */
@@ -803,7 +803,7 @@ public class RobotContainer {
     private Command magicShootCommand() {
         return shooter.runShotCommand(ShotSpeeds.FAST)
                 .alongWith(new ShooterAlign(drivetrain, trapVision)).withTimeout(0.4)
-                .andThen(runEntryCommand(() -> getBestSTEntryLLY(), () -> ShotSpeeds.FAST))
+                .andThen(runEntryCommand(() -> getBestSTEntryPhotonY(), () -> ShotSpeeds.FAST))
                 .andThen(Commands.waitUntil(shooterAndPivotReady()))
                 .andThen(Commands.waitSeconds(0.1))
                 .andThen(conveyCommand())
@@ -1048,15 +1048,15 @@ public class RobotContainer {
     // public ShooterTableEntry[] getBestSTEntryAllStrats() {
     // ShooterTableEntry[] steArr = new ShooterTableEntry[5];
 
-    // steArr[0] = getBestSTEntryLLYDistance();
-    // steArr[1] = getBestSTEntryLLY();
+    // steArr[0] = getBestSTEntryPhotonYDistance();
+    // steArr[1] = getBestSTEntryPhotonY();
     // steArr[2] = getBestSTEntryPhotonY();
     // steArr[3] = getBestSTEntryLLArea();
     // steArr[4] = getBestSTEntryLLAreaMulti();
     // return steArr;
     // }
 
-    // private ShooterTableEntry getBestSTEntryLLYDistance() {
+    // private ShooterTableEntry getBestSTEntryPhotonYDistance() {
     // double deltaH = Units.metersToFeet(SPEAKER_TAG_HEIGHT - SHOOTER_CAM_HEIGHT);
     // double angle =
     // Units.degreesToRadians(LimelightHelpers.getTY(SHOOTER_LIMELIGHT));
@@ -1079,18 +1079,18 @@ public class RobotContainer {
         return ste;
     }
 
-    // private ShooterTableEntry getBestSTEntryPhotonY() {
-    // Optional<Double> distance = trapVision
-    // .getTagDistance(DriverStation.getAlliance().get() == Alliance.Blue ? 7 : 4);
+    private ShooterTableEntry getBestSTEntryPhotonY() {
+        Optional<Double> distance = trapVision
+                .getTagDistance(DriverStation.getAlliance().get() == Alliance.Blue ? 7 : 4);
 
-    // var ste =
-    // ShooterTable.calcShooterTableEntryCamera(Units.metersToFeet(distance.isEmpty()
-    // ? 0 : distance.get()),
-    // CameraLerpStrat.PhotonVisionDistance);
+        var ste = ShooterTable.calcShooterTableEntryCamera(Units.metersToFeet(distance.isEmpty()
+                ? 0
+                : distance.get()),
+                CameraLerpStrat.PhotonVisionDistance);
 
-    // SmartDashboard.putNumber("PhotonVision 2d distance", ste.Distance.in(Feet));
-    // return ste;
-    // }
+        SmartDashboard.putNumber("PhotonVision 2d distance", ste.Distance.in(Feet));
+        return ste;
+    }
 
     // private ShooterTableEntry getBestSTEntryLLArea() {
     // LimelightHelpers.setPipelineIndex(SHOOTER_LIMELIGHT, 0);

@@ -52,7 +52,7 @@ public class TunerConstants {
 
     private static final double kDriveGearRatio = 5.357142857142857;
     private static final double kSteerGearRatio = 21.428571428571427;
-    private static final double kWheelRadiusInches = 1.875;
+    private static final double kWheelRadiusInches = 1.925;
 
     private static final boolean kSteerMotorReversed = true;
     private static final boolean kInvertLeftSide = false;
@@ -60,7 +60,6 @@ public class TunerConstants {
 
     private static final String kCANbusName = "";
     private static final int kPigeonId = 1;
-
 
     // These are only used for simulation
     private static final double kSteerInertia = 0.00001;
