@@ -8,40 +8,77 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.735319404130495,
-        "y": 6.80533123536556
+        "x": 4.867489831456173,
+        "y": 7.203687737912389
       },
       "isLocked": false,
       "linkedName": "Note 1"
     },
     {
       "anchor": {
-        "x": 2.159,
-        "y": 4.646
+        "x": 1.9798487247981211,
+        "y": 4.6572218396114655
       },
       "prevControl": {
-        "x": 3.102884685579349,
-        "y": 5.547612425391122
+        "x": 2.9237334103774706,
+        "y": 5.558834265002588
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "Note 1 Shoot EPIC"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.8,
+      "rotationDegrees": 0,
+      "rotateFast": true
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [
     {
       "name": "Finish Infeeding",
       "waypointRelativePos": 0,
       "command": {
-        "type": "parallel",
+        "type": "sequential",
         "data": {
           "commands": [
             {
               "type": "named",
               "data": {
                 "name": "Finish Infeed"
+              }
+            },
+            {
+              "type": "parallel",
+              "data": {
+                "commands": [
+                  {
+                    "type": "named",
+                    "data": {
+                      "name": "Note 1"
+                    }
+                  },
+                  {
+                    "type": "named",
+                    "data": {
+                      "name": "Fast Shooter"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "wait",
+              "data": {
+                "waitTime": 0.6
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Infeed"
               }
             }
           ]
@@ -50,15 +87,15 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 6.0,
-    "maxAcceleration": 5.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0
+    "maxVelocity": 5.0,
+    "maxAcceleration": 5.5,
+    "maxAngularVelocity": 720.0,
+    "maxAngularAcceleration": 1440.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -28.87700000000001,
-    "rotateFast": false
+    "rotation": -32.64847388409328,
+    "rotateFast": true
   },
   "reversed": false,
   "folder": null,
@@ -66,5 +103,5 @@
     "rotation": 18.51,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

@@ -3,53 +3,36 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.7708845098898256,
-        "y": 6.957208692101949
+        "x": 8.30356161131978,
+        "y": 5.6517467648996185
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.7708845098898256,
-        "y": 6.957208692101949
+        "x": 7.128629735447389,
+        "y": 5.953913610847357
       },
       "isLocked": false,
-      "linkedName": "Note A"
+      "linkedName": "Note 2"
     },
     {
       "anchor": {
-        "x": 8.451147732832379,
-        "y": 5.467089247936886
+        "x": 5.3,
+        "y": 6.5
       },
       "prevControl": {
-        "x": 7.162365243354648,
-        "y": 6.323659081881922
+        "x": 6.916531853197935,
+        "y": 5.956281014911024
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "6 Piece Note 3"
+      "linkedName": "Amp Shot"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Infeed",
-      "waypointRelativePos": 0.75,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "Smart Infeed"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Pivot",
+      "name": "Finish Infeeding",
       "waypointRelativePos": 0,
       "command": {
         "type": "parallel",
@@ -58,7 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Home Pivot"
+                "name": "Finish Infeed"
               }
             }
           ]
@@ -69,12 +52,12 @@
   "globalConstraints": {
     "maxVelocity": 6.0,
     "maxAcceleration": 5.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0
+    "maxAngularVelocity": 720.0,
+    "maxAngularAcceleration": 1440.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -31.996201927894013,
+    "rotation": 10.95994060202901,
     "rotateFast": true
   },
   "reversed": false,

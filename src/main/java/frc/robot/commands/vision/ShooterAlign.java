@@ -40,29 +40,29 @@ public class ShooterAlign extends ProfiledPIDCommand {
                         new TrapezoidProfile.Constraints(2.0, 2.0)),
                 // This should return the measurement
                 () -> {
-                    // int tagID = DriverStation.getAlliance().isPresent()    
-                    //     && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
+                    int tagID = DriverStation.getAlliance().isPresent()    
+                        && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
 
-                    // Optional<Double> yaw = vision.getTagYaw(tagID);
+                    Optional<Double> yaw = vision.getTagYaw(tagID);
 
-                    // if (yaw.isPresent()) {
-                    //     return Units.degreesToRadians(yaw.get());
-                    // }
-
-                    // return 0.;
-                    int tagID = DriverStation.getAlliance().isPresent()
-                            && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
-
-                    var fiducials = LimelightHelpers
-                            .getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
-
-                    for (var fiducial : fiducials) {
-                        if (fiducial.fiducialID == tagID) {
-                            return Units.degreesToRadians(fiducial.tx);
-                        }
+                    if (yaw.isPresent()) {
+                        return Units.degreesToRadians(yaw.get());
                     }
 
                     return 0.;
+                    // int tagID = DriverStation.getAlliance().isPresent()
+                    //         && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
+
+                    // var fiducials = LimelightHelpers
+                    //         .getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
+
+                    // for (var fiducial : fiducials) {
+                    //     if (fiducial.fiducialID == tagID) {
+                    //         return Units.degreesToRadians(fiducial.tx);
+                    //     }
+                    // }
+
+                    // return 0.;
 
                 },
                 // This should return the goal (can also be a constant)

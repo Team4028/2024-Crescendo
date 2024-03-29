@@ -310,7 +310,7 @@ public class RobotContainer {
                 new LimelightAcquire(() -> 0.6,
                         drivetrain)
                         .until(conveyor.hasInfedSupplier())
-                        .raceWith(smartInfeedCommand()));
+                        .raceWith(smartInfeedCommand().withTimeout(1.2)));
 
         /* Infeed & Spit */
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
@@ -321,19 +321,28 @@ public class RobotContainer {
         NamedCommands.registerCommand("Infeed", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
 
-        NamedCommands.registerCommand("Spit Note", infeed.runMotorCommand(INFEED_VBUS)
+        NamedCommands.registerCommand("First Spit Note", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
                 .alongWith(shooter.spinBothCommand(0.15))
+                .repeatedly());
+
+        NamedCommands.registerCommand("Spit Note", infeed.runMotorCommand(INFEED_VBUS)
+                .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
+                .alongWith(shooter.spinBothCommand(0.11))
                 .repeatedly());
 
         NamedCommands.registerCommand("Prepare Spit", shooter.spinBothCommand(0.15));
 
         NamedCommands.registerCommand("Fix Note", fixNoteCommand());
 
-        NamedCommands.registerCommand("Finish Infeed", smartInfeedCommand().withTimeout(0.6)
-                .andThen(coolNoteFixCommand(0.2)).andThen(shooter.runShotCommand(ShotSpeeds.MEDIUM)));
+        NamedCommands.registerCommand("Finish Infeed", smartInfeedCommand().withTimeout(0.35)
+                .andThen(coolNoteFixCommand(0.1)).andThen(shooter.runShotCommand(ShotSpeeds.FAST))
+                .andThen(pivot.runToPositionCommand(5.)));
 
         /* Shooter & Pivot */
+        NamedCommands.registerCommand("Fast Shooter",
+                shooter.runShotCommand(ShotSpeeds.FAST));
+
         NamedCommands.registerCommand("Shooter",
                 shooter.runShotCommand(ShotSpeeds.FAST, 0.85));
 
@@ -343,9 +352,11 @@ public class RobotContainer {
 
         /* 4 piece pivots */
         NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(17.5));
-        NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(13.));
-        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(12.));
-        NamedCommands.registerCommand("Note C", pivot.runToPositionCommand(12.));
+        NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(11.5));
+        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(15.5));
+        NamedCommands.registerCommand("Note C", pivot.runToPositionCommand(13.5));
+
+        NamedCommands.registerCommand("Note 1", pivot.runToPositionCommand(10.));
 
         /* Pathfinding Shots */
         NamedCommands.registerCommand("Amp Shot", pathfindingShotCommand(15.5, Constants.LEFT_SHOT, 0.875, 0));
@@ -803,7 +814,7 @@ public class RobotContainer {
     private Command magicShootCommand() {
         return shooter.runShotCommand(ShotSpeeds.FAST)
                 .alongWith(new ShooterAlign(drivetrain, trapVision)).withTimeout(0.4)
-                .andThen(runEntryCommand(() -> getBestSTEntryPhotonY(), () -> ShotSpeeds.FAST))
+                .andThen(runEntryCommand(() -> getBestSTEntryVision(), () -> ShotSpeeds.FAST))
                 .andThen(Commands.waitUntil(shooterAndPivotReady()))
                 .andThen(Commands.waitSeconds(0.1))
                 .andThen(conveyCommand())
@@ -1090,6 +1101,10 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("PhotonVision 2d distance", ste.Distance.in(Feet));
         return ste;
+    }
+
+    private ShooterTableEntry getBestSTEntryVision() {
+        return getBestSTEntryLLY();
     }
 
     // private ShooterTableEntry getBestSTEntryLLArea() {

@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.159,
-        "y": 4.646
+        "x": 1.9798487247981211,
+        "y": 4.6572218396114655
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.361903061098285,
-        "y": 4.533637570838088
+        "x": 2.1827517858964063,
+        "y": 4.544859410449553
       },
       "isLocked": false,
       "linkedName": "Note 1 Shoot EPIC"
     },
     {
       "anchor": {
-        "x": 2.742143631555673,
-        "y": 4.221645307898693
+        "x": 2.8166184520288504,
+        "y": 4.18573179847702
       },
       "prevControl": {
-        "x": 2.433108962269992,
-        "y": 4.421502954551208
+        "x": 2.5075837827431693,
+        "y": 4.385589445129535
       },
       "nextControl": null,
       "isLocked": false,
@@ -63,13 +63,13 @@
   ],
   "globalConstraints": {
     "maxVelocity": 6.0,
-    "maxAcceleration": 5.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 720.0,
+    "maxAngularAcceleration": 1440.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -28.87700000000001,
+    "rotation": -36.230083663619105,
     "rotateFast": false
   },
   "reversed": false,
