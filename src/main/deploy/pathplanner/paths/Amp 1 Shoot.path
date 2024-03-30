@@ -1,0 +1,70 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.249541754955994,
+        "y": 7.381781089065534
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.374387636667651,
+        "y": 6.902435329534336
+      },
+      "isLocked": false,
+      "linkedName": "Note 1"
+    },
+    {
+      "anchor": {
+        "x": 5.3,
+        "y": 6.5
+      },
+      "prevControl": {
+        "x": 6.549249331682521,
+        "y": 6.856419094004107
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Amp Shot"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "Finish Infeeding",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Finish Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 720.0,
+    "maxAngularAcceleration": 1440.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 10.96,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": 18.51,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

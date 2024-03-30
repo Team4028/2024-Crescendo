@@ -385,7 +385,7 @@ public class RobotContainer {
     private void configureBindings() {
 
         // // LED Triggers //
-        // // has infeed jam
+        // // infeed has jam
         // new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.ORANGE, 5))
         // .onFalse(CANdle.runBurnyBurnCommand());
         // // checks if it has a note
