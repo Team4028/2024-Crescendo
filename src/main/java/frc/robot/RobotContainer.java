@@ -42,6 +42,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.commands.vision.ShooterAlign;
@@ -383,6 +384,10 @@ public class RobotContainer {
     /* Bindings & Default Commands */
     // =========================== //
     private void configureBindings() {
+
+        /* Climber Limit Switch Triggers */
+        new Trigger(climber::forwardLimit).onTrue(climber.hitForwardLimitCommand());
+        new Trigger(climber::reverseLimit).onTrue(climber.hitReverseLimitCommand());
 
         // // LED Triggers //
         // // infeed has jam

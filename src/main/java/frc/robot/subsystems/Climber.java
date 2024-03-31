@@ -11,25 +11,31 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DigitalInput;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.robot.utils.DashboardStore;
 
 public class Climber extends SubsystemBase {
     private final TalonFX motor;
 
+    private final DigitalInput forwardLimitSwitch, reverseLimitSwitch;
+
     private final DataLog log;
     private final DoubleLogEntry vbusLog, currentLog, positionLog, velocityLog;
 
-    private static final double ZERO_CURRENT_THRESHOLD = 7;
     private static final double ZERO_VBUS = -0.05;
-    private static final double ZERO_TIMER_OFFSET = 0.1;
-
-    private final Timer m_zeroTimer;
 
     private static final int CAN_ID = 15;
+
+    private static final int FORWARD_LIMIT_SWITCH_PIN = 8;
+    private static final int REVERSE_LIMIT_SWITCH_PIN = 9;
+
+    private static final double ZERO_POSITION = 0.0;
+    private static final double UP_POSITION = 129.0;
 
     /* Configs */
     private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs()
@@ -45,7 +51,7 @@ public class Climber extends SubsystemBase {
 
     public enum ClimberPositions {
         CLIMB(8.),
-        READY(124.);
+        READY(125.);
 
         public double Position;
 
@@ -58,6 +64,9 @@ public class Climber extends SubsystemBase {
         /* Setup */
         motor = new TalonFX(CAN_ID);
 
+        forwardLimitSwitch = new DigitalInput(FORWARD_LIMIT_SWITCH_PIN);
+        reverseLimitSwitch = new DigitalInput(REVERSE_LIMIT_SWITCH_PIN);
+
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setInverted(false);
 
@@ -65,7 +74,6 @@ public class Climber extends SubsystemBase {
         /* CONFIGS */
         /* ======= */
         motor.getConfigurator().apply(currentConfigs);
-        // motor.getConfigurator().apply(limitSwitchConfigs);
 
         /* CAN Bus */
         motor.getVelocity().setUpdateFrequency(20.);
@@ -86,8 +94,8 @@ public class Climber extends SubsystemBase {
         DashboardStore.add("Climber Current", () -> motor.getStatorCurrent().getValueAsDouble());
         DashboardStore.add("Climber Velocity", () -> motor.getVelocity().getValueAsDouble());
 
-        /* Timer */
-        m_zeroTimer = new Timer();
+        DashboardStore.add("Forward", forwardLimitSwitch::get);
+        DashboardStore.add("Reverse", reverseLimitSwitch::get);
     }
 
     public void runMotor(double vBus, boolean useFoc) {
@@ -99,7 +107,21 @@ public class Climber extends SubsystemBase {
     }
 
     public Command runMotorCommand(double vBus, boolean useFoc) {
-        return runOnce(() -> runMotor(vBus, useFoc));
+        return runOnce(() -> runMotor(vBus, useFoc)).unless(() -> {
+            if (vBus > 0.)
+                return forwardLimitSwitch.get();
+            if (vBus < 0.)
+                return reverseLimitSwitch.get();
+            return false;
+        });
+    }
+
+    public boolean forwardLimit() {
+        return forwardLimitSwitch.get() && motor.getMotorVoltage().getValueAsDouble() > 0.2;
+    }
+
+    public boolean reverseLimit() {
+        return reverseLimitSwitch.get() && motor.getMotorVoltage().getValueAsDouble() < -0.2;
     }
 
     public void stop() {
@@ -110,8 +132,16 @@ public class Climber extends SubsystemBase {
         return runMotorCommand(0.0, false);
     }
 
+    public void setEncoderPosition(double position) {
+        motor.setPosition(position);
+    }
+
+    public Command setEncoderPositionCommand(double position) {
+        return runOnce(() -> setEncoderPosition(position));
+    }
+
     public void zeroEncoder() {
-        motor.setPosition(0.0);
+        setEncoderPosition(0.0);
     }
 
     public Command zeroEncoderCommand() {
@@ -139,6 +169,16 @@ public class Climber extends SubsystemBase {
         return runToPositionCommand(output, position.Position);
     }
 
+    public Command hitForwardLimitCommand() {
+        return setEncoderPositionCommand(UP_POSITION)
+        .andThen(runToPositionCommand(ZERO_VBUS, UP_POSITION - 4.));
+    }
+
+    public Command hitReverseLimitCommand() {
+        return setEncoderPositionCommand(ZERO_POSITION)
+        .andThen(runToPositionCommand(ZERO_VBUS, ZERO_POSITION + 7.));
+    }
+
     public void logValues() {
         vbusLog.append(motor.get());
         currentLog.append(motor.getStatorCurrent().getValueAsDouble());
@@ -147,13 +187,7 @@ public class Climber extends SubsystemBase {
     }
 
     public Command zeroCommand() {
-        return runOnce(m_zeroTimer::restart)
-                .andThen(runMotorCommand(ZERO_VBUS, false))
-                .andThen(Commands.waitUntil(() -> motor.getStatorCurrent().getValueAsDouble() >= ZERO_CURRENT_THRESHOLD
-                        && m_zeroTimer.get() > ZERO_TIMER_OFFSET))
-                .andThen(zeroEncoderCommand())
-                .andThen(stopCommand())
-                .andThen(runOnce(m_zeroTimer::stop));
+        return runMotorCommand(ZERO_VBUS, false);
     }
 
     @Override

@@ -85,8 +85,8 @@ public class Robot extends TimedRobot {
         }
 
         m_robotContainer.stopShooter();
-        if (!hasZeroedPivot)
-            m_robotContainer.zero();
+        if (!hasZeroedPivot);
+            // m_robotContainer.zero();
         // m_robotContainer.configVisionFieldOrigins();
     }
 
