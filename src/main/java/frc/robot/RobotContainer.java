@@ -62,7 +62,9 @@ import frc.robot.subsystems.Whippy;
 import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.utils.BeakCommands;
 import frc.robot.utils.DashboardStore;
+import frc.robot.utils.DriverCamera;
 import frc.robot.utils.LimelightHelpers;
+import frc.robot.utils.NoteSensing;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 import frc.robot.utils.ShooterTable.ShooterTableEntry.CameraLerpStrat;
@@ -110,7 +112,10 @@ public class RobotContainer {
     private final Fan m_fan = new Fan();
     private final FanPivot m_fanPivot = new FanPivot();
     private final Whippy whippy = new Whippy();
+
     // private final Candle CANdle = new Candle();
+    private final NoteSensing noteSensing = new NoteSensing();
+    private final DriverCamera driverCamera = new DriverCamera();
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
@@ -310,7 +315,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Limelight Acquire",
                 new LimelightAcquire(() -> 0.6,
                         drivetrain)
-                        .until(conveyor.hasInfedSupplier())
+                        .until(noteSensing.hasInfedSupplier())
                         .raceWith(smartInfeedCommand().withTimeout(1.2)));
 
         /* Infeed & Spit */
@@ -408,11 +413,6 @@ public class RobotContainer {
         // .onTrue(CANdle.runBurnyBurnCommand())
         // .onFalse(CANdle.blink(Color.RED, 10));
 
-        // Add trigger for amp/trap mode with stick press on driver or operator.
-
-        // TODO: Buttons should NOT be toggles. Commands should only be running while
-        // buttons are being held
-
         // ================ //
         /* Default Commands */
         // ================ //
@@ -454,10 +454,11 @@ public class RobotContainer {
 
         /* Dumb Infeed */
         driverController.leftTrigger().onTrue(runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS))
-                .onFalse(coolNoteFixCommand(0.15));
+                .onFalse(coolNoteFixCommand(0.15).andThen(driverCamera.setShooterCameraCommand()));
 
         /* Smart Infeed */
-        driverController.leftBumper().toggleOnTrue(smartInfeedCommand());
+        driverController.leftBumper()
+                .toggleOnTrue(smartInfeedCommand().andThen(driverCamera.setShooterCameraCommand()));
 
         // ========================== //
         /* Drivetain & Vision Control */
@@ -521,7 +522,7 @@ public class RobotContainer {
         // = true))
         // .andThen(new InstantCommand(() -> isSnappedToSpeaker = false)));
 
-        driverController.leftStick().whileTrue(new ShooterAlign(drivetrain, trapVision).withTimeout(0.5));
+        driverController.leftStick().whileTrue(new ShooterAlign(drivetrain, trapVision));
 
         // =================== //
         /* OPERATOR CONTROLLER */
@@ -558,14 +559,14 @@ public class RobotContainer {
         operatorController.leftTrigger()
                 .onTrue(runEntryCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(currentIndex)),
                         () -> ShotSpeeds.FAST))
-                .onFalse(stopAllCommand());
+                .onFalse(stopAllCommand().andThen(driverCamera.setInfeedCameraCommand()));
 
         /* Convey Note */
         operatorController.rightTrigger()
                 .whileTrue(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS));
 
         /* Magic Shoot */
-        operatorController.x().toggleOnTrue(magicShootCommand());
+        operatorController.x().toggleOnTrue(magicShootCommand().andThen(driverCamera.setInfeedCameraCommand()));
 
         /* Manual/Preset Mode */
         operatorController.back().onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));
@@ -903,7 +904,7 @@ public class RobotContainer {
     /* Smart Infeed Command Generator */
     private Command smartInfeedCommand() {
         return runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS)
-                .until(conveyor.hasInfedSupplier())
+                .until(noteSensing.hasInfedSupplier())
                 .andThen(runBoth(true, 0., 0.).withTimeout(0.1))
                 .andThen(conveyBackCommand(-4.0, 0.5))
                 .andThen(shooter.spinMotorLeftCommand(0.));
