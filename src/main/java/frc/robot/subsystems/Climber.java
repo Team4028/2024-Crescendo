@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -22,10 +24,12 @@ import frc.robot.utils.DashboardStore;
 public class Climber extends SubsystemBase {
     private final TalonFX motor;
 
+    private final StatusSignal<Double> position, current, velocity;
+
     private final DigitalInput forwardLimitSwitch, reverseLimitSwitch;
 
     private final DataLog log;
-    private final DoubleLogEntry vbusLog, currentLog, positionLog, velocityLog;
+    private final DoubleLogEntry currentLog, positionLog, velocityLog;
 
     private static final double ZERO_VBUS = -0.05;
 
@@ -64,6 +68,10 @@ public class Climber extends SubsystemBase {
         /* Setup */
         motor = new TalonFX(CAN_ID);
 
+        position = motor.getPosition();
+        velocity = motor.getVelocity();
+        current = motor.getStatorCurrent();
+
         forwardLimitSwitch = new DigitalInput(FORWARD_LIMIT_SWITCH_PIN);
         reverseLimitSwitch = new DigitalInput(REVERSE_LIMIT_SWITCH_PIN);
 
@@ -76,23 +84,21 @@ public class Climber extends SubsystemBase {
         motor.getConfigurator().apply(currentConfigs);
 
         /* CAN Bus */
-        motor.getVelocity().setUpdateFrequency(20.);
-        motor.getPosition().setUpdateFrequency(20.);
-        motor.getStatorCurrent().setUpdateFrequency(20.);
-        motor.getDutyCycle().setUpdateFrequency(20.);
+        BaseStatusSignal.setUpdateFrequencyForAll(20.0, velocity, position, current);
+
         motor.optimizeBusUtilization();
 
         /* Logs */
         log = DataLogManager.getLog();
-        vbusLog = new DoubleLogEntry(log, "/Climber/Vbus");
+
         currentLog = new DoubleLogEntry(log, "/Climber/Current");
         positionLog = new DoubleLogEntry(log, "/Climber/Position");
         velocityLog = new DoubleLogEntry(log, "/Climber/Velocity");
 
         /* Dashboard */
-        DashboardStore.add("Climber Position", () -> motor.getPosition().getValueAsDouble());
-        DashboardStore.add("Climber Current", () -> motor.getStatorCurrent().getValueAsDouble());
-        DashboardStore.add("Climber Velocity", () -> motor.getVelocity().getValueAsDouble());
+        DashboardStore.add("Climber Position", () -> position.getValueAsDouble());
+        DashboardStore.add("Climber Current", () -> current.getValueAsDouble());
+        DashboardStore.add("Climber Velocity", () -> velocity.getValueAsDouble());
 
         DashboardStore.add("Forward", forwardLimitSwitch::get);
         DashboardStore.add("Reverse", reverseLimitSwitch::get);
@@ -180,10 +186,11 @@ public class Climber extends SubsystemBase {
     }
 
     public void logValues() {
-        vbusLog.append(motor.get());
-        currentLog.append(motor.getStatorCurrent().getValueAsDouble());
-        positionLog.append(motor.getPosition().getValueAsDouble());
-        velocityLog.append(motor.getVelocity().getValueAsDouble());
+        BaseStatusSignal.refreshAll(velocity, current, position);
+
+        currentLog.append(current.getValueAsDouble());
+        positionLog.append(position.getValueAsDouble());
+        velocityLog.append(velocity.getValueAsDouble());
     }
 
     public Command zeroCommand() {

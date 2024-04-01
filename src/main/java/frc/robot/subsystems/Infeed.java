@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -14,10 +16,11 @@ import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.utils.DashboardStore;
 
 public class Infeed extends SubsystemBase {
     private final TalonFX motor;
+
+    private final StatusSignal<Double> current, velocity;
 
     private final DataLog log;
     private final DoubleLogEntry currentLog, velocityLog;
@@ -36,6 +39,9 @@ public class Infeed extends SubsystemBase {
     public Infeed() {
         motor = new TalonFX(CAN_ID);
 
+        current = motor.getStatorCurrent();
+        velocity = motor.getVelocity();
+
         motor.getConfigurator().apply(currentLimitsConfigs);
         motor.getConfigurator().apply(motorOutputConfigs);
 
@@ -48,19 +54,11 @@ public class Infeed extends SubsystemBase {
         log = DataLogManager.getLog();
         currentLog = new DoubleLogEntry(log, "/Infeed/Current");
         velocityLog = new DoubleLogEntry(log, "/Infeed/Velocity");
-
-        /* Dashboard */
-        DashboardStore.add("Running/Infeed", this::isRunning);
     }
 
     // ==================================
     // REAL STUFF
     // ==================================
-
-    /* Check if shooter is running */
-    public boolean isRunning() {
-        return Math.abs(motor.getMotorVoltage().getValueAsDouble()) > 0.2;
-    }
 
     public void runMotor(double vBus) {
         motor.set(vBus);
@@ -79,8 +77,10 @@ public class Infeed extends SubsystemBase {
     }
 
     public void logValues() {
-        currentLog.append(motor.getStatorCurrent().getValueAsDouble());
-        velocityLog.append(motor.getVelocity().getValueAsDouble());
+        BaseStatusSignal.refreshAll(velocity, current);
+
+        currentLog.append(current.getValueAsDouble());
+        velocityLog.append(velocity.getValueAsDouble());
     }
 
     @Override
