@@ -3,7 +3,9 @@
   "robotLength": 0.9144,
   "holonomicMode": true,
   "pathFolders": [],
-  "autoFolders": [],
+  "autoFolders": [
+    "Choreo Autons"
+  ],
   "defaultMaxVel": 6.0,
   "defaultMaxAccel": 6.0,
   "defaultMaxAngVel": 720.0,

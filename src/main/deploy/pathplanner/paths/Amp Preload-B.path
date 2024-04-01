@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.35,
+        "y": 6.037364604091624
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.205316697628912,
+        "y": 5.650793723112111
+      },
+      "isLocked": false,
+      "linkedName": "Amp 4 Piece Start"
+    },
+    {
+      "anchor": {
+        "x": 2.908785796598439,
+        "y": 5.5482804463931075
+      },
+      "prevControl": {
+        "x": 2.1224874736744996,
+        "y": 5.724419699960476
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Note B"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 720.0,
+    "maxAngularAcceleration": 1440.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

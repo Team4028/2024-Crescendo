@@ -3,9 +3,9 @@
   "startingPose": {
     "position": {
       "x": 1.35,
-      "y": 6.04
+      "y": 6.0
     },
-    "rotation": 1.9416204825013916e-23
+    "rotation": 0.0
   },
   "command": {
     "type": "sequential",
@@ -32,7 +32,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Amp Preload-A"
+            "pathName": "Amp Preload-A RED"
           }
         },
         {
@@ -45,6 +45,18 @@
           "type": "path",
           "data": {
             "pathName": "Amp A-B"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.2
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Amp B-C RED"
           }
         },
         {
@@ -68,54 +80,30 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Amp B-2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Amp 2 Shoot"
+            "pathName": "Amp C-3"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Stationary Amp Shot"
+            "name": "Amp Shot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Amp 2-1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Amp 1 Shoot EPIC EDITION"
+            "pathName": "Amp 3-2"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Epic Amp Shot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "AprilTag Zero"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Amp 1-C EPIC EDITION"
+            "name": "Amp Shot"
           }
         }
       ]
     }
   },
-  "folder": "Choreo Autons",
-  "choreoAuto": true
+  "folder": null,
+  "choreoAuto": false
 }

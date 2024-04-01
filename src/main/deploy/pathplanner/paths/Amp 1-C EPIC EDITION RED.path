@@ -1,0 +1,82 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.9798487247981211,
+        "y": 4.6572218396114655
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.1827517858964063,
+        "y": 4.544859410449553
+      },
+      "isLocked": false,
+      "linkedName": "Note 1 Shoot EPIC"
+    },
+    {
+      "anchor": {
+        "x": 2.8166184520288504,
+        "y": 4.18573179847702
+      },
+      "prevControl": {
+        "x": 2.5075837827431693,
+        "y": 4.385589445129535
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Note C"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "Shooter & Infeed",
+      "waypointRelativePos": 0.5,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Shooter"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Note C"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 720.0,
+    "maxAngularAcceleration": 1440.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -24.86544681341096,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": -28.87700000000001,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

@@ -1,0 +1,110 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.35,
+        "y": 6.037364604091624
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.8622201519570822,
+        "y": 6.309293243586486
+      },
+      "isLocked": false,
+      "linkedName": "Amp 4 Piece Start"
+    },
+    {
+      "anchor": {
+        "x": 2.7708845098898256,
+        "y": 6.957208692101949
+      },
+      "prevControl": {
+        "x": 2.193453136906274,
+        "y": 6.680652853755373
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Note A"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.0,
+      "rotationDegrees": 45.26,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "infeed",
+      "waypointRelativePos": 0.4,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Infeed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "zeroEnd",
+      "waypointRelativePos": 1.0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "AprilTag Zero"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Pivot",
+      "waypointRelativePos": 0.85,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Note A"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 720.0,
+    "maxAngularAcceleration": 1440.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 45.26220363374194,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": 0.0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

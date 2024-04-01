@@ -3,9 +3,9 @@
   "startingPose": {
     "position": {
       "x": 1.35,
-      "y": 6.04
+      "y": 6.0
     },
-    "rotation": 1.9416204825013916e-23
+    "rotation": 0.0
   },
   "command": {
     "type": "sequential",
@@ -32,7 +32,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Amp Preload-A"
+            "pathName": "Amp Preload-A RED"
           }
         },
         {
@@ -72,15 +72,9 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Amp 2 Shoot"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "Stationary Amp Shot"
+            "name": "Amp Shot"
           }
         },
         {
@@ -90,32 +84,26 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Amp 1 Shoot EPIC EDITION"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "Epic Amp Shot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "AprilTag Zero"
+            "name": "Amp Shot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Amp 1-C EPIC EDITION"
+            "pathName": "Amp 1-C RED"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Infeed"
           }
         }
       ]
     }
   },
-  "folder": "Choreo Autons",
-  "choreoAuto": true
+  "folder": null,
+  "choreoAuto": false
 }

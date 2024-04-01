@@ -1,0 +1,82 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.3,
+        "y": 6.5
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.754407292371632,
+        "y": 6.418193830515179
+      },
+      "isLocked": false,
+      "linkedName": "Amp Shot"
+    },
+    {
+      "anchor": {
+        "x": 2.8166184520288504,
+        "y": 4.18573179847702
+      },
+      "prevControl": {
+        "x": 1.6900569455501329,
+        "y": 5.039127158791231
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Note C"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "Shooter & Infeed",
+      "waypointRelativePos": 0.65,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Shooter"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Note C"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 720.0,
+    "maxAngularAcceleration": 1440.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -32.80695144469086,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": 19.705375774837755,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}
