@@ -24,6 +24,7 @@ public class DriverCamera {
         m_infeedCamera = new HttpCamera("Infeed Camera", INFEED_CAMERA_URL, HttpCameraKind.kMJPGStreamer);
 
         m_dashboardCamera = CameraServer.addSwitchedCamera("Dashboard Camera");
+        m_dashboardCamera.setSource(m_infeedCamera);
     }
 
     public void setShooterCamera() {
