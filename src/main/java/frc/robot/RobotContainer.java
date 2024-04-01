@@ -194,7 +194,7 @@ public class RobotContainer {
 
     private static double MAX_INDEX = 27.;
     private static double MIN_INDEX = 4.2;
-    private static double Pivot_Passing_Angle = 30.9;
+    private static double PIVOT_PASSING_ANGLE = 30.9;
 
     private final LinkedHashMap<Double, String> indexMap = new LinkedHashMap<>();
 
@@ -806,8 +806,9 @@ public class RobotContainer {
         return runBoth(true, FAST_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(0.25).andThen(
                 conveyBackCommand(-2.0, 0.1));
     }
+    
     private Command lobShotCommand() {
-        return pivot.runToPositionCommand(Pivot_Passing_Angle)
+        return pivot.runToPositionCommand(PIVOT_PASSING_ANGLE)
             .alongWith(shooter.runShotCommand(ShotSpeeds.MEDIUM))
             .andThen(Commands.waitUntil(shooterAndPivotReady()));
     }
