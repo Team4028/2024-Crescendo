@@ -28,13 +28,7 @@
       "linkedName": "Note 1 Shoot EPIC"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.8,
-      "rotationDegrees": 0,
-      "rotateFast": true
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
@@ -49,32 +43,58 @@
               "data": {
                 "name": "Finish Infeed"
               }
-            },
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Lock",
+      "waypointRelativePos": 0.2,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
             {
-              "type": "parallel",
+              "type": "named",
               "data": {
-                "commands": [
-                  {
-                    "type": "named",
-                    "data": {
-                      "name": "Note 1"
-                    }
-                  },
-                  {
-                    "type": "named",
-                    "data": {
-                      "name": "Fast Shooter"
-                    }
-                  }
-                ]
+                "name": "Start Locking"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Shooter",
+      "waypointRelativePos": 0.6,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Note 1"
               }
             },
             {
-              "type": "wait",
+              "type": "named",
               "data": {
-                "waitTime": 0.6
+                "name": "Shooter"
               }
-            },
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Shoot",
+      "waypointRelativePos": 0.8,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
             {
               "type": "named",
               "data": {
@@ -94,7 +114,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -32.64847388409328,
+    "rotation": -19.098269253033497,
     "rotateFast": true
   },
   "reversed": false,

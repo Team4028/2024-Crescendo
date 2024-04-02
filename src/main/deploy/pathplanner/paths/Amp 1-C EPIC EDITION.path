@@ -59,6 +59,23 @@
           ]
         }
       }
+    },
+    {
+      "name": "Start Locking",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Start Lock"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "globalConstraints": {

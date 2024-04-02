@@ -34,6 +34,7 @@ public class NoteSensing extends SubsystemBase {
 
         /* Dashboard */
         DashboardStore.add("ToF Sensor", () -> conveyorSensor.getRange());
+        DashboardStore.add("Shooter Sensor", () -> shooterSensor.getRange());
     }
 
     public boolean hasInfed() {

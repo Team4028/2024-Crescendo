@@ -24,11 +24,10 @@ public final class Constants {
     public static final Pose2d SPEAKER_TARGET = new Pose2d(1.37, 5.8, new Rotation2d(Math.PI));
     public static final Pose2d SPEAKER_DISTANCE_TARGET = new Pose2d(0.1, 6.0, new Rotation2d(Math.PI));
     public static final Pose2d AMP_TARGET = new Pose2d(1.83, 7.27, new Rotation2d(Math.PI / 2.));
-    public static final Pose2d LEFT_TRAP_TARGET = new Pose2d(4.4, 4.62  , new Rotation2d(Units.degreesToRadians(120)));
-    public static final Pose2d MIDDLE_TRAP_Target = new Pose2d(4.4, 3.24, new Rotation2d(Units.degreesToRadians(-120)));
-    public static final Pose2d RIGHT_TRAP_Target = new Pose2d(5.83, 4.11, new Rotation2d(0));
 
     public static final Pose2d RIGHT_SHOT = new Pose2d(5.1, 1.9, Rotation2d.fromDegrees(-38.));
     public static final Pose2d CENTER_SHOT = new Pose2d(4.5, 4.7, Rotation2d.fromDegrees(-15.5));
     public static final Pose2d LEFT_SHOT = new Pose2d(5.3, 6.5, Rotation2d.fromDegrees(14.));
+
+    public static final Pose2d NOTE_C_SHOT = new Pose2d(2.75, 4.15, Rotation2d.fromDegrees(-34.));
 }

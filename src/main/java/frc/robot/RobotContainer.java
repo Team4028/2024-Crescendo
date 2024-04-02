@@ -43,6 +43,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.commands.vision.ShooterAlign;
@@ -269,6 +270,10 @@ public class RobotContainer {
         DashboardStore.add("Aligned to Speaker", () -> isSnappedToSpeaker);
         // DashboardStore.add("Executing magic shoot", () -> isInMagicShoot);
 
+        DashboardStore.add("Photon Distance", () -> getBestSTEntryPhotonY().Distance.in(Feet));
+
+        DashboardStore.add("Limelight TY", () -> getBestSTEntryLLY().Distance.in(Feet));
+
         initNamedCommands();
 
         initAutonChooser();
@@ -341,9 +346,9 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Fix Note", fixNoteCommand());
 
-        NamedCommands.registerCommand("Finish Infeed", smartInfeedCommand().withTimeout(0.35)
-                .andThen(coolNoteFixCommand(0.1)).andThen(shooter.runShotCommand(ShotSpeeds.FAST))
-                .andThen(pivot.runToPositionCommand(5.)));
+        NamedCommands.registerCommand("Finish Infeed",
+                smartInfeedCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST))
+                        .andThen(pivot.runToPositionCommand(5.)));
 
         /* Shooter & Pivot */
         NamedCommands.registerCommand("Fast Shooter",
@@ -357,17 +362,16 @@ public class RobotContainer {
         NamedCommands.registerCommand("Home Pivot", pivot.runToHomeCommand());
 
         /* 4 piece pivots */
-        NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(17.5));
-        NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(11.5));
-        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(15.5));
-        NamedCommands.registerCommand("Note C", pivot.runToPositionCommand(13.5));
+        NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(17.0));
+        NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(11.0));
+        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(15.0));
 
-        NamedCommands.registerCommand("Note 1", pivot.runToPositionCommand(10.));
+        NamedCommands.registerCommand("Note 1", pivot.runToPositionCommand(17.5));
 
         /* Pathfinding Shots */
         NamedCommands.registerCommand("Amp Shot", pathfindingShotCommand(15.5, Constants.LEFT_SHOT, 0.875, 0));
 
-        NamedCommands.registerCommand("Stationary Amp Shot", stationaryShot(15.5));
+        NamedCommands.registerCommand("Stationary Amp Shot", stationaryShot(16.5));
         NamedCommands.registerCommand("Epic Amp Shot", stationaryShot(7.5));
 
         NamedCommands.registerCommand("Center Pathfinding Shot", pathfindingShotCommand(
@@ -383,6 +387,9 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Center Preload", pivot.runOnce(pivot::zeroEncoder)
                 .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(4.2)))));
+
+        NamedCommands.registerCommand("Note C Pathfinding",
+                mirroredPathfindingShotCommand(12.35, Constants.NOTE_C_SHOT, 0.85, 0.));
     }
 
     // =========================== //
@@ -403,7 +410,7 @@ public class RobotContainer {
         // .onFalse(CANdle.runBurnyBurnCommand());
         // // flashes purple
         // new Trigger(shooter.isReadySupplier()).onTrue(CANdle.blink(Color.PURPLE, 3))
-        // .onFalse(CANdle.runBurnyBurnCommand());
+        // .onFalse(CANdle.runBurnyBurnCommand())
         // // Flashes white while shooting
         // new
         // Trigger(shooter.isRunningSupplier()).onTrue(CANdle.runShootFlow(Color.WHITE))
@@ -447,6 +454,15 @@ public class RobotContainer {
         // ================= //
         /* DRIVER CONTROLLER */
         // ================= //
+
+        driverController.a().and(driverController.povUp()).onTrue(pivot.runDyn(Direction.kForward))
+                .onFalse(pivot.runMotorCommand(0.));
+        driverController.a().and(driverController.povDown()).onTrue(pivot.runDyn(Direction.kReverse))
+                .onFalse(pivot.runMotorCommand(0.));
+        driverController.b().and(driverController.povUp()).onTrue(pivot.runQuasi(Direction.kForward))
+                .onFalse(pivot.runMotorCommand(0.));
+        driverController.b().and(driverController.povDown()).onTrue(pivot.runQuasi(Direction.kReverse))
+                .onFalse(pivot.runMotorCommand(0.));
 
         // ========================= //
         /* Infeed & Conveyor Control */
@@ -710,6 +726,11 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
+    private boolean allianceIsBlue() {
+        Optional<Alliance> alliance = DriverStation.getAlliance();
+        return alliance.isPresent() && alliance.get() == Alliance.Blue;
+    }
+
     /* Stop Shooter */
     public void stopShooter() {
         shooter.stop();
@@ -786,7 +807,21 @@ public class RobotContainer {
                 .andThen(Commands.select(sequenceCommandMap, () -> currentSequence));
     }
 
-    // FIXME: this needs to be mirrorable w/ rotation
+    /** yee haw */
+    private Command mirroredPathfindingShotCommand(double pivotAngle, Pose2d target, double scale, double endVelocity) {
+        Pose2d redPose = new Pose2d(
+                target.getTranslation(),
+                target.getRotation().minus(Rotation2d.fromDegrees(6.)));
+
+        return runBoth(false, FAST_CONVEYOR_VBUS, INFEED_VBUS).repeatedly()
+                .alongWith(pivot.runToPositionCommand(pivotAngle))
+                .alongWith(
+                        Commands.either(
+                                drivetrain.mirrorablePathFindCommand(target, scale, endVelocity),
+                                drivetrain.mirrorablePathFindCommand(redPose, scale, endVelocity),
+                                this::allianceIsBlue));
+    }
+
     /* Pathfinding Auton Shot */
     private Command pathfindingShotCommand(double targetDistance, Pose2d target, double scale, double endVelocity) {
         return drivetrain

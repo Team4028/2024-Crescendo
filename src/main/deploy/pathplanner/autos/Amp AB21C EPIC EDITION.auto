@@ -102,9 +102,9 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Amp 1-C EPIC EDITION"
+            "name": "Note C Pathfinding"
           }
         },
         {
