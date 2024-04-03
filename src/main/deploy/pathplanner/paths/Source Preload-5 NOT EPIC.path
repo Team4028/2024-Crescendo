@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.487656336225653,
-        "y": 1.7683363184130072
+        "x": 4.321604462686361,
+        "y": 1.657458896865537
       },
       "isLocked": false,
       "linkedName": "Spitless Source Shot"
     },
     {
       "anchor": {
-        "x": 7.802490362815484,
-        "y": 0.75
+        "x": 7.929015002923118,
+        "y": 0.7994801737822012
       },
       "prevControl": {
-        "x": 6.802490362815484,
-        "y": 0.75
+        "x": 6.856541599068947,
+        "y": 0.5947352512282235
       },
       "nextControl": null,
       "isLocked": false,
@@ -74,13 +74,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
-    "rotateFast": true
+    "rotation": -20.0,
+    "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -35.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

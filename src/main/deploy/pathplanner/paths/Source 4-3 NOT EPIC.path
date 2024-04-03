@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 8.342247145903688,
-        "y": 3.891205211101698
+        "x": 8.153259441910809,
+        "y": 3.8609042538750162
       },
       "prevControl": {
-        "x": 6.701004443378358,
-        "y": 1.4638545682226887
+        "x": 6.512016739385479,
+        "y": 1.4335536109960068
       },
       "nextControl": null,
       "isLocked": false,
@@ -50,7 +50,7 @@
     },
     {
       "name": "Smart Infeed",
-      "waypointRelativePos": 0.65,
+      "waypointRelativePos": 0.85,
       "command": {
         "type": "parallel",
         "data": {
@@ -75,12 +75,12 @@
   "goalEndState": {
     "velocity": 0,
     "rotation": 70.31744924395436,
-    "rotateFast": true
+    "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -35.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

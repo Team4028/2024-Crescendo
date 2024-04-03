@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.802490362815484,
-        "y": 2.3388308884879883
+        "x": 7.890015970055694,
+        "y": 2.4081902795634575
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.6658719337410135,
-        "y": 1.0656861256661172
+        "x": 6.753397540981224,
+        "y": 1.1350455167415865
       },
       "isLocked": false,
       "linkedName": "Note 4"
@@ -29,7 +29,19 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "New Constraints Zone",
+      "minWaypointRelativePos": 0.65,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 6.0,
+        "maxAcceleration": 4.0,
+        "maxAngularVelocity": 720.0,
+        "maxAngularAcceleration": 1440.0
+      }
+    }
+  ],
   "eventMarkers": [
     {
       "name": "Finish Infeeding",
@@ -57,8 +69,8 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -39.0,
-    "rotateFast": true
+    "rotation": -35.0,
+    "rotateFast": false
   },
   "reversed": false,
   "folder": null,
