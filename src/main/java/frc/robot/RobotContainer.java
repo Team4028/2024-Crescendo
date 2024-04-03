@@ -200,6 +200,7 @@ public class RobotContainer {
 
     private static double MAX_INDEX = 27.;
     private static double MIN_INDEX = 4.2;
+    private static ShooterTableEntry PIVOT_PASSING_ANGLE = new ShooterTableEntry(null, 0, 0, 0, 0, 24, 0.66);// 30.9;
 
     private final LinkedHashMap<Double, String> indexMap = new LinkedHashMap<>();
 
@@ -548,6 +549,9 @@ public class RobotContainer {
 
         driverController.leftStick().whileTrue(new ShooterAlign(drivetrain, trapVision));
 
+
+        driverController.a().onTrue(lobShotCommand());
+
         // =================== //
         /* OPERATOR CONTROLLER */
         // =================== //
@@ -852,6 +856,14 @@ public class RobotContainer {
     private Command fixNoteCommand() {
         return runBoth(true, FAST_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(0.25).andThen(
                 conveyBackCommand(-2.0, 0.1));
+    }
+
+    private Command lobShotCommand() {
+        return pivot.runToPositionCommand(PIVOT_PASSING_ANGLE.Angle)
+                .alongWith(shooter.runEntryCommand(() -> PIVOT_PASSING_ANGLE, () -> ShotSpeeds.FAST))
+                .andThen(Commands.waitUntil(shooterAndPivotReady()))
+                .andThen(conveyCommand())
+                .andThen(shooter.stopCommand().alongWith(pivot.runToHomeCommand()));
     }
 
     /* Entry Shot Sequence */
