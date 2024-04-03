@@ -386,9 +386,9 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Stationary Source Shot", stationaryShot(22.1));
 
-        NamedCommands.registerCommand("Spitless Source Shot 1", stationaryShot(17));
-        NamedCommands.registerCommand("Spitless Source Shot 2", stationaryShot(17));
-        NamedCommands.registerCommand("Spitless Source Shot 3", stationaryShot(17));
+        NamedCommands.registerCommand("Spitless Source Shot 1", stationaryShotNoPV(16.3));
+        NamedCommands.registerCommand("Spitless Source Shot 2", stationaryShotNoPV(17));
+        NamedCommands.registerCommand("Spitless Source Shot 3", stationaryShotNoPV(17.2));
         
         NamedCommands.registerCommand("Right Preload", pivot.runOnce(pivot::zeroEncoder)
                 .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(5.2)))));
@@ -842,6 +842,10 @@ public class RobotContainer {
     private Command stationaryShot(double targetDistance) {
         return new ShooterAlign(drivetrain, trapVision).withTimeout(0.5)
                 .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(targetDistance))));
+    }
+
+    private Command stationaryShotNoPV(double targetDistance) {
+        return shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(targetDistance)));
     }
 
     /* Fix Note Sequence */
