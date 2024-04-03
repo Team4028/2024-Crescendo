@@ -376,7 +376,7 @@ public class RobotContainer {
 
         /* Pathfinding Shots */
         NamedCommands.registerCommand("Amp Shot", pathfindingShotCommand(15.5, Constants.LEFT_SHOT, 0.875, 0));
-
+        
         NamedCommands.registerCommand("Stationary Amp Shot", stationaryShot(16));
         NamedCommands.registerCommand("Sad Stationary Amp Shot 2", stationaryShot(16.5));
         NamedCommands.registerCommand("Epic Amp Shot", stationaryShot(7.5)); // 7.5
@@ -389,7 +389,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Stationary Source Shot", stationaryShot(22.1));
 
-        NamedCommands.registerCommand("Spitless Source Shot 1", stationaryShotNoPV(16.3));
+        NamedCommands.registerCommand("Spitless Source Shot 1", stationaryShotNoPV(15.8));
         NamedCommands.registerCommand("Spitless Source Shot 2", stationaryShotNoPV(17));
         NamedCommands.registerCommand("Spitless Source Shot 3", stationaryShotNoPV(17.2));
 
