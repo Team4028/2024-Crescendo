@@ -194,7 +194,7 @@ public class RobotContainer {
 
     private static double MAX_INDEX = 27.;
     private static double MIN_INDEX = 4.2;
-    private static double PIVOT_PASSING_ANGLE = 30.9;
+    private static ShooterTableEntry PIVOT_PASSING_ANGLE = new ShooterTableEntry(null, 0, 0, 0, 0, 24, 0.66);// 30.9;
 
     private final LinkedHashMap<Double, String> indexMap = new LinkedHashMap<>();
 
@@ -524,6 +524,9 @@ public class RobotContainer {
 
         driverController.leftStick().whileTrue(new ShooterAlign(drivetrain, trapVision).withTimeout(0.5));
 
+
+        driverController.a().onTrue(lobShotCommand());
+
         // =================== //
         /* OPERATOR CONTROLLER */
         // =================== //
@@ -806,11 +809,13 @@ public class RobotContainer {
         return runBoth(true, FAST_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(0.25).andThen(
                 conveyBackCommand(-2.0, 0.1));
     }
-    
+
     private Command lobShotCommand() {
-        return pivot.runToPositionCommand(PIVOT_PASSING_ANGLE)
-            .alongWith(shooter.runShotCommand(ShotSpeeds.MEDIUM))
-            .andThen(Commands.waitUntil(shooterAndPivotReady()));
+        return pivot.runToPositionCommand(PIVOT_PASSING_ANGLE.Angle)
+                .alongWith(shooter.runEntryCommand(() -> PIVOT_PASSING_ANGLE, () -> ShotSpeeds.FAST))
+                .andThen(Commands.waitUntil(shooterAndPivotReady()))
+                .andThen(conveyCommand())
+                .andThen(shooter.stopCommand().alongWith(pivot.runToHomeCommand()));
     }
 
     /* Entry Shot Sequence */
@@ -958,7 +963,7 @@ public class RobotContainer {
 
     /* Zeroing Command */
     public Command zeroCommand() {
-        return pivot.zeroCommand().alongWith(m_fanPivot.runToPositionCommand(0.)).alongWith(climber.zeroCommand());
+        return pivot.zeroCommand();// .alongWith(m_fanPivot.runToPositionCommand(0.)).alongWith(climber.zeroCommand());
     }
 
     /* Asynchronous Zero */
