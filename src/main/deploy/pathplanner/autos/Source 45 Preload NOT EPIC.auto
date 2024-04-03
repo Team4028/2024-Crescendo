@@ -1,0 +1,61 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.81,
+      "y": 4.35
+    },
+    "rotation": -60.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Shooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Preload Note"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 2.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source Preload-5 NOT EPIC"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Source Shot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source 5-4 NOT EPIC"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Source Shot"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

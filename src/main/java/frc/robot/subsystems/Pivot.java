@@ -73,7 +73,7 @@ public class Pivot extends SubsystemBase {
 
     /* PID */
     private class PIDConstants {
-        private final static double kP = 0.06;
+        private final static double kP = 0.08;
         private final static double kD = 0.5;
 
         private final static double MIN_OUTPUT = -0.5;
@@ -280,7 +280,7 @@ public class Pivot extends SubsystemBase {
         if (!isVbus && Math.abs(error) > FEEDFORWARD_THRESHOLD)
             pid.setReference(targetPosition, ControlType.kPosition, 0,
                     armFF.calculate(convertEncoderToRadians(encoder.getPosition()),
-                            (targetPosition - getPosition()) / 0.1 * 60.), // * PIDConstants.MAX_OUTPUT * 6000.),
+                            (error / STAGE_PIVOT) * PIDConstants.MAX_OUTPUT * 6000.),
                     ArbFFUnits.kVoltage);
     }
 }

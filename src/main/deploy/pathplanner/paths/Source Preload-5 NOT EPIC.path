@@ -3,37 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.3,
-        "y": 6.5
+        "x": 0.8104536608502588,
+        "y": 4.35
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.754407292371632,
-        "y": 6.418193830515179
+        "x": 2.719320017812645,
+        "y": 0.40987927910235306
       },
       "isLocked": false,
-      "linkedName": "Amp Shot"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.8166184520288504,
-        "y": 4.18573179847702
+        "x": 7.802490362815484,
+        "y": 0.7601200387585969
       },
       "prevControl": {
-        "x": 1.6900569455501329,
-        "y": 5.039127158791231
+        "x": 6.802490362815484,
+        "y": 0.7601200387585969
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Note C"
+      "linkedName": "Note 5"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Shooter & Infeed",
-      "waypointRelativePos": 0.65,
+      "name": "Infeed",
+      "waypointRelativePos": 0,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,19 +41,41 @@
             {
               "type": "named",
               "data": {
-                "name": "Shooter"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "Note C"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
                 "name": "Infeed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Stop Shooter",
+      "waypointRelativePos": 0.5,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Stop Shooter"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Smart Infeed",
+      "waypointRelativePos": 0.75,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Smart Infeed"
               }
             }
           ]
@@ -69,13 +91,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -29.464325709385403,
-    "rotateFast": false
+    "rotation": 0,
+    "rotateFast": true
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 19.705375774837755,
+    "rotation": -60.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

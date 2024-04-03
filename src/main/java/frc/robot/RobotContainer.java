@@ -283,6 +283,7 @@ public class RobotContainer {
                 .alongWith(shooter.setSlotCommand(Shooter.Slots.AMP)
                         .andThen(shooter.runShotCommand(ShotSpeeds.AMP)));
 
+
         configureBindings();
     }
 
@@ -362,23 +363,24 @@ public class RobotContainer {
         NamedCommands.registerCommand("Home Pivot", pivot.runToHomeCommand());
 
         /* 4 piece pivots */
-        NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(17.0));
-        NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(11.0));
-        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(15.0));
+        NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(17.8)); //17
+        NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(11.8)); //11
+        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(15.8)); //15
+        NamedCommands.registerCommand("Note C", pivot.runToPositionCommand(14.3)); //13.5
 
-        NamedCommands.registerCommand("Note 1", pivot.runToPositionCommand(17.5));
+        NamedCommands.registerCommand("Note 1", pivot.runToPositionCommand(18.3)); //17.5
 
         /* Pathfinding Shots */
         NamedCommands.registerCommand("Amp Shot", pathfindingShotCommand(15.5, Constants.LEFT_SHOT, 0.875, 0));
 
-        NamedCommands.registerCommand("Stationary Amp Shot", stationaryShot(16.5));
-        NamedCommands.registerCommand("Epic Amp Shot", stationaryShot(7.5));
+        NamedCommands.registerCommand("Stationary Amp Shot", stationaryShot(16.8)); // 16.5
+        NamedCommands.registerCommand("Epic Amp Shot", stationaryShot(7.7)); // 7.5
 
         NamedCommands.registerCommand("Center Pathfinding Shot", pathfindingShotCommand(
                 13.0, Constants.CENTER_SHOT, 0.8, 0.));
 
         NamedCommands.registerCommand("Source Shot",
-                pathfindingShotCommand(20.8, Constants.RIGHT_SHOT, 0.75, 0.));
+                pathfindingShotCommand(21.1, Constants.RIGHT_SHOT, 0.75, 0.));
 
         NamedCommands.registerCommand("Stationary Source Shot", stationaryShot(20.8));
 
@@ -832,7 +834,7 @@ public class RobotContainer {
     }
 
     private Command stationaryShot(double targetDistance) {
-        return new ShooterAlign(drivetrain, trapVision).withTimeout(0.4)
+        return new ShooterAlign(drivetrain, trapVision).withTimeout(0.5)
                 .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(targetDistance))));
     }
 
@@ -854,7 +856,7 @@ public class RobotContainer {
     /* Magic shoot but awesome */
     private Command magicShootCommand() {
         return shooter.runShotCommand(ShotSpeeds.FAST)
-                .alongWith(new ShooterAlign(drivetrain, trapVision)).withTimeout(0.4)
+                .alongWith(new ShooterAlign(drivetrain, trapVision)).withTimeout(0.6)
                 .andThen(runEntryCommand(() -> getBestSTEntryVision(), () -> ShotSpeeds.FAST))
                 .andThen(Commands.waitUntil(shooterAndPivotReady()))
                 .andThen(Commands.waitSeconds(0.1))
@@ -948,7 +950,7 @@ public class RobotContainer {
     /* Run a Shooter Table Entry */
     private Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShotSpeeds> speed) {
         return shooter.runEntryCommand(entry, speed)
-                .alongWith(pivot.runToPositionCommand(() -> entry.get().Angle));
+                .alongWith(pivot.runToPositionCommand(() -> entry.get().Angle + 0.8 /* so jank */));
     }
 
     /* Shooter & Pivot Both Ready */
@@ -987,7 +989,7 @@ public class RobotContainer {
 
     /* Zeroing Command */
     public Command zeroCommand() {
-        return pivot.zeroCommand().alongWith(m_fanPivot.runToPositionCommand(0.)).alongWith(climber.zeroCommand());
+        return pivot.zeroCommand();//.alongWith(m_fanPivot.runToPositionCommand(0.)).alongWith(climber.zeroCommand());
     }
 
     /* Asynchronous Zero */
