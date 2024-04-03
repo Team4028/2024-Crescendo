@@ -1,0 +1,85 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.28,
+      "y": 3.34
+    },
+    "rotation": 0.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "AprilTag Zero"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shooter"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source Preload Shoot NOT EPIC"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Spitless Source Shot 1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source Preload-5 NOT EPIC"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source 5 Shoot NOT EPIC"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Spitless Source Shot 2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source 5-4 NOT EPIC"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source 4 Shoot NOT EPIC"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Spitless Source Shot 3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source 4-3 NOT EPIC"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
