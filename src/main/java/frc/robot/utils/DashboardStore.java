@@ -5,6 +5,7 @@
 package frc.robot.utils;
 
 import java.util.HashMap;
+
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -30,11 +31,11 @@ public class DashboardStore {
     public static void add(String key, DoubleSupplier value) {
         values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeDouble(value.getAsDouble()));
     }
-    
+
     public static void add(String key, IntSupplier value) {
         values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeInteger(value.getAsInt()));
     }
-    
+
     public static void add(String key, Supplier<String> value) {
         values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeString(value.get()));
     }
@@ -44,5 +45,5 @@ public class DashboardStore {
             key.setValue(value.get());
         });
     }
-    
+
 }

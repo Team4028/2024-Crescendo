@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
@@ -18,6 +20,8 @@ import frc.robot.utils.DashboardStore;
 
 public class FanPivot extends SubsystemBase {
     private final TalonFX motor;
+
+    private final StatusSignal<Double> position, current;
 
     private static final int CAN_ID = 17;
 
@@ -38,34 +42,37 @@ public class FanPivot extends SubsystemBase {
     double targetPosition = 0;
 
     private final DataLog m_log;
-    private final DoubleLogEntry m_velocityLog, m_positionLog;
+    private final DoubleLogEntry m_currentLog, m_positionLog;
 
     /** Creates a new FanPivot. */
     public FanPivot() {
         /* Setup */
         motor = new TalonFX(CAN_ID);
+        
+        position = motor.getPosition();
+        current = motor.getStatorCurrent();
+
         motor.getConfigurator().apply(pidConfigs);
         motor.getConfigurator().apply(closedLoopRampsConfigs);
         motor.setPosition(0.);
 
         /* CAN Bus */
-        motor.getVelocity().setUpdateFrequency(20.);
-        motor.getPosition().setUpdateFrequency(20.);
-        motor.getStatorCurrent().setUpdateFrequency(10.);
+        BaseStatusSignal.setUpdateFrequencyForAll(20.0, current, position);
         motor.optimizeBusUtilization();
 
         /* Logs */
         m_log = DataLogManager.getLog();
         m_positionLog = new DoubleLogEntry(m_log, "/Fan/Pivot/Position");
-        m_velocityLog = new DoubleLogEntry(m_log, "/Fan/Pivot/Velocity");
+        m_currentLog = new DoubleLogEntry(m_log, "/Fan/Pivot/Current");
 
-        DashboardStore.add("Fan Pivot Position", () -> motor.getPosition().getValueAsDouble());
-        DashboardStore.add("Fan Pivot Current", () -> motor.getStatorCurrent().getValueAsDouble());
+        DashboardStore.add("Fan Pivot Position", () -> position.getValueAsDouble());
     }
 
     public void logValues() {
-        m_positionLog.append(motor.getPosition().getValueAsDouble());
-        m_velocityLog.append(motor.getVelocity().getValueAsDouble());
+        BaseStatusSignal.refreshAll(position, current);
+
+        m_positionLog.append(position.getValueAsDouble());
+        m_currentLog.append(current.getValueAsDouble());
     }
     
     public void runToPosition(double position) {

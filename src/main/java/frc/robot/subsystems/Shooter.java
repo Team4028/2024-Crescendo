@@ -7,6 +7,8 @@ package frc.robot.subsystems;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -29,10 +31,14 @@ import frc.robot.utils.ShooterTable.ShooterTableEntry;
 public class Shooter extends SubsystemBase {
     private final TalonFX leftMotor, rightMotor;
 
+    private final StatusSignal<Double> rightCurrent, leftCurrent,
+            rightVelocity, leftVelocity,
+            rightVoltage, leftVoltage;
+
     private final DataLog log;
-    private final DoubleLogEntry rightCurrent, leftCurrent,
-            rightVelocity, leftVelocity, leftVoltage,
-            rightVoltage;
+    private final DoubleLogEntry rightCurrentLog, leftCurrentLog,
+            rightVelocityLog, leftVelocityLog, leftVoltageLog,
+            rightVoltageLog;
     private int slot = 0;
 
     private double rightTarget, leftTarget;
@@ -123,6 +129,15 @@ public class Shooter extends SubsystemBase {
         leftMotor = new TalonFX(LEFT_CAN_ID);
         rightMotor = new TalonFX(RIGHT_CAN_ID);
 
+        rightCurrent = rightMotor.getStatorCurrent();
+        leftCurrent = leftMotor.getStatorCurrent();
+
+        rightVelocity = rightMotor.getVelocity();
+        leftVelocity = leftMotor.getVelocity();
+
+        rightVoltage = rightMotor.getMotorVoltage();
+        leftVoltage = leftMotor.getMotorVoltage();
+
         leftMotor.setInverted(true);
 
         leftMotor.setNeutralMode(NeutralModeValue.Coast);
@@ -134,17 +149,10 @@ public class Shooter extends SubsystemBase {
         leftMotor.getConfigurator().apply(leftRampConfigs);
         rightMotor.getConfigurator().apply(rightRampConfigs);
 
-        leftMotor.getVelocity().setUpdateFrequency(50.);
-        rightMotor.getVelocity().setUpdateFrequency(50.);
-
-        leftMotor.getStatorCurrent().setUpdateFrequency(10.);
-        rightMotor.getStatorCurrent().setUpdateFrequency(10.);
-
-        leftMotor.getBridgeOutput().setUpdateFrequency(20.);
-        rightMotor.getBridgeOutput().setUpdateFrequency(20.);
-
-        leftMotor.getDutyCycle().setUpdateFrequency(50.);
-        rightMotor.getDutyCycle().setUpdateFrequency(50.);
+        BaseStatusSignal.setUpdateFrequencyForAll(20.,
+                rightCurrent, leftCurrent,
+                rightVelocity, leftVelocity,
+                rightVoltage, leftVoltage);
 
         leftMotor.optimizeBusUtilization();
         rightMotor.optimizeBusUtilization();
@@ -165,16 +173,16 @@ public class Shooter extends SubsystemBase {
         // LOGS
         // ==================================
         log = DataLogManager.getLog();
-        rightCurrent = new DoubleLogEntry(log, "/Shooter/right/Current");
-        leftCurrent = new DoubleLogEntry(log, "/Shooter/left/Current");
-        rightVelocity = new DoubleLogEntry(log, "/Shooter/right/Velocity");
-        leftVelocity = new DoubleLogEntry(log, "/Shooter/left/Velocity");
-        rightVoltage = new DoubleLogEntry(log, "/Shooter/right/Voltage");
-        leftVoltage = new DoubleLogEntry(log, "/Shooter/left/Voltage");
+        rightCurrentLog = new DoubleLogEntry(log, "/Shooter/right/Current");
+        leftCurrentLog = new DoubleLogEntry(log, "/Shooter/left/Current");
+        rightVelocityLog = new DoubleLogEntry(log, "/Shooter/right/Velocity");
+        leftVelocityLog = new DoubleLogEntry(log, "/Shooter/left/Velocity");
+        rightVoltageLog = new DoubleLogEntry(log, "/Shooter/right/Voltage");
+        leftVoltageLog = new DoubleLogEntry(log, "/Shooter/left/Voltage");
 
         /* Dashboard */
-        DashboardStore.add("Left Shooter Speed", () -> leftMotor.getVelocity().getValueAsDouble() * 60.);
-        DashboardStore.add("Right Shooter Speed", () -> rightMotor.getVelocity().getValueAsDouble() * 60.);
+        DashboardStore.add("Left Shooter Speed", () -> leftVelocity.getValueAsDouble() * 60.);
+        DashboardStore.add("Right Shooter Speed", () -> rightVelocity.getValueAsDouble() * 60.);
 
         DashboardStore.add("Left Shooter Target", () -> leftTarget);
         DashboardStore.add("Right Shooter Target", () -> rightTarget);
@@ -203,6 +211,8 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean isReady() {
+        BaseStatusSignal.refreshAll(rightVelocity, leftVelocity);
+
         return Math.abs(leftMotor.getVelocity().getValueAsDouble() * 60. - leftTarget) < 130.
                 && Math.abs(rightMotor.getVelocity().getValueAsDouble() * 60. - rightTarget) < 130.;
     }
@@ -251,9 +261,8 @@ public class Shooter extends SubsystemBase {
 
     public Command brakeStopCommand() {
         return runShotCommand(ShotSpeeds.AMP, 0.0).andThen(
-            Commands.waitSeconds(0.2),
-            stopCommand()
-        );
+                Commands.waitSeconds(0.2),
+                stopCommand());
     }
 
     public void setSlot(int slot) {
@@ -318,14 +327,18 @@ public class Shooter extends SubsystemBase {
     }
 
     public void logValues() {
-        leftCurrent.append(leftMotor.getStatorCurrent().getValueAsDouble());
-        rightCurrent.append(rightMotor.getStatorCurrent().getValueAsDouble());
+        BaseStatusSignal.refreshAll(rightVelocity, leftVelocity,
+                rightCurrent, leftCurrent,
+                rightVoltage, leftVoltage);
 
-        leftVelocity.append(leftMotor.getVelocity().getValueAsDouble() * 60.);
-        rightVelocity.append(rightMotor.getVelocity().getValueAsDouble() * 60.);
+        leftCurrentLog.append(leftCurrent.getValueAsDouble());
+        rightCurrentLog.append(rightCurrent.getValueAsDouble());
 
-        leftVoltage.append(leftMotor.getMotorVoltage().getValueAsDouble());
-        rightVoltage.append(rightMotor.getMotorVoltage().getValueAsDouble());
+        leftVelocityLog.append(leftVelocity.getValueAsDouble() * 60.);
+        rightVelocityLog.append(rightVelocity.getValueAsDouble() * 60.);
+
+        leftVoltageLog.append(leftVoltage.getValueAsDouble());
+        rightVoltageLog.append(rightVoltage.getValueAsDouble());
     }
 
     @Override
