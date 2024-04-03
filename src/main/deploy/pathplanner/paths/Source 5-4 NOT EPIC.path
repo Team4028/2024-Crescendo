@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.1,
-        "y": 1.9
+        "x": 3.866981999299233,
+        "y": 2.5646732035261492
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.1,
-        "y": 1.9000000000000004
+        "x": 4.663318884412376,
+        "y": 1.2647703469444023
       },
       "isLocked": false,
-      "linkedName": "Source Shot"
+      "linkedName": "Spitless Source Shot"
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 2.3388308884879883
       },
       "prevControl": {
-        "x": 6.993775357022895,
-        "y": 2.1665047609695787
+        "x": 7.075751212843366,
+        "y": 1.1125294718492431
       },
       "nextControl": null,
       "isLocked": false,
@@ -50,7 +50,7 @@
     },
     {
       "name": "Smart Infeed",
-      "waypointRelativePos": 0.6,
+      "waypointRelativePos": 0.75,
       "command": {
         "type": "parallel",
         "data": {
@@ -75,7 +75,7 @@
   "goalEndState": {
     "velocity": 0,
     "rotation": 13.517168682548121,
-    "rotateFast": false
+    "rotateFast": true
   },
   "reversed": false,
   "folder": null,

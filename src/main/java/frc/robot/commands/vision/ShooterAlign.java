@@ -43,8 +43,6 @@ public class ShooterAlign extends ProfiledPIDCommand {
                     int tagID = DriverStation.getAlliance().isPresent()    
                         && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
 
-                    System.out.println(tagID);
-
                     Optional<Double> yaw = vision.getTagYaw(tagID);
 
                     if (yaw.isPresent()) {

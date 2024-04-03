@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.30356161131978,
-        "y": 5.6517467648996185
+        "x": 7.802490362815484,
+        "y": 2.3388308884879883
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.017197030114459,
-        "y": 6.464381773271393
+        "x": 6.6658719337410135,
+        "y": 1.0656861256661172
       },
       "isLocked": false,
-      "linkedName": "Note 2"
+      "linkedName": "Note 4"
     },
     {
       "anchor": {
-        "x": 5.3,
-        "y": 6.5
+        "x": 3.866981999299233,
+        "y": 2.5646732035261492
       },
       "prevControl": {
-        "x": 6.860474404828979,
-        "y": 6.593200975274989
+        "x": 4.405680480405183,
+        "y": 1.3233245296733098
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Amp Shot"
+      "linkedName": "Spitless Source Shot"
     }
   ],
   "rotationTargets": [],
@@ -51,13 +51,13 @@
   ],
   "globalConstraints": {
     "maxVelocity": 6.0,
-    "maxAcceleration": 5.0,
+    "maxAcceleration": 6.0,
     "maxAngularVelocity": 720.0,
     "maxAngularAcceleration": 1440.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 10.95994060202901,
+    "rotation": -39.0,
     "rotateFast": true
   },
   "reversed": false,
@@ -66,5 +66,5 @@
     "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }
