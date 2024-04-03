@@ -24,7 +24,7 @@ import frc.robot.utils.DashboardStore;
 public class Climber extends SubsystemBase {
     private final TalonFX motor;
 
-    private final StatusSignal<Double> position, current, velocity;
+    private final StatusSignal<Double> position, current, velocity, voltage;
 
     private final DigitalInput forwardLimitSwitch, reverseLimitSwitch;
 
@@ -35,11 +35,11 @@ public class Climber extends SubsystemBase {
 
     private static final int CAN_ID = 15;
 
-    private static final int FORWARD_LIMIT_SWITCH_PIN = 8;
-    private static final int REVERSE_LIMIT_SWITCH_PIN = 9;
+    private static final int FORWARD_LIMIT_SWITCH_PIN = 9;
+    private static final int REVERSE_LIMIT_SWITCH_PIN = 8;
 
     private static final double ZERO_POSITION = 0.0;
-    private static final double UP_POSITION = 129.0;
+    private static final double UP_POSITION = 118.0;
 
     /* Configs */
     private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs()
@@ -54,8 +54,8 @@ public class Climber extends SubsystemBase {
     private double m_targetSign = 1;
 
     public enum ClimberPositions {
-        CLIMB(8.),
-        READY(125.);
+        CLIMB(7.),
+        READY(111.0);
 
         public double Position;
 
@@ -71,12 +71,13 @@ public class Climber extends SubsystemBase {
         position = motor.getPosition();
         velocity = motor.getVelocity();
         current = motor.getStatorCurrent();
+        voltage = motor.getMotorVoltage();
 
         forwardLimitSwitch = new DigitalInput(FORWARD_LIMIT_SWITCH_PIN);
         reverseLimitSwitch = new DigitalInput(REVERSE_LIMIT_SWITCH_PIN);
 
         motor.setNeutralMode(NeutralModeValue.Brake);
-        motor.setInverted(false);
+        motor.setInverted(true);
 
         /* ======= */
         /* CONFIGS */
@@ -84,7 +85,7 @@ public class Climber extends SubsystemBase {
         motor.getConfigurator().apply(currentConfigs);
 
         /* CAN Bus */
-        BaseStatusSignal.setUpdateFrequencyForAll(20.0, velocity, position, current);
+        BaseStatusSignal.setUpdateFrequencyForAll(20.0, velocity, position, current, voltage);
 
         motor.optimizeBusUtilization();
 
@@ -123,11 +124,11 @@ public class Climber extends SubsystemBase {
     }
 
     public boolean forwardLimit() {
-        return forwardLimitSwitch.get() && motor.getMotorVoltage().getValueAsDouble() > 0.2;
+        return forwardLimitSwitch.get() && voltage.getValueAsDouble() > 0.2;
     }
 
     public boolean reverseLimit() {
-        return reverseLimitSwitch.get() && motor.getMotorVoltage().getValueAsDouble() < -0.2;
+        return reverseLimitSwitch.get() && voltage.getValueAsDouble() < -0.2;
     }
 
     public void stop() {
@@ -135,7 +136,7 @@ public class Climber extends SubsystemBase {
     }
 
     public Command stopCommand() {
-        return runMotorCommand(0.0, false);
+        return runOnce(() -> motor.stopMotor());
     }
 
     public void setEncoderPosition(double position) {
@@ -176,17 +177,15 @@ public class Climber extends SubsystemBase {
     }
 
     public Command hitForwardLimitCommand() {
-        return setEncoderPositionCommand(UP_POSITION)
-        .andThen(runToPositionCommand(ZERO_VBUS, UP_POSITION - 4.));
+        return stopCommand().andThen(setEncoderPositionCommand(UP_POSITION));
     }
 
     public Command hitReverseLimitCommand() {
-        return setEncoderPositionCommand(ZERO_POSITION)
-        .andThen(runToPositionCommand(ZERO_VBUS, ZERO_POSITION + 7.));
+        return stopCommand().andThen(setEncoderPositionCommand(ZERO_POSITION));
     }
 
     public void logValues() {
-        BaseStatusSignal.refreshAll(velocity, current, position);
+        BaseStatusSignal.refreshAll(velocity, current, position, voltage);
 
         currentLog.append(current.getValueAsDouble());
         positionLog.append(position.getValueAsDouble());
@@ -194,7 +193,7 @@ public class Climber extends SubsystemBase {
     }
 
     public Command zeroCommand() {
-        return runMotorCommand(ZERO_VBUS, false);
+        return runMotorCommand(ZERO_VBUS, false).repeatedly();
     }
 
     @Override

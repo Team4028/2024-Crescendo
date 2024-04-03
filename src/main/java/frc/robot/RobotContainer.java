@@ -200,7 +200,10 @@ public class RobotContainer {
 
     private static double MAX_INDEX = 27.;
     private static double MIN_INDEX = 4.2;
-    private static ShooterTableEntry PIVOT_PASSING_ANGLE = new ShooterTableEntry(null, 0, 0, 0, 0, 24, 0.66);// 30.9;
+
+    private static final double PIVOT_UP_THRESHOLD = 40.0;
+
+    private static ShooterTableEntry PIVOT_PASSING_ENTRY = new ShooterTableEntry(null, 0, 0, 0, 0, 24, 0.66);// 30.9;
 
     private final LinkedHashMap<Double, String> indexMap = new LinkedHashMap<>();
 
@@ -284,7 +287,6 @@ public class RobotContainer {
                 .alongWith(shooter.setSlotCommand(Shooter.Slots.AMP)
                         .andThen(shooter.runShotCommand(ShotSpeeds.AMP)));
 
-
         configureBindings();
     }
 
@@ -364,13 +366,13 @@ public class RobotContainer {
         NamedCommands.registerCommand("Home Pivot", pivot.runToHomeCommand());
 
         /* 4 piece pivots */
-        NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(17)); //17
-        NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(11)); //11
-        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(15)); //15
-        NamedCommands.registerCommand("Note C", pivot.runToPositionCommand(13.5)); //13.5
+        NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(17)); // 17
+        NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(11)); // 11
+        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(15)); // 15
+        NamedCommands.registerCommand("Note C", pivot.runToPositionCommand(13.5)); // 13.5
         NamedCommands.registerCommand("Preload Note at sub", pivot.runToPositionCommand(30));
 
-        NamedCommands.registerCommand("Note 1", pivot.runToPositionCommand(17.5)); //17.5
+        NamedCommands.registerCommand("Note 1", pivot.runToPositionCommand(17.5)); // 17.5
 
         /* Pathfinding Shots */
         NamedCommands.registerCommand("Amp Shot", pathfindingShotCommand(15.5, Constants.LEFT_SHOT, 0.875, 0));
@@ -390,7 +392,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Spitless Source Shot 1", stationaryShotNoPV(16.3));
         NamedCommands.registerCommand("Spitless Source Shot 2", stationaryShotNoPV(17));
         NamedCommands.registerCommand("Spitless Source Shot 3", stationaryShotNoPV(17.2));
-        
+
         NamedCommands.registerCommand("Right Preload", pivot.runOnce(pivot::zeroEncoder)
                 .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(5.2)))));
 
@@ -549,7 +551,6 @@ public class RobotContainer {
 
         driverController.leftStick().whileTrue(new ShooterAlign(drivetrain, trapVision));
 
-
         driverController.a().onTrue(lobShotCommand());
 
         // =================== //
@@ -624,6 +625,9 @@ public class RobotContainer {
         operatorController.a().onTrue(pivot.runToHomeCommand()
                 .alongWith(trapVision.setPipelineCommand(Vision.SHOOTER_PIPELINE_INDEX)));
 
+        /* Zero Climber */
+        operatorController.rightStick().onTrue(safeClimbCommand(climber.zeroCommand()));
+
         // ================ //
         /* Amp & Trap Magic */
         // ================ //
@@ -655,20 +659,22 @@ public class RobotContainer {
 
         /* Climber Up */
         emergencyController.rightTrigger(0.2).whileTrue(
-                climber.runMotorCommand(CLIMBER_VBUS, true))
+                safeClimbCommand(climber.runMotorCommand(CLIMBER_VBUS, true)))
                 .onFalse(climber.stopCommand());
 
         /* Climber Down */
         emergencyController.leftTrigger(0.2).whileTrue(
-                climber.runMotorCommand(-CLIMBER_VBUS, true))
+                safeClimbCommand(climber.runMotorCommand(-CLIMBER_VBUS, true)))
                 .onFalse(climber.stopCommand());
 
         /* Ready Climb */
-        emergencyController.povUp().onTrue(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY))
+        emergencyController.povUp()
+                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY)))
                 .onFalse(climber.stopCommand());
 
         /* Climb */
-        emergencyController.povDown().onTrue(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.CLIMB))
+        emergencyController.povDown()
+                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.CLIMB)))
                 .onFalse(climber.stopCommand());
 
         // ======================= //
@@ -738,6 +744,12 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
+    /* Only run climb command if pivot good */
+    private Command safeClimbCommand(Command command) {
+        return command.onlyIf(() -> pivot.getPosition() > PIVOT_UP_THRESHOLD);
+    }
+
+    /* Check if we're blue */
     private boolean allianceIsBlue() {
         Optional<Alliance> alliance = DriverStation.getAlliance();
         return alliance.isPresent() && alliance.get() == Alliance.Blue;
@@ -783,16 +795,12 @@ public class RobotContainer {
 
     private Command fanReadyCommand() {
         return m_fanPivot.runToTrapCommand()
-                .alongWith(Commands.either(
-                        m_fan.runMotorCommand(FAN_VBUS)
-                                .andThen(BeakCommands.repeatCommand(fixNoteCommand(), 2))
-                                .andThen(shooter.runShotCommand(ShotSpeeds.TRAP)),
-                        Commands.none(),
-                        () -> enableTrap))
-                .alongWith(Commands.either(
-                        climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY),
-                        Commands.none(),
-                        () -> enableClimber));
+                .alongWith(m_fan.runMotorCommand(FAN_VBUS)
+                        .andThen(BeakCommands.repeatCommand(fixNoteCommand(), 2))
+                        .andThen(shooter.runShotCommand(ShotSpeeds.TRAP)).onlyIf(() -> enableTrap))
+                .alongWith(
+                        climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY)
+                                .onlyIf(() -> enableClimber && pivot.getPosition() > PIVOT_UP_THRESHOLD));
     }
 
     private Command trapShootCommand() {
@@ -803,15 +811,11 @@ public class RobotContainer {
         return m_fanPivot.runToPositionCommand(0.0)
                 .alongWith(m_fan.stopCommand())
                 .alongWith(shooter.stopCommand().andThen(shooter.setSlotCommand(Slots.FAST)))
-                .alongWith(
-                        Commands.either(
-                                Commands.none(),
-                                pivot.runToHomeCommand(),
-                                () -> enableClimber));
+                .alongWith(pivot.runToHomeCommand().unless(() -> enableClimber));
     }
 
     private Command climbCommand() {
-        return climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.CLIMB);
+        return safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.CLIMB));
     }
 
     private Command sequenceCommand() {
@@ -859,8 +863,7 @@ public class RobotContainer {
     }
 
     private Command lobShotCommand() {
-        return pivot.runToPositionCommand(PIVOT_PASSING_ANGLE.Angle)
-                .alongWith(shooter.runEntryCommand(() -> PIVOT_PASSING_ANGLE, () -> ShotSpeeds.FAST))
+        return runEntryCommand(() -> PIVOT_PASSING_ENTRY, () -> ShotSpeeds.FAST)
                 .andThen(Commands.waitUntil(shooterAndPivotReady()))
                 .andThen(conveyCommand())
                 .andThen(shooter.stopCommand().alongWith(pivot.runToHomeCommand()));
@@ -1011,7 +1014,7 @@ public class RobotContainer {
 
     /* Zeroing Command */
     public Command zeroCommand() {
-        return pivot.zeroCommand();//.alongWith(m_fanPivot.runToPositionCommand(0.)).alongWith(climber.zeroCommand());
+        return pivot.zeroCommand();// .alongWith(m_fanPivot.runToPositionCommand(0.)).alongWith(climber.zeroCommand());
     }
 
     /* Asynchronous Zero */
