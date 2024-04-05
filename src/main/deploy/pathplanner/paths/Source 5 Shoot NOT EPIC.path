@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.1,
-        "y": 1.0
+        "x": 8.253684712067411,
+        "y": 0.8800286560304675
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.471790377779679,
-        "y": 0.9415014507024897
+        "x": 6.62547508984709,
+        "y": 0.8215301067329572
       },
       "isLocked": false,
       "linkedName": "Spitless Source 5"

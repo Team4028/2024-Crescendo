@@ -4,8 +4,6 @@
 
 package frc.robot.commands.vision;
 
-import java.util.Optional;
-
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -16,7 +14,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.Vision;
 import frc.robot.utils.LimelightHelpers;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
@@ -28,28 +25,18 @@ public class LimeShooterAlign extends ProfiledPIDCommand {
     private static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
 
     /** Creates a new WillRueter. */
-    public LimeShooterAlign(CommandSwerveDrivetrain drivetrain, Vision vision) {
+    public LimeShooterAlign(CommandSwerveDrivetrain drivetrain) {
         super(
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
                         // The PID gains
-                        6.0,
+                        8.0,
                         0.0,
                         0.0,
                         // The motion profile constraints
                         new TrapezoidProfile.Constraints(2.0, 2.0)),
                 // This should return the measurement
                 () -> {
-                    // int tagID = DriverStation.getAlliance().isPresent()    
-                    //     && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
-
-                    // Optional<Double> yaw = vision.getTagYaw(tagID);
-
-                    // if (yaw.isPresent()) {
-                    //     return Units.degreesToRadians(yaw.get());
-                    // }
-
-                    // return 0.;
                     int tagID = DriverStation.getAlliance().isPresent()
                             && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
 
@@ -75,10 +62,10 @@ public class LimeShooterAlign extends ProfiledPIDCommand {
                 });
         // Use addRequirements() here to declare subsystem dependencies.
         // Configure additional PID options by calling `getController` here.
-        addRequirements(drivetrain, vision);
+        addRequirements(drivetrain);
 
         getController().enableContinuousInput(-Math.PI, Math.PI);
-        getController().setTolerance(Units.degreesToRadians(1.5));
+        // getController().setTolerance(Units.degreesToRadians(1.5));
     }
 
     // Returns true when the command should end.

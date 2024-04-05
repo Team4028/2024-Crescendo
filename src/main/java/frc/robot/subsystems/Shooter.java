@@ -46,6 +46,7 @@ public class Shooter extends SubsystemBase {
     private static final int LEFT_CAN_ID = 10;
     private static final int RIGHT_CAN_ID = 9;
 
+    /* Configs */
     private final VelocityVoltage leftVelocityRequest = new VelocityVoltage(0.)
             .withEnableFOC(true);
 
@@ -70,7 +71,7 @@ public class Shooter extends SubsystemBase {
 
         FAST(4800, 3400),
         MEDIUM(3840, 2700),
-        TRAP(1323, 1323),
+        TRAP(1370, 1370),
         AMP(677., 677.);
 
         public final double RightRPM;
@@ -181,11 +182,11 @@ public class Shooter extends SubsystemBase {
         leftVoltageLog = new DoubleLogEntry(log, "/Shooter/left/Voltage");
 
         /* Dashboard */
-        DashboardStore.add("Left Shooter Speed", () -> leftVelocity.getValueAsDouble() * 60.);
-        DashboardStore.add("Right Shooter Speed", () -> rightVelocity.getValueAsDouble() * 60.);
+        DashboardStore.add("Left RPM", () -> leftVelocity.getValueAsDouble() * 60.);
+        DashboardStore.add("Right RPM", () -> rightVelocity.getValueAsDouble() * 60.);
 
-        DashboardStore.add("Left Shooter Target", () -> leftTarget);
-        DashboardStore.add("Right Shooter Target", () -> rightTarget);
+        DashboardStore.add("Left Target", () -> leftTarget);
+        DashboardStore.add("Right Target", () -> rightTarget);
 
         DashboardStore.add("Running/Shooter", this::isRunning);
         DashboardStore.add("At Target/Shooter", this::isReady);

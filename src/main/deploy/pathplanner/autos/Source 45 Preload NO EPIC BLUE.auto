@@ -32,6 +32,12 @@
         {
           "type": "named",
           "data": {
+            "name": "AprilTag Zero"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "Spitless Source Shot 1"
           }
         },
@@ -45,6 +51,12 @@
           "type": "path",
           "data": {
             "pathName": "Source 5 Shoot NOT EPIC"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AprilTag Zero"
           }
         },
         {

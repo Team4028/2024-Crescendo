@@ -7,9 +7,13 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.util.datalog.BooleanLogEntry;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -30,6 +34,7 @@ public class Climber extends SubsystemBase {
 
     private final DataLog log;
     private final DoubleLogEntry currentLog, positionLog, velocityLog;
+    private final BooleanLogEntry forwardLog, reverseLog;
 
     private static final double ZERO_VBUS = -0.05;
 
@@ -46,15 +51,24 @@ public class Climber extends SubsystemBase {
             .withStatorCurrentLimit(100.)
             .withSupplyCurrentLimit(80.);
 
+    private final Slot0Configs m_pidConfigs = new Slot0Configs()
+            // .withKP(0.4);
+            .withKP(0.1);
+
     /* Requests */
     private final DutyCycleOut m_focRequest = new DutyCycleOut(0.)
             .withEnableFOC(true);
+
+    private final PositionDutyCycle m_positionRequest = new PositionDutyCycle(0.)
+            .withEnableFOC(true);
+            // .withSlot(0);
 
     private double m_target = 0.;
     private double m_targetSign = 1;
 
     public enum ClimberPositions {
-        CLIMB(7.),
+        CLIMB(10.0),
+        DISENGAGE(70.),
         READY(111.0);
 
         public double Position;
@@ -82,6 +96,7 @@ public class Climber extends SubsystemBase {
         /* ======= */
         /* CONFIGS */
         /* ======= */
+        motor.getConfigurator().apply(m_pidConfigs);
         motor.getConfigurator().apply(currentConfigs);
 
         /* CAN Bus */
@@ -96,6 +111,9 @@ public class Climber extends SubsystemBase {
         positionLog = new DoubleLogEntry(log, "/Climber/Position");
         velocityLog = new DoubleLogEntry(log, "/Climber/Velocity");
 
+        forwardLog = new BooleanLogEntry(log, "/Climber/Forward Limit");
+        reverseLog = new BooleanLogEntry(log, "/Climber/Reverse Limit");
+
         /* Dashboard */
         DashboardStore.add("Climber Position", () -> position.getValueAsDouble());
         DashboardStore.add("Climber Current", () -> current.getValueAsDouble());
@@ -103,6 +121,8 @@ public class Climber extends SubsystemBase {
 
         DashboardStore.add("Forward", forwardLimitSwitch::get);
         DashboardStore.add("Reverse", reverseLimitSwitch::get);
+
+        // SmartDashboard.putNumber("Climber VBus", 0.);
     }
 
     public void runMotor(double vBus, boolean useFoc) {
@@ -160,7 +180,7 @@ public class Climber extends SubsystemBase {
         return m_target - motor.getPosition().getValueAsDouble();
     }
 
-    public Command runToPositionCommand(double output, double position) {
+    public Command runToPositionCommand(double output, double position, boolean hold) {
         return runOnce(() -> {
             m_target = position;
             m_targetSign = Math.signum(getError());
@@ -169,11 +189,12 @@ public class Climber extends SubsystemBase {
                 // make sure overdrives aren't (generally) possible
                 .andThen(Commands.waitUntil(() -> m_targetSign == -1 ? //
                         getError() > -2.0 : getError() < 2.0))
-                .andThen(stopCommand());
+                .andThen(stopCommand())
+                .andThen(holdCommand().onlyIf(() -> hold));
     }
 
-    public Command runToPositionCommand(double output, ClimberPositions position) {
-        return runToPositionCommand(output, position.Position);
+    public Command runToPositionCommand(double output, ClimberPositions position, boolean hold) {
+        return runToPositionCommand(output, position.Position, hold);
     }
 
     public Command hitForwardLimitCommand() {
@@ -184,12 +205,19 @@ public class Climber extends SubsystemBase {
         return stopCommand().andThen(setEncoderPositionCommand(ZERO_POSITION));
     }
 
+    public Command holdCommand() {
+        return runOnce(() -> motor.setControl(m_positionRequest.withPosition(ClimberPositions.CLIMB.Position)));
+    }
+
     public void logValues() {
         BaseStatusSignal.refreshAll(velocity, current, position, voltage);
 
         currentLog.append(current.getValueAsDouble());
         positionLog.append(position.getValueAsDouble());
         velocityLog.append(velocity.getValueAsDouble());
+
+        forwardLog.append(forwardLimitSwitch.get());
+        reverseLog.append(reverseLimitSwitch.get());
     }
 
     public Command zeroCommand() {
@@ -199,5 +227,6 @@ public class Climber extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
+        // motor.set(SmartDashboard.getNumber("Climber VBus", ));
     }
 }

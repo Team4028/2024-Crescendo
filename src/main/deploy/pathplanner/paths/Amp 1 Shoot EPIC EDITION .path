@@ -49,23 +49,6 @@
       }
     },
     {
-      "name": "Lock",
-      "waypointRelativePos": 0.2,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "Start Locking"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
       "name": "Shooter",
       "waypointRelativePos": 0.6,
       "command": {

@@ -62,12 +62,17 @@ public class ShooterTable {
         table.add(new ShooterTableEntry(Feet.of(5.0), 5.09, 15.065, 0.785, 3.757, 27.0, 0.7)); // 50 degrees
         table.add(new ShooterTableEntry(Feet.of(6.0), 6.094, 7.79, 0.598, 2.796, 22.8, 0.8)); // 45 degrees
         table.add(new ShooterTableEntry(Feet.of(8.0), 7.799, -1.295, 0.368, 1.761, 16., 1.0)); // 36 degrees
-        table.add(new ShooterTableEntry(Feet.of(10.), 9.17, -6.465, 0.257, 1.195, 12.1, 1.0)); // 31 degrees
-        table.add(new ShooterTableEntry(Feet.of(13.), 11.34, -12.115, 0.166, 0.78, 6.7, 1.0)); // 25 degrees
-        table.add(new ShooterTableEntry(Feet.of(16.), 13.115, -15.395, 0.114, 0.528, 4.3, 1.0)); // 23 degrees
-        table.add(new ShooterTableEntry(Feet.of(19.), 13.845, -16.53, 0.082, 0.38, 3.25, 1.0)); // 21.5 degrees
-        table.add(new ShooterTableEntry(Feet.of(22.), 15.095, -18.202, 0.064, 0.29, 2.24, 1.0)); // 20.5 degrees
-        table.add(new ShooterTableEntry(Feet.of(27.), 17.24, -20.43, 0.045, 0.25, 0.25, 1.0)); // 20 degrees
+        table.add(new ShooterTableEntry(Feet.of(10.0), 9.17, -6.465, 0.257, 1.195, 12.1, 1.0)); // 31 degrees
+        // Was: -12.115 New Red: -11.62
+        table.add(new ShooterTableEntry(Feet.of(13.1), 11.34, -12.115, 0.166, 0.78, 6.7, 1.0)); // 25 degrees
+        // Was: -15.395 New Blue: -14.93 New Red: -14.535
+        table.add(new ShooterTableEntry(Feet.of(16.5), 13.115, -15.395, 0.114, 0.528, 4.3, 1.0)); // 23 degrees
+        // Was: -16.53 New Blue: -16.77 New Red: -16.68
+        table.add(new ShooterTableEntry(Feet.of(18.6), 13.845, -16.53, 0.082, 0.38, 3.25, 1.0)); // 21.5 degrees
+        // Was: -18.2 New Blue: -18.3 New Red: -18.39
+        table.add(new ShooterTableEntry(Feet.of(21.7), 15.095, -18.202, 0.064, 0.29, 2.24, 1.0)); // 20.5 degrees
+        // Was: -20.43 New Blue: -20.3 New Red: -19.63
+        table.add(new ShooterTableEntry(Feet.of(27.3), 17.24, -20.43, 0.045, 0.25, 0.25, 1.0)); // 20 degrees
     }
 
     static {

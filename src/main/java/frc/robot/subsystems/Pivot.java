@@ -76,7 +76,7 @@ public class Pivot extends SubsystemBase {
         private final static double kP = 0.08;
         private final static double kD = 0.5;
 
-        private final static double MIN_OUTPUT = -0.5;
+        private final static double MIN_OUTPUT = -0.80;
         private final static double MAX_OUTPUT = 0.85;
     }
 
