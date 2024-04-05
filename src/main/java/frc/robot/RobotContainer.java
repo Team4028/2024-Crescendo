@@ -43,7 +43,8 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.LimelightSquare;
 import frc.robot.commands.vision.LimeShooterAlign;
@@ -362,6 +363,8 @@ public class RobotContainer {
                 smartInfeedCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST))
                         .andThen(pivot.runToPositionCommand(5.)));
 
+        NamedCommands.registerCommand("Magic Shoot", magicShootCommand());
+
         /* Shooter & Pivot */
         NamedCommands.registerCommand("Fast Shooter",
                 shooter.runShotCommand(ShotSpeeds.FAST));
@@ -372,6 +375,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("Stop Shooter", shooter.stopCommand());
 
         NamedCommands.registerCommand("Home Pivot", pivot.runToHomeCommand());
+
+        NamedCommands.registerCommand("Rotate To Speaker Source PC3", new RotateToSpeaker(drivetrain,
+                () -> drivetrain.getState().Pose.getRotation().getRadians(), () -> Units.degreesToRadians(-63)));
 
         /* 4 piece pivots */
         NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(17)); // 17

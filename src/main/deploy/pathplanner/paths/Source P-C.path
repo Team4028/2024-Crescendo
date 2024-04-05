@@ -1,0 +1,70 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.28,
+        "y": 3.34
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.8410072768790318,
+        "y": 4.063660281386183
+      },
+      "isLocked": false,
+      "linkedName": "Source 3C Start"
+    },
+    {
+      "anchor": {
+        "x": 2.6373441619921745,
+        "y": 4.145636137206654
+      },
+      "prevControl": {
+        "x": 1.9229831326995024,
+        "y": 4.016816935203058
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Source 3C Note C"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "Smart Infeed",
+      "waypointRelativePos": 0.3,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Smart Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 720.0,
+    "maxAngularAcceleration": 1440.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": -63.0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

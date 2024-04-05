@@ -5,7 +5,7 @@
       "x": 1.28,
       "y": 3.34
     },
-    "rotation": 0.0
+    "rotation": 0
   },
   "command": {
     "type": "sequential",
@@ -14,19 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "AprilTag Zero"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shooter"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Source Preload Shoot NOT EPIC"
+            "name": "Rotate To Speaker Source PC3"
           }
         },
         {
@@ -38,13 +26,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Source Preload-5 NOT EPIC"
+            "pathName": "Source P-C"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Source 5 Shoot NOT EPIC"
+            "name": "Finish Infeed"
           }
         },
         {
@@ -56,25 +44,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Source 5-4 NOT EPIC"
+            "pathName": "Source C-3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Source 4 Shoot NOT EPIC"
+            "pathName": "Source 3 Shoot"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Magic Shoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Source 4-3 NOT EPIC"
           }
         }
       ]
