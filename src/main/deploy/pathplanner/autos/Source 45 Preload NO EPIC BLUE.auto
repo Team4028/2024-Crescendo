@@ -38,7 +38,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Spitless Source Shot 1"
+            "name": "Magic Shoot"
           }
         },
         {
@@ -62,7 +62,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Spitless Source Shot 2"
+            "name": "Magic Shoot"
           }
         },
         {
@@ -80,7 +80,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Spitless Source Shot 3"
+            "name": "AprilTag Zero"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Magic Shoot"
           }
         },
         {
