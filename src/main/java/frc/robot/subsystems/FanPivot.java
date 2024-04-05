@@ -10,6 +10,7 @@ import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
@@ -48,6 +49,7 @@ public class FanPivot extends SubsystemBase {
     public FanPivot() {
         /* Setup */
         motor = new TalonFX(CAN_ID);
+        motor.setNeutralMode(NeutralModeValue.Brake);
         
         position = motor.getPosition();
         current = motor.getStatorCurrent();

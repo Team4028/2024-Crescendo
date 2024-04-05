@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import frc.robot.utils.DashboardStore;
 
 public class Climber extends SubsystemBase {
@@ -33,10 +33,10 @@ public class Climber extends SubsystemBase {
     private final DigitalInput forwardLimitSwitch, reverseLimitSwitch;
 
     private final DataLog log;
-    private final DoubleLogEntry currentLog, positionLog, velocityLog;
+    private final DoubleLogEntry currentLog, positionLog, velocityLog, voltageLog;
     private final BooleanLogEntry forwardLog, reverseLog;
 
-    private static final double ZERO_VBUS = -0.05;
+    private static final double ZERO_VBUS = -0.50;
 
     private static final int CAN_ID = 15;
 
@@ -53,7 +53,7 @@ public class Climber extends SubsystemBase {
 
     private final Slot0Configs m_pidConfigs = new Slot0Configs()
             // .withKP(0.4);
-            .withKP(0.1);
+            .withKP(0.2);
 
     /* Requests */
     private final DutyCycleOut m_focRequest = new DutyCycleOut(0.)
@@ -61,13 +61,14 @@ public class Climber extends SubsystemBase {
 
     private final PositionDutyCycle m_positionRequest = new PositionDutyCycle(0.)
             .withEnableFOC(true);
-            // .withSlot(0);
+    // .withSlot(0);
 
     private double m_target = 0.;
     private double m_targetSign = 1;
 
     public enum ClimberPositions {
-        CLIMB(10.0),
+        CLIMB(0.0),
+        HOLD(0.0),
         DISENGAGE(70.),
         READY(111.0);
 
@@ -110,6 +111,7 @@ public class Climber extends SubsystemBase {
         currentLog = new DoubleLogEntry(log, "/Climber/Current");
         positionLog = new DoubleLogEntry(log, "/Climber/Position");
         velocityLog = new DoubleLogEntry(log, "/Climber/Velocity");
+        voltageLog = new DoubleLogEntry(log, "/Climber/Voltage");
 
         forwardLog = new BooleanLogEntry(log, "/Climber/Forward Limit");
         reverseLog = new BooleanLogEntry(log, "/Climber/Reverse Limit");
@@ -121,8 +123,6 @@ public class Climber extends SubsystemBase {
 
         DashboardStore.add("Forward", forwardLimitSwitch::get);
         DashboardStore.add("Reverse", reverseLimitSwitch::get);
-
-        // SmartDashboard.putNumber("Climber VBus", 0.);
     }
 
     public void runMotor(double vBus, boolean useFoc) {
@@ -202,11 +202,17 @@ public class Climber extends SubsystemBase {
     }
 
     public Command hitReverseLimitCommand() {
-        return stopCommand().andThen(setEncoderPositionCommand(ZERO_POSITION));
+        return stopCommand().andThen(setEncoderPositionCommand(ZERO_POSITION))
+                .andThen(holdCommand());
+    }
+
+    public Command holdCurrentPositionCommand() {
+        return run(() -> motor.setControl(m_positionRequest.withPosition(position.getValueAsDouble())));
     }
 
     public Command holdCommand() {
-        return runOnce(() -> motor.setControl(m_positionRequest.withPosition(ClimberPositions.CLIMB.Position)));
+        return run(() -> motor.setControl(m_positionRequest.withPosition(ClimberPositions.HOLD.Position)))
+                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
     }
 
     public void logValues() {
@@ -215,6 +221,7 @@ public class Climber extends SubsystemBase {
         currentLog.append(current.getValueAsDouble());
         positionLog.append(position.getValueAsDouble());
         velocityLog.append(velocity.getValueAsDouble());
+        voltageLog.append(voltage.getValueAsDouble());
 
         forwardLog.append(forwardLimitSwitch.get());
         reverseLog.append(reverseLimitSwitch.get());

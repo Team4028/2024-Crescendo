@@ -22,7 +22,9 @@ import edu.wpi.first.math.util.Units;
  */
 public final class Constants {
     public static final Pose2d SPEAKER_TARGET = new Pose2d(1.37, 5.8, new Rotation2d(Math.PI));
-    public static final Pose2d SPEAKER_DISTANCE_TARGET = new Pose2d(0.1, 6.0, new Rotation2d(Math.PI));
+    public static final Pose2d SPEAKER_DISTANCE_TARGET = new Pose2d(0.1, 5.9, new Rotation2d(Math.PI));
+    public static final Pose2d SPEAKER_DISTANCE_TARGET_RED = new Pose2d(0.1, 5.1, new Rotation2d(Math.PI));
+
     public static final Pose2d AMP_TARGET = new Pose2d(1.83, 7.27, new Rotation2d(Math.PI / 2.));
 
     public static final Pose2d RIGHT_SHOT = new Pose2d(5.1, 1.9, Rotation2d.fromDegrees(-38.));

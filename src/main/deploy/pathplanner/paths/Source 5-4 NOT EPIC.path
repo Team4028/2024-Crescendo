@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 8.281555514453311,
-        "y": 2.4587105340318076
+        "x": 8.419456801161923,
+        "y": 2.4522539774945327
       },
       "prevControl": {
-        "x": 7.5548163644811925,
-        "y": 1.2324091173930625
+        "x": 7.692717651189804,
+        "y": 1.2259525608557875
       },
       "nextControl": null,
       "isLocked": false,
@@ -64,6 +64,23 @@
           ]
         }
       }
+    },
+    {
+      "name": "Infeed Again",
+      "waypointRelativePos": 0.85,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Smart Infeed"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "globalConstraints": {
@@ -74,8 +91,8 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 20.0,
-    "rotateFast": false
+    "rotation": 43.39839144857573,
+    "rotateFast": true
   },
   "reversed": false,
   "folder": null,

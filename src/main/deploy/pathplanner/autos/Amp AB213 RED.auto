@@ -42,6 +42,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Infeed"
+          }
+        },
+        {
           "type": "wait",
           "data": {
             "waitTime": 0.2
@@ -51,6 +57,12 @@
           "type": "path",
           "data": {
             "pathName": "Amp A-B"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Infeed"
           }
         },
         {

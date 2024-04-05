@@ -33,6 +33,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -43,10 +44,10 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.commands.AlignDrivetrain;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.vision.LimelightAcquire;
-import frc.robot.commands.vision.LimelightSquare;
+
 import frc.robot.commands.vision.LimeShooterAlign;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
@@ -76,6 +77,7 @@ public class RobotContainer {
     /* Magic numbers, Vbus constants, and OI constants */
     // =============================================== //
     private static final double CLIMBER_VBUS = 0.75;
+    private static final double FAST_CLIMBER_VBUS = 0.95;
     private static final double INFEED_VBUS = 0.8;
     private static final double SLOW_INFEED_VBUS = 0.5;
 
@@ -162,7 +164,9 @@ public class RobotContainer {
         Back(180),
         Right(270),
         LeftTrap(-60.),
-        RightTrap(60.);
+        RightTrap(60.),
+        BluePass(-40.0),
+        RedPass(-150.0);
 
         public double Angle;
 
@@ -206,8 +210,9 @@ public class RobotContainer {
     private static final double PIVOT_UP_THRESHOLD = 40.0;
 
     private static final double CAMERA_SWITCH_TIMEOUT = 1.5;
+    private static final double MAGIC_SHOOT_TIMER_THRESHOLD = 5.0;
 
-    private static ShooterTableEntry PASSING_SHOT = new ShooterTableEntry(null, 0, 0, 0, 0, 24, 0.69);// 30.9;
+    private static ShooterTableEntry PASSING_SHOT = new ShooterTableEntry(Feet.zero(), 0, 0, 0, 0, 24, 0.69);// 30.9;
 
     private final LinkedHashMap<Double, String> indexMap = new LinkedHashMap<>();
 
@@ -218,6 +223,11 @@ public class RobotContainer {
 
     private boolean enableClimber = false;
     private boolean enableTrap = false;
+
+    private double m_lastShot = 0.0;
+
+    private double previousLimelightDistance = 20.0;
+    private final Timer m_limelightTimer = new Timer();
 
     // ======================== //
     /* Swerve Control & Logging */
@@ -275,17 +285,10 @@ public class RobotContainer {
 
         DashboardStore.add("Sequence", () -> currentSequence.name());
 
-        // DashboardStore.add("Photon Distance", () ->
-        // getBestSTEntryPhotonY().Distance.in(Feet));
         DashboardStore.add("Limelight Distance", () -> getBestSTEntryLLY().Distance.in(Feet));
-
-        // DashboardStore.add("Photon Yaw", () -> {
-        // var yaw = shooterVision.getTagYaw(getAllianceSpeakerTag());
-
-        // return yaw.isPresent() ? yaw.get() : 0.;
-        // });
-
         DashboardStore.add("Limelight Yaw", () -> LimelightHelpers.getTX(SHOOTER_LIMELIGHT));
+
+        DashboardStore.add("Last Shot", () -> m_lastShot);
 
         initNamedCommands();
 
@@ -360,10 +363,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("Fix Note", fixNoteCommand());
 
         NamedCommands.registerCommand("Finish Infeed",
-                smartInfeedCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST))
-                        .andThen(pivot.runToPositionCommand(5.)));
+                smartInfeedCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST)));
 
-        NamedCommands.registerCommand("Magic Shoot", magicShootCommand());
+        NamedCommands.registerCommand("Magic Shoot", fastMagicShootCommand());
 
         /* Shooter & Pivot */
         NamedCommands.registerCommand("Fast Shooter",
@@ -376,13 +378,16 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Home Pivot", pivot.runToHomeCommand());
 
-        NamedCommands.registerCommand("Rotate To Speaker Source PC3", new RotateToSpeaker(drivetrain,
-                () -> drivetrain.getState().Pose.getRotation().getRadians(), () -> Units.degreesToRadians(-63)));
+        NamedCommands.registerCommand("Rotate To Speaker Source PC3", new AlignDrivetrain(drivetrain,
+                () -> drivetrain.getState().Pose.getRotation().getRadians(), () -> Units.degreesToRadians(
+                        allianceIsBlue() ? -63 : -117),
+                false));
 
         /* 4 piece pivots */
-        NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(17)); // 17
+        NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(16.0)
+                .alongWith(driverCamera.setShooterCameraCommand())); // 17
         NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(11)); // 11
-        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(15)); // 15
+        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(14.625)); // 15
         NamedCommands.registerCommand("Note C", pivot.runToPositionCommand(13.5)); // 13.5
         NamedCommands.registerCommand("Preload Note at sub", pivot.runToPositionCommand(30));
 
@@ -479,12 +484,12 @@ public class RobotContainer {
         // ========================= //
 
         /* Dumb Infeed */
-        driverController.leftTrigger().onTrue(runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS))
+        driverController.leftBumper().onTrue(runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS))
                 .onFalse(coolNoteFixCommand(0.15).andThen(driverCamera.setShooterCameraCommand()));
 
         /* Smart Infeed */
-        driverController.leftBumper()
-                .toggleOnTrue(smartInfeedCommand().andThen(driverCamera.setShooterCameraCommand()));
+        driverController.leftTrigger()
+                .whileTrue(smartInfeedCommand().andThen(driverCamera.setShooterCameraCommand()));
 
         // ========================== //
         /* Drivetain & Vision Control */
@@ -546,7 +551,13 @@ public class RobotContainer {
 
         driverController.leftStick().whileTrue(new LimeShooterAlign(drivetrain));
 
-        driverController.a().onTrue(runEntryCommand(() -> PASSING_SHOT, () -> ShotSpeeds.FAST));
+        driverController.a().onTrue(runEntryCommand(() -> PASSING_SHOT, () -> ShotSpeeds.FAST)
+                .andThen(Commands.either(
+                        snapCommand(SnapDirection.BluePass),
+                        snapCommand(SnapDirection.RedPass),
+                        () -> allianceIsBlue())));
+
+        driverController.povUp().whileTrue(new RotateToSpeaker(drivetrain));
 
         // =================== //
         /* OPERATOR CONTROLLER */
@@ -557,23 +568,15 @@ public class RobotContainer {
         // ========================= //
 
         /* Snap to Amp */
-        operatorController.povUp().toggleOnTrue(Commands.either(
-                snapCommand(SnapDirection.Left), snapCommand(SnapDirection.Right),
-                () -> {
-                    var alliance = DriverStation.getAlliance();
-                    return alliance.isPresent() && alliance.get() == Alliance.Blue;
-                }));
+        operatorController.povUp().toggleOnTrue(snapCommand(SnapDirection.Left));
 
-        /* Trap Snapping */
-        operatorController.povRight().toggleOnTrue(snapCommand(SnapDirection.LeftTrap));
-        operatorController.povLeft().toggleOnTrue(snapCommand(SnapDirection.RightTrap));
-        operatorController.povDown().toggleOnTrue(snapCommand(SnapDirection.Back));
-
-        /* Limelight Square */
-        operatorController.leftStick().toggleOnTrue(new LimelightSquare(true,
-                () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter, currentSpeed) * MAX_SPEED,
-                () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter, currentSpeed) * MAX_SPEED,
-                drivetrain));
+        // /* Limelight Square */
+        // operatorController.leftStick().toggleOnTrue(new LimelightSquare(true,
+        // () -> scaleDriverController(-driverController.getLeftY(), xLimeAquireLimiter,
+        // currentSpeed) * MAX_SPEED,
+        // () -> scaleDriverController(-driverController.getLeftX(), yLimeAquireLimiter,
+        // currentSpeed) * MAX_SPEED,
+        // drivetrain));
 
         // ======================= //
         /* Shooter Control */
@@ -591,8 +594,13 @@ public class RobotContainer {
                 .whileTrue(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS));
 
         /* Magic Shoot */
-        operatorController.x().toggleOnTrue(magicShootCommand()
+        operatorController.povRight().toggleOnTrue(magicShootCommand()
                 .andThen(Commands.runOnce(this::setCameraWithWait)));
+
+        /* Other Epic Magic Shoot Woohoo Wah Wah  */
+        operatorController.povDown().toggleOnTrue(megaTag2ShootCommand());
+        operatorController.x().toggleOnTrue(fastMagicShootCommand());
+        operatorController.povLeft().toggleOnTrue(magicShootNoLockCommand());
 
         /* Manual/Preset Mode */
         operatorController.back().onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));
@@ -620,7 +628,6 @@ public class RobotContainer {
 
         /* Run Pivot Zero */
         operatorController.a().onTrue(pivot.runToHomeCommand());
-        // .alongWith(shooterVision.setPipelineCommand(Vision.SHOOTER_PIPELINE_INDEX)));
 
         /* Zero Climber */
         operatorController.rightStick().onTrue(safeClimbCommand(climber.zeroCommand()));
@@ -633,7 +640,6 @@ public class RobotContainer {
 
         operatorController.y()
                 .onTrue(pivot.runToTrapCommand());
-        // .alongWith(shooterVision.setPipelineCommand(Vision.TRAP_PIPELINE_INDEX)));
 
         // ==================== //
         /* EMERGENCY CONTROLLER */
@@ -660,10 +666,10 @@ public class RobotContainer {
                 safeClimbCommand(climber.runMotorCommand(CLIMBER_VBUS, true)))
                 .onFalse(climber.stopCommand());
 
-        /* Climber Down */
+        /* Climber Down FULL SEND */
         emergencyController.leftTrigger(0.2).whileTrue(
-                safeClimbCommand(climber.runMotorCommand(-CLIMBER_VBUS, true)))
-                .onFalse(climber.stopCommand());
+                safeClimbCommand(climber.runMotorCommand(-FAST_CLIMBER_VBUS, true)))
+                .onFalse(climber.holdCurrentPositionCommand());
 
         /* Ready Climb */
         emergencyController.povUp()
@@ -672,12 +678,15 @@ public class RobotContainer {
 
         /* Climb */
         emergencyController.povDown()
-                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.CLIMB, false)))
-                .onFalse(climber.stopCommand());
+                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.CLIMB, true)))
+                .onFalse(climber.holdCurrentPositionCommand());
 
         /* funk */
         emergencyController.povLeft().onTrue(safeClimbCommand(climber.holdCommand()))
                 .onFalse(climber.stopCommand());
+
+        /* Stop Hold */
+        emergencyController.povRight().onTrue(Commands.runOnce(() -> climber.getCurrentCommand().cancel()));
 
         // ======================= //
         /* Trap & Climb Sequencing */
@@ -704,19 +713,6 @@ public class RobotContainer {
                         },
                         m_fanPivot, m_fan));
 
-        /* Run Shooter at Trap Speeds */
-        emergencyController.y().onTrue(
-                NamedCommands.getCommand("Fix Note").andThen(
-                        NamedCommands.getCommand("Fix Note"))
-                        .andThen(Commands.waitSeconds(0.2))
-                        .andThen(shooter.setSlotCommand(Shooter.Slots.TRAP))
-                        .andThen(shooter.runShotCommand(ShotSpeeds.TRAP)));
-
-        /* Trap Shoot */
-        emergencyController.b().onTrue(conveyCommand())
-                .onFalse(shooter.setSlotCommand(Slots.FAST).andThen(shooter.stopCommand())
-                        .alongWith(m_fan.stopCommand()));
-
         /* Full Outfeed: left Y */
         emergencyController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
                 .or(emergencyController.axisLessThan(XboxController.Axis.kLeftY.value, -0.2))
@@ -741,6 +737,26 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
+    /* Megatag epicnmess */
+    public void addMegaTagPose() {
+        LimelightHelpers.SetRobotOrientation(
+                SHOOTER_LIMELIGHT, drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+
+        var mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(SHOOTER_LIMELIGHT);
+
+        boolean rejectUpdate = false;
+        if (mt2.tagCount == 0)
+            rejectUpdate = true;
+
+        if (!rejectUpdate)
+            drivetrain.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
+    }
+
+    /* Start LL Timer */
+    public void startTimer() {
+        m_limelightTimer.start();
+    }
+
     /* Set infeed camera asynchronously */
     private void setCameraWithWait() {
         Commands.waitSeconds(CAMERA_SWITCH_TIMEOUT).andThen(driverCamera.setInfeedCameraCommand()).schedule();
@@ -751,11 +767,6 @@ public class RobotContainer {
         return climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.DISENGAGE, false)
                 .andThen(Commands.waitSeconds(0.2))
                 .andThen(stopAllCommand());
-    }
-
-    /* Get the right speaker AprilTag for the alliance */
-    private int getAllianceSpeakerTag() {
-        return allianceIsBlue() ? 7 : 4;
     }
 
     /* Invert drivetrain based on alliance */
@@ -899,17 +910,64 @@ public class RobotContainer {
 
     /* Magic shoot but awesome */
     private Command magicShootCommand() {
-        return shooter.runShotCommand(ShotSpeeds.FAST)
+        return driverCamera.setShooterCameraCommand()
+                .andThen(shooter.runShotCommand(ShotSpeeds.FAST))
                 .alongWith(new LimeShooterAlign(drivetrain).withTimeout(0.5))
+                .andThen(Commands.waitSeconds(0.1))
                 .andThen(runEntryCommand(() -> getBestSTEntryVision(), () -> ShotSpeeds.FAST))
                 .andThen(Commands.waitUntil(shooterAndPivotReady()))
                 .andThen(Commands.waitSeconds(0.1))
                 .andThen(conveyCommand())
-                .andThen(Commands.waitSeconds(0.2))
                 .finallyDo(() -> {
                     shooter.stop();
                     pivot.runToPosition(Pivot.HOLD_POSITION);
-                    driverCamera.setInfeedCamera();
+                    setCameraWithWait();
+                });
+    }
+
+    private Command magicShootNoLockCommand() {
+        return driverCamera.setShooterCameraCommand()
+                // .andThen(shooter.runShotCommand(ShotSpeeds.FAST))
+                // .alongWith(new LimeShooterAlign(drivetrain).withTimeout(0.5))
+                // .andThen(Commands.waitSeconds(0.1))
+                .andThen(runEntryCommand(() -> getBestSTEntryVision(), () -> ShotSpeeds.FAST))
+                .andThen(Commands.waitUntil(shooterAndPivotReady()))
+                .andThen(conveyCommand())
+                .finallyDo(() -> {
+                    shooter.stop();
+                    pivot.runToPosition(Pivot.HOLD_POSITION);
+                    setCameraWithWait();
+                });
+    }
+
+    /* Magic shoot but awesome3 */
+    private Command fastMagicShootCommand() {
+        return driverCamera.setShooterCameraCommand()
+                .andThen(Commands.runOnce(() -> getBestSTEntryVision()))
+                .andThen(runEntryCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(previousLimelightDistance)),
+                        () -> ShotSpeeds.FAST))
+                .alongWith(new LimeShooterAlign(drivetrain).withTimeout(0.5))
+                .andThen(Commands.waitUntil(shooterAndPivotReady()))
+                .andThen(conveyCommand())
+                .finallyDo(() -> {
+                    shooter.stop();
+                    pivot.runToPosition(Pivot.HOLD_POSITION);
+                    setCameraWithWait();
+                });
+    }
+
+    /* Magic shoot but awesomer */
+    private Command megaTag2ShootCommand() {
+        return driverCamera.setShooterCameraCommand()
+                .andThen(shooter.runShotCommand(ShotSpeeds.FAST))
+                // .alongWith(new RotateToSpeaker(drivetrain).withTimeout(0.5))
+                .andThen(runEntryCommand(() -> getBestSTEntry(), () -> ShotSpeeds.FAST))
+                .andThen(Commands.waitUntil(shooterAndPivotReady()))
+                .andThen(conveyCommand())
+                .finallyDo(() -> {
+                    shooter.stop();
+                    pivot.runToPosition(Pivot.HOLD_POSITION);
+                    setCameraWithWait();
                 });
     }
 
@@ -997,7 +1055,9 @@ public class RobotContainer {
     /* Run a Shooter Table Entry */
     private Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShotSpeeds> speed) {
         return shooter.runEntryCommand(entry, speed)
-                .alongWith(pivot.runToPositionCommand(() -> entry.get().Angle));// + 0.8 /* so jank */));
+                .alongWith(pivot.runToPositionCommand(() -> entry.get().Angle))
+                .alongWith(Commands.runOnce(() -> m_lastShot = entry.get().Distance.in(Feet))
+                        .onlyIf(() -> entry.get().Distance != null));
     }
 
     /* Shooter & Pivot Both Ready */
@@ -1036,7 +1096,7 @@ public class RobotContainer {
 
     /* Zeroing Command */
     public Command zeroCommand() {
-        return pivot.zeroCommand();// .alongWith(m_fanPivot.runToPositionCommand(0.)).alongWith(climber.zeroCommand());
+        return pivot.zeroCommand().alongWith(m_fanPivot.runToPositionCommand(0.));// .alongWith(climber.zeroCommand());
     }
 
     /* Asynchronous Zero */
@@ -1171,18 +1231,19 @@ public class RobotContainer {
     // }
 
     private ShooterTableEntry getBestSTEntryLLY() {
-        SmartDashboard.putNumber("Raw TY", LimelightHelpers.getTY(SHOOTER_LIMELIGHT));
-
         ShooterTableEntry entry;
 
         if (LimelightHelpers.getTV(SHOOTER_LIMELIGHT)) {
             entry = ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTY(SHOOTER_LIMELIGHT),
                     CameraLerpStrat.LimelightTY);
+            previousLimelightDistance = entry.Distance.in(Feet);
+            m_limelightTimer.restart();
         } else {
-            entry = ShooterTable.calcShooterTableEntry(Feet.of(20.0));
+            double dist = m_limelightTimer.get() > MAGIC_SHOOT_TIMER_THRESHOLD ? 20.0 : previousLimelightDistance;
+            entry = ShooterTable.calcShooterTableEntry(Feet.of(dist));
+            previousLimelightDistance = dist;
         }
 
-        SmartDashboard.putNumber("Limelight TY distance", entry.Distance.in(Feet));
         return entry;
     }
 

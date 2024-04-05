@@ -30,11 +30,11 @@ public class LimeShooterAlign extends ProfiledPIDCommand {
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
                         // The PID gains
-                        8.0,
+                        6.0,
                         0.0,
                         0.0,
                         // The motion profile constraints
-                        new TrapezoidProfile.Constraints(2.0, 2.0)),
+                        new TrapezoidProfile.Constraints(2.0, 3.0)),
                 // This should return the measurement
                 () -> {
                     int tagID = DriverStation.getAlliance().isPresent()
