@@ -47,7 +47,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.AlignDrivetrain;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.vision.LimelightAcquire;
-
+import frc.robot.commands.vision.ShooterAlign;
 import frc.robot.commands.vision.LimeShooterAlign;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
@@ -123,8 +123,7 @@ public class RobotContainer {
 
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
-    // private final Vision shooterVision = new Vision("Shooter-OV2311",
-    // Vision.SHOOTER_ROBOT_TO_CAMERA);
+    private final Vision shooterVision = new Vision("Shooter-OV2311", Vision.SHOOTER_ROBOT_TO_CAMERA);
 
     public Conveyor getConveyor() {
         return conveyor;
@@ -597,7 +596,7 @@ public class RobotContainer {
         operatorController.povRight().toggleOnTrue(magicShootCommand()
                 .andThen(Commands.runOnce(this::setCameraWithWait)));
 
-        /* Other Epic Magic Shoot Woohoo Wah Wah  */
+        /* Other Epic Magic Shoot Woohoo Wah Wah */
         operatorController.povDown().toggleOnTrue(megaTag2ShootCommand());
         operatorController.x().toggleOnTrue(fastMagicShootCommand());
         operatorController.povLeft().toggleOnTrue(magicShootNoLockCommand());
@@ -923,6 +922,14 @@ public class RobotContainer {
                     pivot.runToPosition(Pivot.HOLD_POSITION);
                     setCameraWithWait();
                 });
+    }
+
+    private Command magicLockCommand() {
+        return driverCamera.setShooterCameraCommand()
+                .andThen(
+                        shooter.runShotCommand(ShotSpeeds.FAST).alongWith(new ShooterAlign(drivetrain, shooterVision))
+                                .alongWith(
+                                        pivot.runToPositionCommand(() -> getBestSTEntryVision().Angle).repeatedly()));
     }
 
     private Command magicShootNoLockCommand() {
