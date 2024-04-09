@@ -124,6 +124,7 @@ public class RobotContainer {
     private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
     private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
     private final Vision shooterVision = new Vision("Shooter-OV2311", Vision.SHOOTER_ROBOT_TO_CAMERA);
+    private final Vision stationaryVision = new Vision("Stationary-OV2311-Camera", Vision.STATIONARY_ROBOT_TO_CAMERA);
 
     public Conveyor getConveyor() {
         return conveyor;
@@ -211,7 +212,7 @@ public class RobotContainer {
     private static final double CAMERA_SWITCH_TIMEOUT = 1.5;
     private static final double MAGIC_SHOOT_TIMER_THRESHOLD = 5.0;
 
-    private static ShooterTableEntry PASSING_SHOT = new ShooterTableEntry(Feet.zero(), 0, 0, 0, 0, 24, 0.69);// 30.9;
+    private static ShooterTableEntry PASSING_SHOT = new ShooterTableEntry(Feet.zero(), 0, 0, 0, 0, 0, 24, 0.69);// 30.9;
 
     private final LinkedHashMap<Double, String> indexMap = new LinkedHashMap<>();
 
@@ -927,9 +928,11 @@ public class RobotContainer {
     private Command magicLockCommand() {
         return driverCamera.setShooterCameraCommand()
                 .andThen(
-                        shooter.runShotCommand(ShotSpeeds.FAST).alongWith(new ShooterAlign(drivetrain, shooterVision))
+                        shooter.runShotCommand(ShotSpeeds.FAST)
+                                .alongWith(new ShooterAlign(drivetrain, stationaryVision))
                                 .alongWith(
-                                        pivot.runToPositionCommand(() -> getBestSTEntryVision().Angle).repeatedly()));
+                                        pivot.runToPositionCommand(() -> getBestSTEntryPhotonStationaryDist().Angle)
+                                                .repeatedly()));
     }
 
     private Command magicShootNoLockCommand() {
@@ -1270,6 +1273,15 @@ public class RobotContainer {
 
     private ShooterTableEntry getBestSTEntryVision() {
         return getBestSTEntryLLY();
+    }
+
+    private ShooterTableEntry getBestSTEntryPhotonStationaryDist() {
+        Optional<Double> camDist = stationaryVision.getTagDistance(allianceIsBlue() ? 7 : 4);
+        var ste = ShooterTable.calcShooterTableEntryCamera(Units.metersToFeet(camDist.isEmpty() ? 0 : camDist.get()),
+                CameraLerpStrat.PhotonVisionStationaryDistance);
+
+        SmartDashboard.putNumber("PhotonVision Stationary 2d distance", ste.Distance.in(Feet));
+        return ste;
     }
 
     // private ShooterTableEntry getBestSTEntryLLArea() {

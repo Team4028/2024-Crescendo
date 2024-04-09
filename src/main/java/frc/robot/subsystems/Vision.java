@@ -45,6 +45,8 @@ public class Vision extends SubsystemBase {
             Units.inchesToMeters(16.75),
             new Rotation3d(0., Units.degreesToRadians(28.), 0.));
 
+    public static final Transform3d STATIONARY_ROBOT_TO_CAMERA = new Transform3d();
+
     public static final int TRAP_PIPELINE_INDEX = 1;
     public static final int SHOOTER_PIPELINE_INDEX = 0;
 
@@ -138,7 +140,7 @@ public class Vision extends SubsystemBase {
         var target = this.getTag(tagID);
 
         // cam: 9'11.5" real: 9'1"
-        // 
+        //
 
         if (target.isEmpty()) {
             return Optional.empty();
