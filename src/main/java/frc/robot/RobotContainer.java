@@ -74,7 +74,7 @@ import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.NoteSensing;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
-import frc.robot.utils.ShooterTable.ShooterTableEntry.CameraLerpStrat;
+import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 
 public class RobotContainer {
     // =============================================== //
@@ -223,7 +223,7 @@ public class RobotContainer {
     private static final double CAMERA_SWITCH_TIMEOUT = 1.5;
     private static final double MAGIC_SHOOT_TIMER_THRESHOLD = 5.0;
 
-    private static ShooterTableEntry PASSING_SHOT = new ShooterTableEntry(Feet.zero(), 0, 0, 0, 0, 0, 24, 0.69);// 30.9;
+    private static ShooterTableEntry PASSING_SHOT = new ShooterTableEntry(Feet.zero(), 4, 0.69);// 30.9;
 
     private final LinkedHashMap<Double, String> indexMap = new LinkedHashMap<>();
 
