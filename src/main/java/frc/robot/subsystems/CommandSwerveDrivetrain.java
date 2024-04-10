@@ -21,11 +21,13 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.units.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleArrayLogEntry;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -67,6 +69,8 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
             vBusFL, vBusFR, vBusBL,
             vBusBR;
 
+    private final DoubleArrayLogEntry ppTargetPose;
+
     private final SwerveRequest.ApplyChassisSpeeds autoRequest = new SwerveRequest.ApplyChassisSpeeds();
 
     private final SwerveVoltRequest voltRequest = new SwerveVoltRequest();
@@ -92,6 +96,9 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        ppTargetPose = new DoubleArrayLogEntry(log, "Pathplanner Target Pose");
+
         configModules(modules);
     }
 
@@ -100,6 +107,9 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        ppTargetPose = new DoubleArrayLogEntry(log, "Pathplanner Target Pose");
+
         configModules(modules);
     }
 
@@ -193,13 +203,13 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 endVel);
     }
 
-    public Command mirrorablePathFindCommand(Pose2d desiredPose, double scale, double endVel) { // may end up being pathFindCommand
+    public Command mirrorablePathFindCommand(Pose2d desiredPose, double scale, double endVel) { // may end up being
+                                                                                                // pathFindCommand
         PathConstraints constraints = new PathConstraints(
-            PathFindPlannerConstants.kMaxSpeed * scale,
-            PathFindPlannerConstants.kMaxAccel * scale,
-            PathFindPlannerConstants.kMaxAngSpeed,
-            PathFindPlannerConstants.kMaxAngAccel
-        );
+                PathFindPlannerConstants.kMaxSpeed * scale,
+                PathFindPlannerConstants.kMaxAccel * scale,
+                PathFindPlannerConstants.kMaxAngSpeed,
+                PathFindPlannerConstants.kMaxAngAccel);
 
         return AutoBuilder.pathfindToPoseFlipped(desiredPose, constraints, endVel);
     }
@@ -271,35 +281,35 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     }
 
     public void logValues() {
-        // for (var mod : Modules) {
-        // TalonFX motor = mod.getDriveMotor();
-        // switch (motor.getDeviceID()) {
-        // case TunerConstants.kFrontLeftDriveMotorId:
-        // currentFL.append(motor.getSupplyCurrent().getValueAsDouble());
-        // velocityFL.append(motor.getVelocity().getValueAsDouble());
-        // vBusFL.append(motor.getMotorVoltage().getValueAsDouble() /
-        // RobotController.getBatteryVoltage());
-        // break;
-        // case TunerConstants.kFrontRightDriveMotorId:
-        // currentFR.append(motor.getSupplyCurrent().getValueAsDouble());
-        // velocityFR.append(motor.getVelocity().getValueAsDouble());
-        // vBusFR.append(motor.getMotorVoltage().getValueAsDouble() /
-        // RobotController.getBatteryVoltage());
-        // break;
-        // case TunerConstants.kBackLeftDriveMotorId:
-        // currentBL.append(motor.getSupplyCurrent().getValueAsDouble());
-        // velocityBL.append(motor.getVelocity().getValueAsDouble());
-        // vBusBL.append(motor.getMotorVoltage().getValueAsDouble() /
-        // RobotController.getBatteryVoltage());
-        // break;
-        // case TunerConstants.kBackRightDriveMotorId:
-        // currentBR.append(motor.getSupplyCurrent().getValueAsDouble());
-        // velocityBR.append(motor.getVelocity().getValueAsDouble());
-        // vBusBR.append(motor.getMotorVoltage().getValueAsDouble() /
-        // RobotController.getBatteryVoltage());
-        // break;
-        // }
-        // }
+        for (var mod : Modules) {
+            var motor = mod.getDriveMotor();
+            switch (motor.getDeviceID()) {
+                case TunerConstants.kFrontLeftDriveMotorId:
+                    currentFL.append(motor.getStatorCurrent().getValueAsDouble());
+                    velocityFL.append(motor.getVelocity().getValueAsDouble());
+                    vBusFL.append(motor.getMotorVoltage().getValueAsDouble() /
+                            RobotController.getBatteryVoltage());
+                    break;
+                case TunerConstants.kFrontRightDriveMotorId:
+                    currentFR.append(motor.getStatorCurrent().getValueAsDouble());
+                    velocityFR.append(motor.getVelocity().getValueAsDouble());
+                    vBusFR.append(motor.getMotorVoltage().getValueAsDouble() /
+                            RobotController.getBatteryVoltage());
+                    break;
+                case TunerConstants.kBackLeftDriveMotorId:
+                    currentBL.append(motor.getStatorCurrent().getValueAsDouble());
+                    velocityBL.append(motor.getVelocity().getValueAsDouble());
+                    vBusBL.append(motor.getMotorVoltage().getValueAsDouble() /
+                            RobotController.getBatteryVoltage());
+                    break;
+                case TunerConstants.kBackRightDriveMotorId:
+                    currentBR.append(motor.getStatorCurrent().getValueAsDouble());
+                    velocityBR.append(motor.getVelocity().getValueAsDouble());
+                    vBusBR.append(motor.getMotorVoltage().getValueAsDouble() /
+                            RobotController.getBatteryVoltage());
+                    break;
+            }
+        }
     }
 
     private void initSwerve() {
@@ -366,5 +376,9 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                         new ReplanningConfig()),
                 () -> DriverStation.getAlliance().get() == Alliance.Red,
                 this);
+
+        PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
+            ppTargetPose.append(new double[] { pose.getX(), pose.getY(), pose.getRotation().getDegrees() });
+        });
     }
 }

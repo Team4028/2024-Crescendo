@@ -94,7 +94,7 @@ public class ShooterTable {
 
         Function<ShooterTableEntry, Double> cameraValueGetter;
 
-        SmartDashboard.putNumber("epic ty", cameraValue);
+        // SmartDashboard.putNumber("epic ty", cameraValue);
 
         switch (strategy) {
             case LimelightTY:
@@ -130,6 +130,7 @@ public class ShooterTable {
 
         if (cameraValue <= cameraValueGetter.apply(closestLower))
             return closestLower;
+
         if (cameraValue >= cameraValueGetter.apply(closestHigher))
             return closestHigher;
 
@@ -151,22 +152,13 @@ public class ShooterTable {
             }
         }
 
-        // 20.5 - 20.44 = 0.06
-        // 26.2 - 20.5 = 5.7
-
         double scaleFactor = (cameraValue - cameraValueGetter.apply(closestLower))
                 / (cameraValueGetter.apply(closestHigher) - cameraValueGetter.apply(closestLower));
-
-        SmartDashboard.putNumber("Scale Factor", scaleFactor);
 
         scaleFactor = Math.abs(scaleFactor);
 
         Measure<Distance> interpolatedDistance = closestHigher.Distance.minus(closestLower.Distance).times(scaleFactor)
                 .plus(closestLower.Distance);
-
-        SmartDashboard.putNumber("Interpolated Distance", interpolatedDistance.in(Feet));
-        SmartDashboard.putNumber("Higher", closestHigher.Distance.in(Feet));
-        SmartDashboard.putNumber("Lower", closestLower.Distance.in(Feet));
 
         double interpolatedAngle = scaleFactor * (closestHigher.Angle - closestLower.Angle) + closestLower.Angle;
 

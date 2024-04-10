@@ -32,6 +32,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.datalog.DoubleArrayLogEntry;
+import edu.wpi.first.util.datalog.StringLogEntry;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
@@ -49,6 +52,7 @@ import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.ShooterAlign;
 import frc.robot.commands.vision.LimeShooterAlign;
+import frc.robot.commands.vision.LimeShooterAlignEpic;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -95,6 +99,8 @@ public class RobotContainer {
     private static final int OI_OPERATOR_CONTROLLER = 1;
     private static final int OI_EMERGENCY_CONTROLLER = 2;
 
+    private final StringLogEntry autonPhase;
+
     private static final int SHOOTING_PIPELINE = 0;
     // private static final int TRAP_PIPELINE = 2;
 
@@ -135,6 +141,11 @@ public class RobotContainer {
     // ====================== //
     private final Command ampPrep;
     private SendableChooser<Command> autonChooser;
+
+    private static final double MAGIC_LOCK_DISTANCE_AMBIGUITY_THRESHOLD = 1;
+    private double magicLockLastPos = Double.NaN;
+
+    private short autonPathIncrement = 0;
 
     // ====================================================== //
     /* Drivetrain Constants, Magic numbers, and Slew Limiters */
@@ -258,6 +269,8 @@ public class RobotContainer {
     public RobotContainer() {
         // shooterVision.s?etPipeline(Vision.SHOOTER_PIPELINE_INDEX);
 
+        autonPhase = new StringLogEntry(DataLogManager.getLog(), "Auton Phase");
+
         snapDrive.HeadingController = new PhoenixPIDController(3., 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -325,13 +338,9 @@ public class RobotContainer {
     private void initNamedCommands() {
         NamedCommands.registerCommand("Pivot Zero", pivot.zeroCommand());
 
-        NamedCommands.registerCommand("AprilTag Zero", new InstantCommand(() -> {
-            Optional<EstimatedRobotPose> pose = getBestPose();
-            if (pose.isEmpty())
-                return;
-
-            drivetrain.seedFieldRelative(pose.get().estimatedPose.toPose2d());
-        }, leftVision, rightVision));
+        NamedCommands.registerCommand("AprilTag Zero",
+                new InstantCommand(() -> drivetrain.addMeasurementCommand(this::getBestPose), leftVision, rightVision)
+                        .andThen(appendAutonPhase("AprilTag Zeroed")));
 
         NamedCommands.registerCommand("Limelight Acquire",
                 new LimelightAcquire(() -> 0.6,
@@ -366,6 +375,8 @@ public class RobotContainer {
                 smartInfeedCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST)));
 
         NamedCommands.registerCommand("Magic Shoot", fastMagicShootCommand());
+
+        NamedCommands.registerCommand("Finnish Path", appendAutonPhase("Finished path " + autonPathIncrement++));
 
         /* Shooter & Pivot */
         NamedCommands.registerCommand("Fast Shooter",
@@ -928,11 +939,16 @@ public class RobotContainer {
     private Command magicLockCommand() {
         return driverCamera.setShooterCameraCommand()
                 .andThen(
-                        shooter.runShotCommand(ShotSpeeds.FAST)
-                                .alongWith(new ShooterAlign(drivetrain, stationaryVision))
-                                .alongWith(
-                                        pivot.runToPositionCommand(() -> getBestSTEntryPhotonStationaryDist().Angle)
-                                                .repeatedly()));
+                        shooter.runShotCommand(ShotSpeeds.FAST))
+                .alongWith(new ShooterAlign(drivetrain, stationaryVision/* shooterVision */))
+                .alongWith(
+                        pivot.runToPositionCommand(() -> {
+                            var ste = getBestSTEntryPhotonStationaryDist();
+                            if (Math.abs(ste.Distance.in(Feet)
+                                    - magicLockLastPos) <= MAGIC_LOCK_DISTANCE_AMBIGUITY_THRESHOLD)
+                                return magicLockLastPos = ste.Distance.in(Feet);
+                            return pivot.getPosition();
+                        }).repeatedly());
     }
 
     private Command magicShootNoLockCommand() {
@@ -950,18 +966,30 @@ public class RobotContainer {
                 });
     }
 
+    private Command appendAutonPhase(String name) {
+        return new InstantCommand(() -> {
+            autonPhase.append(name);
+            System.out.println(name);
+        });
+    }
+
     /* Magic shoot but awesome3 */
     private Command fastMagicShootCommand() {
-        return driverCamera.setShooterCameraCommand()
-                .andThen(Commands.runOnce(() -> getBestSTEntryVision()))
+        return driverCamera.setShooterCameraCommand().alongWith(appendAutonPhase("Set Camera"))
+                .andThen(
+                        Commands.runOnce(() -> getBestSTEntryVision())
+                                .alongWith(appendAutonPhase("Got Vision Distance")))
                 .andThen(runEntryCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(previousLimelightDistance)),
-                        () -> ShotSpeeds.FAST))
-                .alongWith(new LimeShooterAlign(drivetrain).withTimeout(0.5))
-                .andThen(Commands.waitUntil(shooterAndPivotReady()))
-                .andThen(conveyCommand())
+                        () -> ShotSpeeds.FAST).alongWith(appendAutonPhase("Commanded Shooter and Pivot to position"))
+                        .alongWith(new LimeShooterAlign(drivetrain).withTimeout(0.5)
+                                .andThen(appendAutonPhase("Aligned to speaker por favor"))))
+                .andThen(Commands.waitUntil(shooterAndPivotReady())
+                        .andThen(appendAutonPhase("Shooter and pivot are ready")))
+                .andThen(conveyCommand().andThen(appendAutonPhase("Conveyed the note into the shooter")))
                 .finallyDo(() -> {
                     shooter.stop();
                     pivot.runToPosition(Pivot.HOLD_POSITION);
+                    autonPhase.append("Pathplanner driving");
                     setCameraWithWait();
                 });
     }

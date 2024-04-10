@@ -7,6 +7,7 @@ package frc.robot.commands.vision;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -19,13 +20,17 @@ import frc.robot.utils.LimelightHelpers;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class LimeShooterAlign extends ProfiledPIDCommand {
+public class LimeShooterAlignEpic extends ProfiledPIDCommand {
     private static final double OFFSET = -3.0;
 
     private static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
 
-    /** Creates a new WillRueter. */
-    public LimeShooterAlign(CommandSwerveDrivetrain drivetrain) {
+    private final CommandSwerveDrivetrain drivetrain;
+
+    private static Rotation2d target;
+
+    /** Creates a new epicness. */
+    public LimeShooterAlignEpic(CommandSwerveDrivetrain drivetrain) {
         super(
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
@@ -34,26 +39,11 @@ public class LimeShooterAlign extends ProfiledPIDCommand {
                         0.0,
                         0.0,
                         // The motion profile constraints
-                        new TrapezoidProfile.Constraints(2.0, 3.0)),
+                        new TrapezoidProfile.Constraints(2.0, 4.0)),
                 // This should return the measurement
-                () -> {
-                    int tagID = DriverStation.getAlliance().isPresent()
-                            && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
-
-                    var fiducials = LimelightHelpers
-                            .getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
-
-                    for (var fiducial : fiducials) {
-                        if (fiducial.fiducialID == tagID) {
-                            return Units.degreesToRadians(fiducial.tx);
-                        }
-                    }
-
-                    return 0.;
-
-                },
+                () -> drivetrain.getState().Pose.getRotation().getRadians(),
                 // This should return the goal (can also be a constant)
-                () -> Units.degreesToRadians(OFFSET),
+                () -> LimeShooterAlignEpic.target.getRadians(),
                 // This uses the output
                 (output, setpoint) -> {
                     // System.out.println("The thing is doing >:D");
@@ -64,8 +54,32 @@ public class LimeShooterAlign extends ProfiledPIDCommand {
         // Configure additional PID options by calling `getController` here.
         addRequirements(drivetrain);
 
+        this.drivetrain = drivetrain;
+
         getController().enableContinuousInput(-Math.PI, Math.PI);
         // getController().setTolerance(Units.degreesToRadians(1.5));
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+
+        double offset = 0.0;
+
+        int tagID = DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
+
+        var fiducials = LimelightHelpers
+                .getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
+
+        for (var fiducial : fiducials) {
+            if (fiducial.fiducialID == tagID) {
+                offset = -Units.degreesToRadians(fiducial.tx);
+            }
+        }
+
+        LimeShooterAlignEpic.target = drivetrain.getState().Pose.getRotation()
+                .plus(new Rotation2d(offset + Units.degreesToRadians(OFFSET)));
     }
 
     // Returns true when the command should end.

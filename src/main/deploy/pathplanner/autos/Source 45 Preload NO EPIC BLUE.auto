@@ -32,6 +32,12 @@
         {
           "type": "named",
           "data": {
+            "name": "Finnish Path"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "AprilTag Zero"
           }
         },
@@ -48,9 +54,21 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Finnish Path"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Source 5 Shoot NOT EPIC"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finnish Path"
           }
         },
         {
@@ -72,9 +90,21 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Finnish Path"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Source 4 Shoot NOT EPIC"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finnish Path"
           }
         },
         {
@@ -93,6 +123,12 @@
           "type": "path",
           "data": {
             "pathName": "Source 4-3 NOT EPIC"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finnish Path"
           }
         }
       ]

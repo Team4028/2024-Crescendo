@@ -68,7 +68,7 @@ public class ShooterAlign extends ProfiledPIDCommand {
                 () -> Units.degreesToRadians(OFFSET),
                 // This uses the output
                 (output, setpoint) -> {
-                    System.out.println("The thing is doing >:D");
+                    // System.out.println("The thing is doing >:D");
                     SmartDashboard.putNumber("output", output + setpoint.velocity);
                     drivetrain.setControl(drive.withRotationalRate(output + setpoint.velocity));
                 });

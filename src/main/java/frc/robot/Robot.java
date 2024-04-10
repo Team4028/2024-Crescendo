@@ -5,12 +5,15 @@
 package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.DashboardStore;
+import frc.robot.utils.ShooterTable;
+import frc.robot.utils.ShooterTable.ShooterTableEntry.CameraLerpStrat;
 
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
@@ -24,6 +27,10 @@ public class Robot extends TimedRobot {
         DataLogManager.start();
         m_robotContainer = new RobotContainer();
         SignalLogger.setPath("/u/ctre");
+
+        ShooterTable.calcShooterTableEntryCamera(0, CameraLerpStrat.LimelightTY);
+
+        FollowPathCommand.warmupCommand().schedule();
 
         addPeriodic(() -> {
             DashboardStore.update();
