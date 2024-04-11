@@ -30,9 +30,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.datalog.DoubleArrayLogEntry;
 import edu.wpi.first.util.datalog.StringLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -50,9 +50,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.AlignDrivetrain;
 import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.vision.LimelightAcquire;
-import frc.robot.commands.vision.ShooterAlign;
-import frc.robot.commands.vision.LimeShooterAlign;
-import frc.robot.commands.vision.LimeShooterAlignEpic;
+import frc.robot.commands.vision.NewShooterAlign;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -64,15 +62,18 @@ import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.subsystems.Shooter.Slots;
-import frc.robot.subsystems.Vision;
+
 import frc.robot.subsystems.Whippy;
 import frc.robot.subsystems.Climber.ClimberPositions;
 import frc.robot.utils.BeakCommands;
 import frc.robot.utils.DashboardStore;
 import frc.robot.utils.DriverCamera;
+import frc.robot.utils.Limelight;
 import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.NoteSensing;
+import frc.robot.utils.PhotonVision;
 import frc.robot.utils.ShooterTable;
+import frc.robot.utils.VisionSystem;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 
@@ -127,10 +128,13 @@ public class RobotContainer {
     private final NoteSensing noteSensing = new NoteSensing();
     private final DriverCamera driverCamera = new DriverCamera();
 
-    private final Vision rightVision = new Vision("Right_AprilTag_Camera", Vision.RIGHT_ROBOT_TO_CAMERA);
-    private final Vision leftVision = new Vision("Left_AprilTag_Camera", Vision.LEFT_ROBOT_TO_CAMERA);
-    private final Vision shooterVision = new Vision("Shooter-OV2311", Vision.SHOOTER_ROBOT_TO_CAMERA);
-    private final Vision stationaryVision = new Vision("Stationary-OV2311-Camera", Vision.STATIONARY_ROBOT_TO_CAMERA);
+    private final PhotonVision rightVision = new PhotonVision("Right_AprilTag_Camera", VisionSystem.RIGHT_ROBOT_TO_CAMERA);
+    private final PhotonVision leftVision = new PhotonVision("Left_AprilTag_Camera", VisionSystem.LEFT_ROBOT_TO_CAMERA);
+    private final PhotonVision shooterVision = new PhotonVision("Shooter-OV2311", VisionSystem.SHOOTER_ROBOT_TO_CAMERA);
+    private final PhotonVision stationaryVision = new PhotonVision("Stationary-OV2311-Camera", VisionSystem.STATIONARY_ROBOT_TO_CAMERA);
+
+    private final Limelight infeedCamera = new Limelight("limelight", new Transform3d());
+    private final Limelight shooterLimelight = new Limelight(SHOOTER_LIMELIGHT, new Transform3d());
 
     public Conveyor getConveyor() {
         return conveyor;
@@ -339,7 +343,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Pivot Zero", pivot.zeroCommand());
 
         NamedCommands.registerCommand("AprilTag Zero",
-                new InstantCommand(() -> drivetrain.addMeasurementCommand(this::getBestPose), leftVision, rightVision)
+                new InstantCommand(() -> drivetrain.addMeasurementCommand(this::getBestPose))
                         .andThen(appendAutonPhase("AprilTag Zeroed")));
 
         NamedCommands.registerCommand("Limelight Acquire",
@@ -560,7 +564,7 @@ public class RobotContainer {
         // = true))
         // .andThen(new InstantCommand(() -> isSnappedToSpeaker = false)));
 
-        driverController.leftStick().whileTrue(new LimeShooterAlign(drivetrain));
+        driverController.leftStick().whileTrue(new NewShooterAlign(drivetrain, shooterLimelight));
 
         driverController.a().onTrue(runEntryCommand(() -> PASSING_SHOT, () -> ShotSpeeds.FAST)
                 .andThen(Commands.either(
@@ -889,7 +893,7 @@ public class RobotContainer {
     }
 
     private Command stationaryShot(double targetDistance) {
-        return new LimeShooterAlign(drivetrain).withTimeout(0.5)
+        return new NewShooterAlign(drivetrain, shooterLimelight).withTimeout(0.5)
                 .andThen(shotSequence(() -> ShooterTable.calcShooterTableEntry(Feet.of(targetDistance))));
     }
 
@@ -923,7 +927,7 @@ public class RobotContainer {
     private Command magicShootCommand() {
         return driverCamera.setShooterCameraCommand()
                 .andThen(shooter.runShotCommand(ShotSpeeds.FAST))
-                .alongWith(new LimeShooterAlign(drivetrain).withTimeout(0.5))
+                .alongWith(new NewShooterAlign(drivetrain, shooterLimelight).withTimeout(0.5))
                 .andThen(Commands.waitSeconds(0.1))
                 .andThen(runEntryCommand(() -> getBestSTEntryVision(), () -> ShotSpeeds.FAST))
                 .andThen(Commands.waitUntil(shooterAndPivotReady()))
@@ -940,7 +944,7 @@ public class RobotContainer {
         return driverCamera.setShooterCameraCommand()
                 .andThen(
                         shooter.runShotCommand(ShotSpeeds.FAST))
-                .alongWith(new ShooterAlign(drivetrain, stationaryVision/* shooterVision */))
+                .alongWith(new NewShooterAlign(drivetrain, stationaryVision/* shooterVision */))
                 .alongWith(
                         pivot.runToPositionCommand(() -> {
                             var ste = getBestSTEntryPhotonStationaryDist();
@@ -981,7 +985,7 @@ public class RobotContainer {
                                 .alongWith(appendAutonPhase("Got Vision Distance")))
                 .andThen(runEntryCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(previousLimelightDistance)),
                         () -> ShotSpeeds.FAST).alongWith(appendAutonPhase("Commanded Shooter and Pivot to position"))
-                        .alongWith(new LimeShooterAlign(drivetrain).withTimeout(0.5)
+                        .alongWith(new NewShooterAlign(drivetrain, shooterLimelight).withTimeout(0.5)
                                 .andThen(appendAutonPhase("Aligned to speaker por favor"))))
                 .andThen(Commands.waitUntil(shooterAndPivotReady())
                         .andThen(appendAutonPhase("Shooter and pivot are ready")))

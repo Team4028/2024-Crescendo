@@ -4,6 +4,8 @@
 
 package frc.robot.commands.vision;
 
+import java.util.Optional;
+
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -14,18 +16,18 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.utils.LimelightHelpers;
+import frc.robot.utils.VisionSystem;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class LimeShooterAlign extends ProfiledPIDCommand {
+public class NewShooterAlign extends ProfiledPIDCommand {
     private static final double OFFSET = -3.0;
 
     private static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
 
     /** Creates a new WillRueter. */
-    public LimeShooterAlign(CommandSwerveDrivetrain drivetrain) {
+    public NewShooterAlign(CommandSwerveDrivetrain drivetrain, VisionSystem vision) {
         super(
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
@@ -40,13 +42,10 @@ public class LimeShooterAlign extends ProfiledPIDCommand {
                     int tagID = DriverStation.getAlliance().isPresent()
                             && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
 
-                    var fiducials = LimelightHelpers
-                            .getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
+                    Optional<Double> yaw = vision.getTagYaw(tagID);
 
-                    for (var fiducial : fiducials) {
-                        if (fiducial.fiducialID == tagID) {
-                            return Units.degreesToRadians(fiducial.tx);
-                        }
+                    if (yaw.isPresent()) {
+                        return yaw.get();
                     }
 
                     return 0.;

@@ -9,6 +9,7 @@ import java.util.Optional;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -16,18 +17,23 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.Vision;
+import frc.robot.utils.VisionSystem;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class ShooterAlign extends ProfiledPIDCommand {
+public class ShooterAlignEpic extends ProfiledPIDCommand {
     private static final double OFFSET = -3.0;
 
     private static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
 
-    /** Creates a new WillRueter. */
-    public ShooterAlign(CommandSwerveDrivetrain drivetrain, Vision vision) {
+    private final CommandSwerveDrivetrain drivetrain;
+    private final VisionSystem vision;
+
+    private static Rotation2d target;
+
+    /** Creates a new epicness. */
+    public ShooterAlignEpic(CommandSwerveDrivetrain drivetrain, VisionSystem vision) {
         super(
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
@@ -36,36 +42,11 @@ public class ShooterAlign extends ProfiledPIDCommand {
                         0.0,
                         0.0,
                         // The motion profile constraints
-                        new TrapezoidProfile.Constraints(2.0, 2.0)),
+                        new TrapezoidProfile.Constraints(2.0, 4.0)),
                 // This should return the measurement
-                () -> {
-                    int tagID = DriverStation.getAlliance().isPresent()    
-                        && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
-
-                    Optional<Double> yaw = vision.getTagYaw(tagID);
-
-                    if (yaw.isPresent()) {
-                        return Units.degreesToRadians(yaw.get());
-                    }
-
-                    return 0.;
-                    // int tagID = DriverStation.getAlliance().isPresent()
-                    //         && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
-
-                    // var fiducials = LimelightHelpers
-                    //         .getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
-
-                    // for (var fiducial : fiducials) {
-                    //     if (fiducial.fiducialID == tagID) {
-                    //         return Units.degreesToRadians(fiducial.tx);
-                    //     }
-                    // }
-
-                    // return 0.;
-
-                },
+                () -> drivetrain.getState().Pose.getRotation().getRadians(),
                 // This should return the goal (can also be a constant)
-                () -> Units.degreesToRadians(OFFSET),
+                () -> ShooterAlignEpic.target.getRadians(),
                 // This uses the output
                 (output, setpoint) -> {
                     // System.out.println("The thing is doing >:D");
@@ -74,10 +55,32 @@ public class ShooterAlign extends ProfiledPIDCommand {
                 });
         // Use addRequirements() here to declare subsystem dependencies.
         // Configure additional PID options by calling `getController` here.
-        addRequirements(drivetrain, vision);
+        addRequirements(drivetrain);
+
+        this.drivetrain = drivetrain;
+        this.vision = vision;
 
         getController().enableContinuousInput(-Math.PI, Math.PI);
-        getController().setTolerance(Units.degreesToRadians(1.5));
+        // getController().setTolerance(Units.degreesToRadians(1.5));
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+
+        double offset = 0.0;
+
+        int tagID = DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
+
+        Optional<Double> yaw = vision.getTagYaw(tagID);
+
+        if (yaw.isPresent()) {
+            offset = -yaw.get();
+        }
+
+        ShooterAlignEpic.target = drivetrain.getState().Pose.getRotation()
+                .plus(new Rotation2d(offset + Units.degreesToRadians(OFFSET)));
     }
 
     // Returns true when the command should end.

@@ -11,7 +11,7 @@ import com.playingwithfusion.TimeOfFlight.RangingMode;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class NoteSensing extends SubsystemBase {
+public class NoteSensing {
     private final TimeOfFlight conveyorSensor;
     private final TimeOfFlight shooterSensor;
 
@@ -51,10 +51,5 @@ public class NoteSensing extends SubsystemBase {
 
     public BooleanSupplier conveyorSeesNoteSupplier() {
         return this::conveyorSeesNote;
-    }
-
-    @Override
-    public void periodic() {
-        // This method will be called once per scheduler run
     }
 }
