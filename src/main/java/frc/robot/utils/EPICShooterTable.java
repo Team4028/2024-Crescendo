@@ -8,13 +8,16 @@ import java.util.function.Supplier;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.Interpolator;
-import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
-import frc.robot.utils.ShooterTable.ShooterTableEntry;
 import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 
 public class EPICShooterTable {
+
+    /// @formatter:off
+    static { populateShooterTable(); }
+    /// @formatter:on
+
     public static final class VisionStruct {
         public double PhotonDistance;
         public double PhotonStationaryDistance;
@@ -158,29 +161,32 @@ public class EPICShooterTable {
         visionMap.put(new VisionStruct(5.09, 0, 15.065, 0.785, 3.757), Feet.of(5));
         visionMap.put(new VisionStruct(6.094, 0, 7.79, 0.598, 2.796), Feet.of(6));
         visionMap.put(new VisionStruct(7.799, 0, -1.295, 0.368, 1.761), Feet.of(8));
-        visionMap.put(new VisionStruct(9.17, 0, -6.465, 0.257, 1.195), Feet.of(10.1));
-        visionMap.put(new VisionStruct(11.34, 0, -12.115, 0.166, .78), Feet.of(13.1));
-        visionMap.put(new VisionStruct(13.115, 0, -15.395, 0.114, .528), Feet.of(16.75));
-        visionMap.put(new VisionStruct(13.845, 0, -16.53, 0.082, .38), Feet.of(18.6));
-        visionMap.put(new VisionStruct(15.095, 0, -18.202, 0.064, .29), Feet.of(21.7));
-        visionMap.put(new VisionStruct(17.24, 0, -20.43, 0.045, .25), Feet.of(27.3));
+        visionMap.put(new VisionStruct(9.17, 0, -6.465, 0.257, 1.195), Feet.of(10));
+        visionMap.put(new VisionStruct(11.34, 0, -12.115, 0.166, .78), Feet.of(13));
+        visionMap.put(new VisionStruct(13.115, 0, -15.395, 0.114, .528), Feet.of(16));
+        visionMap.put(new VisionStruct(13.845, 0, -16.53, 0.082, .38), Feet.of(19));
+        visionMap.put(new VisionStruct(15.095, 0, -18.202, 0.064, .29), Feet.of(22));
+        visionMap.put(new VisionStruct(17.24, 0, -20.43, 0.045, .25), Feet.of(27));
 
         // shooter map
         shooterMap.put(Feet.of(4.2), new ShooterStruct(30.9, 0.6));
-        shooterMap.put(Feet.of(5.0), new ShooterStruct(27.0, 0.7));
-        shooterMap.put(Feet.of(6.0), new ShooterStruct(22.8, 0.8));
-        shooterMap.put(Feet.of(8.0), new ShooterStruct(16., 1.0));
-        shooterMap.put(Feet.of(10.1), new ShooterStruct(12.1, 1.0));
-        shooterMap.put(Feet.of(13.1), new ShooterStruct(6.7, 1.0));
-        shooterMap.put(Feet.of(16.75), new ShooterStruct(4.3, 1.0));
-        shooterMap.put(Feet.of(18.6), new ShooterStruct(3.25, 1.0));
-        shooterMap.put(Feet.of(21.7), new ShooterStruct(2.24, 1.0));
-        shooterMap.put(Feet.of(27.3), new ShooterStruct(0.25, 1.0));
+        shooterMap.put(Feet.of(5), new ShooterStruct(27.0, 0.7));
+        shooterMap.put(Feet.of(6), new ShooterStruct(22.8, 0.8));
+        shooterMap.put(Feet.of(8), new ShooterStruct(16., 1.0));
+        shooterMap.put(Feet.of(10), new ShooterStruct(12.1, 1.0));
+        shooterMap.put(Feet.of(13), new ShooterStruct(6.7, 1.0));
+        shooterMap.put(Feet.of(16), new ShooterStruct(4.3, 1.0));
+        shooterMap.put(Feet.of(19), new ShooterStruct(3.25, 1.0));
+        shooterMap.put(Feet.of(22), new ShooterStruct(2.24, 1.0));
+        shooterMap.put(Feet.of(27), new ShooterStruct(0.25, 1.0));
     }
 
-    public static ShooterStruct getShooterTableEntryCamera(double cameraMeasure, CameraLerpStrat strategy) {
-        VisionStruct struct = new VisionStruct(cameraMeasure, cameraMeasure, cameraMeasure, cameraMeasure, cameraMeasure);
-        return shooterMap.get(visionMap.get(struct, strategy));
+    public static ShooterTable.ShooterTableEntry getShooterTableEntryCamera(double cameraMeasure, CameraLerpStrat strategy) {
+        VisionStruct struct = new VisionStruct(cameraMeasure, cameraMeasure, cameraMeasure, cameraMeasure,
+                cameraMeasure);
+        var dist = visionMap.get(struct, strategy);
+        var ss = shooterMap.get(dist);
+        return new ShooterTable.ShooterTableEntry(dist, ss.Angle, ss.Percent);
     }
 
 }

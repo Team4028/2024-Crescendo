@@ -95,6 +95,7 @@ public class VisionSystem {
 
     public Optional<Double> getTagDistance(int tagID) {
         Optional<Double> pitch = getTagPitch(tagID);
+        
         if (pitch.isEmpty()) {
             return Optional.empty();
         }

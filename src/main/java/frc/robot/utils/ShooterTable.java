@@ -73,36 +73,37 @@ public class ShooterTable {
     private static void fillInTable() { // TODO: fill in photonStationaryDistance values
         // put entries here
         // Distances must go from top to bottom: shortest to longest
+        // IF YOU INCREASE DISTANCE, SHOOTER ANGLE GOES UP
         shooterTable.add(new ShooterTableEntry(Feet.of(4.2), 30.9, 0.6)); // 55 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(5.0), 27.0, 0.7)); // 50 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(6.0), 22.8, 0.8)); // 45 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(8.0), 16., 1.0)); // 36 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(10.1), 12.1, 1.0)); // 31 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(5), 27.0, 0.7)); // 50 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(6), 22.8, 0.8)); // 45 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(8), 16., 1.0)); // 36 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(10), 12.1, 1.0)); // 31 degrees
         // Was: -12.115 New Red: -11.62
-        shooterTable.add(new ShooterTableEntry(Feet.of(13.1), 6.7, 1.0)); // 25 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(13), 6.7, 1.0)); // 25 degrees
         // Was: -15.395 New Blue: -14.93 New Red: -14.535
-        shooterTable.add(new ShooterTableEntry(Feet.of(16.75), 4.3, 1.0)); // 23
+        shooterTable.add(new ShooterTableEntry(Feet.of(16), 4.3, 1.0)); // 23
                                                                            // degrees
         // Was: -16.53 New Blue: -16.77 New Red: -16.68
-        shooterTable.add(new ShooterTableEntry(Feet.of(18.6), 3.25, 1.0)); // 21.5
+        shooterTable.add(new ShooterTableEntry(Feet.of(19), 3.25, 1.0)); // 21.5
                                                                            // degrees
         // Was: -18.2 New Blue: -18.3 New Red: -18.39
-        shooterTable.add(new ShooterTableEntry(Feet.of(21.7), 2.24, 1.0)); // 20.5
+        shooterTable.add(new ShooterTableEntry(Feet.of(22), 2.24, 1.0)); // 20.5
                                                                            // degrees
         // Was: -20.43 New Blue: -20.3 New Red: -19.63
-        shooterTable.add(new ShooterTableEntry(Feet.of(27.3), 0.25, 1.0)); // 20 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(27), 0.25, 1.0)); // 20 degrees
 
         // vision table entries
         visionTable.add(new VisionTableEntry(Feet.of(4.2), 4.34, 0, 21.588, 0.97, 4.5));
         visionTable.add(new VisionTableEntry(Feet.of(5), 5.09, 1.565, 15.065, 0.785, 3.757));
         visionTable.add(new VisionTableEntry(Feet.of(6), 6.094, 1.884, 7.79, 0.598, 2.796));
         visionTable.add(new VisionTableEntry(Feet.of(8), 7.799, 2.392, -1.295, 0.368, 1.761));
-        visionTable.add(new VisionTableEntry(Feet.of(10.1), 9.17, 2.821, -6.465, 0.257, 1.195));
-        visionTable.add(new VisionTableEntry(Feet.of(13.1), 11.34, 3.443, -12.115, 0.166, .78));
-        visionTable.add(new VisionTableEntry(Feet.of(16.75), 13.115, 3.954, -15.395, 0.114, .528));
-        visionTable.add(new VisionTableEntry(Feet.of(18.6), 13.845, 4.168, -16.53, 0.082, .38));
-        visionTable.add(new VisionTableEntry(Feet.of(21.7), 15.095, 4.504, -18.202, 0.064, .29));
-        visionTable.add(new VisionTableEntry(Feet.of(27.3), 17.24, 5.111, -20.43, 0.045, .25));
+        visionTable.add(new VisionTableEntry(Feet.of(10), 9.17, 2.821, -6.465, 0.257, 1.195));
+        visionTable.add(new VisionTableEntry(Feet.of(13), 11.34, 3.443, -12.115, 0.166, .78));
+        visionTable.add(new VisionTableEntry(Feet.of(16), 13.115, 3.954, -15.395, 0.114, .528));
+        visionTable.add(new VisionTableEntry(Feet.of(19), 13.845, 4.168, -16.53, 0.082, .38));
+        visionTable.add(new VisionTableEntry(Feet.of(22), 15.095, 4.504, -18.202, 0.064, .29));
+        visionTable.add(new VisionTableEntry(Feet.of(27), 17.24, 5.111, -20.43, 0.045, .25));
     }
 
     static {

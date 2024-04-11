@@ -38,11 +38,11 @@ public class ShooterAlignEpic extends ProfiledPIDCommand {
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
                         // The PID gains
-                        6.0,
+                        10.0,
                         0.0,
                         0.0,
                         // The motion profile constraints
-                        new TrapezoidProfile.Constraints(2.0, 4.0)),
+                        new TrapezoidProfile.Constraints(6.0, 12.0)),
                 // This should return the measurement
                 () -> drivetrain.getState().Pose.getRotation().getRadians(),
                 // This should return the goal (can also be a constant)

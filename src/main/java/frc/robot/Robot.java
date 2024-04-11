@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.DashboardStore;
+import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 
@@ -28,8 +29,9 @@ public class Robot extends TimedRobot {
         m_robotContainer = new RobotContainer();
         SignalLogger.setPath("/u/ctre");
 
-        ShooterTable.calcShooterTableEntryCamera(0, CameraLerpStrat.LimelightTY);
-
+        // load static libs into memory
+        ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getLatestResults("").targetingResults.pipelineID,
+                CameraLerpStrat.LimelightTY);
         FollowPathCommand.warmupCommand().schedule();
 
         addPeriodic(() -> {

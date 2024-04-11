@@ -52,6 +52,7 @@ import frc.robot.commands.RotateToSpeaker;
 import frc.robot.commands.vision.LimelightAcquire;
 import frc.robot.commands.vision.ShooterAlign;
 import frc.robot.commands.vision.ShooterAlignEpic;
+import frc.robot.commands.vision.ShooterAlignStrafe;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -70,6 +71,7 @@ import frc.robot.utils.BeakCommands;
 import frc.robot.utils.DashboardStore;
 import frc.robot.utils.DriverCamera;
 import frc.robot.utils.Limelight;
+import frc.robot.utils.EPICShooterTable;
 import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.NoteSensing;
 import frc.robot.utils.PhotonVision;
@@ -149,13 +151,13 @@ public class RobotContainer {
     private final Command ampPrep;
     private SendableChooser<Command> autonChooser;
 
-    private static final double MAGIC_LOCK_DISTANCE_AMBIGUITY_THRESHOLD = 1;
+    private static final double MAGIC_LOCK_DISTANCE_AMBIGUITY_THRESHOLD = 2;
     private double magicLockLastPos = Double.NaN;
 
     private short autonPathIncrement = 0;
 
     // ====================================================== //
-    /* Drivetrain Constants, Magic numbers, and Slew Limiters */
+    /* Drivetrain Constants, Magic numbers, and ` Limiters */
     // ====================================================== //
     private final SlewRateLimiter xLimiter = new SlewRateLimiter(4.);
     private final SlewRateLimiter yLimiter = new SlewRateLimiter(4.);
@@ -295,8 +297,11 @@ public class RobotContainer {
                 () -> indexMap.containsKey(currentIndex) ? indexMap.get(currentIndex) : "Manual");
 
         DashboardStore.add("Stationary Distance",
-                () -> stationaryVision.getTagDistance(7).isPresent() ? stationaryVision.getTagDistance(7).get()
-                        : Double.NaN);
+                () -> {
+                    Optional<Double> distance = stationaryVision.getTagDistance(7);
+                    return distance.isPresent() ? distance.get()
+                            : Double.NaN;
+                });
 
         // this is weird
         DashboardStore.add("Snapped", () -> drivetrain.getCurrentRequest().getClass().equals(snapDrive.getClass()));
@@ -616,8 +621,9 @@ public class RobotContainer {
                 .whileTrue(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS));
 
         /* Magic Shoot */
-        operatorController.povRight().toggleOnTrue(magicShootCommand()
-                .andThen(Commands.runOnce(this::setCameraWithWait)));
+        // operatorController.povRight().toggleOnTrue(magicShootCommand()
+        // .andThen(Commands.runOnce(this::setCameraWithWait)));
+        operatorController.povRight().toggleOnTrue(magicLockCommand());
 
         /* Other Epic Magic Shoot Woohoo Wah Wah */
         operatorController.povDown().toggleOnTrue(megaTag2ShootCommand());
@@ -949,17 +955,14 @@ public class RobotContainer {
 
     private Command magicLockCommand() {
         return driverCamera.setShooterCameraCommand()
-                .andThen(
-                        shooter.runShotCommand(ShotSpeeds.FAST))
-                .alongWith(new ShooterAlign(drivetrain, stationaryVision/* shooterVision */))
+                .andThen(new ShooterAlignStrafe(drivetrain, () -> getDriveSignum()
+                        * scaleDriverController(-driverController.getLeftY(), xLimiter, currentSpeed) * MAX_SPEED,
+                        () -> getDriveSignum()
+                                * scaleDriverController(-driverController.getLeftX(), yLimiter, currentSpeed)
+                                * MAX_SPEED,
+                        stationaryVision))
                 .alongWith(
-                        pivot.runToPositionCommand(() -> {
-                            var ste = getBestSTEntryPhotonStationaryDist();
-                            if (Math.abs(ste.Distance.in(Feet)
-                                    - magicLockLastPos) <= MAGIC_LOCK_DISTANCE_AMBIGUITY_THRESHOLD)
-                                return magicLockLastPos = ste.Distance.in(Feet);
-                            return pivot.getPosition();
-                        }).repeatedly());
+                        runEntryCommand(this::getBestSTEntryPhotonStationaryDist, () -> ShotSpeeds.FAST).repeatedly());
     }
 
     private Command magicShootNoLockCommand() {
@@ -1314,9 +1317,14 @@ public class RobotContainer {
         return getBestSTEntryLLY();
     }
 
+    private ShooterTableEntry getBestSTEntryLLYEPIC() {
+        return EPICShooterTable.getShooterTableEntryCamera(LimelightHelpers.getTY(SHOOTER_LIMELIGHT),
+                CameraLerpStrat.LimelightTY);
+    }
+
     private ShooterTableEntry getBestSTEntryPhotonStationaryDist() {
         Optional<Double> camDist = stationaryVision.getTagDistance(allianceIsBlue() ? 7 : 4);
-        var ste = ShooterTable.calcShooterTableEntryCamera(Units.metersToFeet(camDist.isEmpty() ? 0 : camDist.get()),
+        var ste = ShooterTable.calcShooterTableEntryCamera(camDist.isEmpty() ? 0 : camDist.get(),
                 CameraLerpStrat.PhotonVisionStationaryDistance);
 
         SmartDashboard.putNumber("PhotonVision Stationary 2d distance", ste.Distance.in(Feet));

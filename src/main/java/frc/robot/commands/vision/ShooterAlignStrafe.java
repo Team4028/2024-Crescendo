@@ -5,6 +5,7 @@
 package frc.robot.commands.vision;
 
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
@@ -21,13 +22,14 @@ import frc.robot.utils.VisionSystem;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class ShooterAlign extends ProfiledPIDCommand {
+public class ShooterAlignStrafe extends ProfiledPIDCommand {
     private static final double OFFSET = -3.0;
 
     private static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
 
     /** Creates a new WillRueter. */
-    public ShooterAlign(CommandSwerveDrivetrain drivetrain, VisionSystem vision) {
+    public ShooterAlignStrafe(CommandSwerveDrivetrain drivetrain, DoubleSupplier xSpeed, DoubleSupplier ySpeed,
+            VisionSystem vision) {
         super(
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
@@ -50,15 +52,15 @@ public class ShooterAlign extends ProfiledPIDCommand {
 
                     return Units.degreesToRadians(OFFSET);
                     // int tagID = DriverStation.getAlliance().isPresent()
-                    //         && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
+                    // && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
 
                     // var fiducials = LimelightHelpers
-                    //         .getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
+                    // .getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
 
                     // for (var fiducial : fiducials) {
-                    //     if (fiducial.fiducialID == tagID) {
-                    //         return Units.degreesToRadians(fiducial.tx);
-                    //     }
+                    // if (fiducial.fiducialID == tagID) {
+                    // return Units.degreesToRadians(fiducial.tx);
+                    // }
                     // }
 
                     // return 0.;
@@ -70,7 +72,8 @@ public class ShooterAlign extends ProfiledPIDCommand {
                 (output, setpoint) -> {
                     // System.out.println("The thing is doing >:D");
                     SmartDashboard.putNumber("output", output + setpoint.velocity);
-                    drivetrain.setControl(drive.withRotationalRate(output + setpoint.velocity));
+                    drivetrain.setControl(drive.withRotationalRate(output + setpoint.velocity)
+                            .withVelocityX(xSpeed.getAsDouble()).withVelocityY(ySpeed.getAsDouble()));
                 });
         // Use addRequirements() here to declare subsystem dependencies.
         // Configure additional PID options by calling `getController` here.
