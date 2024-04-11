@@ -16,26 +16,16 @@ public class Limelight extends VisionSystem {
     }
 
     public Optional<Double> getTagYaw(int tagID) {
-        var fiducials = LimelightHelpers
-                .getLatestResults(cameraName).targetingResults.targets_Fiducials;
-
-        for (var fiducial : fiducials) {
-            if (fiducial.fiducialID == tagID) {
-                return Optional.of(Units.degreesToRadians(fiducial.tx));
-            }
+        if (LimelightHelpers.getTV(cameraName)) {
+            return Optional.of(Units.degreesToRadians(LimelightHelpers.getTX(cameraName)));
         }
 
         return Optional.empty();
     }
 
     public Optional<Double> getTagPitch(int tagID) {
-        var fiducials = LimelightHelpers
-                .getLatestResults(cameraName).targetingResults.targets_Fiducials;
-
-        for (var fiducial : fiducials) {
-            if (fiducial.fiducialID == tagID) {
-                return Optional.of(Units.degreesToRadians(fiducial.ty));
-            }
+        if (LimelightHelpers.getTV(cameraName)) {
+            return Optional.of(Units.degreesToRadians(LimelightHelpers.getTY(cameraName)));
         }
 
         return Optional.empty();

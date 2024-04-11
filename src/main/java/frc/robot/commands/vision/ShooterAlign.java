@@ -21,13 +21,13 @@ import frc.robot.utils.VisionSystem;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class NewShooterAlign extends ProfiledPIDCommand {
+public class ShooterAlign extends ProfiledPIDCommand {
     private static final double OFFSET = -3.0;
 
     private static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
 
     /** Creates a new WillRueter. */
-    public NewShooterAlign(CommandSwerveDrivetrain drivetrain, VisionSystem vision) {
+    public ShooterAlign(CommandSwerveDrivetrain drivetrain, VisionSystem vision) {
         super(
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(

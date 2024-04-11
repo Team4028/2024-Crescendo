@@ -36,7 +36,11 @@ public class VisionSystem {
             Units.inchesToMeters(16.75),
             new Rotation3d(0., Units.degreesToRadians(28.), 0.));
 
-    public static final Transform3d STATIONARY_ROBOT_TO_CAMERA = new Transform3d();
+    public static final Transform3d STATIONARY_ROBOT_TO_CAMERA = new Transform3d(
+            0.,
+            0.,
+            Units.inchesToMeters(7.75),
+            new Rotation3d(0., Units.degreesToRadians(19), 0.));
 
     public static final int TRAP_PIPELINE_INDEX = 1;
     public static final int SHOOTER_PIPELINE_INDEX = 0;
@@ -102,7 +106,8 @@ public class VisionSystem {
         return Optional.of(distance);
     }
 
-    public void setPipeline(int pipelineIndex) {}
+    public void setPipeline(int pipelineIndex) {
+    }
 
     public Command setPipelineCommand(int pipelineIndex) {
         return Commands.runOnce(() -> setPipeline(pipelineIndex));
