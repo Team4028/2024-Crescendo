@@ -30,4 +30,13 @@ public class Limelight extends VisionSystem {
 
         return Optional.empty();
     }
+
+    public void setRobotRotationMT2(double degrees) {
+        LimelightHelpers.SetRobotOrientation(cameraName, degrees, 0, 0, 0, 0, 0);
+    }
+
+    public LimelightHelpers.PoseEstimate getBotposeEstimateMT2(boolean isBlue) {
+        return isBlue ? LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cameraName)
+                : LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2(cameraName);
+    }
 }

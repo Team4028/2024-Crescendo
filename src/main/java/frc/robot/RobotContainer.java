@@ -109,6 +109,7 @@ public class RobotContainer {
     // private static final int TRAP_PIPELINE = 2;
 
     private static final String SHOOTER_LIMELIGHT = "limelight-shooter";
+    private static final String META_LIMELIGHT = "";
 
     // ======================== //
     /* Controllers & Subsystems */
@@ -140,6 +141,8 @@ public class RobotContainer {
 
     private final Limelight infeedCamera = new Limelight("limelight", new Transform3d());
     private final Limelight shooterLimelight = new Limelight(SHOOTER_LIMELIGHT, new Transform3d());
+
+    private final Limelight metaVision = new Limelight(META_LIMELIGHT, new Transform3d());
 
     public Conveyor getConveyor() {
         return conveyor;
@@ -1297,6 +1300,12 @@ public class RobotContainer {
         }
 
         return entry;
+    }
+
+    public Command updateDrivePoseMT2() {
+        metaVision.setRobotRotationMT2(drivetrain.getState().Pose.getRotation().getDegrees());
+        var llPose = metaVision.getBotposeEstimateMT2(allianceIsBlue());
+        return drivetrain.addMeasurementCommand(() -> llPose.pose, () -> llPose.timestampSeconds);
     }
 
     // private ShooterTableEntry getBestSTEntryPhotonY() {
