@@ -9,8 +9,6 @@ import java.util.function.BooleanSupplier;
 import com.playingwithfusion.TimeOfFlight;
 import com.playingwithfusion.TimeOfFlight.RangingMode;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 public class NoteSensing {
     private final TimeOfFlight conveyorSensor;
     private final TimeOfFlight shooterSensor;

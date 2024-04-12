@@ -24,8 +24,11 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.units.*;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleArrayLogEntry;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
@@ -101,6 +104,17 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
 
         configModules(modules);
     }
+
+    public CommandSwerveDrivetrain(SwerveDrivetrainConstants drivetrainConstants, double OdometryUpdateFrequency, Matrix<N3, N1> odometryStdDevs, Matrix<N3, N1> visionStdDevs, SwerveModuleConstants... modules) {
+        super(drivetrainConstants, OdometryUpdateFrequency, odometryStdDevs, visionStdDevs, modules);
+        if (Utils.isSimulation()) {
+            startSimThread();
+        }
+
+        ppTargetPose = new DoubleArrayLogEntry(log, "Pathplanner Target Pose");
+
+        configModules(modules);
+    } 
 
     public CommandSwerveDrivetrain(SwerveDrivetrainConstants driveTrainConstants, SwerveModuleConstants... modules) {
         super(driveTrainConstants, modules);
