@@ -1,0 +1,109 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.8435255450812584,
+        "y": 3.34
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.755675185888281,
+        "y": 2.6431133264416093
+      },
+      "isLocked": false,
+      "linkedName": "Source Shot Prime"
+    },
+    {
+      "anchor": {
+        "x": 5.50225952270893,
+        "y": 1.4422721303295314
+      },
+      "prevControl": {
+        "x": 4.707632936412318,
+        "y": 2.0493706300399106
+      },
+      "nextControl": {
+        "x": 6.28709193389627,
+        "y": 0.8426564270889392
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.284824945869945,
+        "y": 0.7721254839137894
+      },
+      "prevControl": {
+        "x": 7.505415259277724,
+        "y": 0.7065676598079014
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.0,
+      "rotationDegrees": -37.379999999999995,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "Infeed",
+      "waypointRelativePos": 1.45,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Smart Infeed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "New Event Marker",
+      "waypointRelativePos": 0.15,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Convey"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 4.5,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 1080.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 6.044092162241117,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": -37.379999999999995,
+    "velocity": 3.5
+  },
+  "useDefaultConstraints": true
+}
