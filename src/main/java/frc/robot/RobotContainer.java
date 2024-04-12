@@ -108,8 +108,9 @@ public class RobotContainer {
     private static final int SHOOTING_PIPELINE = 0;
     // private static final int TRAP_PIPELINE = 2;
 
-    private static final String SHOOTER_LIMELIGHT = "limelight-shooter";
-    private static final String META_LIMELIGHT = "";
+    private static final String SHOOTER_LIMELIGHT = "limelight-iii";
+    private static final String MEGA_LEFT_LIMELIGHT = "limelight-gii";
+    private static final String MEGA_RIGHT_LIMELIGHT = "limelight-gi";
 
     // ======================== //
     /* Controllers & Subsystems */
@@ -142,7 +143,8 @@ public class RobotContainer {
     private final Limelight infeedCamera = new Limelight("limelight", new Transform3d());
     private final Limelight shooterLimelight = new Limelight(SHOOTER_LIMELIGHT, new Transform3d());
 
-    private final Limelight metaVision = new Limelight(META_LIMELIGHT, new Transform3d());
+    private final Limelight megaLeftVision = new Limelight(MEGA_LEFT_LIMELIGHT, new Transform3d());
+    private final Limelight megaRightVision = new Limelight(MEGA_RIGHT_LIMELIGHT, new Transform3d());
 
     public Conveyor getConveyor() {
         return conveyor;
@@ -321,6 +323,7 @@ public class RobotContainer {
         DashboardStore.add("Limelight Yaw", () -> LimelightHelpers.getTX(SHOOTER_LIMELIGHT));
 
         DashboardStore.add("Last Shot", () -> m_lastShot);
+        DashboardStore.add("Odometry Distance", () -> getBestSTEntry().Distance.in(Feet));
 
         initNamedCommands();
 
@@ -768,20 +771,22 @@ public class RobotContainer {
     /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
-    /* Megatag epicnmess */
-    public void addMegaTagPose() {
-        LimelightHelpers.SetRobotOrientation(
-                SHOOTER_LIMELIGHT, drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+    // /* Megatag epicnmess */
+    // public void addMegaTagPose() {
+    // LimelightHelpers.SetRobotOrientation(
+    // SHOOTER_LIMELIGHT, drivetrain.getState().Pose.getRotation().getDegrees(), 0,
+    // 0, 0, 0, 0);
 
-        var mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(SHOOTER_LIMELIGHT);
+    // var mt2 =
+    // LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(SHOOTER_LIMELIGHT);
 
-        boolean rejectUpdate = false;
-        if (mt2.tagCount == 0)
-            rejectUpdate = true;
+    // boolean rejectUpdate = false;
+    // if (mt2.tagCount == 0)
+    // rejectUpdate = true;
 
-        if (!rejectUpdate)
-            drivetrain.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
-    }
+    // if (!rejectUpdate)
+    // drivetrain.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
+    // }
 
     /* Start LL Timer */
     public void startTimer() {
@@ -1015,7 +1020,7 @@ public class RobotContainer {
     private Command megaTag2ShootCommand() {
         return driverCamera.setShooterCameraCommand()
                 .andThen(shooter.runShotCommand(ShotSpeeds.FAST))
-                // .alongWith(new RotateToSpeaker(drivetrain).withTimeout(0.5))
+                .alongWith(new RotateToSpeaker(drivetrain).withTimeout(0.5))
                 .andThen(runEntryCommand(() -> getBestSTEntry(), () -> ShotSpeeds.FAST))
                 .andThen(Commands.waitUntil(shooterAndPivotReady()))
                 .andThen(conveyCommand())
@@ -1104,7 +1109,7 @@ public class RobotContainer {
                 .until(noteSensing.hasInfedSupplier())
                 .andThen(runBoth(true, 0., 0.).withTimeout(0.1))
                 .andThen(conveyBackCommand(-4.0, 0.5))
-                .andThen(shooter.spinMotorLeftCommand(0.));
+                .finallyDo(shooter::stop);
     }
 
     /* Run a Shooter Table Entry */
@@ -1246,9 +1251,8 @@ public class RobotContainer {
     /* Get Shooter Table Entry */
     public ShooterTableEntry getBestSTEntry() {
         Pose2d pose = drivetrain.getState().Pose;
-
-        Transform2d dist = pose.minus(Constants.SPEAKER_DISTANCE_TARGET);
-        Translation2d translation = dist.getTranslation();
+        Translation2d translation = new Translation2d(pose.getX() - Constants.SPEAKER_DISTANCE_TARGET.getX(),
+                pose.getY() - Constants.SPEAKER_DISTANCE_TARGET.getY());
 
         ShooterTableEntry entryPicked = ShooterTable
                 .calcShooterTableEntry(Meters.of(translation.getNorm()));
@@ -1302,10 +1306,52 @@ public class RobotContainer {
         return entry;
     }
 
-    public Command updateDrivePoseMT2() {
-        metaVision.setRobotRotationMT2(drivetrain.getState().Pose.getRotation().getDegrees());
-        var llPose = metaVision.getBotposeEstimateMT2(allianceIsBlue());
-        return drivetrain.addMeasurementCommand(() -> llPose.pose, () -> llPose.timestampSeconds);
+    public void updateMTRot() {
+        megaLeftVision.setRobotRotationMT2(drivetrain.getState().Pose.getRotation().getDegrees());
+        megaRightVision.setRobotRotationMT2(drivetrain.getState().Pose.getRotation().getDegrees());
+    }
+
+    public void updateDrivePoseMT2() {
+        updateMTRot();
+        var llLeftPoseEst = megaLeftVision.getBotposeEstimateMT2();
+        var llRightPoseEst = megaRightVision.getBotposeEstimateMT2();
+        Pose2d llAvgPose;
+
+        if (llLeftPoseEst.tagCount <= 0 && llRightPoseEst.tagCount <= 0){
+            return;
+        } else if (llLeftPoseEst.tagCount <= 0) {
+            llAvgPose = new Pose2d(llRightPoseEst.pose.getTranslation(), drivetrain.getState().Pose.getRotation());
+        } else if (llRightPoseEst.tagCount <= 0) {
+            llAvgPose = new Pose2d(llLeftPoseEst.pose.getTranslation(), drivetrain.getState().Pose.getRotation());
+        } else {
+            llAvgPose = new Pose2d(
+                    llLeftPoseEst.pose.getTranslation().plus(llRightPoseEst.pose.getTranslation()).div(2.),
+                    drivetrain.getState().Pose.getRotation());
+        }
+
+        double llAvgTimestamp = (llLeftPoseEst.timestampSeconds + llRightPoseEst.timestampSeconds) / 2;
+        drivetrain.addVisionMeasurement(llAvgPose, llAvgTimestamp);
+    }
+
+    public Command updateDrivePoseMT2Command() {
+        updateMTRot();
+        var llLeftPoseEst = megaLeftVision.getBotposeEstimateMT2();
+        var llRightPoseEst = megaRightVision.getBotposeEstimateMT2();
+        Pose2d llAvgPose;
+
+        if (llLeftPoseEst.tagCount <= 0 && llRightPoseEst.tagCount <= 0)
+            llAvgPose = new Pose2d();
+        else if (llLeftPoseEst.tagCount <= 0)
+            llAvgPose = new Pose2d(llRightPoseEst.pose.getTranslation(), drivetrain.getState().Pose.getRotation());
+        else if (llRightPoseEst.tagCount <= 0)
+            llAvgPose = new Pose2d(llLeftPoseEst.pose.getTranslation(), drivetrain.getState().Pose.getRotation());
+        else
+            llAvgPose = new Pose2d(
+                    llLeftPoseEst.pose.getTranslation().plus(llRightPoseEst.pose.getTranslation()).div(2.),
+                    drivetrain.getState().Pose.getRotation());
+
+        double llAvgTimestamp = (llLeftPoseEst.timestampSeconds + llRightPoseEst.timestampSeconds) / 2;
+        return drivetrain.addMeasurementCommand(() -> llAvgPose, () -> llAvgTimestamp);
     }
 
     // private ShooterTableEntry getBestSTEntryPhotonY() {

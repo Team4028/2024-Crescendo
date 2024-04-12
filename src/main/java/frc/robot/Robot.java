@@ -36,13 +36,14 @@ public class Robot extends TimedRobot {
 
         addPeriodic(() -> {
             DashboardStore.update();
+            m_robotContainer.updateDrivePoseMT2();
         }, 0.1);
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-
+        // m_robotContainer.updateDrivePoseMT2();
         // m_robotContainer.printDistanceValues();
     }
 
@@ -102,8 +103,6 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         m_robotContainer.logValues();
-
-        m_robotContainer.addMegaTagPose();
     }
 
     @Override
