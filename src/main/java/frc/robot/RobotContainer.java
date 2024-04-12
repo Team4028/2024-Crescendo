@@ -490,8 +490,8 @@ public class RobotContainer {
 
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(() -> drive
-                        .withVelocityX(getXSpeed(true).getAsDouble())
-                        .withVelocityY(getYSpeed(true).getAsDouble())
+                .withVelocityX(getXSpeed(true).getAsDouble())
+                .withVelocityY(getYSpeed(true).getAsDouble())
                         .withRotationalRate(getRotationSpeed())));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
@@ -757,13 +757,13 @@ public class RobotContainer {
     }
 
     private DoubleSupplier getYSpeed(boolean flip) {
-        return () -> flip ? getDriveSignum()
-                : 1 * scaleDriverController(-driverController.getLeftX(), yLimiter, currentSpeed) * MAX_SPEED;
+        return () -> (flip ? getDriveSignum()
+                : 1) * scaleDriverController(-driverController.getLeftX(), yLimiter, currentSpeed) * MAX_SPEED;
     }
 
     private DoubleSupplier getXSpeed(boolean flip) {
-        return () -> flip ? getDriveSignum()
-                : 1 * scaleDriverController(-driverController.getLeftY(), xLimiter, currentSpeed) * MAX_SPEED;
+        return () -> (flip ? getDriveSignum()
+                : 1) * scaleDriverController(-driverController.getLeftY(), xLimiter, currentSpeed) * MAX_SPEED;
     }
 
     /** Start LL Timer */
