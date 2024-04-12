@@ -1,0 +1,58 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.292109148548377,
+        "y": 7.4298867320006154
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.964320028018937,
+        "y": 7.37161311057316
+      },
+      "isLocked": false,
+      "linkedName": "Amp 1"
+    },
+    {
+      "anchor": {
+        "x": 5.91,
+        "y": 7.19
+      },
+      "prevControl": {
+        "x": 6.522047897689406,
+        "y": 7.276918475753544
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Magic Shoot"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.0,
+      "rotationDegrees": 28.66,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 4.5,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 1080.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 28.617547225484195,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

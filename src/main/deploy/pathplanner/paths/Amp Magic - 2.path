@@ -1,0 +1,81 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.91,
+        "y": 7.19
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.53661630304627,
+        "y": 6.686898058800555
+      },
+      "isLocked": false,
+      "linkedName": "Magic Shoot"
+    },
+    {
+      "anchor": {
+        "x": 8.241119729799353,
+        "y": 5.776372723996557
+      },
+      "prevControl": {
+        "x": 7.286889178924764,
+        "y": 6.2352774927377705
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Amp 2"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -25.680000000000007,
+      "rotateFast": false
+    },
+    {
+      "waypointRelativePos": 0.0,
+      "rotationDegrees": 28.66,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "Infeed",
+      "waypointRelativePos": 0.5,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 4.5,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 1080.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -29.291362170984204,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": 28.545710789663126,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

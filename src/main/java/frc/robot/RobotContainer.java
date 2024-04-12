@@ -419,6 +419,7 @@ public class RobotContainer {
         /* 4 piece pivots */
         NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(16.0)
                 .alongWith(driverCamera.setShooterCameraCommand())); // 17
+
         NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(11)); // 11
         NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(14.625)); // 15
         NamedCommands.registerCommand("Note C", pivot.runToPositionCommand(13.5)); // 13.5
@@ -453,6 +454,11 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Note C Pathfinding",
                 mirroredPathfindingShotCommand(12.35, Constants.NOTE_C_SHOT, 0.85, 0.));
+        // PBAC Auto Commands
+        NamedCommands.registerCommand("Preload Stationary", stationaryShot(4.2));
+        NamedCommands.registerCommand("Stationary Shot B", stationaryShot(14.625));
+        NamedCommands.registerCommand("Stationary Shot A", stationaryShot(11));
+        NamedCommands.registerCommand("Stationary Shot C", stationaryShot(13.5));
     }
 
     // =========================== //
@@ -1317,7 +1323,7 @@ public class RobotContainer {
         var llRightPoseEst = megaRightVision.getBotposeEstimateMT2();
         Pose2d llAvgPose;
 
-        if (llLeftPoseEst.tagCount <= 0 && llRightPoseEst.tagCount <= 0){
+        if (llLeftPoseEst.tagCount <= 0 && llRightPoseEst.tagCount <= 0) {
             return;
         } else if (llLeftPoseEst.tagCount <= 0) {
             llAvgPose = new Pose2d(llRightPoseEst.pose.getTranslation(), drivetrain.getState().Pose.getRotation());
