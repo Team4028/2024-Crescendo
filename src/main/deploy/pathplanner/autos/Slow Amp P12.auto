@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.41,
+      "x": 1.4050393786237534,
       "y": 7.25
     },
-    "rotation": 0.0
+    "rotation": 0
   },
   "command": {
     "type": "sequential",
@@ -14,25 +14,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Amp P - 1"
+            "pathName": "Slow Amp P"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Magic Shoot"
+            "name": "Stationary Shot Amp"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Amp Magic - 1 "
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Finish Infeed"
+            "pathName": "Slow Amp P - 1"
           }
         },
         {
@@ -44,19 +38,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Magic Shoot"
+            "name": "Stationary Shot Amp"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "Amp Magic - 2"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Finish Infeed"
           }
         },
         {
@@ -68,31 +56,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Magic Shoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Amp Magic - 3"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Finish Infeed"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Amp 3 - Magic"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Magic Shoot"
+            "name": "Stationary Shot Amp"
           }
         }
       ]

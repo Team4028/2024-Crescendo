@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.91,
-        "y": 7.19
+        "x": 4.729835532000753,
+        "y": 6.949505168985107
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.024657882501213,
-        "y": 5.951193588278925
+        "x": 5.844493414501966,
+        "y": 5.710698757264032
       },
       "isLocked": false,
       "linkedName": "Magic Shoot"

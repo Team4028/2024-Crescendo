@@ -44,6 +44,9 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+        // m_robotContainer.updateDrivePoseMT2();
+        // m_robotContainer.printDistanceValues();
+        m_robotContainer.encodeLimelights().ignoringDisable(true).schedule();
     }
 
     @Override
