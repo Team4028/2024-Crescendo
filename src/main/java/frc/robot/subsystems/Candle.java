@@ -28,13 +28,12 @@ public class Candle extends SubsystemBase {
     private Color color;
 
     public enum Color {
-
         GREEN(0, 254, 0),
         PURPLE(118, 0, 254),
         PINK(254, 0, 118),
         YELLOW(118, 118, 0),
         ORANGE(254, 55, 0),
-        LBLUE(118, 118, 254),
+        LBLUE(55, 55, 254),
         BLUE(0, 0, 254),
         WHITE(254, 254, 254),
         RED(254, 0, 0),
@@ -43,11 +42,13 @@ public class Candle extends SubsystemBase {
         public int r;
         public int g;
         public int b;
+        public int color;
 
         Color(int r, int g, int b) {
             this.r = r;
             this.g = g;
             this.b = b;
+            this.color = r | g << 8 | b << 16;
         }
     }
 
@@ -61,10 +62,9 @@ public class Candle extends SubsystemBase {
 
     public Command encodeLimelights(Limelight ll3, Limelight... llGs) {
         return runOnce(() -> {
-            int[][] pairs = new int[][]{{0, 7}, {1, 6}, {3,4}};
+            int[][] pairs = new int[][]{{0, 7}, {1, 6}, {3, 4}};
             setLedsColor(pairs[0][0], 1, 0xFF << (ll3.getTV() * 8));
             setLedsColor(pairs[0][1], 1, 0xFF << (ll3.getTV() * 8));
-            // int skipidx = 4;
             for (int i = 0; i < llGs.length; i++) {
                 Color color = switch (llGs[i].getBotposeEstimateMT2().tagCount) {
                     case 0 -> Color.RED;
@@ -74,12 +74,11 @@ public class Candle extends SubsystemBase {
                     case 4 -> Color.BLUE;
                     default -> Color.PINK;
                 };
-                setLedsColor(pairs[i + 1][0], 1, color.r, color.g, color.b);
-                setLedsColor(pairs[i + 1][1], 1, color.r, color.g, color.b);
-                setLedsColor(2, 1, 0);
-                setLedsColor(5, 1, 0);
+                setLedsColor(pairs[i + 1][0], 1, color.color);
+                setLedsColor(pairs[i + 1][1], 1, color.color);
+                setLedsColor(2, 1, Color.OFF.color);
+                setLedsColor(5, 1, Color.OFF.color);
             }
-            setLedsColor(4, 2, 0x0);
         });
     }
 
