@@ -8,6 +8,8 @@ import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -37,7 +39,8 @@ public class Robot extends TimedRobot {
         // Do this every 100 ms
         addPeriodic(() -> {
             DashboardStore.update();
-            // m_robotContainer.updateDrivePoseMT2();
+            if (!RobotState.isAutonomous() || RobotContainer.useMegaTagAuton.getAsBoolean())
+                m_robotContainer.updateDrivePoseMT2();
         }, 0.1);
     }
 
@@ -105,7 +108,6 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         m_robotContainer.logValues();
-        m_robotContainer.updateMTRot();
     }
 
     @Override

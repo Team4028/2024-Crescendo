@@ -39,7 +39,7 @@ public class TunerConstants {
     // ||         VISION STDEVS - big so nick can see            ||
     // ============================================================
     private static final Matrix<N3, N1> odometryStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
-    private static final Matrix<N3, N1> visionStdDevs = VecBuilder.fill(0.4, 0.4, 0.4);
+    private static final Matrix<N3, N1> visionStdDevs = VecBuilder.fill(0.4, 0.4, 0.9);
 
     // The closed-loop output type to use for the steer motors;
     // This affects the PID/FF gains for the steer motors

@@ -44,6 +44,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -107,6 +108,8 @@ public class RobotContainer {
     private static final int OI_EMERGENCY_CONTROLLER = 2;
 
     private final StringLogEntry autonPhase;
+
+    public static final BooleanSupplier useMegaTagAuton = () -> true;
 
     private static final String SHOOTER_LIMELIGHT = "limelight-iii";
     private static final String MEGA_LEFT_LIMELIGHT = "limelight-gii";
@@ -325,7 +328,7 @@ public class RobotContainer {
         DashboardStore.add("Limelight Yaw", () -> LimelightHelpers.getTX(SHOOTER_LIMELIGHT));
 
         DashboardStore.add("Last Shot", () -> m_lastShot);
-        DashboardStore.add("Odometry Distance", () -> getBestSTEntry().Distance.in(Feet));
+        DashboardStore.add("Odometry Distance", () -> calcDistanceToSpeakerInFeet());//Units.metersToFeet(drivetrain.getState().Pose.getX())); // getBestSTEntry().Distance.in(Feet));
 
         initNamedCommands();
 
@@ -400,6 +403,8 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Magic Shoot", fastMagicShootCommand());
         NamedCommands.registerCommand("Mega Tag Shoot", megaTag2ShootCommand());
+        NamedCommands.registerCommand("Choose Shoot",
+                new ConditionalCommand(megaTag2ShootCommand(), fastMagicShootCommand(), useMegaTagAuton));
 
         NamedCommands.registerCommand("Finnish Path", appendAutonPhase("Finished path " + autonPathIncrement++));
 
@@ -502,8 +507,8 @@ public class RobotContainer {
 
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(() -> drive
-                .withVelocityX(getXSpeed(true).getAsDouble())
-                .withVelocityY(getYSpeed(true).getAsDouble())
+                        .withVelocityX(getXSpeed(true).getAsDouble())
+                        .withVelocityY(getYSpeed(true).getAsDouble())
                         .withRotationalRate(getRotationSpeed())));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
@@ -1001,15 +1006,17 @@ public class RobotContainer {
 
     /** Magic shoot but awesomer */
     private Command megaTag2ShootCommand() {
-        return driverCamera.setShooterCameraCommand()
+        return driverCamera.setShooterCameraCommand().alongWith(appendAutonPhase("Set Camera"))
                 .andThen(shooter.runShotCommand(ShotSpeeds.FAST))
-                .alongWith(new RotateToSpeaker(drivetrain).withTimeout(0.5))
+                .alongWith(new RotateToSpeaker(drivetrain).withTimeout(0.5).andThen(appendAutonPhase("Aligned to speaker")))
                 .andThen(runEntryCommand(() -> getBestSTEntry(), () -> ShotSpeeds.FAST))
-                .andThen(Commands.waitUntil(shooterAndPivotReady()))
-                .andThen(conveyCommand())
+                .alongWith(appendAutonPhase("Commanded Shooter and Pivot to position"))
+                .andThen(Commands.waitUntil(shooterAndPivotReady())).andThen(appendAutonPhase("Shooter and Pivot ready"))
+                .andThen(conveyCommand().andThen(appendAutonPhase("Conveyed the note into the shooter")))
                 .finallyDo(() -> {
                     shooter.stop();
                     pivot.runToPosition(Pivot.HOLD_POSITION);
+                    autonPhase.append("Pathplanner Driving");
                     setCameraWithWait();
                 });
     }
@@ -1333,4 +1340,12 @@ public class RobotContainer {
     // ste.Distance.in(Feet));
     // return ste;
     // }
+
+    private double calcDistanceToSpeakerInFeet() {
+        //TODO does the speaker coordinates need to change for red side?
+        double distX = drivetrain.getState().Pose.getX() - Constants.SPEAKER_DISTANCE_TARGET.getX();
+        double distY = drivetrain.getState().Pose.getY() - Constants.SPEAKER_DISTANCE_TARGET.getY();
+
+        return Units.metersToFeet(Math.sqrt(distY * distY + distX * distX));
+    }
 }

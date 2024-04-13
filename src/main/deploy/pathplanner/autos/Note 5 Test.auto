@@ -16,6 +16,12 @@
           "data": {
             "pathName": "Note 5 Shot Test"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Choose Shoot"
+          }
         }
       ]
     }
