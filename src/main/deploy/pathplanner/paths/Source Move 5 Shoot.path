@@ -32,7 +32,7 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Pivot Shooter Set",
+      "name": "Finish Infeed",
       "waypointRelativePos": 0,
       "command": {
         "type": "parallel",
@@ -41,13 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Source Pivot"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "Fast Shooter"
+                "name": "Finish Infeed"
               }
             }
           ]
@@ -63,7 +57,7 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": -45.0,
+    "rotation": -53.11573294557336,
     "rotateFast": true
   },
   "reversed": false,
