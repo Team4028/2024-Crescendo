@@ -28,26 +28,27 @@ public class Candle extends SubsystemBase {
     private Color color;
 
     public enum Color {
-
-        GREEN(0, 254, 0),
-        PURPLE(118, 0, 254),
-        PINK(254, 0, 118),
-        YELLOW(118, 118, 0),
-        ORANGE(254, 55, 0),
-        LBLUE(118, 118, 254),
-        BLUE(0, 0, 254),
-        WHITE(254, 254, 254),
-        RED(254, 0, 0),
-        OFF(0, 0, 0);
+        GREEN(0, 254, 0, 0xFF00),
+        PURPLE(118, 0, 254, 0xFF0076),
+        PINK(254, 0, 118, 0x7600FF),
+        YELLOW(118, 118, 0, 0x7676),
+        ORANGE(254, 55, 0, 0x37FF),
+        LBLUE(55, 55, 254, 0xFF3737),
+        BLUE(0, 0, 254, 0xFF0000),
+        WHITE(254, 254, 254, 0xFFFFFF),
+        RED(254, 0, 0, 0xFF),
+        OFF(0, 0, 0, 0x0);
 
         public int r;
         public int g;
         public int b;
+        public int color;
 
-        Color(int r, int g, int b) {
+        Color(int r, int g, int b, int color) {
             this.r = r;
             this.g = g;
             this.b = b;
+            this.color = color;
         }
     }
 
@@ -61,10 +62,9 @@ public class Candle extends SubsystemBase {
 
     public Command encodeLimelights(Limelight ll3, Limelight... llGs) {
         return runOnce(() -> {
-            int[][] pairs = new int[][]{{0, 7}, {1, 6}, {3,4}};
+            int[][] pairs = new int[][]{{0, 7}, {1, 6}, {3, 4}};
             setLedsColor(pairs[0][0], 1, 0xFF << (ll3.getTV() * 8));
             setLedsColor(pairs[0][1], 1, 0xFF << (ll3.getTV() * 8));
-            // int skipidx = 4;
             for (int i = 0; i < llGs.length; i++) {
                 Color color = switch (llGs[i].getBotposeEstimateMT2().tagCount) {
                     case 0 -> Color.RED;
@@ -74,12 +74,11 @@ public class Candle extends SubsystemBase {
                     case 4 -> Color.BLUE;
                     default -> Color.PINK;
                 };
-                setLedsColor(pairs[i + 1][0], 1, color.r, color.g, color.b);
-                setLedsColor(pairs[i + 1][1], 1, color.r, color.g, color.b);
-                setLedsColor(2, 1, 0);
-                setLedsColor(5, 1, 0);
+                setLedsColor(pairs[i + 1][0], 1, color.color);
+                setLedsColor(pairs[i + 1][1], 1, color.color);
+                setLedsColor(2, 1, Color.OFF.color);
+                setLedsColor(5, 1, Color.OFF.color);
             }
-            setLedsColor(4, 2, 0x0);
         });
     }
 
