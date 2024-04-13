@@ -394,7 +394,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Fix Note", fixNoteCommand());
 
         NamedCommands.registerCommand("Finish Infeed",
-                smartInfeedCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST)));
+                smartInfeedAutoCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST)));
 
         NamedCommands.registerCommand("Magic Shoot", fastMagicShootCommand());
 
@@ -455,11 +455,11 @@ public class RobotContainer {
         NamedCommands.registerCommand("Note C Pathfinding",
                 mirroredPathfindingShotCommand(12.35, Constants.NOTE_C_SHOT, 0.85, 0.));
         // PBAC Auto Commands
-        NamedCommands.registerCommand("Preload Stationary", stationaryShot(4.2));
-        NamedCommands.registerCommand("Stationary Shot B", stationaryShot(14.625));
-        NamedCommands.registerCommand("Stationary Shot A", stationaryShot(11));
-        NamedCommands.registerCommand("Stationary Shot C", stationaryShot(13.5));
-        NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(8));
+        NamedCommands.registerCommand("Preload Stationary", stationaryShotNoPV(4.2));
+        NamedCommands.registerCommand("Stationary Shot B", stationaryShotNoPV(9));
+        NamedCommands.registerCommand("Stationary Shot A", stationaryShotNoPV(9));
+        NamedCommands.registerCommand("Stationary Shot C", stationaryShotNoPV(9));
+        NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(4.75));
         NamedCommands.registerCommand("Convey", conveyCommand());
     }
 
@@ -1117,6 +1117,13 @@ public class RobotContainer {
                 .until(noteSensing.hasInfedSupplier())
                 .andThen(runBoth(true, 0., 0.).withTimeout(0.1))
                 .andThen(conveyBackCommand(-4.0, 0.5))
+                .finallyDo(shooter::stop);
+    }
+     private Command smartInfeedAutoCommand() {
+        return runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS)
+                .until(noteSensing.hasInfedSupplier())
+                .andThen(runBoth(true, 0., 0.).withTimeout(0.1))
+                .andThen(conveyBackCommand(-4.0, 0.1))
                 .finallyDo(shooter::stop);
     }
 

@@ -14,13 +14,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Source Move Start"
+            "pathName": "Source Move Shot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Source Move Shot"
+            "pathName": "Source Move After"
           }
         }
       ]

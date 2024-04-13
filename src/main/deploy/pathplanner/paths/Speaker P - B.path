@@ -3,12 +3,12 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3794008067164314,
+        "x": 1.4376744281438871,
         "y": 5.543278238286734
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3794008067164305,
+        "x": 2.4376744281438882,
         "y": 5.543278238286734
       },
       "isLocked": false,
@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 2.91,
-        "y": 5.55
+        "x": 3.1494620575754015,
+        "y": 5.543278238286734
       },
       "prevControl": {
-        "x": 1.7902216859337243,
-        "y": 5.572282893593271
+        "x": 2.0296837435091257,
+        "y": 5.565561131880005
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,7 +39,7 @@
   "eventMarkers": [
     {
       "name": "Infeed",
-      "waypointRelativePos": 0.5,
+      "waypointRelativePos": 0.0,
       "command": {
         "type": "parallel",
         "data": {
@@ -47,7 +47,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Infeed"
+                "name": "Smart Infeed"
               }
             }
           ]

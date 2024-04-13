@@ -24,15 +24,15 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.3
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Amp Magic - 1 "
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
           }
         },
         {
@@ -48,15 +48,15 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.3
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Amp Magic - 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
           }
         },
         {
@@ -72,15 +72,15 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.3
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Amp Magic - 3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
           }
         },
         {

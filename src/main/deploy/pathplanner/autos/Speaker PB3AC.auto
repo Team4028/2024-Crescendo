@@ -18,15 +18,15 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.3
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Speaker P - B"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
           }
         },
         {
@@ -36,15 +36,15 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.3
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Speaker B - 3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
           }
         },
         {
@@ -60,15 +60,15 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.3
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Speaker B - A"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
           }
         },
         {
@@ -78,15 +78,15 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.3
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Speaker A - C"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
           }
         },
         {

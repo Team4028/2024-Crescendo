@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.91,
-        "y": 5.55
+        "x": 3.1494620575754015,
+        "y": 5.543278238286734
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.457462803124364,
-        "y": 5.667109683820078
+        "x": 1.9839896290262855,
+        "y": 5.397594184718094
       },
       "isLocked": false,
       "linkedName": "Speaker B Shot"
     },
     {
       "anchor": {
-        "x": 2.94,
-        "y": 7.029255584686857
+        "x": 2.8872307611518506,
+        "y": 6.9272767471888095
       },
       "prevControl": {
-        "x": 0.8826908918713934,
-        "y": 5.978741789626993
+        "x": 1.5305892428643775,
+        "y": 6.388245748984843
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,7 +39,7 @@
   "eventMarkers": [
     {
       "name": "Infeed",
-      "waypointRelativePos": 0.55,
+      "waypointRelativePos": 0.15,
       "command": {
         "type": "parallel",
         "data": {
@@ -47,7 +47,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Infeed"
+                "name": "Smart Infeed"
               }
             }
           ]
@@ -63,7 +63,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 39.92039213998541,
+    "rotation": 28.50900729198329,
     "rotateFast": false
   },
   "reversed": false,

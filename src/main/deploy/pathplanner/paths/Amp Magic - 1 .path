@@ -30,11 +30,6 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.7,
-      "rotationDegrees": 0.0,
-      "rotateFast": false
-    },
-    {
       "waypointRelativePos": 0.0,
       "rotationDegrees": 28.66,
       "rotateFast": false
@@ -52,7 +47,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Infeed"
+                "name": "Smart Infeed"
               }
             }
           ]

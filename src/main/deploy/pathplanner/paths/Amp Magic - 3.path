@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.973668463752189,
-        "y": 6.2716985061299315
+        "x": 7.024657882501213,
+        "y": 5.951193588278925
       },
       "isLocked": false,
       "linkedName": "Magic Shoot"
@@ -20,21 +20,15 @@
         "y": 4.045678326255982
       },
       "prevControl": {
-        "x": 7.607394096775772,
-        "y": 4.712879132945488
+        "x": 7.658383515524795,
+        "y": 5.033384050796496
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "Note 3"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.25,
-      "rotationDegrees": -40.0,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
@@ -47,7 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Infeed"
+                "name": "Smart Infeed"
               }
             }
           ]

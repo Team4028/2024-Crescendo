@@ -36,7 +36,7 @@ public class Robot extends TimedRobot {
 
         addPeriodic(() -> {
             DashboardStore.update();
-            m_robotContainer.updateDrivePoseMT2();
+            // m_robotContainer.updateDrivePoseMT2();
         }, 0.1);
     }
 

@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.38,
-      "y": 5.54
+      "x": 1.4376744281438871,
+      "y": 5.543278238286734
     },
     "rotation": 0.0
   },
@@ -18,12 +18,6 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.3
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Speaker P - B"
@@ -32,13 +26,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Stationary Shot B"
+            "name": "Finish Infeed"
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 0.3
+            "name": "Stationary Shot B"
           }
         },
         {
@@ -50,19 +44,25 @@
         {
           "type": "named",
           "data": {
-            "name": "Stationary Shot A"
+            "name": "Finish Infeed"
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 0.3
+            "name": "Stationary Shot A"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "Speaker A - C"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
           }
         },
         {
