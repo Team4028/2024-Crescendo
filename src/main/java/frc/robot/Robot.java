@@ -34,6 +34,7 @@ public class Robot extends TimedRobot {
                 CameraLerpStrat.LimelightTY);
         FollowPathCommand.warmupCommand().schedule();
 
+        // Do this every 100 ms
         addPeriodic(() -> {
             DashboardStore.update();
             m_robotContainer.updateDrivePoseMT2();
@@ -43,8 +44,6 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-        // m_robotContainer.updateDrivePoseMT2();
-        // m_robotContainer.printDistanceValues();
     }
 
     @Override
@@ -103,6 +102,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         m_robotContainer.logValues();
+        m_robotContainer.updateMTRot();
     }
 
     @Override

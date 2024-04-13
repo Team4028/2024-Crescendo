@@ -1259,6 +1259,11 @@ public class RobotContainer {
 
     public void updateDrivePoseMT2() {
         updateMTRot();
+
+        if (Math.abs(drivetrain.getCurrentRobotChassisSpeeds().omegaRadiansPerSecond) > 1.0) {
+            return;
+        }
+
         var llLeftPoseEst = megaLeftVision.getBotposeEstimateMT2();
         var llRightPoseEst = megaRightVision.getBotposeEstimateMT2();
         Pose2d llAvgPose;
