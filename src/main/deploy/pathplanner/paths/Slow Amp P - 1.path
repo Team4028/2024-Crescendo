@@ -3,37 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.395458069301338,
-        "y": 7.437170934679048
+        "x": 4.966327308600875,
+        "y": 7.1233961811948605
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.520303951012995,
-        "y": 6.957825175147851
+        "x": 5.966327308600875,
+        "y": 7.1233961811948605
       },
       "isLocked": false,
-      "linkedName": "Note 1"
+      "linkedName": "Amp P Shot"
     },
     {
       "anchor": {
-        "x": 5.51582290717155,
-        "y": 6.907771326059532
+        "x": 8.395458069301338,
+        "y": 7.437170934679048
       },
       "prevControl": {
-        "x": 6.765072238854072,
-        "y": 7.264190420063638
+        "x": 7.395458069301338,
+        "y": 7.437170934679048
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Amp Shot"
+      "linkedName": "Note 1"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Finish Infeeding",
-      "waypointRelativePos": 0,
+      "name": "Infeed",
+      "waypointRelativePos": 0.25,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,7 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Finish Infeed"
+                "name": "Smart Infeed"
               }
             }
           ]
@@ -57,13 +57,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 10.96,
+    "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 18.51,
+    "rotation": 31.787253121346975,
     "velocity": 0
   },
   "useDefaultConstraints": true

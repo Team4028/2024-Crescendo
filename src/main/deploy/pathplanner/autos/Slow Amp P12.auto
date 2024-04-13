@@ -1,0 +1,67 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.4050393786237534,
+      "y": 7.25
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Slow Amp P"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stationary Shot Amp"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Slow Amp P - 1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Amp 1 - Magic"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stationary Shot Amp"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Amp Magic - 2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Amp 2 - Magic"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stationary Shot Amp"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

@@ -1,0 +1,74 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.4050393786237534,
+        "y": 7.2903315529086905
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.2953613611180126,
+        "y": 7.798093308549948
+      },
+      "isLocked": false,
+      "linkedName": "Amp Start"
+    },
+    {
+      "anchor": {
+        "x": 3.5534380779214656,
+        "y": 7.6455709369034075
+      },
+      "prevControl": {
+        "x": 2.7702761220663352,
+        "y": 7.702214054647656
+      },
+      "nextControl": {
+        "x": 4.041227123665349,
+        "y": 7.610291015367566
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.966327308600875,
+        "y": 7.1233961811948605
+      },
+      "prevControl": {
+        "x": 3.9299368758536515,
+        "y": 7.610291015371408
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Amp P Shot"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.0,
+      "rotationDegrees": 0.0,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 4.5,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 1080.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 28.3424584982633,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

@@ -4,15 +4,15 @@
     {
       "anchor": {
         "x": 1.4050393786237534,
-        "y": 7.25
+        "y": 7.2903315529086905
       },
       "prevControl": null,
       "nextControl": {
         "x": 1.3841724571595315,
-        "y": 7.2917338429235805
+        "y": 7.332065395832271
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Amp Start"
     },
     {
       "anchor": {
@@ -20,12 +20,12 @@
         "y": 7.655697015032008
       },
       "prevControl": {
-        "x": 1.7215261893331912,
-        "y": 7.572867548410796
+        "x": 1.7177440059720688,
+        "y": 7.595291406407451
       },
       "nextControl": {
-        "x": 3.2223040843597217,
-        "y": 7.866938892706535
+        "x": 3.2969735914240546,
+        "y": 7.818960230014657
       },
       "isLocked": false,
       "linkedName": null
@@ -75,7 +75,7 @@
   "constraintZones": [
     {
       "name": "Slow Zone",
-      "minWaypointRelativePos": 1.3,
+      "minWaypointRelativePos": 1.2000000000000002,
       "maxWaypointRelativePos": 2.1999999999999997,
       "constraints": {
         "maxVelocity": 3.0,
