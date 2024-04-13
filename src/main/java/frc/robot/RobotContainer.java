@@ -398,6 +398,7 @@ public class RobotContainer {
                 smartInfeedCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST)));
 
         NamedCommands.registerCommand("Magic Shoot", fastMagicShootCommand());
+        NamedCommands.registerCommand("Mega Tag Shoot", megaTag2ShootCommand());
 
         NamedCommands.registerCommand("Finnish Path", appendAutonPhase("Finished path " + autonPathIncrement++));
 
@@ -1260,7 +1261,7 @@ public class RobotContainer {
     public void updateDrivePoseMT2() {
         updateMTRot();
 
-        if (Math.abs(drivetrain.getCurrentRobotChassisSpeeds().omegaRadiansPerSecond) > 1.0) {
+        if (Math.abs(drivetrain.getCurrentRobotChassisSpeeds().omegaRadiansPerSecond) > 0.33) {
             return;
         }
 
