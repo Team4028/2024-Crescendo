@@ -67,7 +67,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Amp",
   "previewStartingState": {
     "rotation": 29.80642023123194,
     "velocity": 0
