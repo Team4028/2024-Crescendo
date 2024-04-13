@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.357666972654265,
+        "y": 0.7138518624863336
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.3729789175305855,
+        "y": 1.0232994730076923
+      },
+      "isLocked": false,
+      "linkedName": "Note 5"
+    },
+    {
+      "anchor": {
+        "x": 3.418977556673819,
+        "y": 2.3673658704932508
+      },
+      "prevControl": {
+        "x": 4.81330321785959,
+        "y": 1.899710174525479
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Source Shot Prime"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 4.5,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 1080.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -39.0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}
