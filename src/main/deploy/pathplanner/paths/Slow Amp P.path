@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.2953613611180126,
-        "y": 7.798093308549948
+        "x": 2.6709659474827783,
+        "y": 7.631157936832275
       },
       "isLocked": false,
       "linkedName": "Amp Start"
     },
     {
       "anchor": {
-        "x": 3.5534380779214656,
-        "y": 7.6455709369034075
+        "x": 3.5612879299770377,
+        "y": 7.610291015367566
       },
       "prevControl": {
-        "x": 2.7702761220663352,
-        "y": 7.702214054647656
+        "x": 2.7781259741219073,
+        "y": 7.666934133111814
       },
       "nextControl": {
-        "x": 4.041227123665349,
-        "y": 7.610291015367566
+        "x": 4.049076975720922,
+        "y": 7.5750110938317246
       },
       "isLocked": false,
       "linkedName": null
@@ -60,8 +60,8 @@
     "maxAngularAcceleration": 1080.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 28.3424584982633,
+    "velocity": 0.0,
+    "rotation": 18.0,
     "rotateFast": false
   },
   "reversed": false,

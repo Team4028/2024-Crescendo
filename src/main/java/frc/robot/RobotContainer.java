@@ -23,6 +23,7 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
+import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.MathUtil;
@@ -109,7 +110,7 @@ public class RobotContainer {
 
     private final StringLogEntry autonPhase;
 
-    public static final BooleanSupplier useMegaTagAuton = () -> true;
+    public static final BooleanSupplier useMegaTagAuton = () -> false;
 
     private static final String SHOOTER_LIMELIGHT = "limelight-iii";
     private static final String MEGA_LEFT_LIMELIGHT = "limelight-gii";
@@ -467,7 +468,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("Stationary Shot B", stationaryShotNoPV(9));
         NamedCommands.registerCommand("Stationary Shot A", stationaryShotNoPV(9));
         NamedCommands.registerCommand("Stationary Shot C", stationaryShotNoPV(9));
-        NamedCommands.registerCommand("Stationary Shot Amp", stationaryShot(13));
+        NamedCommands.registerCommand("P Amp Shot", stationaryShotNoPV(13.2));
+        NamedCommands.registerCommand("Stationary Shot Amp", stationaryShotNoPV(13.5));
         NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(4.75));
         NamedCommands.registerCommand("Convey", conveyCommand());
         NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(9));

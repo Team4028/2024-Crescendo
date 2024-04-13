@@ -29,7 +29,7 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         DataLogManager.start();
         m_robotContainer = new RobotContainer();
-        SignalLogger.setPath("/u/ctre");
+        SignalLogger.setPath("/media/sda1/ctre");
 
         // load static libs into memory
         ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getLatestResults("").targetingResults.pipelineID,
