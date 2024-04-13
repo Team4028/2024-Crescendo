@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.908785796598439,
-        "y": 5.5482804463931075
+        "x": 3.418977556673819,
+        "y": 2.3673658704932508
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.4048927559738535,
-        "y": 4.813298236461944
+        "x": 4.2707632597771505,
+        "y": 4.278539221502329
       },
       "isLocked": false,
-      "linkedName": "Note B"
+      "linkedName": "Source Shot Prime"
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 4.076825647343473
       },
       "prevControl": {
-        "x": 7.403656056280423,
-        "y": 3.1486886480946343
+        "x": 6.976507409701112,
+        "y": 4.125515130761129
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,7 +30,25 @@
   ],
   "rotationTargets": [],
   "constraintZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Infeed",
+      "waypointRelativePos": 0.45,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Smart Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 6.0,
     "maxAcceleration": 4.5,
@@ -39,7 +57,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 17.163831039104693,
+    "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,

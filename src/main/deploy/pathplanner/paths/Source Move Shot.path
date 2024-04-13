@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.62293523167348,
-        "y": 2.520334126737464
+        "x": 1.28,
+        "y": 3.34
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.622935231673475,
-        "y": 2.520334126737464
+        "x": 3.2077356790028575,
+        "y": 3.5109856910042128
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Source 3C Start"
     },
     {
       "anchor": {
@@ -20,20 +20,38 @@
         "y": 0.7138518624863336
       },
       "prevControl": {
-        "x": 7.357666972654265,
-        "y": 0.7138518624863336
+        "x": 5.953880088771713,
+        "y": 1.136335617835389
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "Note 5"
     }
   ],
-  "rotationTargets": [],
-  "constraintZones": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.25,
+      "rotationDegrees": -41.5,
+      "rotateFast": true
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "New Constraints Zone",
+      "minWaypointRelativePos": 0.15,
+      "maxWaypointRelativePos": 0.5,
+      "constraints": {
+        "maxVelocity": 3.0,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 1080.0
+      }
+    }
+  ],
   "eventMarkers": [
     {
-      "name": "Start Shooter",
-      "waypointRelativePos": 0,
+      "name": "Infeed",
+      "waypointRelativePos": 0.45,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,7 +59,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Prepare Spit"
+                "name": "Smart Infeed"
               }
             }
           ]
@@ -49,8 +67,8 @@
       }
     },
     {
-      "name": "Spit Note",
-      "waypointRelativePos": 0.4,
+      "name": "Convey",
+      "waypointRelativePos": 0.35,
       "command": {
         "type": "parallel",
         "data": {
@@ -58,7 +76,7 @@
             {
               "type": "named",
               "data": {
-                "name": "First Spit Note"
+                "name": "Convey"
               }
             }
           ]
@@ -66,8 +84,8 @@
       }
     },
     {
-      "name": "Pivot zero",
-      "waypointRelativePos": 0,
+      "name": "Shooter Pivot Set",
+      "waypointRelativePos": 0.0,
       "command": {
         "type": "parallel",
         "data": {
@@ -75,7 +93,13 @@
             {
               "type": "named",
               "data": {
-                "name": "Pivot Zero"
+                "name": "Source Pivot"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Fast Shooter"
               }
             }
           ]
@@ -87,18 +111,18 @@
     "maxVelocity": 6.0,
     "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0
+    "maxAngularAcceleration": 1080.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -24.3624530153122,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
-    "velocity": 0
+    "rotation": 0.0,
+    "velocity": 0.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

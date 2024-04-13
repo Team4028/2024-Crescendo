@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.403476823732172,
-        "y": 4.045678326255982
+        "x": 8.35372422637192,
+        "y": 4.076825647343473
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.288283035698747,
-        "y": 4.857397854147786
+        "x": 5.238530438338495,
+        "y": 4.8885451752352775
       },
       "isLocked": false,
       "linkedName": "Note 3"
@@ -57,7 +57,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -42.45519562018688,
+    "rotation": -39.484611262342575,
     "rotateFast": true
   },
   "reversed": false,
