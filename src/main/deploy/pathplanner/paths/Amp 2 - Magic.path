@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 5.91,
-        "y": 7.19
+        "x": 4.729835532000753,
+        "y": 6.949505168985107
       },
       "prevControl": {
-        "x": 6.318084211142832,
-        "y": 7.014673186403311
+        "x": 5.137919743143585,
+        "y": 6.774178355388417
       },
       "nextControl": null,
       "isLocked": false,
@@ -36,7 +36,25 @@
     }
   ],
   "constraintZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Finish Infeed",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Finish Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 6.0,
     "maxAcceleration": 4.5,

@@ -30,33 +30,15 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Finish Infeed"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Amp 1 - Magic"
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Magic Shoot"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Amp Magic - 2"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Finish Infeed"
           }
         },
         {

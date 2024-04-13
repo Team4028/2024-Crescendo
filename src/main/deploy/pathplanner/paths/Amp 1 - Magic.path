@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.292109148548377,
-        "y": 7.4298867320006154
+        "x": 8.395458069301338,
+        "y": 7.437170934679048
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.964320028018937,
-        "y": 7.37161311057316
+        "x": 8.067668948771898,
+        "y": 7.378897313251593
       },
       "isLocked": false,
-      "linkedName": "Amp 1"
+      "linkedName": "Note 1"
     },
     {
       "anchor": {
-        "x": 5.91,
-        "y": 7.19
+        "x": 4.729835532000753,
+        "y": 6.949505168985107
       },
       "prevControl": {
-        "x": 6.522047897689406,
-        "y": 7.276918475753544
+        "x": 5.341883429690159,
+        "y": 7.036423644738651
       },
       "nextControl": null,
       "isLocked": false,
@@ -36,7 +36,25 @@
     }
   ],
   "constraintZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Stop  Infeed",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Finish Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 6.0,
     "maxAcceleration": 4.5,

@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.154946119046942,
-        "y": 4.4235215361819735
+        "x": 6.22529823697158,
+        "y": 6.497388537249741
       },
       "isLocked": false,
       "linkedName": "Note 3"
     },
     {
       "anchor": {
-        "x": 5.91,
-        "y": 7.19
+        "x": 4.729835532000753,
+        "y": 6.949505168985107
       },
       "prevControl": {
-        "x": 6.0121537101991676,
-        "y": 6.628624437373098
+        "x": 6.267032079900998,
+        "y": 6.629545706526232
       },
       "nextControl": null,
       "isLocked": false,
@@ -36,7 +36,25 @@
     }
   ],
   "constraintZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Stop Infeed",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Finish Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 6.0,
     "maxAcceleration": 4.5,

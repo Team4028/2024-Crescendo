@@ -31,6 +31,10 @@ public class Limelight extends VisionSystem {
         return Optional.empty();
     }
 
+    public int getTV() {
+        return LimelightHelpers.getTV(cameraName) ? 1 : 0;
+    }
+
     public void setRobotRotationMT2(double degrees) {
         LimelightHelpers.SetRobotOrientation(cameraName, degrees, 0, 0, 0, 0, 0);
     }

@@ -54,6 +54,7 @@ import frc.robot.commands.vision.ShooterAlign;
 import frc.robot.commands.vision.ShooterAlignEpic;
 import frc.robot.commands.vision.ShooterAlignStrafe;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Candle;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Conveyor;
@@ -129,7 +130,7 @@ public class RobotContainer {
     private final FanPivot m_fanPivot = new FanPivot();
     private final Whippy whippy = new Whippy();
 
-    // private final Candle CANdle = new Candle();
+    private final Candle candle = new Candle();
     private final NoteSensing noteSensing = new NoteSensing();
     private final DriverCamera driverCamera = new DriverCamera();
 
@@ -281,7 +282,7 @@ public class RobotContainer {
     // Units.inchesToMeters(57.125);
 
     public RobotContainer() {
-        // shooterVision.s?etPipeline(Vision.SHOOTER_PIPELINE_INDEX);
+        // shooterVision.setPipeline(Vision.SHOOTER_PIPELINE_INDEX);
 
         autonPhase = new StringLogEntry(DataLogManager.getLog(), "Auton Phase");
 
@@ -461,6 +462,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Stationary Shot C", stationaryShotNoPV(9));
         NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(4.75));
         NamedCommands.registerCommand("Convey", conveyCommand());
+        NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(9));
     }
 
     // =========================== //
@@ -1081,6 +1083,10 @@ public class RobotContainer {
         return stopAllCommand(false);
     }
 
+    public Command encodeLimelights() {
+        return candle.encodeLimelights(shooterLimelight, megaLeftVision, megaRightVision);
+    }
+
     /* Put Current ST Index Data to Dashboard */
     private void pushIndexData() {
         presetIndex = MathUtil.clamp(presetIndex, 0, indexMap.size() - 1);
@@ -1119,7 +1125,8 @@ public class RobotContainer {
                 .andThen(conveyBackCommand(-4.0, 0.5))
                 .finallyDo(shooter::stop);
     }
-     private Command smartInfeedAutoCommand() {
+
+    private Command smartInfeedAutoCommand() {
         return runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS)
                 .until(noteSensing.hasInfedSupplier())
                 .andThen(runBoth(true, 0., 0.).withTimeout(0.1))

@@ -11,6 +11,7 @@ import com.ctre.phoenix.led.ColorFlowAnimation.Direction;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.BeakCommands;
+import frc.robot.utils.Limelight;
 
 import com.ctre.phoenix.led.FireAnimation;
 import com.ctre.phoenix.led.RainbowAnimation;
@@ -30,7 +31,10 @@ public class Candle extends SubsystemBase {
 
         GREEN(0, 254, 0),
         PURPLE(118, 0, 254),
+        PINK(254, 0, 118),
+        YELLOW(118, 118, 0),
         ORANGE(254, 55, 0),
+        LBLUE(118, 118, 254),
         BLUE(0, 0, 254),
         WHITE(254, 254, 254),
         RED(254, 0, 0),
@@ -49,10 +53,43 @@ public class Candle extends SubsystemBase {
 
     /* Creates a new light. */
     public Candle() {
-        candle = new CANdle(21, "rio");
-        candle.configBrightnessScalar(.5);
+        candle = new CANdle(3, "rio");
+        candle.configBrightnessScalar(.25);
         candle.configLEDType(LEDStripType.GRB);
         setColor(Color.WHITE);
+    }
+
+    public Command encodeLimelights(Limelight ll3, Limelight... llGs) {
+        return runOnce(() -> {
+            int[][] pairs = new int[][]{{0, 7}, {1, 6}, {3,4}};
+            setLedsColor(pairs[0][0], 1, 0xFF << (ll3.getTV() * 8));
+            setLedsColor(pairs[0][1], 1, 0xFF << (ll3.getTV() * 8));
+            // int skipidx = 4;
+            for (int i = 0; i < llGs.length; i++) {
+                Color color = switch (llGs[i].getBotposeEstimateMT2().tagCount) {
+                    case 0 -> Color.RED;
+                    case 1 -> Color.YELLOW;
+                    case 2 -> Color.PURPLE;
+                    case 3 -> Color.LBLUE;
+                    case 4 -> Color.BLUE;
+                    default -> Color.PINK;
+                };
+                setLedsColor(pairs[i + 1][0], 1, color.r, color.g, color.b);
+                setLedsColor(pairs[i + 1][1], 1, color.r, color.g, color.b);
+                setLedsColor(2, 1, 0);
+                setLedsColor(5, 1, 0);
+            }
+            setLedsColor(4, 2, 0x0);
+        });
+    }
+
+    public void setLedsColor(int ledIndex, int count, int color) {
+        setLedsColor(ledIndex, count, color & 0xFF, (color >> 8) & 0xFF, (color >> 16) & 0xFF);
+    }
+
+    public void setLedsColor(int ledIndex, int count, int r, int g, int b) {
+        candle.setLEDs(r, g, b, 0, ledIndex, count);
+        
     }
 
     // Basic colors //
@@ -132,11 +169,11 @@ public class Candle extends SubsystemBase {
     // Blink command -> Use for anything //
     public Command blink(Color color, int cycles) {
         return BeakCommands.repeatCommand(
-            setNoColorCommand().andThen(
-                Commands.waitSeconds(0.25),
-                runOnce(() -> setColor(color)),
-                Commands.waitSeconds(0.25)
-            ), cycles);
+                setNoColorCommand().andThen(
+                        Commands.waitSeconds(0.25),
+                        runOnce(() -> setColor(color)),
+                        Commands.waitSeconds(0.25)),
+                cycles);
     }
 
     @Override
