@@ -142,8 +142,8 @@ public class RobotContainer {
     private final PhotonVision leftVision = new PhotonVision("Left_AprilTag_Camera", VisionSystem.LEFT_ROBOT_TO_CAMERA);
     // private final PhotonVision shooterVision = new PhotonVision("Shooter-OV2311",
     // VisionSystem.SHOOTER_ROBOT_TO_CAMERA);
-    private final PhotonVision stationaryVision = new PhotonVision("Stationary-OV2311-Camera",
-            VisionSystem.STATIONARY_ROBOT_TO_CAMERA);
+    // private final PhotonVision stationaryVision = new PhotonVision("Stationary-OV2311-Camera",
+    //         VisionSystem.STATIONARY_ROBOT_TO_CAMERA);
 
     // private final Limelight infeedCamera = new Limelight("limelight", new
     // Transform3d());
@@ -307,12 +307,12 @@ public class RobotContainer {
         DashboardStore.add("Shooter Table Name",
                 () -> indexMap.containsKey(currentIndex) ? indexMap.get(currentIndex) : "Manual");
 
-        DashboardStore.add("Stationary Distance",
-                () -> {
-                    Optional<Double> distance = stationaryVision.getTagDistance(7);
-                    return distance.isPresent() ? distance.get()
-                            : Double.NaN;
-                });
+        // DashboardStore.add("Stationary Distance",
+        //         () -> {
+        //             Optional<Double> distance = stationaryVision.getTagDistance(7);
+        //             return distance.isPresent() ? distance.get()
+        //                     : Double.NaN;
+        //         });
 
         // this is weird
         DashboardStore.add("Snapped", () -> drivetrain.getCurrentRequest().getClass().equals(snapDrive.getClass()));
