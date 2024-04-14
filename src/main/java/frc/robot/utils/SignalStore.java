@@ -13,7 +13,10 @@ public final class SignalStore {
     private static ArrayList<BaseStatusSignal> signals = new ArrayList<>();
 
     public static void add(BaseStatusSignal... signal) {
-        signals.addAll(signals);
+        for (BaseStatusSignal status : signal) {
+            signals.add(status);
+            System.out.println(signals);
+        }
     }
 
     public static void update() {

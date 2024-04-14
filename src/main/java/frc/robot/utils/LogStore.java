@@ -4,7 +4,7 @@
 
 package frc.robot.utils;
 
-import java.util.Map;
+import java.util.HashMap;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -19,9 +19,9 @@ import edu.wpi.first.wpilibj.DataLogManager;
 public final class LogStore {
     private static final DataLog log = DataLogManager.getLog();
 
-    private static Map<DoubleLogEntry, DoubleSupplier> doubleEntries = Map.of();
-    private static Map<StringLogEntry, Supplier<String>> stringEntries = Map.of();
-    private static Map<BooleanLogEntry, BooleanSupplier> boolEntries = Map.of();
+    private static HashMap<DoubleLogEntry, DoubleSupplier> doubleEntries = new HashMap<>();
+    private static HashMap<StringLogEntry, Supplier<String>> stringEntries = new HashMap<>();
+    private static HashMap<BooleanLogEntry, BooleanSupplier> boolEntries = new HashMap<>();
 
     public static void add(String name, DoubleSupplier value) {
         doubleEntries.put(new DoubleLogEntry(log, name), value);
