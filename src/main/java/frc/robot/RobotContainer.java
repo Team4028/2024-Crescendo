@@ -948,7 +948,7 @@ public class RobotContainer {
                 .andThen(drivetrain.mirrorablePathFindCommand(
                         BeakUtils.allianceIsBlue() ? Constants.BLUE_SHUTTLING_TARGET : Constants.RED_SHUTTLING_TARGET,
                         0.75, 0))
-                .andThen(shootCommand(() -> ShooterTable.calcShooterTableEntry(Meters.of(
+                .andThen(shootCommand(() -> ShooterTable.calcShuttleTableEntry(Meters.of(
                         BeakUtils.translationToPose(drivetrain.getState().Pose, Constants.SHUTTLING_NOTE_TARGET)
                                 .getNorm()))));
     }
