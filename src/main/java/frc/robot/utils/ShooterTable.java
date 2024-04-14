@@ -71,21 +71,21 @@ public class ShooterTable {
         // put entries here
         // Distances must go from top to bottom: shortest to longest
         // IF YOU INCREASE DISTANCE, SHOOTER ANGLE GOES UP
-        shooterTable.add(new ShooterTableEntry(Feet.of(4.4), 30.9, 0.6)); // 55 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(5), 27.0, 0.7)); // 50 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(6), 22.8, 0.8)); // 45 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(8), 16., 0.9)); // 36 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(10), 12.1, 1.0)); // 31 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(11.5), 9.4, 1.0));
-        shooterTable.add(new ShooterTableEntry(Feet.of(13), 6.7, 1.0)); // 25 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(14.5), 5.5, 1.0));
-        shooterTable.add(new ShooterTableEntry(Feet.of(16), 4.3, 1.0)); // 23 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(17.5), 3.775, 1.0));
-        shooterTable.add(new ShooterTableEntry(Feet.of(19), 3.25, 1.0)); // 21.5 degrees       
-        shooterTable.add(new ShooterTableEntry(Feet.of(20.5), 2.75, 1.0));     
-        shooterTable.add(new ShooterTableEntry(Feet.of(22), 2.24, 1.0)); // 20.5 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(24), 1.45, 1.0));
-        shooterTable.add(new ShooterTableEntry(Feet.of(27), 0.25, 1.0)); // 20 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(4.4), 30.9 + 0.25, 0.6)); // 55 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(5), 28.0 + 0.25, 0.7)); // 50 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(6), 23.8 + 0.25, 0.8)); // 45 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(8), 17.0 + 0.25, 0.9)); // 36 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(10), 13.1 + 0.25, 1.0)); // 31 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(11.5), 10.2 + 0.25, 1.0));
+        shooterTable.add(new ShooterTableEntry(Feet.of(13), 7.7 + 0.25, 1.0)); // 25 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(14.5), 6.5 + 0.25, 1.0));
+        shooterTable.add(new ShooterTableEntry(Feet.of(16), 5.1 + 0.25, 1.0)); // 23 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(17.5), 4.9 + 0.25, 1.0));
+        shooterTable.add(new ShooterTableEntry(Feet.of(19), 4.4 + 0.25, 1.0)); // 21.5 degrees       
+        shooterTable.add(new ShooterTableEntry(Feet.of(20.5), 3.58 + 0.25, 1.0));     
+        shooterTable.add(new ShooterTableEntry(Feet.of(22), 3.1 + 0.25, 1.0)); // 20.5 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(24), 2.6 + 0.25, 1.0));
+        shooterTable.add(new ShooterTableEntry(Feet.of(27), 0.25 + 0.25, 0.98)); // 20 degrees
 
         // vision table entries
         visionTable.add(new VisionTableEntry(Feet.of(4.4), 4.34, 0, 21.3, 16.07 ));
