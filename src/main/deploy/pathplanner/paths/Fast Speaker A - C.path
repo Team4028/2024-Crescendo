@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.8872307611518506,
-        "y": 6.9272767471888095
+        "x": 3.2004514763244254,
+        "y": 6.95
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5434387749640095,
-        "y": 6.595955532250333
+        "x": 2.209799912057677,
+        "y": 6.4255374071528975
       },
       "isLocked": false,
-      "linkedName": "Speaker A Shot"
+      "linkedName": "Fast Note A"
     },
     {
       "anchor": {
-        "x": 2.94,
-        "y": 4.122858715992498
+        "x": 3.1931672736459937,
+        "y": 4.013595675816019
       },
       "prevControl": {
-        "x": 1.79638017948618,
-        "y": 4.916836807941584
+        "x": 2.0495474531321736,
+        "y": 4.807573767765103
       },
       "nextControl": null,
       "isLocked": false,
@@ -57,13 +57,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -29.232189730153095,
+    "rotation": -31.0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "Middle",
   "previewStartingState": {
-    "rotation": 30.31562446991472,
+    "rotation": 27.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

@@ -46,6 +46,12 @@
           "data": {
             "pathName": "Fast Speaker A - C"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Infeed"
+          }
         }
       ]
     }

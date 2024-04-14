@@ -425,7 +425,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Stationary Shot C", shootCommand(9));
         NamedCommands.registerCommand("P Amp Shot", shootCommand(13.5));
         NamedCommands.registerCommand("Stationary Shot Amp", shootCommand(13.5));
-        NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(4.75));
+        NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(5.6));
         NamedCommands.registerCommand("Convey", conveyCommand());
         NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(9));
         NamedCommands.registerCommand("4 Piece Pivot", pivot.runToPositionCommand(14));
