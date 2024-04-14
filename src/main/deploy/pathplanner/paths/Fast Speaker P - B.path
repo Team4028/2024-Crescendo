@@ -3,43 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.8166184520288504,
-        "y": 4.18573179847702
+        "x": 1.4376744281438871,
+        "y": 5.543278238286734
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.003724923107889,
-        "y": 7.027411327989926
+        "x": 2.413757587053772,
+        "y": 5.550562440965166
       },
       "isLocked": false,
-      "linkedName": "Note C"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.35372422637192,
-        "y": 4.076825647343473
+        "x": 2.8872307611518506,
+        "y": 5.543278238286734
       },
       "prevControl": {
-        "x": 6.307247198944931,
-        "y": 2.381173253189683
+        "x": 1.7674524470855748,
+        "y": 5.565561131880005
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Note 3"
+      "linkedName": "Note B"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": -2.112078646432258,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Smart Infeed",
-      "waypointRelativePos": 0.8,
+      "name": "Infeed",
+      "waypointRelativePos": 0.5,
       "command": {
         "type": "parallel",
         "data": {
@@ -47,7 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Smart Infeed"
+                "name": "Infeed"
               }
             }
           ]
@@ -55,8 +49,8 @@
       }
     },
     {
-      "name": "Stop Shooter",
-      "waypointRelativePos": 0.15,
+      "name": "Start Shooter Pivot",
+      "waypointRelativePos": 0,
       "command": {
         "type": "parallel",
         "data": {
@@ -64,7 +58,13 @@
             {
               "type": "named",
               "data": {
-                "name": "Stop Shooter"
+                "name": "4 Piece Pivot"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Fast Shooter"
               }
             }
           ]
@@ -75,19 +75,19 @@
   "globalConstraints": {
     "maxVelocity": 6.0,
     "maxAcceleration": 4.5,
-    "maxAngularVelocity": 720.0,
+    "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 1080.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 24.775140568831905,
-    "rotateFast": true
+    "rotation": 0,
+    "rotateFast": false
   },
   "reversed": false,
-  "folder": "Amp",
+  "folder": "Middle",
   "previewStartingState": {
-    "rotation": -33.47000000000003,
+    "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

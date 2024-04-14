@@ -22,6 +22,7 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
+import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
@@ -45,8 +46,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.AlignDrivetrain;
 import frc.robot.commands.vision.LimelightAcquire;
-import frc.robot.commands.vision.ShooterAlignEpic;
-import frc.robot.commands.vision.ShooterAlignStrafe;
+import frc.robot.commands.vision.AlignToSpeaker;
+import frc.robot.commands.vision.SpeakerLockOn;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Candle;
 import frc.robot.subsystems.Climber;
@@ -97,9 +98,7 @@ public class RobotContainer {
     private static final int OI_OPERATOR_CONTROLLER = 1;
     private static final int OI_EMERGENCY_CONTROLLER = 2;
 
-    public static final BooleanSupplier useMegaTagAuton = () -> true;
-
-    private static final String SHOOTER_LIMELIGHT = "limelight-iii";
+    private static final String SHOOTER_LIMELIGHT = "limelight-ii";
     private static final String MEGA_LEFT_LIMELIGHT = "limelight-gii";
     private static final String MEGA_RIGHT_LIMELIGHT = "limelight-gi";
 
@@ -127,8 +126,6 @@ public class RobotContainer {
     private final PhotonVision rightVision = new PhotonVision("Right_AprilTag_Camera",
             VisionSystem.RIGHT_ROBOT_TO_CAMERA);
     private final PhotonVision leftVision = new PhotonVision("Left_AprilTag_Camera", VisionSystem.LEFT_ROBOT_TO_CAMERA);
-    private final PhotonVision stationaryVision = new PhotonVision("Stationary-OV2311-Camera",
-            VisionSystem.STATIONARY_ROBOT_TO_CAMERA);
 
     // private final Limelight infeedCamera = new Limelight("limelight", new
     // Transform3d());
@@ -234,7 +231,7 @@ public class RobotContainer {
     private final ShootingStrategy odometryStrategy = new ShootingStrategy(drivetrain);
 
     private final ShootingStrategy chassisLimelight2dStrategy = new ShootingStrategy(megaLeftVision,
-            CameraLerpStrat.LeftChassisLimelightTY);
+            CameraLerpStrat.Limelight3GTY);
 
     private ShootingStrategy selectedStrategy = odometryStrategy;
 
@@ -273,12 +270,12 @@ public class RobotContainer {
         DashboardStore.add("Shooter Table Name",
                 () -> indexMap.containsKey(currentIndex) ? indexMap.get(currentIndex) : "Manual");
 
-        DashboardStore.add("Stationary Distance",
-                () -> {
-                    Optional<Double> distance = stationaryVision.getTagDistance(7);
-                    return distance.isPresent() ? distance.get()
-                            : Double.NaN;
-                });
+        // DashboardStore.add("Stationary Distance",
+        //         () -> {
+        //             Optional<Double> distance = stationaryVision.getTagDistance(7);
+        //             return distance.isPresent() ? distance.get()
+        //                     : Double.NaN;
+        //         });
 
         // this is weird
         DashboardStore.add("Snapped", () -> drivetrain.getCurrentRequest().getClass().equals(snapDrive.getClass()));
@@ -292,6 +289,7 @@ public class RobotContainer {
         DashboardStore.add("Sequence", () -> currentSequence.name());
 
         DashboardStore.add("Limelight Distance", () -> shooterLimelightStrategy.getTargetEntry().Distance.in(Feet));
+        DashboardStore.add("LimelightG Distance", () ->  chassisLimelight2dStrategy.getTargetEntry().Distance.in(Feet));
         DashboardStore.add("Limelight Yaw", () -> LimelightHelpers.getTX(SHOOTER_LIMELIGHT));
 
         DashboardStore.add("Last Shot", () -> m_lastShot);
@@ -431,10 +429,12 @@ public class RobotContainer {
         NamedCommands.registerCommand("Stationary Shot B", shootCommand(9));
         NamedCommands.registerCommand("Stationary Shot A", shootCommand(9));
         NamedCommands.registerCommand("Stationary Shot C", shootCommand(9));
-        NamedCommands.registerCommand("Stationary Shot Amp", shootCommand(13));
+        NamedCommands.registerCommand("P Amp Shot", shootCommand(13.5));
+        NamedCommands.registerCommand("Stationary Shot Amp", shootCommand(13.5));
         NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(4.75));
         NamedCommands.registerCommand("Convey", conveyCommand());
         NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(9));
+        NamedCommands.registerCommand("4 Piece Pivot", pivot.runToPositionCommand(14));
     }
 
     // =========================== //
@@ -614,11 +614,11 @@ public class RobotContainer {
 
         // /* Bump Pivot Up */
         emergencyController.rightBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 2)));
+                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 1)));
 
         /* Bump Pivot Down */
         emergencyController.leftBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 2)));
+                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 1)));
 
         // ============== //
         /* Manual Climber */
@@ -938,7 +938,7 @@ public class RobotContainer {
      */
     private Command magicLockCommand(Supplier<ShootingStrategy> strategy) {
         return driverCamera.setShooterCameraCommand()
-                .andThen(new ShooterAlignStrafe(drivetrain, getXSpeed(true), getYSpeed(true), strategy.get()))
+                .andThen(new SpeakerLockOn(drivetrain, getXSpeed(true), getYSpeed(true), strategy.get()))
                 .alongWith(runEntryCommand(strategy.get()::getTargetEntry, () -> ShotSpeeds.FAST).repeatedly())
                 .finallyDo(driverCamera::setInfeedCamera);
     }
@@ -987,7 +987,7 @@ public class RobotContainer {
         return driverCamera.setShooterCameraCommand()
                 .andThen(runEntryCommand(strategy.get()::getTargetEntry,
                         () -> ShotSpeeds.FAST)
-                        .alongWith(new ShooterAlignEpic(drivetrain, strategy.get()).withTimeout(0.5))
+                        .alongWith(new AlignToSpeaker(drivetrain, strategy.get()).withTimeout(0.5))
                         .onlyIf(() -> lock))
                 .andThen(shootCommand(strategy.get()::getTargetEntry));
     }

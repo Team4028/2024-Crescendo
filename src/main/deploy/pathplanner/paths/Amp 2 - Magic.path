@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.177626138748284,
-        "y": 6.431950965055435
+        "x": 7.171265343371731,
+        "y": 7.262508990955745
       },
       "isLocked": false,
       "linkedName": "Amp 2"
@@ -20,21 +20,15 @@
         "y": 6.949505168985107
       },
       "prevControl": {
-        "x": 5.137919743143585,
-        "y": 6.774178355388417
+        "x": 6.239209517948053,
+        "y": 7.366843598279291
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "Magic Shoot"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 1.0,
-      "rotationDegrees": 28.66,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
@@ -63,11 +57,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 38.366419089873574,
+    "rotation": 18.0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Amp",
   "previewStartingState": {
     "rotation": -35.26301172959727,
     "velocity": 0

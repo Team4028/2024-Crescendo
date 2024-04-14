@@ -3,37 +3,43 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.51582290717155,
-        "y": 6.907771326059532
+        "x": 3.1494620575754015,
+        "y": 5.543278238286734
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.886898002677446,
-        "y": 7.411790053056718
+        "x": 1.9839896290262855,
+        "y": 5.397594184718094
       },
       "isLocked": false,
-      "linkedName": "Amp Shot"
+      "linkedName": "Speaker B Shot"
     },
     {
       "anchor": {
-        "x": 8.395458069301338,
-        "y": 7.437170934679048
+        "x": 2.8872307611518506,
+        "y": 6.9272767471888095
       },
       "prevControl": {
-        "x": 7.40572175677502,
-        "y": 7.245142182332954
+        "x": 1.5305892428643775,
+        "y": 6.388245748984843
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Note 1"
+      "linkedName": "Speaker A Shot"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 27.05,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [
     {
       "name": "Infeed",
-      "waypointRelativePos": 0.45,
+      "waypointRelativePos": 0.15,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,7 +47,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Smart Infeed"
+                "name": "Infeed"
               }
             }
           ]
@@ -53,18 +59,18 @@
     "maxVelocity": 6.0,
     "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0
+    "maxAngularAcceleration": 1080.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 15.836725506489218,
-    "rotateFast": true
+    "rotation": 28.50900729198329,
+    "rotateFast": false
   },
   "reversed": false,
-  "folder": "Amp",
+  "folder": "Middle",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

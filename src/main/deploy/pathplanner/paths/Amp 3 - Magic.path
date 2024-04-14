@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.22529823697158,
-        "y": 6.497388537249741
+        "x": 6.712193071148128,
+        "y": 5.968759860143774
       },
       "isLocked": false,
       "linkedName": "Note 3"
@@ -20,21 +20,15 @@
         "y": 6.949505168985107
       },
       "prevControl": {
-        "x": 6.267032079900998,
-        "y": 6.629545706526232
+        "x": 6.350499765759835,
+        "y": 6.184384715279102
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "Magic Shoot"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.0,
-      "rotationDegrees": -39.97000000000003,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
@@ -67,7 +61,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Amp",
   "previewStartingState": {
     "rotation": -34.10563506573057,
     "velocity": 0

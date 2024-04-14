@@ -7,6 +7,7 @@ package frc.robot.commands.vision;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -15,24 +16,29 @@ import frc.robot.utils.ShootingStrategy;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class ShooterAlign extends ProfiledPIDCommand {
+public class AlignToSpeaker extends ProfiledPIDCommand {
     private static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
 
-    /** Creates a new WillRueter. */
-    public ShooterAlign(CommandSwerveDrivetrain drivetrain, ShootingStrategy strategy) {
+    private final CommandSwerveDrivetrain drivetrain;
+    private final ShootingStrategy strategy;
+
+    private static Rotation2d target;
+
+    /** Creates a new epicness. */
+    public AlignToSpeaker(CommandSwerveDrivetrain drivetrain, ShootingStrategy strategy) {
         super(
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
                         // The PID gains
-                        6.0,
+                        10.0,
                         0.0,
                         0.0,
                         // The motion profile constraints
-                        new TrapezoidProfile.Constraints(2.0, 3.0)),
+                        new TrapezoidProfile.Constraints(6.0, 12.0)),
                 // This should return the measurement
-                () -> strategy.getTargetOffset().getRadians(),
+                () -> drivetrain.getState().Pose.getRotation().getRadians(),
                 // This should return the goal (can also be a constant)
-                () -> 0.0,
+                () -> AlignToSpeaker.target.getRadians(),
                 // This uses the output
                 (output, setpoint) -> {
                     drivetrain.setControl(drive.withRotationalRate(output + setpoint.velocity));
@@ -41,8 +47,18 @@ public class ShooterAlign extends ProfiledPIDCommand {
         // Configure additional PID options by calling `getController` here.
         addRequirements(drivetrain);
 
+        this.drivetrain = drivetrain;
+        this.strategy = strategy;
+
         getController().enableContinuousInput(-Math.PI, Math.PI);
         // getController().setTolerance(Units.degreesToRadians(1.5));
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+
+        AlignToSpeaker.target = drivetrain.getState().Pose.getRotation().plus(strategy.getTargetOffset());
     }
 
     // Returns true when the command should end.

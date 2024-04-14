@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.418977556673819,
-        "y": 2.3673658704932508
+        "x": 3.8050402986342795,
+        "y": 2.564039342808056
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.2707632597771505,
-        "y": 4.278539221502329
+        "x": 4.664576214689253,
+        "y": 4.2321217561689775
       },
       "isLocked": false,
       "linkedName": "Source Shot Prime"
@@ -20,15 +20,21 @@
         "y": 4.076825647343473
       },
       "prevControl": {
-        "x": 6.976507409701112,
-        "y": 4.125515130761129
+        "x": 6.522047897689406,
+        "y": 4.166563932063091
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "Note 3"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.4,
+      "rotationDegrees": 0,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [
     {
@@ -61,10 +67,10 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Source",
   "previewStartingState": {
-    "rotation": 0,
-    "velocity": 0
+    "rotation": -53.0,
+    "velocity": 0.0
   },
   "useDefaultConstraints": true
 }

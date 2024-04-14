@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.908785796598439,
-        "y": 5.5482804463931075
+        "x": 2.8872307611518506,
+        "y": 5.543278238286734
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.656743031606869,
-        "y": 5.159759683982456
+        "x": 2.6351879961602807,
+        "y": 5.154757475876083
       },
       "isLocked": false,
       "linkedName": "Note B"
@@ -95,7 +95,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Amp",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0

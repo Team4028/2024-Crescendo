@@ -17,11 +17,11 @@ import frc.robot.utils.ShootingStrategy;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class ShooterAlignStrafe extends ProfiledPIDCommand {
+public class SpeakerLockOn extends ProfiledPIDCommand {
     private static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
 
     /** Creates a new WillRueter. */
-    public ShooterAlignStrafe(CommandSwerveDrivetrain drivetrain, DoubleSupplier xSpeed, DoubleSupplier ySpeed, ShootingStrategy strategy) {
+    public SpeakerLockOn(CommandSwerveDrivetrain drivetrain, DoubleSupplier xSpeed, DoubleSupplier ySpeed, ShootingStrategy strategy) {
         super(
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(

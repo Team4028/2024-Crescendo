@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4050393786237534,
-      "y": 7.25
+      "x": 1.4,
+      "y": 7.0
     },
     "rotation": 0
   },
@@ -14,19 +14,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Slow Amp P"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "P Amp Shot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Slow Amp P - 1"
+            "pathName": "Fast Source P - 1"
           }
         },
         {
