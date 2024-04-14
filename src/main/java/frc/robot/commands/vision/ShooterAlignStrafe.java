@@ -4,32 +4,24 @@
 
 package frc.robot.commands.vision;
 
-import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.utils.VisionSystem;
+import frc.robot.utils.ShootingStrategy;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class ShooterAlignStrafe extends ProfiledPIDCommand {
-    private static final double OFFSET = -3.0;
-
     private static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
 
     /** Creates a new WillRueter. */
-    public ShooterAlignStrafe(CommandSwerveDrivetrain drivetrain, DoubleSupplier xSpeed, DoubleSupplier ySpeed,
-            VisionSystem vision) {
+    public ShooterAlignStrafe(CommandSwerveDrivetrain drivetrain, DoubleSupplier xSpeed, DoubleSupplier ySpeed, ShootingStrategy strategy) {
         super(
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
@@ -40,38 +32,11 @@ public class ShooterAlignStrafe extends ProfiledPIDCommand {
                         // The motion profile constraints
                         new TrapezoidProfile.Constraints(2.0, 3.0)),
                 // This should return the measurement
-                () -> {
-                    int tagID = DriverStation.getAlliance().isPresent()
-                            && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
-
-                    Optional<Double> yaw = vision.getTagYaw(tagID);
-
-                    if (yaw.isPresent()) {
-                        return yaw.get();
-                    }
-
-                    return Units.degreesToRadians(OFFSET);
-                    // int tagID = DriverStation.getAlliance().isPresent()
-                    // && DriverStation.getAlliance().get() == Alliance.Red ? 4 : 7;
-
-                    // var fiducials = LimelightHelpers
-                    // .getLatestResults("limelight-shooter").targetingResults.targets_Fiducials;
-
-                    // for (var fiducial : fiducials) {
-                    // if (fiducial.fiducialID == tagID) {
-                    // return Units.degreesToRadians(fiducial.tx);
-                    // }
-                    // }
-
-                    // return 0.;
-
-                },
+                () -> strategy.getTargetOffset().getRadians(),
                 // This should return the goal (can also be a constant)
-                () -> Units.degreesToRadians(OFFSET),
+                () -> 0.0,
                 // This uses the output
                 (output, setpoint) -> {
-                    // System.out.println("The thing is doing >:D");
-                    SmartDashboard.putNumber("output", output + setpoint.velocity);
                     drivetrain.setControl(drive.withRotationalRate(output + setpoint.velocity)
                             .withVelocityX(xSpeed.getAsDouble()).withVelocityY(ySpeed.getAsDouble()));
                 });

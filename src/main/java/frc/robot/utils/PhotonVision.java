@@ -13,9 +13,9 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 
 /** Add your docs here. */
 public class PhotonVision extends VisionSystem {
@@ -44,22 +44,22 @@ public class PhotonVision extends VisionSystem {
         return Optional.empty();
     }
 
-    public Optional<Double> getTagYaw(int tagID) {
+    public Optional<Rotation2d> getTagYaw(int tagID) {
         Optional<PhotonTrackedTarget> target = getTag(tagID);
         if (target.isEmpty())
             return Optional.empty();
 
-        double yaw = Units.degreesToRadians(target.get().getYaw());
+        Rotation2d yaw = Rotation2d.fromDegrees(target.get().getYaw());
 
         return Optional.of(yaw);
     }
 
-    public Optional<Double> getTagPitch(int tagID) {
+    public Optional<Rotation2d> getTagPitch(int tagID) {
         Optional<PhotonTrackedTarget> target = getTag(tagID);
         if (target.isEmpty())
             return Optional.empty();
 
-        double pitch = target.get().getPitch();
+        Rotation2d pitch = Rotation2d.fromDegrees(target.get().getPitch());
 
         return Optional.of(pitch);
     }

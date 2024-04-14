@@ -5,8 +5,6 @@ import static edu.wpi.first.units.Units.Feet;
 import java.util.ArrayList;
 import java.util.function.Function;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.interpolation.Interpolator;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -55,7 +53,7 @@ public class ShooterTable {
             LimelightTY,
             LimelightArea,
             LimelightMultiTagArea,
-            LeftChasisLimelightTY,
+            LeftChassisLimelightTY,
             RightChassisLimelightTY,
             PhotonVisionDistance,
             PhotonVisionStationaryDistance;
@@ -154,7 +152,7 @@ public class ShooterTable {
             case PhotonVisionStationaryDistance:
                 cameraValueGetter = (vte) -> vte.PhotonStationaryDistance;
                 break;
-            case LeftChasisLimelightTY:
+            case LeftChassisLimelightTY:
                 cameraValueGetter = (vte) -> -vte.LLGLeftTY;
                 cameraValue = -cameraValue;
                 break;
