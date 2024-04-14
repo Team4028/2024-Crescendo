@@ -112,7 +112,7 @@ public class RobotContainer {
 
     public static final BooleanSupplier useMegaTagAuton = () -> false;
 
-    private static final String SHOOTER_LIMELIGHT = "limelight-iii";
+    private static final String SHOOTER_LIMELIGHT = "limelight-ii";
     private static final String MEGA_LEFT_LIMELIGHT = "limelight-gii";
     private static final String MEGA_RIGHT_LIMELIGHT = "limelight-gi";
 
@@ -258,6 +258,7 @@ public class RobotContainer {
     private double m_lastShot = 0.0;
 
     private double previousLimelightDistance = 20.0;
+    private double previousLimelight3GDistance = 20.0;
     private final Timer m_limelightTimer = new Timer();
 
     // ======================== //
@@ -326,6 +327,7 @@ public class RobotContainer {
         DashboardStore.add("Sequence", () -> currentSequence.name());
 
         DashboardStore.add("Limelight Distance", () -> getBestSTEntryLLY().Distance.in(Feet));
+        DashboardStore.add("LimelightG Distance", () -> getBestSTEntryLL3GY().Distance.in(Feet));
         DashboardStore.add("Limelight Yaw", () -> LimelightHelpers.getTX(SHOOTER_LIMELIGHT));
 
         DashboardStore.add("Last Shot", () -> m_lastShot);
@@ -683,11 +685,11 @@ public class RobotContainer {
 
         // /* Bump Pivot Up */
         emergencyController.rightBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 2)));
+                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 1)));
 
         /* Bump Pivot Down */
         emergencyController.leftBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 2)));
+                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 1)));
 
         // ============== //
         /* Manual Climber */
@@ -1239,7 +1241,7 @@ public class RobotContainer {
         SmartDashboard.putNumber("Distance", Units.metersToFeet(translation.getNorm()));
 
         SmartDashboard.putNumber("ST Angle", entryPicked.Angle);
-        SmartDashboard.putNumber("ST Left", entryPicked.Percent);
+        SmartDashboard.putNumber("ST Left", entryPicked.Beans);
 
         return entryPicked;
     }
@@ -1280,6 +1282,23 @@ public class RobotContainer {
             double dist = m_limelightTimer.get() > MAGIC_SHOOT_TIMER_THRESHOLD ? 20.0 : previousLimelightDistance;
             entry = ShooterTable.calcShooterTableEntry(Feet.of(dist));
             previousLimelightDistance = dist;
+        }
+
+        return entry;
+    }
+
+    private ShooterTableEntry getBestSTEntryLL3GY() {
+        ShooterTableEntry entry;
+
+        if (LimelightHelpers.getTV(MEGA_LEFT_LIMELIGHT)) {
+            entry = ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getTY(MEGA_LEFT_LIMELIGHT),
+                    CameraLerpStrat.Limelight3GTY);
+            previousLimelight3GDistance = entry.Distance.in(Feet);
+            m_limelightTimer.restart();
+        } else {
+            double dist = m_limelightTimer.get() > MAGIC_SHOOT_TIMER_THRESHOLD ? 20.0 : previousLimelightDistance;
+            entry = ShooterTable.calcShooterTableEntry(Feet.of(dist));
+            previousLimelight3GDistance = dist;
         }
 
         return entry;

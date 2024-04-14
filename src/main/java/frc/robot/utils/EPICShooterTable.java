@@ -46,10 +46,8 @@ public class EPICShooterTable {
                             return Double.compare(vte1.PhotonStationaryDistance, vte2.PhotonStationaryDistance);
                         case LimelightTY:
                             return Double.compare(vte1.LLTY, vte2.LLTY);
-                        case LimelightArea:
+                        case Limelight3GTY:
                             return Double.compare(vte1.LLTA, vte2.LLTA);
-                        case LimelightMultiTagArea:
-                            return Double.compare(vte1.LLTAMulti, vte2.LLTAMulti);
                         default:
                             return Double.compare(vte1.PhotonDistance, vte2.PhotonDistance);
                     }
@@ -110,10 +108,8 @@ public class EPICShooterTable {
                             endValue.PhotonStationaryDistance, q.PhotonStationaryDistance);
                 case LimelightTY:
                     return MathUtil.inverseInterpolate(startValue.LLTY, endValue.LLTY, q.LLTY);
-                case LimelightArea:
+                case Limelight3GTY:
                     return MathUtil.inverseInterpolate(startValue.LLTA, endValue.LLTA, q.LLTA);
-                case LimelightMultiTagArea:
-                    return MathUtil.inverseInterpolate(startValue.LLTAMulti, endValue.LLTAMulti, q.LLTAMulti);
                 default:
                     return MathUtil.inverseInterpolate(startValue.PhotonDistance, endValue.PhotonDistance,
                             q.PhotonDistance);

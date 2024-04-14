@@ -17,7 +17,7 @@ public class ShooterTable {
     public static final class ShooterTableEntry {
         public Measure<Distance> Distance;
         public double Angle;
-        public double Percent;
+        public double Beans;
 
         /**
          * Construct a shooter table entry.
@@ -29,9 +29,9 @@ public class ShooterTable {
          * @param leftSpeed      Speed of the left shooter motor, in RPM.
          * @param rightSpeed     Speed of the right shooter motor, in RPM.
          */
-        public ShooterTableEntry(Measure<Distance> distance, double angle, double percent) {
+        public ShooterTableEntry(Measure<Distance> distance, double angle, double beans) {
             Angle = angle;
-            Percent = percent;
+            Beans = beans;
             Distance = distance;
         }
     }
@@ -41,25 +41,22 @@ public class ShooterTable {
         public double PhotonDistance;
         public double PhotonStationaryDistance;
         public double LLTY;
-        public double LLTA;
-        public double LLTAMulti;
+        public double LL3GTY;
 
         public static enum CameraLerpStrat {
             LimelightTY,
-            LimelightArea,
-            LimelightMultiTagArea,
+            Limelight3GTY,
             PhotonVisionDistance,
             PhotonVisionStationaryDistance;
         }
 
         public VisionTableEntry(Measure<Distance> distance, double photonDistance, double photonStationaryDistance,
-                double llTY, double llTA, double llTAMulti) {
+                double llTY, double ll3GTY) {
             Distance = distance;
             PhotonDistance = photonDistance;
             PhotonStationaryDistance = photonStationaryDistance;
             LLTY = llTY;
-            LLTA = llTA;
-            LLTAMulti = llTAMulti;
+            LL3GTY = ll3GTY;
         }
     }
 
@@ -74,36 +71,38 @@ public class ShooterTable {
         // put entries here
         // Distances must go from top to bottom: shortest to longest
         // IF YOU INCREASE DISTANCE, SHOOTER ANGLE GOES UP
-        shooterTable.add(new ShooterTableEntry(Feet.of(4.2), 30.9, 0.6)); // 55 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(4.4), 30.9, 0.6)); // 55 degrees
         shooterTable.add(new ShooterTableEntry(Feet.of(5), 27.0, 0.7)); // 50 degrees
         shooterTable.add(new ShooterTableEntry(Feet.of(6), 22.8, 0.8)); // 45 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(8), 16., 1.0)); // 36 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(8), 16., 0.9)); // 36 degrees
         shooterTable.add(new ShooterTableEntry(Feet.of(10), 12.1, 1.0)); // 31 degrees
-        // Was: -12.115 New Red: -11.62
+        shooterTable.add(new ShooterTableEntry(Feet.of(11.5), 9.4, 1.0));
         shooterTable.add(new ShooterTableEntry(Feet.of(13), 6.7, 1.0)); // 25 degrees
-        // Was: -15.395 New Blue: -14.93 New Red: -14.535
-        shooterTable.add(new ShooterTableEntry(Feet.of(16), 4.3, 1.0)); // 23
-                                                                           // degrees
-        // Was: -16.53 New Blue: -16.77 New Red: -16.68
-        shooterTable.add(new ShooterTableEntry(Feet.of(19), 3.25, 1.0)); // 21.5
-                                                                           // degrees
-        // Was: -18.2 New Blue: -18.3 New Red: -18.39
-        shooterTable.add(new ShooterTableEntry(Feet.of(22), 2.24, 1.0)); // 20.5
-                                                                           // degrees
-        // Was: -20.43 New Blue: -20.3 New Red: -19.63
+        shooterTable.add(new ShooterTableEntry(Feet.of(14.5), 5.5, 1.0));
+        shooterTable.add(new ShooterTableEntry(Feet.of(16), 4.3, 1.0)); // 23 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(17.5), 3.775, 1.0));
+        shooterTable.add(new ShooterTableEntry(Feet.of(19), 3.25, 1.0)); // 21.5 degrees       
+        shooterTable.add(new ShooterTableEntry(Feet.of(20.5), 2.75, 1.0));     
+        shooterTable.add(new ShooterTableEntry(Feet.of(22), 2.24, 1.0)); // 20.5 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(24), 1.45, 1.0));
         shooterTable.add(new ShooterTableEntry(Feet.of(27), 0.25, 1.0)); // 20 degrees
 
         // vision table entries
-        visionTable.add(new VisionTableEntry(Feet.of(4.2), 4.34, 0, 21.588, 0.97, 4.5));
-        visionTable.add(new VisionTableEntry(Feet.of(5), 5.09, 1.565, 15.065, 0.785, 3.757));
-        visionTable.add(new VisionTableEntry(Feet.of(6), 6.094, 1.884, 7.79, 0.598, 2.796));
-        visionTable.add(new VisionTableEntry(Feet.of(8), 7.799, 2.392, -1.295, 0.368, 1.761));
-        visionTable.add(new VisionTableEntry(Feet.of(10), 9.17, 2.821, -6.465, 0.257, 1.195));
-        visionTable.add(new VisionTableEntry(Feet.of(13), 11.34, 3.443, -12.115, 0.166, .78));
-        visionTable.add(new VisionTableEntry(Feet.of(16), 13.115, 3.954, -15.395, 0.114, .528));
-        visionTable.add(new VisionTableEntry(Feet.of(19), 13.845, 4.168, -16.53, 0.082, .38));
-        visionTable.add(new VisionTableEntry(Feet.of(22), 15.095, 4.504, -18.202, 0.064, .29));
-        visionTable.add(new VisionTableEntry(Feet.of(27), 17.24, 5.111, -20.43, 0.045, .25));
+        visionTable.add(new VisionTableEntry(Feet.of(4.4), 4.34, 0, 21.3, 16.07 ));
+        visionTable.add(new VisionTableEntry(Feet.of(5), 5.09, 1.565, 16.62, 11.48));
+        visionTable.add(new VisionTableEntry(Feet.of(6), 6.094, 1.884, 9.15, 4.19));
+        visionTable.add(new VisionTableEntry(Feet.of(8), 7.799, 2.392, 0.0, -5.28));
+        visionTable.add(new VisionTableEntry(Feet.of(10), 9.17, 2.821, -5.29, -10.76));
+        visionTable.add(new VisionTableEntry(Feet.of(11.5), 9.17, 2.821, -8.93, -14.47));
+        visionTable.add(new VisionTableEntry(Feet.of(13), 11.34, 3.443, -11.15, -16.75));
+        visionTable.add(new VisionTableEntry(Feet.of(14.5), 11.34, 3.443, -12.91, -18.53));
+        visionTable.add(new VisionTableEntry(Feet.of(16), 13.115, 3.954, -14.46, -20.26));
+        visionTable.add(new VisionTableEntry(Feet.of(17.5), 13.115, 3.954, -14.84, -20.75));
+        visionTable.add(new VisionTableEntry(Feet.of(19), 13.845, 4.168, -15.73, -21.67));
+        visionTable.add(new VisionTableEntry(Feet.of(20.5), 13.845, 4.168, -16.68, -22.66));
+        visionTable.add(new VisionTableEntry(Feet.of(22), 15.095, 4.504, -17.40, -23.44));
+        visionTable.add(new VisionTableEntry(Feet.of(24), 15.095, 4.504, -18.22, -24.35));
+        visionTable.add(new VisionTableEntry(Feet.of(27), 17.24, 5.111, -19.68, -25.92));
     }
 
     static {
@@ -135,13 +134,9 @@ public class ShooterTable {
                 cameraValueGetter = (vte) -> -vte.LLTY;
                 cameraValue = -cameraValue;
                 break;
-            case LimelightArea:
-                // negate everything because TA is inversely proportional to distance
-                cameraValueGetter = (vte) -> -vte.LLTA;
-                cameraValue = -cameraValue;
-                break;
-            case LimelightMultiTagArea:
-                cameraValueGetter = (vte) -> -vte.LLTAMulti;
+            case Limelight3GTY:
+                // negate everything because TY is inversely proportional to distance
+                cameraValueGetter = (vte) -> -vte.LL3GTY;
                 cameraValue = -cameraValue;
                 break;
             case PhotonVisionStationaryDistance:
@@ -185,8 +180,7 @@ public class ShooterTable {
         Measure<Distance> interpolatedDistance = closestHigher.Distance.minus(closestLower.Distance).times(scaleFactor)
                 .plus(closestLower.Distance);
 
-        return new VisionTableEntry(interpolatedDistance, cameraValue, cameraValue, cameraValue, cameraValue,
-                cameraValue);
+        return new VisionTableEntry(interpolatedDistance, cameraValue, cameraValue, cameraValue, cameraValue);
     }
 
     public static ShooterTableEntry calcShooterTableEntry(Measure<Distance> distance) {
@@ -217,9 +211,9 @@ public class ShooterTable {
         double scaleFactor = (distance.minus(closestLower.Distance).baseUnitMagnitude())
                 / (closestHigher.Distance.minus(closestLower.Distance).baseUnitMagnitude());
 
-        double calculatedPercent = scaleFactor * (closestHigher.Percent -
-                closestLower.Percent)
-                + closestLower.Percent;
+        double calculatedPercent = scaleFactor * (closestHigher.Beans -
+                closestLower.Beans)
+                + closestLower.Beans;
 
         double calculatedAngle = scaleFactor * (closestHigher.Angle -
                 closestLower.Angle) + closestLower.Angle;

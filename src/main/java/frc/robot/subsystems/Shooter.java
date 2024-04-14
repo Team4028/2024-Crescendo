@@ -244,8 +244,8 @@ public class Shooter extends SubsystemBase {
 
     /* Run Based on Shooter Table Entry */
     public void runEntry(ShooterTableEntry entry, ShotSpeeds shotSpeed) {
-        setLeftToVel(entry.Percent * shotSpeed.LeftRPM);
-        setRightToVel(entry.Percent * shotSpeed.RightRPM);
+        setLeftToVel(entry.Beans * shotSpeed.LeftRPM);
+        setRightToVel(entry.Beans * shotSpeed.RightRPM);
     }
 
     public Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShotSpeeds> shotSpeed) {
