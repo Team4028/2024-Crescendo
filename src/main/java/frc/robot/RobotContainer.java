@@ -234,6 +234,8 @@ public class RobotContainer {
 
     private ShootingStrategy selectedStrategy = odometryStrategy;
 
+    double pipeline = 0;
+
     // ======================== //
     /** Swerve Control & Logging */
     // ======================== //
@@ -283,7 +285,7 @@ public class RobotContainer {
         DashboardStore.add("Sequence", () -> currentSequence.name());
 
         DashboardStore.add("Limelight Distance", () -> shooterLimelightStrategy.getTargetEntry().Distance.in(Feet));
-        DashboardStore.add("LimelightG Distance", () ->  chassisLimelight2dStrategy.getTargetEntry().Distance.in(Feet));
+        DashboardStore.add("LimelightG Distance", () -> chassisLimelight2dStrategy.getTargetEntry().Distance.in(Feet));
         DashboardStore.add("Limelight Yaw", () -> LimelightHelpers.getTX(SHOOTER_LIMELIGHT));
 
         DashboardStore.add("Last Shot", () -> m_lastShot);
@@ -425,10 +427,11 @@ public class RobotContainer {
         NamedCommands.registerCommand("Stationary Shot C", shootCommand(9));
         NamedCommands.registerCommand("P Amp Shot", shootCommand(13.5));
         NamedCommands.registerCommand("Stationary Shot Amp", shootCommand(13.5));
-        NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(5.6));
+        NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(5.0));
         NamedCommands.registerCommand("Convey", conveyCommand());
         NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(9));
         NamedCommands.registerCommand("4 Piece Pivot", pivot.runToPositionCommand(14));
+        NamedCommands.registerCommand("Stationary Source Shot", shootCommand(15.3));
     }
 
     // =========================== //
@@ -509,7 +512,18 @@ public class RobotContainer {
                 .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
 
         /* Shooter Lock */
-        driverController.leftStick().onTrue(magicLockCommand());
+        // driverController.leftStick().onTrue(magicLockCommand());
+        driverController.leftStick().onTrue(
+                Commands.either(
+                        Commands.runOnce(() -> {
+                            megaLeftVision.setPipeline(0);
+                            pipeline = 0;
+                        }),
+                        Commands.runOnce(() -> {
+                            megaLeftVision.setPipeline(1);
+                            pipeline = 1;
+                        }),
+                        () -> pipeline == 1));
 
         // ========================= //
         /* Misc */

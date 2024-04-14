@@ -42,4 +42,8 @@ public class Limelight extends VisionSystem {
     public LimelightHelpers.PoseEstimate getBotposeEstimateMT2() {
         return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cameraName);
     }
+
+    public void setPipeline(int pipeline) {
+        LimelightHelpers.setPipelineIndex(cameraName, pipeline);
+    }
 }
