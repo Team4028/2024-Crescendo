@@ -11,7 +11,7 @@ import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-
+import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
@@ -22,7 +22,7 @@ public class ShootingStrategy {
     private final VisionSystem vision;
     private final CameraLerpStrat visionStrategy;
 
-    private static final Rotation2d OFFSET = Rotation2d.fromDegrees(-1.5);
+    private static final Rotation2d OFFSET = Rotation2d.fromDegrees(-2.5);
 
     public ShootingStrategy(VisionSystem vision, CameraLerpStrat visionStrategy) {
         this.vision = vision;
@@ -41,7 +41,7 @@ public class ShootingStrategy {
             Translation2d translation = BeakUtils.goalTranslation(drivetrain.getState().Pose);
 
             Rotation2d totalAngle = translation.getAngle();
-            return totalAngle.minus(drivetrain.getState().Pose.getRotation());
+            return totalAngle.minus(drivetrain.getState().Pose.getRotation()).plus(OFFSET);
         } else if (drivetrain == null) {
             Optional<Rotation2d> angle = vision.getTagYaw(BeakUtils.speakerTagID());
 
@@ -59,7 +59,7 @@ public class ShootingStrategy {
         if (vision == null) {
             Translation2d translation = BeakUtils.goalTranslation(drivetrain.getState().Pose);
 
-            return ShooterTable.calcShooterTableEntry(Meters.of(translation.getNorm()));
+            return ShooterTable.calcShooterTableEntry(Meters.of(translation.getNorm()));// + Units.feetToMeters(0.3)));
         } else if (drivetrain == null) {
             Optional<Rotation2d> pitch = vision.getTagPitch(BeakUtils.speakerTagID());
 

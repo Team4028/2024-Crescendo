@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Meters;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -150,6 +151,11 @@ public class RobotContainer {
             CameraLerpStrat.Limelight3GTY);
 
     private ShootingStrategy selectedStrategy = odometryStrategy;
+
+    private final HashMap<ShootingStrategy, String> strategyMap = new HashMap<>(Map.of(
+            shooterLimelightStrategy, "MVR",
+            odometryStrategy, "MegaTag2",
+            chassisLimelight2dStrategy, "3G 2D"));
 
     // ====================== //
     /** Auton & Other Commands */
@@ -296,6 +302,8 @@ public class RobotContainer {
         DashboardStore.add("Last Shot", () -> m_lastShot);
         DashboardStore.add("Odometry Distance",
                 () -> Units.metersToFeet(BeakUtils.goalTranslation(drivetrain.getState().Pose).getNorm()));
+
+        DashboardStore.add("Strategy", () -> strategyMap.get(selectedStrategy));
 
         initNamedCommands();
 
