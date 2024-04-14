@@ -1,0 +1,55 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.4,
+      "y": 7.0
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Fast Source P - 1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Amp 1 - Magic"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stationary Shot Amp"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Amp Magic - 2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Amp 2 - Magic"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stationary Shot Amp"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Amp",
+  "choreoAuto": false
+}

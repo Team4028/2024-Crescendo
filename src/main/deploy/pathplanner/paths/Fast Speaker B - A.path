@@ -3,37 +3,43 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.729835532000753,
-        "y": 6.949505168985107
+        "x": 3.1494620575754015,
+        "y": 5.543278238286734
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.356451835047023,
-        "y": 6.4464032277856615
+        "x": 1.9839896290262855,
+        "y": 5.397594184718094
       },
       "isLocked": false,
-      "linkedName": "Magic Shoot"
+      "linkedName": "Speaker B Shot"
     },
     {
       "anchor": {
-        "x": 8.241119729799353,
-        "y": 5.776372723996557
+        "x": 2.8872307611518506,
+        "y": 6.9272767471888095
       },
       "prevControl": {
-        "x": 7.286889178924764,
-        "y": 6.2352774927377705
+        "x": 1.5305892428643775,
+        "y": 6.388245748984843
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Amp 2"
+      "linkedName": "Speaker A Shot"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 27.05,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [
     {
       "name": "Infeed",
-      "waypointRelativePos": 0.5,
+      "waypointRelativePos": 0.15,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,7 +47,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Smart Infeed"
+                "name": "Infeed"
               }
             }
           ]
@@ -57,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -29.291362170984204,
+    "rotation": 28.50900729198329,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Amp",
+  "folder": "Middle",
   "previewStartingState": {
-    "rotation": 28.545710789663126,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

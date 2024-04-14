@@ -112,7 +112,7 @@ public class RobotContainer {
 
     public static final BooleanSupplier useMegaTagAuton = () -> false;
 
-    private static final String SHOOTER_LIMELIGHT = "limelight-iii";
+    private static final String SHOOTER_LIMELIGHT = "limelight-ii";
     private static final String MEGA_LEFT_LIMELIGHT = "limelight-gii";
     private static final String MEGA_RIGHT_LIMELIGHT = "limelight-gi";
 
@@ -473,6 +473,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(4.75));
         NamedCommands.registerCommand("Convey", conveyCommand());
         NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(9));
+        NamedCommands.registerCommand("4 Piece Pivot", pivot.runToPositionCommand(14));
     }
 
     // =========================== //

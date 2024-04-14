@@ -8,40 +8,40 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.6351879961602807,
-        "y": 5.154757475876083
+        "x": 4.19018640977832,
+        "y": 5.558409084608765
       },
       "isLocked": false,
       "linkedName": "Note B"
     },
     {
       "anchor": {
-        "x": 2.8166184520288504,
-        "y": 4.18573179847702
+        "x": 8.248403932477785,
+        "y": 4.115574513314067
       },
       "prevControl": {
-        "x": 2.188503110227697,
-        "y": 4.557360431834959
+        "x": 4.0454189870225346,
+        "y": 3.8096380008199238
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Note C"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "zeroEnd",
-      "waypointRelativePos": 1.0,
+      "name": "Infeed",
+      "waypointRelativePos": 0.75,
       "command": {
-        "type": "parallel",
+        "type": "sequential",
         "data": {
           "commands": [
             {
               "type": "named",
               "data": {
-                "name": "AprilTag Zero"
+                "name": "Smart Infeed"
               }
             }
           ]
@@ -49,8 +49,8 @@
       }
     },
     {
-      "name": "Pivot",
-      "waypointRelativePos": 0.7,
+      "name": "Home Pivot",
+      "waypointRelativePos": 0.0,
       "command": {
         "type": "parallel",
         "data": {
@@ -58,7 +58,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Note C"
+                "name": "Home Pivot"
               }
             }
           ]
@@ -66,7 +66,7 @@
       }
     },
     {
-      "name": "infeed",
+      "name": "Stop Shooter",
       "waypointRelativePos": 0,
       "command": {
         "type": "parallel",
@@ -75,7 +75,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Infeed"
+                "name": "Stop Shooter"
               }
             }
           ]
@@ -91,11 +91,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -29.390550882114276,
+    "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Amp",
+  "folder": "Middle",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0
