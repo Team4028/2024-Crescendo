@@ -19,14 +19,12 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.DashboardStore;
-
+import frc.robot.utils.LogStore;
+import frc.robot.utils.SignalStore;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 
 public class Shooter extends SubsystemBase {
@@ -36,10 +34,6 @@ public class Shooter extends SubsystemBase {
             rightVelocity, leftVelocity,
             rightVoltage, leftVoltage;
 
-    private final DataLog log;
-    private final DoubleLogEntry rightCurrentLog, leftCurrentLog,
-            rightVelocityLog, leftVelocityLog, leftVoltageLog,
-            rightVoltageLog;
     private int slot = 0;
 
     private double rightTarget, leftTarget;
@@ -151,6 +145,7 @@ public class Shooter extends SubsystemBase {
         leftMotor.getConfigurator().apply(leftRampConfigs);
         rightMotor.getConfigurator().apply(rightRampConfigs);
 
+        /* CAN */
         BaseStatusSignal.setUpdateFrequencyForAll(20.,
                 rightCurrent, leftCurrent,
                 rightVelocity, leftVelocity,
@@ -158,6 +153,10 @@ public class Shooter extends SubsystemBase {
 
         leftMotor.optimizeBusUtilization();
         rightMotor.optimizeBusUtilization();
+
+        SignalStore.add(rightCurrent, leftCurrent,
+                rightVelocity, leftVelocity,
+                rightVoltage, leftVoltage);
 
         // ==================================
         // SHOOTER PID
@@ -174,13 +173,12 @@ public class Shooter extends SubsystemBase {
         // ==================================
         // LOGS
         // ==================================
-        log = DataLogManager.getLog();
-        rightCurrentLog = new DoubleLogEntry(log, "/Shooter/right/Current");
-        leftCurrentLog = new DoubleLogEntry(log, "/Shooter/left/Current");
-        rightVelocityLog = new DoubleLogEntry(log, "/Shooter/right/Velocity");
-        leftVelocityLog = new DoubleLogEntry(log, "/Shooter/left/Velocity");
-        rightVoltageLog = new DoubleLogEntry(log, "/Shooter/right/Voltage");
-        leftVoltageLog = new DoubleLogEntry(log, "/Shooter/left/Voltage");
+        LogStore.add("/Shooter/Right/Current", rightCurrent::getValueAsDouble);
+        LogStore.add("/Shooter/Left/Current", leftCurrent::getValueAsDouble);
+        LogStore.add("/Shooter/Right/Velocity", rightVelocity::getValueAsDouble);
+        LogStore.add("/Shooter/Left/Velocity", leftVelocity::getValueAsDouble);
+        LogStore.add("/Shooter/Right/Voltage", rightVoltage::getValueAsDouble);
+        LogStore.add("/Shooter/Left/Voltage", leftVoltage::getValueAsDouble);
 
         /* Dashboard */
         DashboardStore.add("Left RPM", () -> leftVelocity.getValueAsDouble() * 60.);
@@ -326,21 +324,6 @@ public class Shooter extends SubsystemBase {
 
     public Command spinBothCommand(double vBus) {
         return spinMotorRightCommand(vBus).andThen(spinMotorLeftCommand(vBus));
-    }
-
-    public void logValues() {
-        BaseStatusSignal.refreshAll(rightVelocity, leftVelocity,
-                rightCurrent, leftCurrent,
-                rightVoltage, leftVoltage);
-
-        leftCurrentLog.append(leftCurrent.getValueAsDouble());
-        rightCurrentLog.append(rightCurrent.getValueAsDouble());
-
-        leftVelocityLog.append(leftVelocity.getValueAsDouble() * 60.);
-        rightVelocityLog.append(rightVelocity.getValueAsDouble() * 60.);
-
-        leftVoltageLog.append(leftVoltage.getValueAsDouble());
-        rightVoltageLog.append(rightVoltage.getValueAsDouble());
     }
 
     @Override

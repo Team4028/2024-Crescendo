@@ -15,7 +15,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.DashboardStore;
 import frc.robot.utils.LimelightHelpers;
+import frc.robot.utils.LogStore;
 import frc.robot.utils.ShooterTable;
+import frc.robot.utils.SignalStore;
 import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 
 public class Robot extends TimedRobot {
@@ -50,6 +52,7 @@ public class Robot extends TimedRobot {
         // m_robotContainer.updateDrivePoseMT2();
         // m_robotContainer.printDistanceValues();
         m_robotContainer.encodeLimelights().ignoringDisable(true).schedule();
+        SignalStore.update();
     }
 
     @Override
@@ -83,7 +86,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousPeriodic() {
-        m_robotContainer.logValues();
+        LogStore.update();
     }
 
     @Override
@@ -107,7 +110,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
-        m_robotContainer.logValues();
+        LogStore.update();
     }
 
     @Override

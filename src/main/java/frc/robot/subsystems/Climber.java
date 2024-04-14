@@ -13,10 +13,6 @@ import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.util.datalog.BooleanLogEntry;
-import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,6 +20,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import frc.robot.utils.DashboardStore;
+import frc.robot.utils.LogStore;
+import frc.robot.utils.SignalStore;
 
 public class Climber extends SubsystemBase {
     private final TalonFX motor;
@@ -31,10 +29,6 @@ public class Climber extends SubsystemBase {
     private final StatusSignal<Double> position, current, velocity, voltage;
 
     private final DigitalInput forwardLimitSwitch, reverseLimitSwitch;
-
-    private final DataLog log;
-    private final DoubleLogEntry currentLog, positionLog, velocityLog, voltageLog;
-    private final BooleanLogEntry forwardLog, reverseLog;
 
     private static final double ZERO_VBUS = -0.50;
 
@@ -105,21 +99,21 @@ public class Climber extends SubsystemBase {
 
         motor.optimizeBusUtilization();
 
+        SignalStore.add(velocity, position, current, voltage);
+
         /* Logs */
-        log = DataLogManager.getLog();
+        LogStore.add("/Climber/Current", current::getValueAsDouble);
+        LogStore.add("/Climber/Position", position::getValueAsDouble);
+        LogStore.add("/Climber/Velocity", velocity::getValueAsDouble);
+        LogStore.add("/Climber/Voltage", voltage::getValueAsDouble);
 
-        currentLog = new DoubleLogEntry(log, "/Climber/Current");
-        positionLog = new DoubleLogEntry(log, "/Climber/Position");
-        velocityLog = new DoubleLogEntry(log, "/Climber/Velocity");
-        voltageLog = new DoubleLogEntry(log, "/Climber/Voltage");
-
-        forwardLog = new BooleanLogEntry(log, "/Climber/Forward Limit");
-        reverseLog = new BooleanLogEntry(log, "/Climber/Reverse Limit");
+        LogStore.add("/Climber/Forward Limit", forwardLimitSwitch::get);
+        LogStore.add("/Climber/Reverse Limit", reverseLimitSwitch::get);
 
         /* Dashboard */
-        DashboardStore.add("Climber Position", () -> position.getValueAsDouble());
-        DashboardStore.add("Climber Current", () -> current.getValueAsDouble());
-        DashboardStore.add("Climber Velocity", () -> velocity.getValueAsDouble());
+        DashboardStore.add("Climber Position", position::getValueAsDouble);
+        DashboardStore.add("Climber Current", current::getValueAsDouble);
+        DashboardStore.add("Climber Velocity", velocity::getValueAsDouble);
 
         DashboardStore.add("Forward", forwardLimitSwitch::get);
         DashboardStore.add("Reverse", reverseLimitSwitch::get);
@@ -213,18 +207,6 @@ public class Climber extends SubsystemBase {
     public Command holdCommand() {
         return run(() -> motor.setControl(m_positionRequest.withPosition(ClimberPositions.HOLD.Position)))
                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
-    }
-
-    public void logValues() {
-        BaseStatusSignal.refreshAll(velocity, current, position, voltage);
-
-        currentLog.append(current.getValueAsDouble());
-        positionLog.append(position.getValueAsDouble());
-        velocityLog.append(velocity.getValueAsDouble());
-        voltageLog.append(voltage.getValueAsDouble());
-
-        forwardLog.append(forwardLimitSwitch.get());
-        reverseLog.append(reverseLimitSwitch.get());
     }
 
     public Command zeroCommand() {

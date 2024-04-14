@@ -12,12 +12,11 @@ import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.DashboardStore;
+import frc.robot.utils.LogStore;
+import frc.robot.utils.SignalStore;
 
 public class FanPivot extends SubsystemBase {
     private final TalonFX motor;
@@ -42,9 +41,6 @@ public class FanPivot extends SubsystemBase {
 
     double targetPosition = 0;
 
-    private final DataLog m_log;
-    private final DoubleLogEntry m_currentLog, m_positionLog;
-
     /** Creates a new FanPivot. */
     public FanPivot() {
         /* Setup */
@@ -62,19 +58,13 @@ public class FanPivot extends SubsystemBase {
         BaseStatusSignal.setUpdateFrequencyForAll(20.0, current, position);
         motor.optimizeBusUtilization();
 
+        SignalStore.add(current, position);
+
         /* Logs */
-        m_log = DataLogManager.getLog();
-        m_positionLog = new DoubleLogEntry(m_log, "/Fan/Pivot/Position");
-        m_currentLog = new DoubleLogEntry(m_log, "/Fan/Pivot/Current");
+        LogStore.add("/Fan/Pivot/Position", position::getValueAsDouble);
+        LogStore.add("/Fan/Pivot/Current", current::getValueAsDouble);
 
-        DashboardStore.add("Fan Pivot Position", () -> position.getValueAsDouble());
-    }
-
-    public void logValues() {
-        BaseStatusSignal.refreshAll(position, current);
-
-        m_positionLog.append(position.getValueAsDouble());
-        m_currentLog.append(current.getValueAsDouble());
+        DashboardStore.add("Fan Pivot Position", position::getValueAsDouble);
     }
     
     public void runToPosition(double position) {

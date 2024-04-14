@@ -9,21 +9,16 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 
-import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.DashboardStore;
+import frc.robot.utils.LogStore;
 
 public class Fan extends SubsystemBase {
     private final CANSparkFlex motor;
     private final RelativeEncoder encoder;
 
     private static final int CAN_ID = 14;
-
-    private final DataLog m_log;
-    private final DoubleLogEntry m_vbusLog, m_currentLog, m_velocityLog;
 
     /** Creates a new Fan. */
     public Fan() {
@@ -42,14 +37,13 @@ public class Fan extends SubsystemBase {
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
 
         /* Logs */
-        m_log = DataLogManager.getLog();
-        m_vbusLog = new DoubleLogEntry(m_log, "/Fan/Vbus");
-        m_currentLog = new DoubleLogEntry(m_log, "/Fan/Current");
-        m_velocityLog = new DoubleLogEntry(m_log, "/Fan/Velocity");
+        LogStore.add("/Fan/Vbus", motor::getAppliedOutput);
+        LogStore.add("/Fan/Current", motor::getOutputCurrent);
+        LogStore.add("/Fan/Velocity", encoder::getVelocity);
 
         /* Dashboard */
         DashboardStore.add("Running/Fan", this::isRunning);
-        DashboardStore.add("Fan RPM", () -> encoder.getVelocity());
+        DashboardStore.add("Fan RPM", encoder::getVelocity);
     }
 
     // ==================================
@@ -76,12 +70,6 @@ public class Fan extends SubsystemBase {
 
     public Command stopCommand() {
         return runOnce(this::stop);
-    }
-
-    public void logValues() {
-        m_vbusLog.append(motor.getAppliedOutput());
-        m_currentLog.append(motor.getOutputCurrent());
-        m_velocityLog.append(encoder.getVelocity());
     }
 
     @Override

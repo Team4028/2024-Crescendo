@@ -17,7 +17,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
 
 /** Add your docs here. */
-public class DashboardStore {
+public final class DashboardStore {
     private static Map<NetworkTableEntry, Supplier<NetworkTableValue>> values = new HashMap<NetworkTableEntry, Supplier<NetworkTableValue>>();
 
     private static NetworkTableEntry smartDashboardEntry(String key) {
