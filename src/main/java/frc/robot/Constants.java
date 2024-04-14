@@ -34,3 +34,9 @@ public final class Constants {
 
     public static final Pose2d NOTE_C_SHOT = new Pose2d(2.75, 4.15, Rotation2d.fromDegrees(-34.));
 }
+
+// RED: CCW: RIGHT
+// BLUE: CCW: LEFT
+// 0.3 u pivot
+// 0.5 u others
+// 2 deg right

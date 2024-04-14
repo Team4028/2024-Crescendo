@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Source Move 5 Shoot"
+            "pathName": "Source Move 5 Shoot RED"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Magic Shoot"
+            "name": "Stationary Source Shot"
           }
         },
         {
@@ -38,13 +38,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Source Move 3 - Shot"
+            "pathName": "Source Move 3 - Shot RED"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Magic Shoot"
+            "name": "Stationary Source Shot"
           }
         }
       ]
