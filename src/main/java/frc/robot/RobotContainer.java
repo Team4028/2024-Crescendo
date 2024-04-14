@@ -213,7 +213,7 @@ public class RobotContainer {
 
     private static final double CAMERA_SWITCH_TIMEOUT = 1.5;
 
-    private static ShooterTableEntry PASSING_SHOT = new ShooterTableEntry(Feet.zero(), 4, 0.69);// 30.9;
+    private static ShooterTableEntry PASSING_SHOT = new ShooterTableEntry(Feet.zero(), 4, 0.69, Feet.zero());// 30.9;
 
     private final LinkedHashMap<Double, String> indexMap = new LinkedHashMap<>();
 

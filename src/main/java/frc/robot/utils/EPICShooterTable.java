@@ -186,7 +186,7 @@ public class EPICShooterTable {
                 cameraMeasure);
         var dist = visionMap.get(struct, strategy);
         var ss = shooterMap.get(dist);
-        return new ShooterTable.ShooterTableEntry(dist, ss.Angle, ss.Percent);
+        return new ShooterTable.ShooterTableEntry(dist, ss.Angle, ss.Percent, Feet.zero());
     }
 
 }
