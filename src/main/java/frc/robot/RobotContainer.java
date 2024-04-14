@@ -475,6 +475,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(4.75));
         NamedCommands.registerCommand("Convey", conveyCommand());
         NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(9));
+        NamedCommands.registerCommand("4 Piece Pivot", pivot.runToPositionCommand(14));
     }
 
     // =========================== //

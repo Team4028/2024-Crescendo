@@ -3,71 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.8872307611518506,
+        "x": 1.4376744281438871,
         "y": 5.543278238286734
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.6351879961602807,
-        "y": 5.154757475876083
+        "x": 2.413757587053772,
+        "y": 5.550562440965166
       },
       "isLocked": false,
-      "linkedName": "Note B"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.8166184520288504,
-        "y": 4.18573179847702
+        "x": 2.8872307611518506,
+        "y": 5.543278238286734
       },
       "prevControl": {
-        "x": 2.188503110227697,
-        "y": 4.557360431834959
+        "x": 1.7674524470855748,
+        "y": 5.565561131880005
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Note C"
+      "linkedName": "Note B"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "zeroEnd",
-      "waypointRelativePos": 1.0,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "AprilTag Zero"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Pivot",
-      "waypointRelativePos": 0.7,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "Note C"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "infeed",
-      "waypointRelativePos": 0,
+      "name": "Infeed",
+      "waypointRelativePos": 0.5,
       "command": {
         "type": "parallel",
         "data": {
@@ -76,6 +42,29 @@
               "type": "named",
               "data": {
                 "name": "Infeed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Start Shooter Pivot",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "4 Piece Pivot"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Fast Shooter"
               }
             }
           ]
@@ -91,11 +80,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -29.390550882114276,
+    "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Amp",
+  "folder": "Middle",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0
