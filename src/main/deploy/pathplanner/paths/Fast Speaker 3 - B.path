@@ -3,40 +3,40 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.25,
-        "y": 4.12
+        "x": 8.474214215509177,
+        "y": 3.95
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.460618539693157,
-        "y": 4.2102691481336825
+        "x": 5.8009118325246405,
+        "y": 3.4036847991176016
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Note 3"
     },
     {
       "anchor": {
-        "x": 3.1494620575754015,
+        "x": 2.8872307611518506,
         "y": 5.543278238286734
       },
       "prevControl": {
-        "x": 3.251254388981763,
-        "y": 5.078671756424486
+        "x": 3.8341771093480075,
+        "y": 5.128078685616111
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Speaker B Shot"
+      "linkedName": "Note B"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [
     {
-      "name": "New Constraints Zone",
-      "minWaypointRelativePos": 0.35,
+      "name": "Slow",
+      "minWaypointRelativePos": 0.3,
       "maxWaypointRelativePos": 0.95,
       "constraints": {
-        "maxVelocity": 4.0,
-        "maxAcceleration": 4.5,
+        "maxVelocity": 4.5,
+        "maxAcceleration": 3.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 1080.0
       }
@@ -62,7 +62,7 @@
     },
     {
       "name": "Pivot Up",
-      "waypointRelativePos": 0.5,
+      "waypointRelativePos": 0.65,
       "command": {
         "type": "parallel",
         "data": {
@@ -70,7 +70,24 @@
             {
               "type": "named",
               "data": {
-                "name": "Source Pivot"
+                "name": "4 Piece Pivot"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Spin Shooter",
+      "waypointRelativePos": 0.1,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Fast Shooter"
               }
             }
           ]
