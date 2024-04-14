@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Feet;
+import static edu.wpi.first.units.Units.Meters;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -406,9 +407,6 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Center Pathfinding Shot", pathfindingShotCommand(
                 13.0, Constants.CENTER_SHOT, 0.8, 0.));
-
-        // NamedCommands.registerCommand("Source Shot",
-        // pathfindingShotCommand(21.1, Constants.RIGHT_SHOT, 0.75, 0.));
 
         NamedCommands.registerCommand("Stationary Source Shot", shootCommand(22.1));
 
@@ -954,6 +952,18 @@ public class RobotContainer {
      */
     private Command magicLockCommand() {
         return magicLockCommand(() -> selectedStrategy);
+    }
+
+    private Command pathfindingShuttleCommand() {
+        return updateDrivePoseMT2Command()
+                .andThen(drivetrain.mirrorablePathFindCommand(Constants.SHUTTLING_TARGET, 0.75, 0))
+                .andThen(shootCommand(() -> ShooterTable.calcShooterTableEntry(
+                        Meters.of(BeakUtils.goalTranslation(Constants.SHUTTLING_TARGET).getNorm()))));
+    }
+
+    private Command shuttleCommand() {
+        return updateDrivePoseMT2Command().andThen(shootCommand(() -> ShooterTable
+                .calcShuttleTableEntry(Meters.of(BeakUtils.goalTranslation(drivetrain.getState().Pose).getNorm()))));
     }
 
     /**
