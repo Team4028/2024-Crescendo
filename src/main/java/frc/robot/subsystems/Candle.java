@@ -5,26 +5,17 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.led.CANdle;
-import com.ctre.phoenix.led.ColorFlowAnimation;
 import com.ctre.phoenix.led.CANdle.LEDStripType;
-import com.ctre.phoenix.led.ColorFlowAnimation.Direction;
-
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.BeakCommands;
 import frc.robot.utils.Limelight;
-
-import com.ctre.phoenix.led.FireAnimation;
-import com.ctre.phoenix.led.RainbowAnimation;
-import com.ctre.phoenix.led.SingleFadeAnimation;
-import com.ctre.phoenix.led.StrobeAnimation;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 public class Candle extends SubsystemBase {
     private final CANdle candle;
-    private final int NUM_LEDS = 68;
-    private final int STRIP_LEDS = 60;
+
     private Color color;
 
     public enum Color {
@@ -116,54 +107,54 @@ public class Candle extends SubsystemBase {
 
     // Creates the complex animations //
 
-    public FireAnimation burnyBurn() {
-        return new FireAnimation(1, 0.5, NUM_LEDS, 0.5, 0.1);
-    }
+    // public FireAnimation burnyBurn() {
+    //     return new FireAnimation(1, 0.5, NUM_LEDS, 0.5, 0.1);
+    // }
 
-    public RainbowAnimation rainbow() {
-        return new RainbowAnimation(100.00, 0.9, NUM_LEDS, true, 0);
-    }
+    // public RainbowAnimation rainbow() {
+    //     return new RainbowAnimation(100.00, 0.9, NUM_LEDS, true, 0);
+    // }
 
-    public SingleFadeAnimation fade(Color color) {
-        return new SingleFadeAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS);
-    }
+    // public SingleFadeAnimation fade(Color color) {
+    //     return new SingleFadeAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS);
+    // }
 
-    public ColorFlowAnimation shootFlow(Color color) {
-        return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, Direction.Forward);
-    }
+    // public ColorFlowAnimation shootFlow(Color color) {
+    //     return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, Direction.Forward);
+    // }
 
-    public ColorFlowAnimation infeedFlow(Color color) {
-        return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, Direction.Backward);
-    }
+    // public ColorFlowAnimation infeedFlow(Color color) {
+    //     return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, Direction.Backward);
+    // }
 
-    public StrobeAnimation strobe(Color color) {
-        return new StrobeAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, 0);
-    }
+    // public StrobeAnimation strobe(Color color) {
+    //     return new StrobeAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, 0);
+    // }
 
-    // Commands for complex animations //
-    public Command runBurnyBurnCommand() {
-        return runOnce(() -> candle.clearAnimation(NUM_LEDS)).andThen(runOnce(() -> candle.animate(burnyBurn())));
-    }
+    // // Commands for complex animations //
+    // public Command runBurnyBurnCommand() {
+    //     return runOnce(() -> candle.clearAnimation(NUM_LEDS)).andThen(runOnce(() -> candle.animate(burnyBurn())));
+    // }
 
-    public Command runRainbowAnimationCommnad() {
-        return runOnce(() -> candle.animate(rainbow()));
-    }
+    // public Command runRainbowAnimationCommnad() {
+    //     return runOnce(() -> candle.animate(rainbow()));
+    // }
 
-    public Command runFade(Color color) {
-        return runOnce(() -> candle.animate(fade(color)));
-    }
+    // public Command runFade(Color color) {
+    //     return runOnce(() -> candle.animate(fade(color)));
+    // }
 
-    public Command runShootFlow(Color color) {
-        return runOnce(() -> candle.animate(shootFlow(color)));
-    }
+    // public Command runShootFlow(Color color) {
+    //     return runOnce(() -> candle.animate(shootFlow(color)));
+    // }
 
-    public Command runInfeedFlow(Color color) {
-        return runOnce(() -> candle.animate(infeedFlow(color)));
-    }
+    // public Command runInfeedFlow(Color color) {
+    //     return runOnce(() -> candle.animate(infeedFlow(color)));
+    // }
 
-    public Command runStrobe(Color color) {
-        return runOnce(() -> candle.animate(strobe(color)));
-    }
+    // public Command runStrobe(Color color) {
+    //     return runOnce(() -> candle.animate(strobe(color)));
+    // }
 
     // Blink command -> Use for anything //
     public Command blink(Color color, int cycles) {
