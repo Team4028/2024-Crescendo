@@ -956,7 +956,9 @@ public class RobotContainer {
     private Command shuttleCommand() {
         return updateDrivePoseMT2Command()
                 .andThen(drivetrain
-                        .applyRequest(() -> snapDrive.withTargetDirection((BeakUtils.allianceIsBlue() ? Constants.BLUE_SHUTTLING_TARGET : Constants.RED_SHUTTLING_TARGET).getRotation())))
+                        .applyRequest(() -> snapDrive.withTargetDirection(
+                                BeakUtils.translationToPose(drivetrain.getState().Pose, Constants.SHUTTLING_NOTE_TARGET)
+                                        .getAngle())))
                 .alongWith(runEntryCommand(
                         () -> ShooterTable.calcShuttleTableEntry(Meters.of(
                                 BeakUtils.translationToPose(drivetrain.getState().Pose, Constants.SHUTTLING_NOTE_TARGET)
