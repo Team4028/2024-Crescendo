@@ -1,0 +1,79 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.4376744281438871,
+      "y": 5.543278238286734
+    },
+    "rotation": 0.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Preload Stationary"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Speaker P - B"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stationary Shot B"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Speaker B - A RED"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stationary Shot A"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Speaker A - C RED"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stationary Shot C"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Middle",
+  "choreoAuto": false
+}
