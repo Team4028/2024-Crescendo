@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.395458069301338,
-        "y": 7.437170934679048
+        "x": 8.357666972654265,
+        "y": 7.291486881110408
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.067668948771898,
-        "y": 7.378897313251593
+        "x": 8.029877852124825,
+        "y": 7.233213259682953
       },
       "isLocked": false,
       "linkedName": "Note 1"
@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "Stop  Infeed",
-      "waypointRelativePos": 0,
+      "waypointRelativePos": 0.0,
       "command": {
         "type": "parallel",
         "data": {

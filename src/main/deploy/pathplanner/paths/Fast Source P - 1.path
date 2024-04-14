@@ -32,12 +32,12 @@
     },
     {
       "anchor": {
-        "x": 8.395458069301338,
-        "y": 7.437170934679048
+        "x": 8.357666972654265,
+        "y": 7.291486881110408
       },
       "prevControl": {
-        "x": 7.978888433375802,
-        "y": 7.072960800757449
+        "x": 7.941097336728729,
+        "y": 6.927276747188809
       },
       "nextControl": null,
       "isLocked": false,
@@ -52,7 +52,7 @@
     },
     {
       "waypointRelativePos": 1.0,
-      "rotationDegrees": 12.0,
+      "rotationDegrees": 4.5,
       "rotateFast": true
     }
   ],
@@ -72,7 +72,7 @@
   "eventMarkers": [
     {
       "name": "Start Shooter Pivot",
-      "waypointRelativePos": 0,
+      "waypointRelativePos": 0.0,
       "command": {
         "type": "parallel",
         "data": {
@@ -80,13 +80,13 @@
             {
               "type": "named",
               "data": {
-                "name": "Source Pivot"
+                "name": "Fast Shooter"
               }
             },
             {
               "type": "named",
               "data": {
-                "name": "Fast Shooter"
+                "name": "Source Pivot"
               }
             }
           ]
@@ -95,7 +95,7 @@
     },
     {
       "name": "Convey",
-      "waypointRelativePos": 0.9,
+      "waypointRelativePos": 0.85,
       "command": {
         "type": "parallel",
         "data": {
@@ -112,7 +112,7 @@
     },
     {
       "name": "Infeed",
-      "waypointRelativePos": 0,
+      "waypointRelativePos": 1.1,
       "command": {
         "type": "parallel",
         "data": {
@@ -121,6 +121,29 @@
               "type": "named",
               "data": {
                 "name": "Smart Infeed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Stop Shooter and Pivot",
+      "waypointRelativePos": 1.05,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Stop Shooter"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Home Pivot"
               }
             }
           ]
@@ -136,7 +159,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 54.494714168945,
+    "rotation": 33.25436657471215,
     "rotateFast": false
   },
   "reversed": false,
