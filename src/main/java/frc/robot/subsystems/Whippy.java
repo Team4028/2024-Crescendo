@@ -8,21 +8,16 @@ import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 
-import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.DashboardStore;
+import frc.robot.utils.LogStore;
 
 public class Whippy extends SubsystemBase {
     private final CANSparkFlex motor;
 
     private static final int CAN_ID = 16;
     private static final int CURRENT_LIMIT = 40;
-
-    private final DataLog log;
-    private final DoubleLogEntry velocityLog;
 
     /** Creates a new WhippyWheels. */
 
@@ -41,9 +36,7 @@ public class Whippy extends SubsystemBase {
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
 
         /* Logging */
-        log = DataLogManager.getLog();
-        
-        velocityLog = new DoubleLogEntry(log, "Whippy/Velocity");
+        LogStore.add("Whippy/Velocity", motor.getEncoder()::getVelocity);
 
         /* Dashboard */
         DashboardStore.add("Running/Whippy", this::isRunning);
@@ -72,10 +65,6 @@ public class Whippy extends SubsystemBase {
 
     public Command stopCommand() {
         return whippyWheelsCommand(0.);
-    }
-
-    public void logValues() {
-        velocityLog.append(motor.getEncoder().getVelocity());
     }
 
     @Override

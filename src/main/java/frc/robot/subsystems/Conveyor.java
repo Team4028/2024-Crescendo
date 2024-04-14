@@ -4,13 +4,11 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.DashboardStore;
+import frc.robot.utils.LogStore;
 
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.RelativeEncoder;
@@ -25,8 +23,6 @@ public class Conveyor extends SubsystemBase {
     private final RelativeEncoder encoder;
 
     private final SparkPIDController pid;
-    private final DataLog log;
-    private final DoubleLogEntry currentLog, vbusLog, positionLog, velocityLog;
 
     private final static class PIDConstants {
         private static final double kP = 0.2;
@@ -69,12 +65,10 @@ public class Conveyor extends SubsystemBase {
 
         motor.burnFlash();
 
-        log = DataLogManager.getLog();
-
-        currentLog = new DoubleLogEntry(log, "/Conveyor/Current");
-        vbusLog = new DoubleLogEntry(log, "/Conveyor/Vbus");
-        positionLog = new DoubleLogEntry(log, "/Conveyor/Position");
-        velocityLog = new DoubleLogEntry(log, "/Conveyor/Velocity");
+        LogStore.add("/Conveyor/Current", motor::getOutputCurrent);
+        LogStore.add("/Conveyor/Vbus", motor::getAppliedOutput);
+        LogStore.add("/Conveyor/Position", encoder::getPosition);
+        LogStore.add("/Conveyor/Velocity", encoder::getVelocity);
 
         /* Dashboard */
         DashboardStore.add("Running/Conveyor", this::isRunning);
@@ -116,13 +110,6 @@ public class Conveyor extends SubsystemBase {
         return runOnce(() -> pid.setReference(encoder.getPosition(), ControlType.kPosition))
                 .andThen(Commands.waitSeconds(0.2))
                 .andThen(stopCommand());
-    }
-
-    public void logValues() {
-        currentLog.append(motor.getOutputCurrent());
-        vbusLog.append(motor.getAppliedOutput());
-        positionLog.append(encoder.getPosition());
-        velocityLog.append(encoder.getVelocity());
     }
 
     @Override

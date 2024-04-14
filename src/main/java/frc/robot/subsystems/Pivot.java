@@ -13,21 +13,13 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Voltage;
-import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.util.datalog.StringLogEntry;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.utils.DashboardStore;
+import frc.robot.utils.LogStore;
 
 public class Pivot extends SubsystemBase {
 
@@ -44,12 +36,6 @@ public class Pivot extends SubsystemBase {
     private final RelativeEncoder encoder;
     private final SparkPIDController pid;
     private final ArmFeedforward armFF;
-
-    private final SysIdRoutine sysIdRoutine;
-
-    private final DataLog log;
-    private final DoubleLogEntry currentLog, velocityLog, voltageLog, positionLog;
-    private final StringLogEntry sysIDTestMode;
 
     private final Timer zeroTimer;
     private final double ZERO_TIMER_THRESHOLD = 0.2; // 10 scans
@@ -109,19 +95,11 @@ public class Pivot extends SubsystemBase {
         encoder.setMeasurementPeriod(16);
         encoder.setAverageDepth(2);
 
-        // Logging *Wo-HO!!
-        log = DataLogManager.getLog();
-        currentLog = new DoubleLogEntry(log, "/Pivot/Current");
-        voltageLog = new DoubleLogEntry(log, "/Pivot/Voltage");
-        velocityLog = new DoubleLogEntry(log, "/Pivot/Velocity");
-        positionLog = new DoubleLogEntry(log, "/Pivot/Position");
-        sysIDTestMode = new StringLogEntry(log, "/Pivot/SysID test mode");
-
-        sysIdRoutine = new SysIdRoutine(
-                new SysIdRoutine.Config(null, null, null, (state) -> sysIDTestMode.append(state.toString())),
-                new SysIdRoutine.Mechanism(
-                        (Measure<Voltage> volts) -> motor.setVoltage(volts.in(Units.Volts)), null,
-                        this));
+        /* Logs */
+        LogStore.add("/Pivot/Current", motor::getOutputCurrent);
+        LogStore.add("/Pivot/Voltage", motor::getAppliedOutput);
+        LogStore.add("/Pivot/Velocity", encoder::getVelocity);
+        LogStore.add("/Pivot/Position", encoder::getPosition);
 
         /* ======= */
         /* PID!!!! */
@@ -158,18 +136,10 @@ public class Pivot extends SubsystemBase {
 
         /* Dashboard */
         DashboardStore.add("Pivot Position", () -> convertEncoderToRadians(getPosition()));
-        DashboardStore.add("Pivot Native Position", () -> getPosition());
-        DashboardStore.add("Pivot Current", () -> motor.getOutputCurrent());
+        DashboardStore.add("Pivot Native Position", this::getPosition);
+        DashboardStore.add("Pivot Current", motor::getOutputCurrent);
         DashboardStore.add("Pivot Target", () -> targetPosition);
-        DashboardStore.add("Pivot Velocity", () -> encoder.getVelocity());
-    }
-
-    public Command runQuasi(Direction dir) {
-        return sysIdRoutine.quasistatic(dir);
-    }
-
-    public Command runDyn(Direction dir) {
-        return sysIdRoutine.dynamic(dir);
+        DashboardStore.add("Pivot Velocity", encoder::getVelocity);
     }
 
     private double convertEncoderToRadians(double encoder) {
@@ -263,14 +233,6 @@ public class Pivot extends SubsystemBase {
 
     public BooleanSupplier inPositionSupplier() {
         return () -> (inPosition());
-    }
-
-    public void logValues() {
-        currentLog.append(motor.getOutputCurrent());
-        voltageLog.append(motor.getAppliedOutput() * motor.getBusVoltage());
-        velocityLog.append(encoder.getVelocity());
-        positionLog.append(getPosition());
-        // TODO: degrees + 1.5
     }
 
     @Override

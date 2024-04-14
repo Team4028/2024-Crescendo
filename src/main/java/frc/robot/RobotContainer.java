@@ -1098,19 +1098,6 @@ public class RobotContainer {
                 .andThen(autonChooser.getSelected());
     }
 
-    // ======= //
-    /** Logging */
-    // ======= //
-    public void logValues() {
-        drivetrain.logValues();
-        conveyor.logValues();
-        infeed.logValues();
-        shooter.logValues();
-        climber.logValues();
-        pivot.logValues();
-        m_fan.logValues();
-    }
-
     // ================ //
     /** Vision Utilities */
     // ================ //

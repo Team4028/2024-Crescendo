@@ -11,19 +11,15 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.LogStore;
+import frc.robot.utils.SignalStore;
 
 public class Infeed extends SubsystemBase {
     private final TalonFX motor;
 
     private final StatusSignal<Double> current, velocity;
-
-    private final DataLog log;
-    private final DoubleLogEntry currentLog, velocityLog;
 
     private static final int CAN_ID = 18;
 
@@ -46,14 +42,15 @@ public class Infeed extends SubsystemBase {
         motor.getConfigurator().apply(motorOutputConfigs);
 
         /* CAN Bus */
-        motor.getDutyCycle().setUpdateFrequency(50.);
-        motor.getVelocity().setUpdateFrequency(10.);
-        motor.getStatorCurrent().setUpdateFrequency(10.);
+        BaseStatusSignal.setUpdateFrequencyForAll(10.0, velocity, current);
+
         motor.optimizeBusUtilization();
 
-        log = DataLogManager.getLog();
-        currentLog = new DoubleLogEntry(log, "/Infeed/Current");
-        velocityLog = new DoubleLogEntry(log, "/Infeed/Velocity");
+        SignalStore.add(current, velocity);
+
+        /* Logs */
+        LogStore.add("/Infeed/Current", current::getValueAsDouble);
+        LogStore.add("/Infeed/Velocity", velocity::getValueAsDouble);
     }
 
     // ==================================
@@ -74,13 +71,6 @@ public class Infeed extends SubsystemBase {
 
     public Command stopCommand() {
         return runMotorCommand(0.);
-    }
-
-    public void logValues() {
-        BaseStatusSignal.refreshAll(velocity, current);
-
-        currentLog.append(current.getValueAsDouble());
-        velocityLog.append(velocity.getValueAsDouble());
     }
 
     @Override

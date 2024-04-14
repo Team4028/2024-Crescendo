@@ -294,6 +294,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         m_simNotifier.startPeriodic(kSimLoopPeriod);
     }
 
+    // TODO: This whole signal and logging situation is highkey garbage, please fix
     public void logValues() {
         for (var mod : Modules) {
             var motor = mod.getDriveMotor();
