@@ -4,10 +4,14 @@
 
 package frc.robot.utils;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
@@ -33,5 +37,9 @@ public final class BeakUtils {
                 : Constants.SPEAKER_DISTANCE_TARGET_RED;
 
         return new Translation2d(pose.getX() - target.getX(), pose.getY() - target.getY());
+    }
+
+    public static Translation2d translationToPose(Pose2d currentPose, Pose2d targetPose) {
+        return new Translation2d(currentPose.getX() - targetPose.getX(), currentPose.getY() - targetPose.getY());
     }
 }

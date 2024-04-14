@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.utils.BeakUtils;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -26,7 +27,14 @@ public final class Constants {
 
     public static final Pose2d AMP_TARGET = new Pose2d(1.83, 7.27, new Rotation2d(Math.PI / 2.));
 
-    public static final Pose2d SHUTTLING_TARGET = new Pose2d(10.0, 0.78, Rotation2d.fromDegrees(-40.73));
+    /** Shuttling aiming target */
+    public static final Pose2d SHUTTLING_NOTE_TARGET = new Pose2d(0.75, 7.5, Rotation2d.fromDegrees(0));
+
+    /** Blue Robot Shuttling Pose */
+    public static final Pose2d BLUE_SHUTTLING_TARGET = new Pose2d(10.0, 0.78, Rotation2d.fromDegrees(-40.5));
+
+    /** Red Robot Shuttling Pose */
+    public static final Pose2d RED_SHUTTLING_TARGET = new Pose2d(10.0, 0.78, Rotation2d.fromDegrees(-34.5));
 
     public static final Pose2d RIGHT_SHOT = new Pose2d(5.1, 1.9, Rotation2d.fromDegrees(-38.));
     public static final Pose2d CENTER_SHOT = new Pose2d(4.5, 4.7, Rotation2d.fromDegrees(-15.5));
