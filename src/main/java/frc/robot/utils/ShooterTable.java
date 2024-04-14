@@ -4,11 +4,12 @@ import static edu.wpi.first.units.Units.Feet;
 
 import java.util.ArrayList;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 
 public class ShooterTable {
@@ -16,26 +17,29 @@ public class ShooterTable {
         public Measure<Distance> Distance;
         public double Angle;
         public double Beans;
+        public Measure<Distance> HeckyOffset;
 
-        /**
-         * Construct a shooter table entry.
-         * 
-         * @param distance       Distance from the target
-         * @param photonDistance The arb dist reported by garbage PV
-         * @param llTY           The arb ty reported by garbage LL
-         * @param angle          Angle of the shooter pivot, in rotations.
-         * @param leftSpeed      Speed of the left shooter motor, in RPM.
-         * @param rightSpeed     Speed of the right shooter motor, in RPM.
-         */
-        public ShooterTableEntry(Measure<Distance> distance, double angle, double beans) {
+        public ShooterTableEntry(Measure<Distance> distance, double angle, double beans,
+                Measure<Distance> heckyOffset) {
             Angle = angle;
             Beans = beans;
             Distance = distance;
+            HeckyOffset = heckyOffset;
         }
 
         public ShooterTableEntry average(ShooterTableEntry other) {
             return new ShooterTableEntry(Distance.plus(other.Distance).divide(2.), (Angle + other.Angle) / 2,
-                    (Beans + other.Beans) / 2);
+                    (Beans + other.Beans) / 2, Feet.zero());
+        }
+
+        public ShooterTableEntry applyHeckyOffset() {
+            double rotationThreshold = 30.0;
+            double allianceZeroAngle = BeakUtils.allianceIsBlue() ? 0 : 180;
+            if (heckinessSupplier != null && Math.abs(heckinessSupplier.get().getDegrees() - allianceZeroAngle) > rotationThreshold) {
+                Distance = Distance.plus(HeckyOffset);
+            }
+            
+            return this;
         }
     }
 
@@ -66,25 +70,27 @@ public class ShooterTable {
     private static ArrayList<ShooterTableEntry> shooterTable = new ArrayList<>();
     private static ArrayList<VisionTableEntry> visionTable = new ArrayList<>();
 
+    private static Supplier<Rotation2d> heckinessSupplier;
+
     private static void fillInTable() { // TODO: fill in photonStationaryDistance values
         // put entries here
         // Distances must go from top to bottom: shortest to longest
         // IF YOU INCREASE DISTANCE, SHOOTER ANGLE GOES UP
-        shooterTable.add(new ShooterTableEntry(Feet.of(4.4), 30.9 + 0.25, 0.6)); // 55 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(5), 28.0 + 0.25, 0.7)); // 50 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(6), 23.8 + 0.25, 0.8)); // 45 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(8), 17.0 + 0.25, 0.9)); // 36 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(10), 13.1 + 0.25, 1.0)); // 31 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(11.5), 10.2 + 0.25, 1.0));
-        shooterTable.add(new ShooterTableEntry(Feet.of(13), 7.7 + 0.25, 1.0)); // 25 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(14.5), 6.5 + 0.25, 1.0));
-        shooterTable.add(new ShooterTableEntry(Feet.of(16), 5.1 + 0.25, 1.0)); // 23 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(17.5), 4.9 + 0.25, 1.0));
-        shooterTable.add(new ShooterTableEntry(Feet.of(19), 4.4 + 0.25, 1.0)); // 21.5 degrees       
-        shooterTable.add(new ShooterTableEntry(Feet.of(20.5), 3.58 + 0.25, 1.0));     
-        shooterTable.add(new ShooterTableEntry(Feet.of(22), 3.1 + 0.25, 1.0)); // 20.5 degrees
-        shooterTable.add(new ShooterTableEntry(Feet.of(24), 2.6 + 0.25, 1.0));
-        shooterTable.add(new ShooterTableEntry(Feet.of(27), 0.25 + 0.25, 0.98)); // 20 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(4.4), 30.9 + 0.25, 0.6, Feet.of(0.0))); // 55 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(5), 28.0 + 0.25, 0.7, Feet.of(0.0))); // 50 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(6), 23.8 + 0.25, 0.8, Feet.of(0.0))); // 45 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(8), 17.0 + 0.25, 0.9, Feet.of(0.0))); // 36 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(10), 13.1 + 0.25, 1.0, Feet.of(0.0))); // 31 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(11.5), 10.2 + 0.25, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(13), 7.7 + 0.25, 1.0, Feet.of(0.0))); // 25 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(14.5), 6.5 + 0.25, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(16), 5.1 + 0.25, 1.0, Feet.of(0.0))); // 23 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(17.5), 4.9 + 0.25, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(19), 4.4 + 0.25, 1.0, Feet.of(0.0))); // 21.5 degrees       
+        shooterTable.add(new ShooterTableEntry(Feet.of(20.5), 3.58 + 0.25, 1.0, Feet.of(0.0)));     
+        shooterTable.add(new ShooterTableEntry(Feet.of(22), 3.1 + 0.25, 1.0, Feet.of(0.0))); // 20.5 degrees
+        shooterTable.add(new ShooterTableEntry(Feet.of(24), 2.6 + 0.25, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(27), 0.25 + 0.25, 0.98, Feet.of(0.0))); // 20 degrees
 
         // vision table entries
         visionTable.add(new VisionTableEntry(Feet.of(4.4), 4.34, 0, 21.3, 16.07 ));
@@ -116,7 +122,7 @@ public class ShooterTable {
     // }
 
     public static ShooterTableEntry calcShooterTableEntryCamera(double cameraValue, CameraLerpStrat strategy) {
-        return calcShooterTableEntry(calcVisionTableEntryCamera(cameraValue, strategy).Distance);
+        return calcShooterTableEntry(calcVisionTableEntryCamera(cameraValue, strategy).Distance).applyHeckyOffset();
     }
 
     public static VisionTableEntry calcVisionTableEntryCamera(double cameraValue, CameraLerpStrat strategy) {
@@ -217,7 +223,14 @@ public class ShooterTable {
         double calculatedAngle = scaleFactor * (closestHigher.Angle -
                 closestLower.Angle) + closestLower.Angle;
 
-        return new ShooterTableEntry(distance, calculatedAngle, calculatedBeans);
+        var calculatedHeckyOffset = closestHigher.HeckyOffset.minus(closestLower.HeckyOffset).times(scaleFactor)
+                .plus(closestLower.HeckyOffset);
+
+        return new ShooterTableEntry(distance, calculatedAngle, calculatedBeans, calculatedHeckyOffset);
+    }
+
+    public static void setHeckinessLevel(Supplier<Rotation2d> heckSource) {
+        heckinessSupplier = heckSource;
     }
 
 }

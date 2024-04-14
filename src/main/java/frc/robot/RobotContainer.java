@@ -22,7 +22,6 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
-import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
@@ -210,7 +209,7 @@ public class RobotContainer {
 
     private static final double CAMERA_SWITCH_TIMEOUT = 1.5;
 
-    private static ShooterTableEntry PASSING_SHOT = new ShooterTableEntry(Feet.zero(), 4, 0.69);// 30.9;
+    private static ShooterTableEntry PASSING_SHOT = new ShooterTableEntry(Feet.zero(), 4, 0.69, Feet.zero());// 30.9;
 
     private final LinkedHashMap<Double, String> indexMap = new LinkedHashMap<>();
 
@@ -265,17 +264,12 @@ public class RobotContainer {
         indexMap.put(19.0, "Left Wing");
         indexMap.put(22.0, "Right Wing");
 
+        ShooterTable.setHeckinessLevel(() -> drivetrain.getState().Pose.getRotation());
+
         /* Dashboard */
         DashboardStore.add("Shooter Table Index", () -> currentIndex);
         DashboardStore.add("Shooter Table Name",
                 () -> indexMap.containsKey(currentIndex) ? indexMap.get(currentIndex) : "Manual");
-
-        // DashboardStore.add("Stationary Distance",
-        //         () -> {
-        //             Optional<Double> distance = stationaryVision.getTagDistance(7);
-        //             return distance.isPresent() ? distance.get()
-        //                     : Double.NaN;
-        //         });
 
         // this is weird
         DashboardStore.add("Snapped", () -> drivetrain.getCurrentRequest().getClass().equals(snapDrive.getClass()));
