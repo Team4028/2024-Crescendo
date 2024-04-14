@@ -97,10 +97,6 @@ public class RobotContainer {
     private static final int OI_OPERATOR_CONTROLLER = 1;
     private static final int OI_EMERGENCY_CONTROLLER = 2;
 
-    private static final String SHOOTER_LIMELIGHT = "limelight-ii";
-    private static final String MEGA_LEFT_LIMELIGHT = "limelight-gii";
-    private static final String MEGA_RIGHT_LIMELIGHT = "limelight-gi";
-
     // ======================== //
     /** Controllers & Subsystems */
     // ======================== //
@@ -122,16 +118,37 @@ public class RobotContainer {
     private final NoteSensing noteSensing = new NoteSensing();
     private final DriverCamera driverCamera = new DriverCamera();
 
+    /** Vision Systems */
+
+    private static final String SHOOTER_LIMELIGHT = "limelight-ii";
+    private static final String CHASSIS_LIMELIGHT = "limelight-gii";
+    private static final String INFEED_LIMELIGHT_3G = "limelight-gi";
+
+    /** Pipeline for 3G MegaTag2 */
+    private static final int MEGATAG_PIPELINE = 0;
+
+    /** Pipeline for 3G 2D TY */
+    private static final int TY_PIPELINE = 1;
+
     private final PhotonVision rightVision = new PhotonVision("Right_AprilTag_Camera",
             VisionSystem.RIGHT_ROBOT_TO_CAMERA);
     private final PhotonVision leftVision = new PhotonVision("Left_AprilTag_Camera", VisionSystem.LEFT_ROBOT_TO_CAMERA);
 
-    // private final Limelight infeedCamera = new Limelight("limelight", new
-    // Transform3d());
     private final Limelight shooterLimelight = new Limelight(SHOOTER_LIMELIGHT, new Transform3d());
 
-    private final Limelight megaLeftVision = new Limelight(MEGA_LEFT_LIMELIGHT, new Transform3d());
-    private final Limelight megaRightVision = new Limelight(MEGA_RIGHT_LIMELIGHT, new Transform3d());
+    private final Limelight chassisLimelight = new Limelight(CHASSIS_LIMELIGHT, new Transform3d());
+    private final Limelight infeedLimelight3G = new Limelight(INFEED_LIMELIGHT_3G, new Transform3d());
+
+    /** Shooting Strategies */
+    private final ShootingStrategy shooterLimelightStrategy = new ShootingStrategy(shooterLimelight,
+            CameraLerpStrat.LimelightTY);
+
+    private final ShootingStrategy odometryStrategy = new ShootingStrategy(drivetrain);
+
+    private final ShootingStrategy chassisLimelight2dStrategy = new ShootingStrategy(chassisLimelight,
+            CameraLerpStrat.Limelight3GTY);
+
+    private ShootingStrategy selectedStrategy = odometryStrategy;
 
     // ====================== //
     /** Auton & Other Commands */
@@ -222,19 +239,6 @@ public class RobotContainer {
     private boolean enableTrap = false;
 
     private double m_lastShot = 0.0;
-
-    /* Shooting Strategies */
-    private final ShootingStrategy shooterLimelightStrategy = new ShootingStrategy(shooterLimelight,
-            CameraLerpStrat.LimelightTY);
-
-    private final ShootingStrategy odometryStrategy = new ShootingStrategy(drivetrain);
-
-    private final ShootingStrategy chassisLimelight2dStrategy = new ShootingStrategy(megaLeftVision,
-            CameraLerpStrat.Limelight3GTY);
-
-    private ShootingStrategy selectedStrategy = odometryStrategy;
-
-    double pipeline = 0;
 
     // ======================== //
     /** Swerve Control & Logging */
@@ -512,18 +516,7 @@ public class RobotContainer {
                 .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
 
         /* Shooter Lock */
-        // driverController.leftStick().onTrue(magicLockCommand());
-        driverController.leftStick().onTrue(
-                Commands.either(
-                        Commands.runOnce(() -> {
-                            megaLeftVision.setPipeline(0);
-                            pipeline = 0;
-                        }),
-                        Commands.runOnce(() -> {
-                            megaLeftVision.setPipeline(1);
-                            pipeline = 1;
-                        }),
-                        () -> pipeline == 1));
+        driverController.leftStick().onTrue(magicLockCommand());
 
         // ========================= //
         /* Misc */
@@ -569,9 +562,11 @@ public class RobotContainer {
         operatorController.x().toggleOnTrue(magicShootCommand());
 
         /* Magic Shoot Strategies */
-        operatorController.povRight().onTrue(Commands.runOnce(() -> selectedStrategy = shooterLimelightStrategy));
-        operatorController.povDown().onTrue(Commands.runOnce(() -> selectedStrategy = chassisLimelight2dStrategy));
-        operatorController.povLeft().onTrue(Commands.runOnce(() -> selectedStrategy = odometryStrategy));
+        operatorController.povRight().onTrue(setStrategyCommand(shooterLimelightStrategy));
+        operatorController.povDown().onTrue(setStrategyCommand(chassisLimelight2dStrategy)
+                .alongWith(chassisLimelight.setPipelineCommand(TY_PIPELINE)));
+        operatorController.povLeft().onTrue(setStrategyCommand(odometryStrategy)
+                .alongWith(chassisLimelight.setPipelineCommand(MEGATAG_PIPELINE)));
 
         /* Manual/Preset Mode */
         operatorController.back().onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));
@@ -700,6 +695,8 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
     }
+
+    //
 
     // =========================================== //
     /** Additional Commands, Getters, and Utilities */
@@ -1031,6 +1028,11 @@ public class RobotContainer {
         return () -> shooter.isReady() && pivot.inPosition();
     }
 
+    /** Set the strategy to use for shooting/locking. */
+    private Command setStrategyCommand(ShootingStrategy strategy) {
+        return Commands.runOnce(() -> selectedStrategy = strategy);
+    }
+
     //
 
     // ==================== //
@@ -1088,7 +1090,7 @@ public class RobotContainer {
 
     /** Push limelight data to the CANdle */
     public Command encodeLimelights() {
-        return candle.encodeLimelights(shooterLimelight, megaLeftVision, megaRightVision);
+        return candle.encodeLimelights(shooterLimelight, chassisLimelight, infeedLimelight3G);
     }
 
     /** Put Current ST Index Data to Dashboard */
@@ -1161,8 +1163,8 @@ public class RobotContainer {
     }
 
     public void updateMTRot() {
-        megaLeftVision.setRobotRotationMT2(drivetrain.getState().Pose.getRotation().getDegrees());
-        megaRightVision.setRobotRotationMT2(drivetrain.getState().Pose.getRotation().getDegrees());
+        chassisLimelight.setRobotRotationMT2(drivetrain.getState().Pose.getRotation().getDegrees());
+        infeedLimelight3G.setRobotRotationMT2(drivetrain.getState().Pose.getRotation().getDegrees());
     }
 
     public void updateDrivePoseMT2() {
@@ -1172,8 +1174,8 @@ public class RobotContainer {
             return;
         }
 
-        var llLeftPoseEst = megaLeftVision.getBotposeEstimateMT2();
-        var llRightPoseEst = megaRightVision.getBotposeEstimateMT2();
+        var llLeftPoseEst = chassisLimelight.getBotposeEstimateMT2();
+        var llRightPoseEst = infeedLimelight3G.getBotposeEstimateMT2();
         Pose2d llAvgPose;
 
         if (llLeftPoseEst.tagCount <= 0 && llRightPoseEst.tagCount <= 0) {
