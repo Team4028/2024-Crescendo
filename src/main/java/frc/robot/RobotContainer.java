@@ -952,9 +952,10 @@ public class RobotContainer {
      * @param strategy The {@link ShootingStrategy} to use.
      */
     private Command magicLockCommand(Supplier<ShootingStrategy> strategy) {
-        return driverCamera.setShooterCameraCommand()
-                .andThen(new SpeakerLockOn(drivetrain, () -> getXSpeed(true), () -> getYSpeed(true), strategy.get()))
-                .alongWith(runEntryCommand(strategy.get()::getTargetEntry, () -> ShotSpeeds.FAST).repeatedly())
+        return fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier())
+                .andThen(driverCamera.setShooterCameraCommand())
+                .andThen(new SpeakerLockOn(drivetrain, () -> getXSpeed(true), () -> getYSpeed(true), strategy.get())
+                        .alongWith(runEntryCommand(strategy.get()::getTargetEntry, () -> ShotSpeeds.FAST).repeatedly()))
                 .finallyDo(driverCamera::setInfeedCamera);
     }
 
@@ -1013,7 +1014,7 @@ public class RobotContainer {
      * @param lock     Whether or not to align the drivetrain.
      */
     private Command magicShootCommand(Supplier<ShootingStrategy> strategy, boolean lock) {
-        return fixNoteCommand().onlyIf(noteSensing.hasInfedSupplier())
+        return fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier())
                 .andThen(driverCamera.setShooterCameraCommand())
                 .andThen(runEntryCommand(strategy.get()::getTargetEntry,
                         () -> ShotSpeeds.FAST)
@@ -1134,7 +1135,10 @@ public class RobotContainer {
 
     /** Auton Command */
     public Command getAutonomousCommand() {
-        return new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d()))
+        return Commands.runOnce(() -> {
+            chassisLimelight.setPipeline(TY_PIPELINE);
+            selectedStrategy = chassisLimelight2dStrategy;
+        }).andThen(new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d())))
                 .andThen(NamedCommands.getCommand("AprilTag Zero"))
                 .andThen(autonChooser.getSelected());
     }
@@ -1221,5 +1225,10 @@ public class RobotContainer {
 
     public Command updateDrivePoseMT2Command() {
         return Commands.runOnce(this::updateDrivePoseMT2);
+    }
+
+    public void setMT2Pipeline() {
+        chassisLimelight.setPipeline(MEGATAG_PIPELINE);
+        selectedStrategy = odometryStrategy;
     }
 }

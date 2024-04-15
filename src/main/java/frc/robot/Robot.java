@@ -107,6 +107,7 @@ public class Robot extends TimedRobot {
         if (!hasZeroedPivot)
             m_robotContainer.zero();
         // m_robotContainer.configVisionFieldOrigins();
+        m_robotContainer.setMT2Pipeline();
     }
 
     @Override
