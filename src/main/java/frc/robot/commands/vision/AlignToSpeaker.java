@@ -30,7 +30,7 @@ public class AlignToSpeaker extends ProfiledPIDCommand {
                 // The ProfiledPIDController used by the command
                 new ProfiledPIDController(
                         // The PID gains
-                        10.0,
+                        8.0,
                         0.0,
                         0.0,
                         // The motion profile constraints

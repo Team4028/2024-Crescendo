@@ -417,6 +417,7 @@ public class RobotContainer {
                 13.0, Constants.CENTER_SHOT, 0.8, 0.));
 
         NamedCommands.registerCommand("Stationary Source Shot", shootCommand(22.1));
+        NamedCommands.registerCommand("Magic Source Shot", magicShootCommand(21.6, () -> chassisLimelight2dStrategy, true));
 
         NamedCommands.registerCommand("Spitless Source Shot 1", shootCommand(15.8));
         NamedCommands.registerCommand("Spitless Source Shot 2", shootCommand(17));
@@ -437,7 +438,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Stationary Shot C", shootCommand(9));
         NamedCommands.registerCommand("P Amp Shot", shootCommand(13.5));
         NamedCommands.registerCommand("Stationary Shot Amp", shootCommand(13.5));
-        NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(5.0));
+        NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(4.7));
         NamedCommands.registerCommand("Source Pivot Red", pivot.runToPositionCommand(5.3));
         NamedCommands.registerCommand("Convey", conveyCommand());
         NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(9));
@@ -1008,19 +1009,43 @@ public class RobotContainer {
     }
 
     /**
+     * Generate a command to use the specified entry to run a magic shot.
+     * 
+     * @param entry    The entry to run.
+     * @param strategy The strategy to use for rotation.
+     * @param lock     Whether or not to align the drivetrain.
+     */
+    private Command magicShootCommand(Supplier<ShooterTableEntry> entry, Supplier<ShootingStrategy> strategy,
+            boolean lock) {
+        return fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier())
+                .andThen(driverCamera.setShooterCameraCommand())
+                .andThen(runEntryCommand(entry,
+                        () -> ShotSpeeds.FAST)
+                        .alongWith(new AlignToSpeaker(drivetrain, strategy.get()).withTimeout(0.5))
+                        .onlyIf(() -> lock))
+                .andThen(shootCommand(entry));
+    }
+
+    /**
+     * Generate a command to use the specified distance to run a magic shot.
+     * 
+     * @param distance    The shot to run.
+     * @param strategy The strategy to use for rotation.
+     * @param lock     Whether or not to align the drivetrain.
+     */
+    private Command magicShootCommand(double distance, Supplier<ShootingStrategy> strategy,
+            boolean lock) {
+        return magicShootCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(distance)), strategy, lock);
+    }
+
+    /**
      * Generate a command to use the specified strategy to run a magic shot.
      * 
      * @param strategy The {@link ShootingStrategy} to use.
      * @param lock     Whether or not to align the drivetrain.
      */
     private Command magicShootCommand(Supplier<ShootingStrategy> strategy, boolean lock) {
-        return fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier())
-                .andThen(driverCamera.setShooterCameraCommand())
-                .andThen(runEntryCommand(strategy.get()::getTargetEntry,
-                        () -> ShotSpeeds.FAST)
-                        .alongWith(new AlignToSpeaker(drivetrain, strategy.get()).withTimeout(0.5))
-                        .onlyIf(() -> lock))
-                .andThen(shootCommand(strategy.get()::getTargetEntry));
+        return magicShootCommand(strategy.get()::getTargetEntry, strategy, lock);
     }
 
     /**
