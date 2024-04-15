@@ -452,6 +452,7 @@ public class RobotContainer {
         /* Climber Limit Switch Triggers */
         new Trigger(climber::forwardLimit).onTrue(climber.hitForwardLimitCommand());
         new Trigger(climber::reverseLimit).onTrue(climber.hitReverseLimitCommand());
+        new Trigger(noteSensing.hasInfedSupplier()).onTrue(candle.strobeCommand(0.1, 4));
 
         // // LED Triggers //
         // // infeed has jam
