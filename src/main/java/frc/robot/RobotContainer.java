@@ -1013,7 +1013,8 @@ public class RobotContainer {
      * @param lock     Whether or not to align the drivetrain.
      */
     private Command magicShootCommand(Supplier<ShootingStrategy> strategy, boolean lock) {
-        return driverCamera.setShooterCameraCommand()
+        return fixNoteCommand().onlyIf(noteSensing.hasInfedSupplier())
+                .andThen(driverCamera.setShooterCameraCommand())
                 .andThen(runEntryCommand(strategy.get()::getTargetEntry,
                         () -> ShotSpeeds.FAST)
                         .alongWith(new AlignToSpeaker(drivetrain, strategy.get()).withTimeout(0.5))

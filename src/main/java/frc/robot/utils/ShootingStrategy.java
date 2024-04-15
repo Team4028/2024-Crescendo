@@ -22,7 +22,7 @@ public class ShootingStrategy {
     private final VisionSystem vision;
     private final CameraLerpStrat visionStrategy;
 
-    private static final Rotation2d OFFSET = Rotation2d.fromDegrees(-2.5);
+    private static final Rotation2d OFFSET = Rotation2d.fromDegrees(-3.0);
 
     public ShootingStrategy(VisionSystem vision, CameraLerpStrat visionStrategy) {
         this.vision = vision;
