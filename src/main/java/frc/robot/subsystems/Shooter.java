@@ -19,6 +19,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -189,6 +190,8 @@ public class Shooter extends SubsystemBase {
 
         DashboardStore.add("Running/Shooter", this::isRunning);
         DashboardStore.add("At Target/Shooter", this::isReady);
+
+        SmartDashboard.putNumber("Shootaaaah", 0.0);
     }
 
     // ==================================
@@ -324,8 +327,11 @@ public class Shooter extends SubsystemBase {
         return spinMotorRightCommand(vBus).andThen(spinMotorLeftCommand(vBus));
     }
 
+    public Command bruh() {
+        return runOnce(() -> runShot(ShotSpeeds.FAST, SmartDashboard.getNumber("Shootaaaah", 0.0)));
+    }
+
     @Override
     public void periodic() {
-
     }
 }

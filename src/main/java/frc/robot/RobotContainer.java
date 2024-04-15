@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.photonvision.EstimatedRobotPose;
@@ -480,8 +479,8 @@ public class RobotContainer {
 
         drivetrain.setDefaultCommand(
                 drivetrain.applyRequest(() -> drive
-                        .withVelocityX(getXSpeed(true).getAsDouble())
-                        .withVelocityY(getYSpeed(true).getAsDouble())
+                        .withVelocityX(getXSpeed(true))
+                        .withVelocityY(getYSpeed(true))
                         .withRotationalRate(getRotationSpeed())));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
@@ -509,8 +508,8 @@ public class RobotContainer {
 
         /* Robot-Relative Drive */
         driverController.y().toggleOnTrue(drivetrain.applyRequest(() -> robotRelativeDrive
-                .withVelocityX(getXSpeed(false).getAsDouble())
-                .withVelocityY(getYSpeed(false).getAsDouble())
+                .withVelocityX(getXSpeed(false))
+                .withVelocityY(getYSpeed(false))
                 .withRotationalRate(getRotationSpeed())));
 
         /* X-Drive */
@@ -592,6 +591,9 @@ public class RobotContainer {
                         Commands.runOnce(() -> manualIndex -= 1.0),
                         Commands.runOnce(() -> presetIndex -= 1),
                         () -> useManual).andThen(this::pushIndexData));
+
+        /* Shuttle Prep */
+        operatorController.leftStick().onTrue(shuttleCommand());
 
         // ========================= //
         /* Pivot Control */
@@ -724,13 +726,13 @@ public class RobotContainer {
                 MAX_ANGULAR_SPEED;
     }
 
-    private DoubleSupplier getYSpeed(boolean flip) {
-        return () -> (flip ? getDriveSignum()
+    private double getYSpeed(boolean flip) {
+        return (flip ? getDriveSignum()
                 : 1) * scaleDriverController(-driverController.getLeftX(), yLimiter, currentSpeed) * MAX_SPEED;
     }
 
-    private DoubleSupplier getXSpeed(boolean flip) {
-        return () -> (flip ? getDriveSignum()
+    private double getXSpeed(boolean flip) {
+        return (flip ? getDriveSignum()
                 : 1) * scaleDriverController(-driverController.getLeftY(), xLimiter, currentSpeed) * MAX_SPEED;
     }
 
@@ -742,8 +744,8 @@ public class RobotContainer {
     /** Set Snap Direction Toggle */
     private Command snapCommand(SnapDirection direction) {
         return drivetrain.applyRequest(() -> snapDrive
-                .withVelocityX(getXSpeed(true).getAsDouble())
-                .withVelocityY(getYSpeed(true).getAsDouble())
+                .withVelocityX(getXSpeed(true))
+                .withVelocityY(getYSpeed(true))
                 .withTargetDirection(Rotation2d.fromDegrees(direction.Angle)));
     }
 
@@ -951,7 +953,7 @@ public class RobotContainer {
      */
     private Command magicLockCommand(Supplier<ShootingStrategy> strategy) {
         return driverCamera.setShooterCameraCommand()
-                .andThen(new SpeakerLockOn(drivetrain, getXSpeed(true), getYSpeed(true), strategy.get()))
+                .andThen(new SpeakerLockOn(drivetrain, () -> getXSpeed(true), () -> getYSpeed(true), strategy.get()))
                 .alongWith(runEntryCommand(strategy.get()::getTargetEntry, () -> ShotSpeeds.FAST).repeatedly())
                 .finallyDo(driverCamera::setInfeedCamera);
     }
@@ -964,16 +966,18 @@ public class RobotContainer {
         return magicLockCommand(() -> selectedStrategy);
     }
 
-    private Command pathfindingShuttleCommand() {
-        return updateDrivePoseMT2Command()
-                .andThen(drivetrain.mirrorablePathFindCommand(Constants.SHUTTLING_TARGET, 0.75, 0))
-                .andThen(shootCommand(() -> ShooterTable.calcShooterTableEntry(
-                        Meters.of(BeakUtils.goalTranslation(Constants.SHUTTLING_TARGET).getNorm()))));
-    }
-
     private Command shuttleCommand() {
-        return updateDrivePoseMT2Command().andThen(shootCommand(() -> ShooterTable
-                .calcShuttleTableEntry(Meters.of(BeakUtils.goalTranslation(drivetrain.getState().Pose).getNorm()))));
+        return updateDrivePoseMT2Command()
+                .andThen(drivetrain
+                        .applyRequest(() -> snapDrive.withTargetDirection(
+                                BeakUtils.goalTranslation(drivetrain.getState().Pose).getAngle())
+                                .withVelocityX(getXSpeed(true))
+                                .withVelocityY(getYSpeed(true)))
+                        .alongWith(runEntryCommand(
+                                () -> ShooterTable.calcShuttleTableEntry(Meters.of(
+                                        BeakUtils.goalTranslation(drivetrain.getState().Pose).getNorm())),
+                                () -> ShotSpeeds.FAST))
+                        .repeatedly());
     }
 
     /**

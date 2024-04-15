@@ -94,8 +94,9 @@ public class ShooterTable {
         shooterTable.add(new ShooterTableEntry(Feet.of(27), 0.25 + 0.25, 0.98, Feet.of(0.0))); // 20 degrees
 
         // shuttle table entries
-        shuttleTable.add(new ShooterTableEntry(Feet.of(0), 0, 1, Feet.of(0)));
-        shuttleTable.add(new ShooterTableEntry(Feet.of(3), 2, 1, Feet.of(10)));
+        shuttleTable.add(new ShooterTableEntry(Feet.of(27), 28.5, 0.63, Feet.zero()));
+        shuttleTable.add(new ShooterTableEntry(Feet.of(31), 28.5, 0.675, Feet.zero()));
+        shuttleTable.add(new ShooterTableEntry(Feet.of(36), 24, 0.70, Feet.zero()));
         
         // vision table entries
         visionTable.add(new VisionTableEntry(Feet.of(4.4), 4.34, 0, 21.3, 15.42 ));
@@ -194,8 +195,8 @@ public class ShooterTable {
     }
 
     public static ShooterTableEntry calcShuttleTableEntry(Measure<Distance> distance) {
-        ShooterTableEntry closestLower = shooterTable.get(0);
-        ShooterTableEntry closestHigher = shooterTable.get(shooterTable.size() - 1);
+        ShooterTableEntry closestLower = shuttleTable.get(0);
+        ShooterTableEntry closestHigher = shuttleTable.get(shuttleTable.size() - 1);
 
         if (distance.lte(closestLower.Distance))
             return closestLower;
