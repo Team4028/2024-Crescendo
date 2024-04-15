@@ -3,39 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.474214215509177,
-        "y": 3.95
+        "x": 1.28,
+        "y": 3.34
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.8009118325246405,
-        "y": 3.4036847991176016
+        "x": 3.2077356790028575,
+        "y": 3.5109856910042128
       },
       "isLocked": false,
-      "linkedName": "Note 3"
+      "linkedName": "Source 3C Start"
     },
     {
       "anchor": {
-        "x": 2.8872307611518506,
-        "y": 5.543278238286734
+        "x": 8.357666972654265,
+        "y": 0.7138518624863336
       },
       "prevControl": {
-        "x": 3.8341771093480075,
-        "y": 5.128078685616111
+        "x": 5.953880088771713,
+        "y": 1.136335617835389
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Note B"
+      "linkedName": "Note 5"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.25,
+      "rotationDegrees": -31.5,
+      "rotateFast": true
+    }
+  ],
   "constraintZones": [
     {
-      "name": "Slow",
-      "minWaypointRelativePos": 0.3,
-      "maxWaypointRelativePos": 0.95,
+      "name": "New Constraints Zone",
+      "minWaypointRelativePos": 0.15,
+      "maxWaypointRelativePos": 0.5,
       "constraints": {
-        "maxVelocity": 4.5,
+        "maxVelocity": 3.0,
         "maxAcceleration": 3.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 1080.0
@@ -44,46 +50,52 @@
   ],
   "eventMarkers": [
     {
-      "name": "Stop Infeed",
-      "waypointRelativePos": 0,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "Finish Infeed"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Pivot Up",
-      "waypointRelativePos": 0.65,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "4 Piece Pivot"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Spin Shooter",
+      "name": "Infeed",
       "waypointRelativePos": 0.45,
       "command": {
         "type": "parallel",
         "data": {
           "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Smart Infeed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Convey",
+      "waypointRelativePos": 0.35,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Convey"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Shooter Pivot Set",
+      "waypointRelativePos": 0.0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Source Pivot"
+              }
+            },
             {
               "type": "named",
               "data": {
@@ -103,13 +115,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -24.3624530153122,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Middle",
+  "folder": "Source",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 0.0,
     "velocity": 0.0
   },
   "useDefaultConstraints": true

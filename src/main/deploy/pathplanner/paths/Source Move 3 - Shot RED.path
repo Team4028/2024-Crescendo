@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.241119729799353,
-        "y": 5.776372723996557
+        "x": 8.474214215509177,
+        "y": 3.95
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.171265343371731,
-        "y": 7.262508990955745
+        "x": 6.045233267195242,
+        "y": 4.061590892754914
       },
       "isLocked": false,
-      "linkedName": "Amp 2"
+      "linkedName": "Note 3"
     },
     {
       "anchor": {
-        "x": 4.73,
-        "y": 6.95
+        "x": 3.8050402986342795,
+        "y": 2.564039342808056
       },
       "prevControl": {
-        "x": 6.239344839776835,
-        "y": 7.367443826950667
+        "x": 5.014217943253985,
+        "y": 4.348668999023888
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Magic Shoot"
+      "linkedName": "Source Shot Prime"
     }
   ],
   "rotationTargets": [],
@@ -57,13 +57,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 25.24,
+    "rotation": -30.680000000000007,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Amp",
+  "folder": "Source",
   "previewStartingState": {
-    "rotation": -35.26301172959727,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true
