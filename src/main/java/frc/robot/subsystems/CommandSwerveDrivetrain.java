@@ -41,9 +41,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.util.datalog.DataLog;
-
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
@@ -60,7 +57,6 @@ import frc.robot.utils.LogStore;
 import frc.robot.utils.ShootingStrategy;
 import frc.robot.utils.VisionSystem;
 
-// FIXME: extract out magic numbers & fixup logging
 // TODO: general clean up
 
 /**
@@ -72,7 +68,6 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
-    private DataLog log;
 
     private static final PIDConstants AUTON_LINEAR_PID = new PIDConstants(10, 0, 0);
     private static final PIDConstants AUTON_ANGULAR_PID = new PIDConstants(5, 0, 0);
@@ -158,6 +153,15 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        System.out.println("Gyatt\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        System.out.println(this.getClass().getFields());
+
+        // for (Field field : this.getClass().getDeclaredFields()) {
+        //     System.out.println(field);
+        //     System.out.println(field.getName());
+        //     System.out.println(field.getName().matches("[cv][a-z]{3,8}[FB][RL]"));
+        // }
 
         configModules(modules);
         configLogging();
@@ -264,8 +268,9 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 "velocity", (module) -> module.getDriveMotor().getVelocity(),
                 "vbus", (module) -> module.getDriveMotor().getMotorVoltage()));
 
-        for (Field field : this.getClass().getFields()) {
-            if (field.getType() == BaseStatusSignal.class) {
+        for (Field field : this.getClass().getDeclaredFields()) {
+            if (field.getName().matches("[cv][a-z]{3,8}[FB][RL]")) {
+                System.out.println(field.getName());
                 String name = field.getName();
                 String[] split = name.split("(?=[BF])");
                 String signal = split[0];
@@ -284,14 +289,8 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 } catch (IllegalAccessException e) {
                     System.out.println(e.getMessage());
                 }
-                try {
-                    LogStore.add("/Drive/" + location + "/" + signalLog,
-                            () -> ((BaseStatusSignal) field.get(this)).getValueAsDouble());
-                } catch (IllegalArgumentException e) {
-                    System.out.println(e.getMessage());
-                } catch (IllegalAccessException e) {
-                    System.out.println(e.getMessage());
-                }
+                LogStore.add("/Drive/" + location + "/" + signalLog,
+                        () -> statusSignal.getValueAsDouble());
 
             }
         }
@@ -388,8 +387,6 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     }
 
     private void initSwerve() {
-        log = DataLogManager.getLog();
-
         configPPLib();
         configModules();
     }
