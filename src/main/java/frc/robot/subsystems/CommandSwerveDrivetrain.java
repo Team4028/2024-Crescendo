@@ -84,8 +84,9 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
             vbusFL, vbusFR, vbusBL, vbusBR;
 
     private final SwerveRequest.ApplyChassisSpeeds autoRequest = new SwerveRequest.ApplyChassisSpeeds();
-    private final SwerveRequest.FieldCentric fieldCentricDrive = new SwerveRequest.FieldCentric();
-    private final SwerveRequest.RobotCentric robotCentricDrive = new SwerveRequest.RobotCentric();
+    private final SwerveRequest.FieldCentric speakerLockDrive = new SwerveRequest.FieldCentric();
+    private final SwerveRequest.RobotCentric staticAlignDrive = new SwerveRequest.RobotCentric();
+    private final SwerveRequest.RobotCentric targetAcquireDrive = new SwerveRequest.RobotCentric();
 
     private Rotation2d alignmentTarget = new Rotation2d();
 
@@ -154,14 +155,9 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
             startSimThread();
         }
 
-        System.out.println("Gyatt\n\n\n\n\n\n\n\n\n\n\n\n\n");
-        System.out.println(this.getClass().getFields());
-
-        // for (Field field : this.getClass().getDeclaredFields()) {
-        //     System.out.println(field);
-        //     System.out.println(field.getName());
-        //     System.out.println(field.getName().matches("[cv][a-z]{3,8}[FB][RL]"));
-        // }
+        STATIC_ALIGN_CONTROLLER.enableContinuousInput(-Math.PI, Math.PI);
+        TARGET_ACQUIRE_CONTROLLER.enableContinuousInput(-Math.PI, Math.PI);
+        LOCK_ALIGN_CONTROLLER.enableContinuousInput(-Math.PI, Math.PI);
 
         configModules(modules);
         configLogging();
@@ -454,7 +450,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 () -> getRotation().plus(strategy.get().getTargetOffset()).getRadians(),
                 // This uses the output
                 (output) -> {
-                    setControl(fieldCentricDrive.withRotationalRate(output)
+                    setControl(speakerLockDrive.withRotationalRate(output)
                             .withVelocityX(xSpeed.getAsDouble()).withVelocityY(ySpeed.getAsDouble()));
                 }, this);
     }
@@ -475,7 +471,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 () -> target.get().getRadians(),
                 // This uses the output
                 (output, setpoint) -> {
-                    setControl(fieldCentricDrive.withRotationalRate(output + setpoint.velocity));
+                    setControl(staticAlignDrive.withRotationalRate(output + setpoint.velocity));
                 }, this);
     }
 
@@ -497,7 +493,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                     boolean useRotation = tx.isPresent() && Math.abs(tx.get().getDegrees()) < TARGET_ACQUIRE_THRESHOLD;
                     boolean useDrive = vision.getHasTarget();
 
-                    setControl(robotCentricDrive.withVelocityX(
+                    setControl(targetAcquireDrive.withVelocityX(
                             vision.getHasTarget() && useDrive ? forwardVelocity.getAsDouble() : 0.0)
                             .withRotationalRate(useRotation ? output : 0.0));
                 }, this);

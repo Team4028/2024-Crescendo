@@ -154,6 +154,8 @@ public class RobotContainer {
             odometryStrategy, "MegaTag2",
             chassisLimelight2dStrategy, "3G 2D"));
 
+private ShooterTableEntry entryToRun;
+
     // ====================== //
     /** Auton & Other Commands */
     // ====================== //
@@ -1034,11 +1036,12 @@ public class RobotContainer {
             boolean lock) {
         return fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier())
                 .andThen(driverCamera.setShooterCameraCommand())
-                .andThen(runEntryCommand(entry,
+                .andThen(runEntryCommand(() -> entryToRun,
                         () -> ShotSpeeds.FAST)
                         .alongWith(drivetrain.speakerAlign(strategy).withTimeout(0.5))
                         .onlyIf(() -> lock))
-                .andThen(shootCommand(entry));
+                .andThen(shootCommand(() -> entryToRun))
+                .beforeStarting(() -> entryToRun = entry.get());
     }
 
     /**
