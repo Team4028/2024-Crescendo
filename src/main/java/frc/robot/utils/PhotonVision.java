@@ -15,7 +15,6 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 
 /** Add your docs here. */
 public class PhotonVision extends VisionSystem {
@@ -34,7 +33,7 @@ public class PhotonVision extends VisionSystem {
 
     }
 
-    public Optional<PhotonTrackedTarget> getTag(int tagID) {
+    private Optional<PhotonTrackedTarget> getTag(int tagID) {
         for (PhotonTrackedTarget target : camera.getLatestResult().getTargets()) {
             if (target.getFiducialId() == tagID) {
                 return Optional.of(target);
@@ -42,6 +41,10 @@ public class PhotonVision extends VisionSystem {
         }
 
         return Optional.empty();
+    }
+
+    public boolean getHasTarget() {
+        return camera.getLatestResult().hasTargets();
     }
 
     public Optional<Rotation2d> getTagYaw(int tagID) {
@@ -75,36 +78,37 @@ public class PhotonVision extends VisionSystem {
         return pose;
     }
 
-    public Optional<Translation2d> getBestTranslationToTarget(int tagID) {
-        var target = this.getTag(tagID);
+    // private Optional<Translation2d> getBestTranslationToTarget(int tagID) {
+    // var target = this.getTag(tagID);
 
-        // cam: 9'11.5" real: 9'1"
-        //
+    // // cam: 9'11.5" real: 9'1"
+    // //
 
-        if (target.isEmpty()) {
-            return Optional.empty();
-        }
+    // if (target.isEmpty()) {
+    // return Optional.empty();
+    // }
 
-        return Optional.of(target.get().getBestCameraToTarget().getTranslation().toTranslation2d());
-    }
+    // return
+    // Optional.of(target.get().getBestCameraToTarget().getTranslation().toTranslation2d());
+    // }
 
-    public PhotonTrackedTarget getBestTarget() {
-        var result = camera.getLatestResult();
-        if (!result.hasTargets())
-            return null;
-        return result.getBestTarget();
-    }
+    // private PhotonTrackedTarget getBestTarget() {
+    // var result = camera.getLatestResult();
+    // if (!result.hasTargets())
+    // return null;
+    // return result.getBestTarget();
+    // }
 
-    public PhotonTrackedTarget getTargetById(int id) {
-        var result = camera.getLatestResult();
+    // private PhotonTrackedTarget getTargetById(int id) {
+    // var result = camera.getLatestResult();
 
-        for (var target : result.getTargets()) {
-            if (target.getFiducialId() == id)
-                return target;
-        }
+    // for (var target : result.getTargets()) {
+    // if (target.getFiducialId() == id)
+    // return target;
+    // }
 
-        return null;
-    }
+    // return null;
+    // }
 
     public void setPipeline(int pipelineIndex) {
         camera.setPipelineIndex(pipelineIndex);

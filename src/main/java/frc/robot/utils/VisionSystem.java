@@ -78,6 +78,18 @@ public class VisionSystem {
         }
     }
 
+    public boolean getHasTarget() {
+        return false;
+    }
+
+    public Optional<Rotation2d> getTargetX() {
+        return Optional.empty();
+    }
+
+    public Optional<Rotation2d> getTargetY() {
+        return Optional.empty();
+    }
+
     public Optional<Rotation2d> getTagYaw(int tagID) {
         return Optional.empty();
     }

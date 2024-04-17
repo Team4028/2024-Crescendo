@@ -44,10 +44,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.AlignDrivetrain;
-import frc.robot.commands.vision.LimelightAcquire;
-import frc.robot.commands.vision.AlignToSpeaker;
-import frc.robot.commands.vision.SpeakerLockOn;
+
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Candle;
 import frc.robot.subsystems.Climber;
@@ -133,7 +130,8 @@ public class RobotContainer {
 
     private final PhotonVision rightVision = new PhotonVision("Right_AprilTag_Camera",
             VisionSystem.RIGHT_ROBOT_TO_CAMERA);
-    private final PhotonVision leftVision = new PhotonVision("Left_AprilTag_Camera", VisionSystem.LEFT_ROBOT_TO_CAMERA);
+    private final PhotonVision leftVision = new PhotonVision("Left_AprilTag_Camera",
+            VisionSystem.LEFT_ROBOT_TO_CAMERA);
 
     private final Limelight shooterLimelight = new Limelight(SHOOTER_LIMELIGHT, new Transform3d());
 
@@ -276,7 +274,7 @@ public class RobotContainer {
         indexMap.put(19.0, "Left Wing");
         indexMap.put(22.0, "Right Wing");
 
-        ShooterTable.setHeckinessLevel(() -> drivetrain.getState().Pose.getRotation());
+        ShooterTable.setHeckinessLevel(() -> drivetrain.getRotation());
 
         /* Dashboard */
         DashboardStore.add("Shooter Table Index", () -> currentIndex);
@@ -284,7 +282,8 @@ public class RobotContainer {
                 () -> indexMap.containsKey(currentIndex) ? indexMap.get(currentIndex) : "Manual");
 
         // this is weird
-        DashboardStore.add("Snapped", () -> drivetrain.getCurrentRequest().getClass().equals(snapDrive.getClass()));
+        DashboardStore.add("Snapped",
+                () -> drivetrain.getCurrentRequest().getClass().equals(snapDrive.getClass()));
         DashboardStore.add("Robot Relative",
                 () -> drivetrain.getCurrentRequest().getClass().equals(robotRelativeDrive.getClass()));
 
@@ -294,13 +293,17 @@ public class RobotContainer {
 
         DashboardStore.add("Sequence", () -> currentSequence.name());
 
-        DashboardStore.add("Limelight Distance", () -> shooterLimelightStrategy.getTargetEntry().Distance.in(Feet));
-        DashboardStore.add("LimelightG Distance", () -> chassisLimelight2dStrategy.getTargetEntry().Distance.in(Feet));
+        DashboardStore.add("Limelight Distance",
+                () -> shooterLimelightStrategy.getTargetEntry().Distance.in(Feet));
+        DashboardStore.add("LimelightG Distance",
+                () -> chassisLimelight2dStrategy.getTargetEntry().Distance.in(Feet));
         DashboardStore.add("Limelight Yaw", () -> LimelightHelpers.getTX(SHOOTER_LIMELIGHT));
 
         DashboardStore.add("Last Shot", () -> m_lastShot);
         DashboardStore.add("Odometry Distance",
-                () -> Units.metersToFeet(BeakUtils.goalTranslation(drivetrain.getState().Pose).getNorm()));
+                () -> Units.metersToFeet(
+                        BeakUtils.goalTranslation(drivetrain.getTranslation())
+                                .getNorm()));
 
         DashboardStore.add("Strategy", () -> strategyMap.get(selectedStrategy));
 
@@ -342,11 +345,10 @@ public class RobotContainer {
         NamedCommands.registerCommand("AprilTag Zero",
                 new InstantCommand(() -> drivetrain.addMeasurementCommand(this::getBestPose)));
 
-        NamedCommands.registerCommand("Limelight Acquire",
-                new LimelightAcquire(() -> 0.6,
-                        drivetrain)
-                        .until(noteSensing.hasInfedSupplier())
-                        .raceWith(smartInfeedCommand().withTimeout(1.2)));
+        // NamedCommands.registerCommand("Limelight Acquire",
+        //         drivetrain.targetAcquire(() -> 0.6 * MAX_SPEED, infeedLimelight)
+        //                 .until(noteSensing.hasInfedSupplier())
+        //                 .raceWith(smartInfeedCommand().withTimeout(1.2)));
 
         /* Infeed & Spit */
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
@@ -389,10 +391,8 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Home Pivot", pivot.runToHomeCommand());
 
-        NamedCommands.registerCommand("Rotate To Speaker Source PC3", new AlignDrivetrain(drivetrain,
-                () -> drivetrain.getState().Pose.getRotation().getRadians(), () -> Units.degreesToRadians(
-                        BeakUtils.allianceIsBlue() ? -63 : -117),
-                false));
+        NamedCommands.registerCommand("Rotate To Speaker Source PC3",
+                drivetrain.staticAlign(() -> Rotation2d.fromDegrees(BeakUtils.allianceIsBlue() ? -63 : -117)));
 
         /* 4 piece pivots */
         NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(16.0)
@@ -417,7 +417,8 @@ public class RobotContainer {
                 13.0, Constants.CENTER_SHOT, 0.8, 0.));
 
         NamedCommands.registerCommand("Stationary Source Shot", shootCommand(22.1));
-        NamedCommands.registerCommand("Magic Source Shot", magicShootCommand(21.6, () -> chassisLimelight2dStrategy, true));
+        NamedCommands.registerCommand("Magic Source Shot",
+                magicShootCommand(21.6, () -> chassisLimelight2dStrategy, true));
 
         NamedCommands.registerCommand("Spitless Source Shot 1", shootCommand(15.8));
         NamedCommands.registerCommand("Spitless Source Shot 2", shootCommand(17));
@@ -577,7 +578,8 @@ public class RobotContainer {
                 .alongWith(chassisLimelight.setPipelineCommand(MEGATAG_PIPELINE)));
 
         /* Manual/Preset Mode */
-        operatorController.back().onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));
+        operatorController.back()
+                .onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));
 
         /* Shooter Table Index Up */
         operatorController.rightBumper().onTrue(
@@ -650,12 +652,14 @@ public class RobotContainer {
 
         /* Ready Climb */
         emergencyController.povUp()
-                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY, false)))
+                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS,
+                        ClimberPositions.READY, false)))
                 .onFalse(climber.stopCommand());
 
         /* Climb */
         emergencyController.povDown()
-                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.CLIMB, true)))
+                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS,
+                        ClimberPositions.CLIMB, true)))
                 .onFalse(climber.holdCurrentPositionCommand());
 
         /* funk */
@@ -729,12 +733,14 @@ public class RobotContainer {
 
     private double getYSpeed(boolean flip) {
         return (flip ? getDriveSignum()
-                : 1) * scaleDriverController(-driverController.getLeftX(), yLimiter, currentSpeed) * MAX_SPEED;
+                : 1) * scaleDriverController(-driverController.getLeftX(), yLimiter, currentSpeed)
+                * MAX_SPEED;
     }
 
     private double getXSpeed(boolean flip) {
         return (flip ? getDriveSignum()
-                : 1) * scaleDriverController(-driverController.getLeftY(), xLimiter, currentSpeed) * MAX_SPEED;
+                : 1) * scaleDriverController(-driverController.getLeftY(), xLimiter, currentSpeed)
+                * MAX_SPEED;
     }
 
     /** Invert drivetrain based on alliance */
@@ -809,10 +815,13 @@ public class RobotContainer {
         return m_fanPivot.runToTrapCommand()
                 .alongWith(m_fan.runMotorCommand(FAN_VBUS)
                         .andThen(BeakCommands.repeatCommand(fixNoteCommand(), 2))
-                        .andThen(shooter.runShotCommand(ShotSpeeds.TRAP)).onlyIf(() -> enableTrap))
+                        .andThen(shooter.runShotCommand(ShotSpeeds.TRAP))
+                        .onlyIf(() -> enableTrap))
                 .alongWith(
-                        climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY, false)
-                                .onlyIf(() -> enableClimber && pivot.getPosition() > PIVOT_UP_THRESHOLD));
+                        climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY,
+                                false)
+                                .onlyIf(() -> enableClimber && pivot
+                                        .getPosition() > PIVOT_UP_THRESHOLD));
     }
 
     /** Shoot */
@@ -844,7 +853,8 @@ public class RobotContainer {
     // =========================== //
 
     /** yee haw */
-    private Command mirroredPathfindingShotCommand(double pivotAngle, Pose2d target, double scale, double endVelocity) {
+    private Command mirroredPathfindingShotCommand(double pivotAngle, Pose2d target, double scale,
+            double endVelocity) {
         Pose2d redPose = new Pose2d(
                 target.getTranslation(),
                 target.getRotation().minus(Rotation2d.fromDegrees(6.)));
@@ -853,8 +863,10 @@ public class RobotContainer {
                 .alongWith(pivot.runToPositionCommand(pivotAngle))
                 .alongWith(
                         Commands.either(
-                                drivetrain.mirrorablePathFindCommand(target, scale, endVelocity),
-                                drivetrain.mirrorablePathFindCommand(redPose, scale, endVelocity),
+                                drivetrain.mirrorablePathFindCommand(target, scale,
+                                        endVelocity),
+                                drivetrain.mirrorablePathFindCommand(redPose, scale,
+                                        endVelocity),
                                 BeakUtils::allianceIsBlue));
     }
 
@@ -924,7 +936,8 @@ public class RobotContainer {
     }
 
     /** Run Conveyor, Infeed, and shooter if backwards */
-    private Command runThree(Supplier<Double> conveyorVbus, Supplier<Double> infeedVbus, Supplier<Double> shooterVbus) {
+    private Command runThree(Supplier<Double> conveyorVbus, Supplier<Double> infeedVbus,
+            Supplier<Double> shooterVbus) {
         return new FunctionalCommand(() -> {
         },
                 () -> {
@@ -955,8 +968,9 @@ public class RobotContainer {
     private Command magicLockCommand(Supplier<ShootingStrategy> strategy) {
         return fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier())
                 .andThen(driverCamera.setShooterCameraCommand())
-                .andThen(new SpeakerLockOn(drivetrain, () -> getXSpeed(true), () -> getYSpeed(true), strategy.get())
-                        .alongWith(runEntryCommand(strategy.get()::getTargetEntry, () -> ShotSpeeds.FAST).repeatedly()))
+                .andThen(drivetrain.speakerLock(() -> getXSpeed(true), () -> getYSpeed(true), strategy)
+                        .alongWith(runEntryCommand(() -> strategy.get().getTargetEntry(true),
+                                () -> ShotSpeeds.FAST).repeatedly()))
                 .finallyDo(driverCamera::setInfeedCamera);
     }
 
@@ -972,12 +986,13 @@ public class RobotContainer {
         return updateDrivePoseMT2Command()
                 .andThen(drivetrain
                         .applyRequest(() -> snapDrive.withTargetDirection(
-                                BeakUtils.goalTranslation(drivetrain.getState().Pose).getAngle())
+                                BeakUtils.goalTranslation(odometryStrategy.getDrivetrainTranslation(true))
+                                        .getAngle())
                                 .withVelocityX(getXSpeed(true))
                                 .withVelocityY(getYSpeed(true)))
                         .alongWith(runEntryCommand(
-                                () -> ShooterTable.calcShuttleTableEntry(Meters.of(
-                                        BeakUtils.goalTranslation(drivetrain.getState().Pose).getNorm())),
+                                () -> ShooterTable.calcShuttleTableEntry(
+                                        Meters.of(odometryStrategy.getDrivetrainTranslation(true).getNorm())),
                                 () -> ShotSpeeds.FAST))
                         .repeatedly());
     }
@@ -1021,7 +1036,7 @@ public class RobotContainer {
                 .andThen(driverCamera.setShooterCameraCommand())
                 .andThen(runEntryCommand(entry,
                         () -> ShotSpeeds.FAST)
-                        .alongWith(new AlignToSpeaker(drivetrain, strategy.get()).withTimeout(0.5))
+                        .alongWith(drivetrain.speakerAlign(strategy).withTimeout(0.5))
                         .onlyIf(() -> lock))
                 .andThen(shootCommand(entry));
     }
@@ -1029,7 +1044,7 @@ public class RobotContainer {
     /**
      * Generate a command to use the specified distance to run a magic shot.
      * 
-     * @param distance    The shot to run.
+     * @param distance The shot to run.
      * @param strategy The strategy to use for rotation.
      * @param lock     Whether or not to align the drivetrain.
      */
@@ -1045,7 +1060,7 @@ public class RobotContainer {
      * @param lock     Whether or not to align the drivetrain.
      */
     private Command magicShootCommand(Supplier<ShootingStrategy> strategy, boolean lock) {
-        return magicShootCommand(strategy.get()::getTargetEntry, strategy, lock);
+        return magicShootCommand(() -> strategy.get().getTargetEntry(), strategy, lock);
     }
 
     /**
@@ -1174,7 +1189,7 @@ public class RobotContainer {
 
     /** Return approx. 3d pose */
     public Optional<EstimatedRobotPose> getBestPose() {
-        Pose2d drivetrainPose = drivetrain.getState().Pose;
+        Pose2d drivetrainPose = drivetrain.getPose();
 
         Optional<EstimatedRobotPose> front = rightVision.getCameraResult(drivetrainPose);
         Optional<EstimatedRobotPose> back = leftVision.getCameraResult(drivetrainPose);
@@ -1217,8 +1232,8 @@ public class RobotContainer {
     }
 
     public void updateMTRot() {
-        chassisLimelight.setRobotRotationMT2(drivetrain.getState().Pose.getRotation().getDegrees());
-        infeedLimelight3G.setRobotRotationMT2(drivetrain.getState().Pose.getRotation().getDegrees());
+        chassisLimelight.setRobotRotationMT2(drivetrain.getRotation().getDegrees());
+        infeedLimelight3G.setRobotRotationMT2(drivetrain.getRotation().getDegrees());
     }
 
     public void updateDrivePoseMT2() {
@@ -1235,13 +1250,16 @@ public class RobotContainer {
         if (llLeftPoseEst.tagCount <= 0 && llRightPoseEst.tagCount <= 0) {
             return;
         } else if (llLeftPoseEst.tagCount <= 0) {
-            llAvgPose = new Pose2d(llRightPoseEst.pose.getTranslation(), drivetrain.getState().Pose.getRotation());
+            llAvgPose = new Pose2d(llRightPoseEst.pose.getTranslation(),
+                    drivetrain.getRotation());
         } else if (llRightPoseEst.tagCount <= 0) {
-            llAvgPose = new Pose2d(llLeftPoseEst.pose.getTranslation(), drivetrain.getState().Pose.getRotation());
+            llAvgPose = new Pose2d(llLeftPoseEst.pose.getTranslation(),
+                    drivetrain.getRotation());
         } else {
             llAvgPose = new Pose2d(
-                    llLeftPoseEst.pose.getTranslation().plus(llRightPoseEst.pose.getTranslation()).div(2.),
-                    drivetrain.getState().Pose.getRotation());
+                    llLeftPoseEst.pose.getTranslation().plus(llRightPoseEst.pose.getTranslation())
+                            .div(2.),
+                    drivetrain.getRotation());
         }
 
         double llAvgTimestamp = (llLeftPoseEst.timestampSeconds + llRightPoseEst.timestampSeconds) / 2;

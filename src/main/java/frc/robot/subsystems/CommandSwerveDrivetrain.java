@@ -1,16 +1,23 @@
 package frc.robot.subsystems;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.photonvision.EstimatedRobotPose;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -21,17 +28,21 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
-import com.pathplanner.lib.util.PathPlannerLogging;
+
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.units.*;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleArrayLogEntry;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
+
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
@@ -39,10 +50,15 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog.State;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.PIDCommand;
+import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.SwerveVoltRequest;
 import frc.robot.generated.TunerConstants;
+import frc.robot.utils.LogStore;
+import frc.robot.utils.ShootingStrategy;
+import frc.robot.utils.VisionSystem;
 
 // FIXME: extract out magic numbers & fixup logging
 // TODO: general clean up
@@ -68,13 +84,43 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         private static final double kMaxAngAccel = 1.5 * Math.PI;
     }
 
-    public DoubleLogEntry currentFL, currentFR, currentBL, currentBR, velocityFL, velocityFR, velocityBL, velocityBR,
-            vBusFL, vBusFR, vBusBL,
-            vBusBR;
-
-    private final DoubleArrayLogEntry ppTargetPose;
+    private BaseStatusSignal currentFL, currentFR, currentBL, currentBR,
+            velocityFL, velocityFR, velocityBL, velocityBR,
+            vbusFL, vbusFR, vbusBL, vbusBR;
 
     private final SwerveRequest.ApplyChassisSpeeds autoRequest = new SwerveRequest.ApplyChassisSpeeds();
+    private final SwerveRequest.FieldCentric fieldCentricDrive = new SwerveRequest.FieldCentric();
+    private final SwerveRequest.RobotCentric robotCentricDrive = new SwerveRequest.RobotCentric();
+
+    private Rotation2d alignmentTarget = new Rotation2d();
+
+    private static final double STATIC_ALIGN_kP = 8.0;
+    private static final double STATIC_ALIGN_VELOCITY = 6.0;
+    private static final double STATIC_ALIGN_ACCELERATION = 12.0;
+
+    private static final double LOCK_ALIGN_kP = 10.0;
+
+    private static final double TARGET_ACQUIRE_THRESHOLD = 1.0;
+    private static final double TARGET_ACQUIRE_kP = 6.0;
+    private static final double TARGET_ACQUIRE_kD = 0.5;
+
+    private static final ProfiledPIDController STATIC_ALIGN_CONTROLLER = new ProfiledPIDController(
+            // The PID gains
+            STATIC_ALIGN_kP,
+            0.0,
+            0.0,
+            // The motion profile constraints
+            new TrapezoidProfile.Constraints(
+                    STATIC_ALIGN_VELOCITY,
+                    STATIC_ALIGN_ACCELERATION));
+
+    private static final PIDController LOCK_ALIGN_CONTROLLER = new PIDController(
+            LOCK_ALIGN_kP,
+            0.0,
+            0.0);
+
+    private static final PIDController TARGET_ACQUIRE_CONTROLLER = new PIDController(
+            TARGET_ACQUIRE_kP, 0.0, TARGET_ACQUIRE_kD);
 
     private final SwerveVoltRequest voltRequest = new SwerveVoltRequest();
 
@@ -93,39 +139,41 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         initSwerve();
     }
 
-    public CommandSwerveDrivetrain(SwerveDrivetrainConstants driveTrainConstants, double OdometryUpdateFrequency,
-            SwerveModuleConstants... modules) {
-        super(driveTrainConstants, OdometryUpdateFrequency, modules);
-        if (Utils.isSimulation()) {
-            startSimThread();
-        }
+    // public CommandSwerveDrivetrain(SwerveDrivetrainConstants driveTrainConstants,
+    // double OdometryUpdateFrequency,
+    // SwerveModuleConstants... modules) {
+    // super(driveTrainConstants, OdometryUpdateFrequency, modules);
+    // if (Utils.isSimulation()) {
+    // startSimThread();
+    // }
 
-        ppTargetPose = new DoubleArrayLogEntry(log, "Pathplanner Target Pose");
+    // ppTargetPose = new DoubleArrayLogEntry(log, "Pathplanner Target Pose");
 
-        configModules(modules);
-    }
+    // configModules(modules);
+    // }
 
-    public CommandSwerveDrivetrain(SwerveDrivetrainConstants drivetrainConstants, double OdometryUpdateFrequency, Matrix<N3, N1> odometryStdDevs, Matrix<N3, N1> visionStdDevs, SwerveModuleConstants... modules) {
+    public CommandSwerveDrivetrain(SwerveDrivetrainConstants drivetrainConstants, double OdometryUpdateFrequency,
+            Matrix<N3, N1> odometryStdDevs, Matrix<N3, N1> visionStdDevs, SwerveModuleConstants... modules) {
         super(drivetrainConstants, OdometryUpdateFrequency, odometryStdDevs, visionStdDevs, modules);
         if (Utils.isSimulation()) {
             startSimThread();
         }
 
-        ppTargetPose = new DoubleArrayLogEntry(log, "Pathplanner Target Pose");
-
         configModules(modules);
-    } 
-
-    public CommandSwerveDrivetrain(SwerveDrivetrainConstants driveTrainConstants, SwerveModuleConstants... modules) {
-        super(driveTrainConstants, modules);
-        if (Utils.isSimulation()) {
-            startSimThread();
-        }
-
-        ppTargetPose = new DoubleArrayLogEntry(log, "Pathplanner Target Pose");
-
-        configModules(modules);
+        configLogging();
     }
+
+    // public CommandSwerveDrivetrain(SwerveDrivetrainConstants driveTrainConstants,
+    // SwerveModuleConstants... modules) {
+    // super(driveTrainConstants, modules);
+    // if (Utils.isSimulation()) {
+    // startSimThread();
+    // }
+
+    // ppTargetPose = new DoubleArrayLogEntry(log, "Pathplanner Target Pose");
+
+    // configModules(modules);
+    // }
 
     private void configModules(SwerveModuleConstants... modules) {
         int i = 0;
@@ -201,6 +249,51 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
             }
 
             i++;
+        }
+    }
+
+    private void configLogging() {
+        HashMap<String, Integer> idMap = new HashMap<>(Map.of(
+                "FL", 0,
+                "FR", 1,
+                "BL", 2,
+                "BR", 3));
+
+        HashMap<String, Function<SwerveModule, BaseStatusSignal>> signalNameMap = new HashMap<>(Map.of(
+                "current", (module) -> module.getDriveMotor().getStatorCurrent(),
+                "velocity", (module) -> module.getDriveMotor().getVelocity(),
+                "vbus", (module) -> module.getDriveMotor().getMotorVoltage()));
+
+        for (Field field : this.getClass().getFields()) {
+            if (field.getType() == BaseStatusSignal.class) {
+                String name = field.getName();
+                String[] split = name.split("(?=[BF])");
+                String signal = split[0];
+
+                // Capitalize first letter for logging
+                String signalLog = signal.substring(0, 1).toUpperCase() + signal.substring(1);
+
+                String location = split[1];
+
+                SwerveModule module = getModule(idMap.get(location));
+
+                BaseStatusSignal statusSignal = signalNameMap.get(signal).apply(module);
+
+                try {
+                    field.set(this, statusSignal);
+                } catch (IllegalAccessException e) {
+                    System.out.println(e.getMessage());
+                }
+                try {
+                    LogStore.add("/Drive/" + location + "/" + signalLog,
+                            () -> ((BaseStatusSignal) field.get(this)).getValueAsDouble());
+                } catch (IllegalArgumentException e) {
+                    System.out.println(e.getMessage());
+                } catch (IllegalAccessException e) {
+                    System.out.println(e.getMessage());
+                }
+
+            }
         }
     }
 
@@ -294,43 +387,9 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         m_simNotifier.startPeriodic(kSimLoopPeriod);
     }
 
-    // TODO: This whole signal and logging situation is highkey garbage, please fix
-    public void logValues() {
-        for (var mod : Modules) {
-            var motor = mod.getDriveMotor();
-            switch (motor.getDeviceID()) {
-                case TunerConstants.kFrontLeftDriveMotorId:
-                    currentFL.append(motor.getStatorCurrent().getValueAsDouble());
-                    velocityFL.append(motor.getVelocity().getValueAsDouble());
-                    vBusFL.append(motor.getMotorVoltage().getValueAsDouble() /
-                            RobotController.getBatteryVoltage());
-                    break;
-                case TunerConstants.kFrontRightDriveMotorId:
-                    currentFR.append(motor.getStatorCurrent().getValueAsDouble());
-                    velocityFR.append(motor.getVelocity().getValueAsDouble());
-                    vBusFR.append(motor.getMotorVoltage().getValueAsDouble() /
-                            RobotController.getBatteryVoltage());
-                    break;
-                case TunerConstants.kBackLeftDriveMotorId:
-                    currentBL.append(motor.getStatorCurrent().getValueAsDouble());
-                    velocityBL.append(motor.getVelocity().getValueAsDouble());
-                    vBusBL.append(motor.getMotorVoltage().getValueAsDouble() /
-                            RobotController.getBatteryVoltage());
-                    break;
-                case TunerConstants.kBackRightDriveMotorId:
-                    currentBR.append(motor.getStatorCurrent().getValueAsDouble());
-                    velocityBR.append(motor.getVelocity().getValueAsDouble());
-                    vBusBR.append(motor.getMotorVoltage().getValueAsDouble() /
-                            RobotController.getBatteryVoltage());
-                    break;
-            }
-        }
-    }
-
     private void initSwerve() {
         log = DataLogManager.getLog();
 
-        configLoggersProcedural();
         configPPLib();
         configModules();
     }
@@ -339,37 +398,8 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         for (var mod : Modules) {
             mod.getDriveMotor().setNeutralMode(NeutralModeValue.Brake);
             mod.getSteerMotor().setNeutralMode(NeutralModeValue.Brake);
-        }
-    }
-
-    // private void configLoggersMan() {
-    // currentFL = new DoubleLogEntry(log, "/FL/current");
-    // currentFR = new DoubleLogEntry(log, "/FR/current");
-    // currentBL = new DoubleLogEntry(log, "/BL/current");
-    // currentBR = new DoubleLogEntry(log, "/BR/current");
-    // velFL = new DoubleLogEntry(log, "/FL/velocity");
-    // velFR = new DoubleLogEntry(log, "/FR/velocity");
-    // velBL = new DoubleLogEntry(log, "/BL/velocity");
-    // velBR = new DoubleLogEntry(log, "/BR/velocity");
-    // vbFL = new DoubleLogEntry(log, "/FL/vBus");
-    // vbFR = new DoubleLogEntry(log, "/FR/vBus");
-    // vbBL = new DoubleLogEntry(log, "/BL/vBus");
-    // vbBR = new DoubleLogEntry(log, "/BR/vBus");
-    // }
-
-    private void configLoggersProcedural() {
-        try {
-            for (var field : getClass().getFields()) {
-                if (field.getName().contains("currentF") || field.getName().contains("currentB"))
-                    field.set(this, new DoubleLogEntry(log, "/" + field.getName().replace("current", "") + "/current"));
-                else if (field.getName().contains("velocityF") || field.getName().contains("velocityB"))
-                    field.set(this,
-                            new DoubleLogEntry(log, "/" + field.getName().replace("velocity", "") + "/velocity"));
-                else if (field.getName().contains("vBusF") || field.getName().contains("vBusB"))
-                    field.set(this, new DoubleLogEntry(log, "/" + field.getName().replace("vBus", "") + "/vBus"));
-            }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            mod.getDriveMotor().optimizeBusUtilization();
+            mod.getSteerMotor().optimizeBusUtilization();
         }
     }
 
@@ -379,7 +409,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
             driveBaseRadius = Math.max(driveBaseRadius, modLocation.getNorm());
 
         AutoBuilder.configureHolonomic(
-                () -> getState().Pose,
+                () -> getPose(),
                 this::seedFieldRelative,
                 this::getCurrentRobotChassisSpeeds,
                 (speeds) -> this.setControl(autoRequest.withSpeeds(speeds)),
@@ -391,9 +421,88 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                         new ReplanningConfig()),
                 () -> DriverStation.getAlliance().get() == Alliance.Red,
                 this);
+    }
 
-        PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
-            ppTargetPose.append(new double[] { pose.getX(), pose.getY(), pose.getRotation().getDegrees() });
+    public ChassisSpeeds getFieldRelativeChassisSpeeds() {
+        ChassisSpeeds speeds = getCurrentRobotChassisSpeeds();
+        Rotation2d rotation = getRotation();
+
+        return new ChassisSpeeds(
+                speeds.vxMetersPerSecond * rotation.getCos()
+                        - speeds.vyMetersPerSecond * rotation.getSin(),
+                speeds.vyMetersPerSecond * rotation.getCos()
+                        + speeds.vxMetersPerSecond * rotation.getSin(),
+                speeds.omegaRadiansPerSecond);
+    }
+
+    public Pose2d getPose() {
+        return getState().Pose;
+    }
+
+    public Rotation2d getRotation() {
+        return getPose().getRotation();
+    }
+
+    public Translation2d getTranslation() {
+        return getPose().getTranslation();
+    }
+
+    public Command speakerLock(DoubleSupplier xSpeed, DoubleSupplier ySpeed,
+            Supplier<ShootingStrategy> strategy) {
+        return new PIDCommand(
+                // The ProfiledPIDController used by the command
+                LOCK_ALIGN_CONTROLLER,
+                () -> getRotation().getRadians(),
+                // This should return the goal (can also be a constant)
+                () -> getRotation().plus(strategy.get().getTargetOffset()).getRadians(),
+                // This uses the output
+                (output) -> {
+                    setControl(fieldCentricDrive.withRotationalRate(output)
+                            .withVelocityX(xSpeed.getAsDouble()).withVelocityY(ySpeed.getAsDouble()));
+                }, this);
+    }
+
+    public Command speakerAlign(Supplier<ShootingStrategy> strategy) {
+        return staticAlign(() -> alignmentTarget).beforeStarting(() -> {
+            alignmentTarget = getRotation().plus(strategy.get().getTargetOffset());
         });
+    }
+
+    public Command staticAlign(Supplier<Rotation2d> target, Supplier<Rotation2d> measurement) {
+        return new ProfiledPIDCommand(
+                // The controller that the command will use
+                STATIC_ALIGN_CONTROLLER,
+                // This should return the measurement
+                () -> measurement.get().getRadians(),
+                // This should return the setpoint (can also be a constant)
+                () -> target.get().getRadians(),
+                // This uses the output
+                (output, setpoint) -> {
+                    setControl(fieldCentricDrive.withRotationalRate(output + setpoint.velocity));
+                }, this);
+    }
+
+    public Command staticAlign(Supplier<Rotation2d> target) {
+        return staticAlign(target, this::getRotation);
+    }
+
+    public Command targetAcquire(DoubleSupplier forwardVelocity, VisionSystem vision) {
+        return new PIDCommand(
+                TARGET_ACQUIRE_CONTROLLER,
+                () -> {
+                    Optional<Rotation2d> target = vision.getTargetX();
+                    return target.isPresent() ? target.get().getRadians() : 0.0;
+                },
+                () -> 0.0,
+                (output) -> {
+                    Optional<Rotation2d> tx = vision.getTargetX();
+
+                    boolean useRotation = tx.isPresent() && Math.abs(tx.get().getDegrees()) < TARGET_ACQUIRE_THRESHOLD;
+                    boolean useDrive = vision.getHasTarget();
+
+                    setControl(robotCentricDrive.withVelocityX(
+                            vision.getHasTarget() && useDrive ? forwardVelocity.getAsDouble() : 0.0)
+                            .withRotationalRate(useRotation ? output : 0.0));
+                }, this);
     }
 }

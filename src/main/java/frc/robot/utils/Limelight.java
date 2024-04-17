@@ -15,7 +15,11 @@ public class Limelight extends VisionSystem {
         super(cameraName, robotToCamera);
     }
 
-    public Optional<Rotation2d> getTagYaw(int tagID) {
+    public boolean getHasTarget() {
+        return LimelightHelpers.getTV(cameraName);
+    }
+
+    public Optional<Rotation2d> getTargetX() {
         if (LimelightHelpers.getTV(cameraName)) {
             return Optional.of(Rotation2d.fromDegrees(LimelightHelpers.getTX(cameraName)));
         }
@@ -23,13 +27,21 @@ public class Limelight extends VisionSystem {
         return Optional.empty();
     }
 
-    public Optional<Rotation2d> getTagPitch(int tagID) {
+    public Optional<Rotation2d> getTagYaw(int tagID) {
+        return getTargetX();
+    }
+
+    public Optional<Rotation2d> getTargetY() {
         if (LimelightHelpers.getTV(cameraName)) {
             return Optional.of(Rotation2d.fromDegrees(LimelightHelpers.getTY(cameraName)));
         }
 
         return Optional.empty();
     }
+
+        public Optional<Rotation2d> getTagPitch(int tagID) {
+            return getTargetY();
+        }
 
     public int getTV() {
         return LimelightHelpers.getTV(cameraName) ? 1 : 0;

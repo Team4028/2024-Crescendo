@@ -6,7 +6,6 @@ package frc.robot.utils;
 
 import java.util.Optional;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -28,17 +27,17 @@ public final class BeakUtils {
     }
 
     /** Get the translation to a goal from a pose. */
-    public static Translation2d goalTranslation(Pose2d pose) {
-        Pose2d target = speakerTarget();
+    public static Translation2d goalTranslation(Translation2d pose) {
+        Translation2d target = speakerTarget();
 
-        return translationToPose(pose, target);
+        return translationToTarget(pose, target);
     }
 
-    public static Translation2d translationToPose(Pose2d currentPose, Pose2d targetPose) {
+    public static Translation2d translationToTarget(Translation2d currentPose, Translation2d targetPose) {
         return new Translation2d(currentPose.getX() - targetPose.getX(), currentPose.getY() - targetPose.getY());
     }
 
-    public static Pose2d speakerTarget() {
-        return allianceIsBlue() ? Constants.SPEAKER_DISTANCE_TARGET : Constants.SPEAKER_DISTANCE_TARGET_RED;
+    public static Translation2d speakerTarget() {
+        return allianceIsBlue() ? Constants.SPEAKER_BLUE : Constants.SPEAKER_RED;
     }
 }
