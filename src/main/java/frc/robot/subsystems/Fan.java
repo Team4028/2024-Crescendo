@@ -25,6 +25,7 @@ public class Fan extends SubsystemBase {
         /* Fan Setup */
         motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
         encoder = motor.getEncoder();
+        motor.setInverted(false);
 
         /* CAN Bus */
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 50);
@@ -35,6 +36,9 @@ public class Fan extends SubsystemBase {
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 103);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
+
+        /* Burn Flash */
+        motor.burnFlash();
 
         /* Logs */
         LogStore.add("/Fan/Vbus", motor::getAppliedOutput);

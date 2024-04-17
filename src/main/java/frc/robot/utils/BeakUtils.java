@@ -33,11 +33,20 @@ public final class BeakUtils {
         return translationToTarget(pose, target);
     }
 
+    /** Get the translation to the proper passing target */
+    public static Translation2d passingTranslation(Translation2d pose) {
+        return translationToTarget(pose, passingTarget());
+    }
+
     public static Translation2d translationToTarget(Translation2d currentPose, Translation2d targetPose) {
         return new Translation2d(currentPose.getX() - targetPose.getX(), currentPose.getY() - targetPose.getY());
     }
 
     public static Translation2d speakerTarget() {
         return allianceIsBlue() ? Constants.SPEAKER_BLUE : Constants.SPEAKER_RED;
+    }
+
+    public static Translation2d passingTarget() {
+        return allianceIsBlue() ? Constants.CORNER_BLUE : Constants.SPEAKER_RED;
     }
 }

@@ -74,7 +74,7 @@ public class Pivot extends SubsystemBase {
     /* Ramp */
     private final static double RAMP_RATE = 0.25;
 
-    private double targetPosition;
+    private double targetPosition = 1.0;
 
     private boolean isVbus = true;
 
@@ -127,7 +127,8 @@ public class Pivot extends SubsystemBase {
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
 
-        targetPosition = 1.;
+        /* Burn Flash */
+        motor.burnFlash();
 
         /* ===== */
         /* TIMER */

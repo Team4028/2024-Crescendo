@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 8.357666972654265,
-      "y": 0.7138518624863336
+      "x": 5.382343336115244,
+      "y": 6.362204724409449
     },
-    "rotation": 0
+    "rotation": 0.0
   },
   "command": {
     "type": "sequential",
@@ -20,7 +20,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Choose Shoot"
+            "name": "Magic Shoot"
           }
         }
       ]

@@ -31,7 +31,7 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         DataLogManager.start();
         m_robotContainer = new RobotContainer();
-        SignalLogger.setPath("/media/sda1/ctre");
+        m_robotContainer.setChassisPipeline();
 
         // load static libs into memory
         ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getLatestResults("").targetingResults.pipelineID,
@@ -81,6 +81,8 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.schedule();
         }
 
+        m_robotContainer.setChassisPipeline();
+
         // m_robotContainer.zero();
         // m_robotContainer.configVisionFieldOrigins();
     }
@@ -96,6 +98,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
+        SignalLogger.setPath("/media/sda1/ctre");
         DataLogManager.start();
         SignalLogger.start();
 
@@ -106,7 +109,7 @@ public class Robot extends TimedRobot {
         m_robotContainer.stopShooter();
         if (!hasZeroedPivot)
             m_robotContainer.zero();
-        // m_robotContainer.configVisionFieldOrigins();
+
         m_robotContainer.setMT2Pipeline();
     }
 

@@ -35,6 +35,9 @@ public class Whippy extends SubsystemBase {
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
         motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
 
+        /* Burn Flash */
+        motor.burnFlash();
+
         /* Logging */
         LogStore.add("Whippy/Velocity", motor.getEncoder()::getVelocity);
 

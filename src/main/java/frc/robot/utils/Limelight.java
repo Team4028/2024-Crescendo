@@ -21,7 +21,7 @@ public class Limelight extends VisionSystem {
 
     public Optional<Rotation2d> getTargetX() {
         if (LimelightHelpers.getTV(cameraName)) {
-            return Optional.of(Rotation2d.fromDegrees(LimelightHelpers.getTX(cameraName)));
+            return Optional.of(Rotation2d.fromDegrees(-LimelightHelpers.getTX(cameraName)));
         }
 
         return Optional.empty();
