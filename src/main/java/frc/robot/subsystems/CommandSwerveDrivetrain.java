@@ -55,6 +55,7 @@ import frc.robot.SwerveVoltRequest;
 import frc.robot.generated.TunerConstants;
 import frc.robot.utils.LogStore;
 import frc.robot.utils.ShootingStrategy;
+import frc.robot.utils.SignalStore;
 import frc.robot.utils.VisionSystem;
 
 // TODO: general clean up
@@ -287,7 +288,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 }
                 LogStore.add("/Drive/" + location + "/" + signalLog,
                         () -> statusSignal.getValueAsDouble());
-
+                SignalStore.add(statusSignal);
             }
         }
     }
