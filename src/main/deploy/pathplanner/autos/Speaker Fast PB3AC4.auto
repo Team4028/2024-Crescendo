@@ -1,0 +1,73 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.4376744281438871,
+      "y": 5.543278238286734
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Fast Speaker P - B"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Fast Speaker B - 3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Fast Speaker 3 - B"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Convey"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Fast Speaker B - A"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Fast Speaker A - C"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "C Infeed"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Fast Speaker C - 4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Smart Infeed"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Middle",
+  "choreoAuto": false
+}

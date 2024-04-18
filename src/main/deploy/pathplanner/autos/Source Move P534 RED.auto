@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4,
-      "y": 7.0
+      "x": 1.28,
+      "y": 3.34
     },
     "rotation": 0
   },
@@ -14,13 +14,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Fast Amp P - 1"
+            "pathName": "Source Move Shot RED"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Amp 1 - Magic"
+            "pathName": "Source Move 5 Shoot"
           }
         },
         {
@@ -32,24 +32,36 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Amp Magic - 2"
+            "pathName": "Source Move Shot - 3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Amp 2 - Magic"
+            "pathName": "Source Move 3 - Shot"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Magic Shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source Shot - 4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Smart Infeed"
           }
         }
       ]
     }
   },
-  "folder": "Amp",
+  "folder": "Source",
   "choreoAuto": false
 }

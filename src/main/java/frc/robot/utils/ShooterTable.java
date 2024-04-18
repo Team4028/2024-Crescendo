@@ -128,7 +128,7 @@ public class ShooterTable {
     // }
 
     public static ShooterTableEntry calcShooterTableEntryCamera(double cameraValue, CameraLerpStrat strategy) {
-        return calcShooterTableEntry(calcVisionTableEntryCamera(cameraValue, strategy).Distance).applyHeckyOffset();
+        return calcShooterTableEntry(calcVisionTableEntryCamera(cameraValue, strategy).Distance.plus(Feet.of(0.2))).applyHeckyOffset();
     }
 
     public static VisionTableEntry calcVisionTableEntryCamera(double cameraValue, CameraLerpStrat strategy) {

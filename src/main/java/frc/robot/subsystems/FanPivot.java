@@ -8,6 +8,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -31,10 +32,13 @@ public class FanPivot extends SubsystemBase {
     private final PositionDutyCycle positionRequest = new PositionDutyCycle(0.)
             .withOverrideBrakeDurNeutral(true);
 
-    private final Slot0Configs pidConfigs = new Slot0Configs()
+    private final Slot0Configs trapConfigs = new Slot0Configs()
             .withKP(0.4)
             .withKI(0.0)
             .withKD(0.0);
+
+    private final Slot1Configs holdConfigs = new Slot1Configs()
+            .withKP(0.8);
 
     private final ClosedLoopRampsConfigs closedLoopRampsConfigs = new ClosedLoopRampsConfigs()
             .withDutyCycleClosedLoopRampPeriod(0.25);
@@ -46,11 +50,12 @@ public class FanPivot extends SubsystemBase {
         /* Setup */
         motor = new TalonFX(CAN_ID);
         motor.setNeutralMode(NeutralModeValue.Brake);
-        
+
         position = motor.getPosition();
         current = motor.getStatorCurrent();
 
-        motor.getConfigurator().apply(pidConfigs);
+        motor.getConfigurator().apply(trapConfigs);
+        motor.getConfigurator().apply(holdConfigs);
         motor.getConfigurator().apply(closedLoopRampsConfigs);
         motor.setPosition(0.);
 
@@ -66,18 +71,23 @@ public class FanPivot extends SubsystemBase {
 
         DashboardStore.add("Fan Pivot Position", position::getValueAsDouble);
     }
-    
-    public void runToPosition(double position) {
-        targetPosition = position;
-        motor.setControl(positionRequest.withPosition(position));
-    }
 
-    public Command runToPositionCommand(double position) {
-        return runOnce(() -> runToPosition(position));
+    public void runToTrap() {
+        targetPosition = TRAP_POSITION;
+        motor.setControl(positionRequest.withPosition(targetPosition).withSlot(0));
     }
 
     public Command runToTrapCommand() {
-        return runToPositionCommand(TRAP_POSITION);
+        return runOnce(this::runToTrap);
+    }
+
+    public void hold() {
+        targetPosition = 0.0;
+        motor.setControl(positionRequest.withPosition(targetPosition).withSlot(1));
+    }
+
+    public Command runToHomeCommand() {
+        return runOnce(this::hold);
     }
 
     public void runMotor(double vbus) {

@@ -58,4 +58,8 @@ public class Limelight extends VisionSystem {
     public void setPipeline(int pipeline) {
         LimelightHelpers.setPipelineIndex(cameraName, pipeline);
     }
+
+    public int getPipeline() {
+        return (int) LimelightHelpers.getCurrentPipelineIndex(cameraName);
+    }
 }

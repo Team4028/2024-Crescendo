@@ -26,7 +26,7 @@ public final class Constants {
 
     public static final Pose2d AMP_TARGET = new Pose2d(1.83, 7.27, new Rotation2d(Math.PI / 2.));
 
-    public static final Translation2d CORNER_BLUE = new Translation2d(0, 8.22);
+    public static final Translation2d SHUTTLE_BLUE = new Translation2d(2.5, 8.22);
 
     public static final Pose2d RIGHT_SHOT = new Pose2d(5.1, 1.9, Rotation2d.fromDegrees(-38.));
     public static final Pose2d CENTER_SHOT = new Pose2d(4.5, 4.7, Rotation2d.fromDegrees(-15.5));

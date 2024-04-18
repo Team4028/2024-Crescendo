@@ -47,6 +47,6 @@ public final class BeakUtils {
     }
 
     public static Translation2d passingTarget() {
-        return allianceIsBlue() ? Constants.CORNER_BLUE : Constants.SPEAKER_RED;
+        return allianceIsBlue() ? Constants.SHUTTLE_BLUE : Constants.SPEAKER_RED;
     }
 }

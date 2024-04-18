@@ -60,6 +60,7 @@ import frc.robot.utils.DashboardStore;
 import frc.robot.utils.DriverCamera;
 import frc.robot.utils.Limelight;
 import frc.robot.utils.LimelightHelpers;
+import frc.robot.utils.LogStore;
 import frc.robot.utils.NoteSensing;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
@@ -121,10 +122,12 @@ public class RobotContainer {
     /** Pipeline for 3G 2D TY */
     private static final int TY_PIPELINE = 1;
 
-//     private final PhotonVision rightVision = new PhotonVision("Right_AprilTag_Camera",
-//             VisionSystem.RIGHT_ROBOT_TO_CAMERA);
-//     private final PhotonVision leftVision = new PhotonVision("Left_AprilTag_Camera",
-//             VisionSystem.LEFT_ROBOT_TO_CAMERA);
+    // private final PhotonVision rightVision = new
+    // PhotonVision("Right_AprilTag_Camera",
+    // VisionSystem.RIGHT_ROBOT_TO_CAMERA);
+    // private final PhotonVision leftVision = new
+    // PhotonVision("Left_AprilTag_Camera",
+    // VisionSystem.LEFT_ROBOT_TO_CAMERA);
 
     private final Limelight shooterLimelight = new Limelight(SHOOTER_LIMELIGHT, new Transform3d());
 
@@ -147,7 +150,7 @@ public class RobotContainer {
             odometryStrategy, "MegaTag2",
             chassisLimelight2dStrategy, "3G 2D"));
 
-private ShooterTableEntry entryToRun;
+    private ShooterTableEntry entryToRun;
 
     // ====================== //
     /** Auton & Other Commands */
@@ -258,11 +261,12 @@ private ShooterTableEntry entryToRun;
             .withDriveRequestType(DriveRequestType.Velocity);
 
     public RobotContainer() {
-        snapDrive.HeadingController = new PhoenixPIDController(3., 0., 0.);
+        snapDrive.HeadingController = new PhoenixPIDController(7.5, 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
         /* Init Index Map */
         indexMap.put(4.2, "Speaker");
+        indexMap.put(5.2, "SideWoofer");
         indexMap.put(10.0, "Protected");
         indexMap.put(13.0, "Chain");
         indexMap.put(16.0, "Truss");
@@ -302,6 +306,9 @@ private ShooterTableEntry entryToRun;
 
         DashboardStore.add("Strategy", () -> strategyMap.get(selectedStrategy));
 
+        LogStore.add("/Buttons/New Shoot", () -> emergencyController.y().getAsBoolean());
+        LogStore.add("/Buttons/Magic Shoot", () -> operatorController.x().getAsBoolean());
+
         initNamedCommands();
 
         initAutonChooser();
@@ -338,12 +345,13 @@ private ShooterTableEntry entryToRun;
         NamedCommands.registerCommand("Pivot Zero", pivot.zeroCommand());
 
         // NamedCommands.registerCommand("AprilTag Zero",
-        //         new InstantCommand(() -> drivetrain.addMeasurementCommand(this::getBestPose)));
+        // new InstantCommand(() ->
+        // drivetrain.addMeasurementCommand(this::getBestPose)));
 
         // NamedCommands.registerCommand("Limelight Acquire",
-        //         drivetrain.targetAcquire(() -> 0.6 * MAX_SPEED, infeedLimelight)
-        //                 .until(noteSensing.hasInfedSupplier())
-        //                 .raceWith(smartInfeedCommand().withTimeout(1.2)));
+        // drivetrain.targetAcquire(() -> 0.6 * MAX_SPEED, infeedLimelight)
+        // .until(noteSensing.hasInfedSupplier())
+        // .raceWith(smartInfeedCommand().withTimeout(1.2)));
 
         /* Infeed & Spit */
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
@@ -353,6 +361,9 @@ private ShooterTableEntry entryToRun;
 
         NamedCommands.registerCommand("Infeed", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
+
+        NamedCommands.registerCommand("C Infeed", infeed.runMotorCommand(INFEED_VBUS)
+                .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly().withTimeout(1.0));
 
         NamedCommands.registerCommand("First Spit Note", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
@@ -387,7 +398,8 @@ private ShooterTableEntry entryToRun;
         NamedCommands.registerCommand("Home Pivot", pivot.runToHomeCommand());
 
         NamedCommands.registerCommand("Rotate To Speaker Source PC3",
-                drivetrain.staticAlign(() -> Rotation2d.fromDegrees(BeakUtils.allianceIsBlue() ? -63 : -117)));
+                drivetrain.staticAlign(
+                        () -> Rotation2d.fromDegrees(BeakUtils.allianceIsBlue() ? -63 : -117)));
 
         /* 4 piece pivots */
         NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(16.0)
@@ -435,13 +447,19 @@ private ShooterTableEntry entryToRun;
 
         NamedCommands.registerCommand("P Amp Shot", shootCommand(13.5));
         NamedCommands.registerCommand("Stationary Shot Amp", shootCommand(13.5));
-        
-        NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(4.7));
-        NamedCommands.registerCommand("Source Pivot Red", pivot.runToPositionCommand(5.3));
+
+        NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(5.0));
+        NamedCommands.registerCommand("Source Pivot Red", pivot.runToPositionCommand(5.0));
+
+        NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(4.75));
+        NamedCommands.registerCommand("Amp Pivot Red", pivot.runToPositionCommand(4.75));
+
         NamedCommands.registerCommand("Convey", conveyCommand());
-        NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(9));
         NamedCommands.registerCommand("4 Piece Pivot", pivot.runToPositionCommand(14));
         NamedCommands.registerCommand("Stationary Source Shot", shootCommand(15.3));
+
+        NamedCommands.registerCommand("4 Piece A", pivot.runToPositionCommand(13.75));
+        NamedCommands.registerCommand("4 Piece C", pivot.runToPositionCommand(14.0));
     }
 
     // =========================== //
@@ -682,14 +700,18 @@ private ShooterTableEntry entryToRun;
         /* Prime Fan Pivot & Shooter Pivot */
         emergencyController.x().toggleOnTrue(
                 Commands.startEnd(() -> {
-                    m_fanPivot.runToPosition(FanPivot.TRAP_POSITION);
+                    m_fanPivot.runToTrap();
                     m_fan.runMotor(FAN_VBUS);
                 },
                         () -> {
-                            m_fanPivot.runToPosition(0.0);
+                            m_fanPivot.hold();
                             m_fan.stop();
                         },
                         m_fanPivot, m_fan));
+
+        emergencyController.b().toggleOnTrue(coolShootCommand());
+        emergencyController.y()
+                .toggleOnTrue(magicShootCommand(() -> selectedStrategy, true, Rotation2d.fromDegrees(-4.0)));
 
         /* Full Outfeed: left Y */
         emergencyController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
@@ -828,7 +850,7 @@ private ShooterTableEntry entryToRun;
 
     /** Home everything */
     private Command endSequenceCommand() {
-        return m_fanPivot.runToPositionCommand(0.0)
+        return m_fanPivot.runToHomeCommand()
                 .alongWith(m_fan.stopCommand())
                 .alongWith(shooter.stopCommand().andThen(shooter.setSlotCommand(Slots.FAST)))
                 .alongWith(pivot.runToHomeCommand().unless(() -> enableClimber));
@@ -983,13 +1005,17 @@ private ShooterTableEntry entryToRun;
         return updateDrivePoseMT2Command()
                 .andThen(drivetrain
                         .applyRequest(() -> snapDrive.withTargetDirection(
-                                BeakUtils.passingTranslation(odometryStrategy.getDrivetrainTranslation(true))
+                                BeakUtils.passingTranslation(odometryStrategy
+                                        .getDrivetrainFieldTranslation(true))
                                         .getAngle())
                                 .withVelocityX(getXSpeed(true))
                                 .withVelocityY(getYSpeed(true)))
                         .alongWith(runEntryCommand(
                                 () -> ShooterTable.calcShuttleTableEntry(
-                                        Meters.of(odometryStrategy.getDrivetrainTranslation(true).getNorm())),
+                                        Meters.of(odometryStrategy
+                                                .getDrivetrainGoalTranslation(
+                                                        true)
+                                                .getNorm())),
                                 () -> ShotSpeeds.FAST))
                         .repeatedly());
     }
@@ -1003,7 +1029,7 @@ private ShooterTableEntry entryToRun;
         return driverCamera.setShooterCameraCommand()
                 .andThen(runEntryCommand(entry, () -> ShotSpeeds.FAST))
                 .andThen(Commands.waitUntil(shooterAndPivotReady()))
-                .andThen(conveyCommand())
+                .andThen(conveyCommand().withTimeout(0.75))
                 .finallyDo(() -> {
                     shooter.stop();
                     pivot.runToPosition(Pivot.HOLD_POSITION);
@@ -1028,15 +1054,51 @@ private ShooterTableEntry entryToRun;
      * @param lock     Whether or not to align the drivetrain.
      */
     private Command magicShootCommand(Supplier<ShooterTableEntry> entry, Supplier<ShootingStrategy> strategy,
-            boolean lock) {
-        return fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier())
+            boolean lock, Rotation2d offset) {
+        return Commands.runOnce(() -> entryToRun = entry.get())
+                .andThen(fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier()))
                 .andThen(driverCamera.setShooterCameraCommand())
                 .andThen(runEntryCommand(() -> entryToRun,
                         () -> ShotSpeeds.FAST)
-                        .alongWith(drivetrain.speakerAlign(strategy).withTimeout(0.5))
+                        .alongWith(drivetrain.speakerAlign(strategy, offset).withTimeout(0.5))
                         .onlyIf(() -> lock))
+                .andThen(shootCommand(() -> entryToRun));
+    }
+
+    /**
+     * Generate a command to use the specified entry to run a magic shot.
+     * 
+     * @param entry    The entry to run.
+     * @param strategy The strategy to use for rotation.
+     * @param lock     Whether or not to align the drivetrain.
+     */
+    private Command magicShootCommand(Supplier<ShooterTableEntry> entry, Supplier<ShootingStrategy> strategy,
+            boolean lock) {
+        return magicShootCommand(entry, strategy, lock, ShootingStrategy.OFFSET);
+    }
+
+    /**
+     * Golly
+     */
+    private Command coolShootCommand() {
+        return Commands.runOnce(() -> entryToRun = odometryStrategy.getTargetEntry())
+                .andThen(chassisLimelight.setPipelineCommand(TY_PIPELINE))
+                .andThen(fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier()))
+                .andThen(driverCamera.setShooterCameraCommand())
+                .andThen(runEntryCommand(() -> entryToRun,
+                        () -> ShotSpeeds.FAST)
+                        .alongWith(
+                                Commands.waitUntil(() -> chassisLimelight.getPipeline() == TY_PIPELINE)
+                                        .andThen(drivetrain.speakerAlign(() -> chassisLimelight2dStrategy)
+                                                .withTimeout(0.5))))
                 .andThen(shootCommand(() -> entryToRun))
-                .beforeStarting(() -> entryToRun = entry.get());
+                .andThen(Commands.runOnce(() -> {
+                    if (selectedStrategy == chassisLimelight2dStrategy) {
+                        setChassisPipeline();
+                    } else {
+                        setMT2Pipeline();
+                    }
+                }));
     }
 
     /**
@@ -1057,8 +1119,18 @@ private ShooterTableEntry entryToRun;
      * @param strategy The {@link ShootingStrategy} to use.
      * @param lock     Whether or not to align the drivetrain.
      */
+    private Command magicShootCommand(Supplier<ShootingStrategy> strategy, boolean lock, Rotation2d offset) {
+        return magicShootCommand(() -> strategy.get().getTargetEntry(), strategy, lock, offset);
+    }
+
+    /**
+     * Generate a command to use the specified strategy to run a magic shot.
+     * 
+     * @param strategy The {@link ShootingStrategy} to use.
+     * @param lock     Whether or not to align the drivetrain.
+     */
     private Command magicShootCommand(Supplier<ShootingStrategy> strategy, boolean lock) {
-        return magicShootCommand(() -> strategy.get().getTargetEntry(), strategy, lock);
+        return magicShootCommand(() -> strategy.get().getTargetEntry(), strategy, lock, ShootingStrategy.OFFSET);
     }
 
     /**
@@ -1113,7 +1185,7 @@ private ShooterTableEntry entryToRun;
                 shooter.stopCommand().andThen(shooter.setSlotCommand(Shooter.Slots.FAST)),
                 pivot.runToHomeCommand(),
                 m_fan.stopCommand(),
-                m_fanPivot.runToPositionCommand(0.),
+                m_fanPivot.runToHomeCommand(),
                 whippy.stopCommand(),
                 driverCamera.setInfeedCameraCommand().onlyIf(() -> switchCamera),
                 Commands.runOnce(() -> currentSequence = ClimbSequence.Default));
@@ -1126,7 +1198,7 @@ private ShooterTableEntry entryToRun;
 
     /** Zeroing Command */
     public Command zeroCommand() {
-        return pivot.zeroCommand().alongWith(m_fanPivot.runToPositionCommand(0.));// .alongWith(climber.zeroCommand());
+        return pivot.zeroCommand().alongWith(m_fanPivot.runToHomeCommand());// .alongWith(climber.zeroCommand());
     }
 
     /** Asynchronous Zero */
@@ -1185,49 +1257,52 @@ private ShooterTableEntry entryToRun;
     /** Vision Utilities */
     // ================ //
 
-//     /** Return approx. 3d pose */
-//     public Optional<EstimatedRobotPose> getBestPose() {
-//         Pose2d drivetrainPose = drivetrain.getPose();
+    // /** Return approx. 3d pose */
+    // public Optional<EstimatedRobotPose> getBestPose() {
+    // Pose2d drivetrainPose = drivetrain.getPose();
 
-//         Optional<EstimatedRobotPose> front = rightVision.getCameraResult(drivetrainPose);
-//         Optional<EstimatedRobotPose> back = leftVision.getCameraResult(drivetrainPose);
+    // Optional<EstimatedRobotPose> front =
+    // rightVision.getCameraResult(drivetrainPose);
+    // Optional<EstimatedRobotPose> back =
+    // leftVision.getCameraResult(drivetrainPose);
 
-//         int numPoses = 0;
+    // int numPoses = 0;
 
-//         numPoses += front.isPresent() ? 1 : 0;
-//         numPoses += back.isPresent() ? 1 : 0;
+    // numPoses += front.isPresent() ? 1 : 0;
+    // numPoses += back.isPresent() ? 1 : 0;
 
-//         Optional<Pose2d> pose = Optional.empty();
+    // Optional<Pose2d> pose = Optional.empty();
 
-//         if (numPoses == 1) {
-//             pose = Optional
-//                     .of(new Pose2d((front.isEmpty() ? back : front).get().estimatedPose.toPose2d()
-//                             .getTranslation(),
-//                             drivetrainPose.getRotation()));
-//         } else if (numPoses == 2) {
-//             // average the poses
-//             Pose3d frontP = front.get().estimatedPose;
-//             Pose3d backP = back.get().estimatedPose;
+    // if (numPoses == 1) {
+    // pose = Optional
+    // .of(new Pose2d((front.isEmpty() ? back :
+    // front).get().estimatedPose.toPose2d()
+    // .getTranslation(),
+    // drivetrainPose.getRotation()));
+    // } else if (numPoses == 2) {
+    // // average the poses
+    // Pose3d frontP = front.get().estimatedPose;
+    // Pose3d backP = back.get().estimatedPose;
 
-//             Translation2d frontT = frontP.getTranslation().toTranslation2d();
-//             Translation2d backT = backP.getTranslation().toTranslation2d();
+    // Translation2d frontT = frontP.getTranslation().toTranslation2d();
+    // Translation2d backT = backP.getTranslation().toTranslation2d();
 
-//             pose = Optional.of(
-//                     new Pose2d(frontT.plus(backT).div(2.),
-//                             drivetrainPose.getRotation()));
-//         }
+    // pose = Optional.of(
+    // new Pose2d(frontT.plus(backT).div(2.),
+    // drivetrainPose.getRotation()));
+    // }
 
-//         if (pose.isPresent()) {
-//             return Optional.of(new EstimatedRobotPose(
-//                     new Pose3d(pose.get()
-//                             .plus(new Transform2d(Units.inchesToMeters(13.), 0.,
-//                                     new Rotation2d()))),
-//                     (front.isEmpty() ? back : front).get().timestampSeconds,
-//                     null, null));
-//         }
+    // if (pose.isPresent()) {
+    // return Optional.of(new EstimatedRobotPose(
+    // new Pose3d(pose.get()
+    // .plus(new Transform2d(Units.inchesToMeters(13.), 0.,
+    // new Rotation2d()))),
+    // (front.isEmpty() ? back : front).get().timestampSeconds,
+    // null, null));
+    // }
 
-//         return Optional.empty();
-//     }
+    // return Optional.empty();
+    // }
 
     public void updateMTRot() {
         chassisLimelight.setRobotRotationMT2(drivetrain.getRotation().getDegrees());

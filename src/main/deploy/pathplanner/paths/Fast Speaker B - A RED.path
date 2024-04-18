@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 3.2004514763244254,
-        "y": 6.95
+        "x": 3.0514895315504917,
+        "y": 6.93
       },
       "prevControl": {
-        "x": 1.9912738317047172,
-        "y": 6.607642474113697
+        "x": 1.8423118869307835,
+        "y": 6.5876424741136965
       },
       "nextControl": null,
       "isLocked": false,
@@ -48,6 +48,23 @@
               "type": "named",
               "data": {
                 "name": "Infeed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Pivot",
+      "waypointRelativePos": 0.75,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "4 Piece A"
               }
             }
           ]

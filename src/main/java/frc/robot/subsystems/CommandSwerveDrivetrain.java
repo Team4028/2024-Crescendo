@@ -286,6 +286,9 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 } catch (IllegalAccessException e) {
                     System.out.println(e.getMessage());
                 }
+
+                statusSignal.setUpdateFrequency(UpdateFrequency);
+
                 LogStore.add("/Drive/" + location + "/" + signalLog,
                         () -> statusSignal.getValueAsDouble());
                 SignalStore.add(statusSignal);
@@ -459,6 +462,12 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     public Command speakerAlign(Supplier<ShootingStrategy> strategy) {
         return staticAlign(() -> alignmentTarget).beforeStarting(() -> {
             alignmentTarget = getRotation().plus(strategy.get().getTargetOffset());
+        });
+    }
+
+    public Command speakerAlign(Supplier<ShootingStrategy> strategy, Rotation2d offset) {
+        return staticAlign(() -> alignmentTarget).beforeStarting(() -> {
+            alignmentTarget = getRotation().plus(strategy.get().getTargetOffset(offset, false));
         });
     }
 

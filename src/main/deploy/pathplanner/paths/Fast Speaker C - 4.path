@@ -3,43 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.8872307611518506,
-        "y": 5.543278238286734
+        "x": 2.96,
+        "y": 4.21
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7217583326027346,
-        "y": 5.397594184718094
+        "x": 2.0546463950070764,
+        "y": 0.7070593998330869
       },
       "isLocked": false,
-      "linkedName": "Note B"
+      "linkedName": "Fast Note C"
     },
     {
       "anchor": {
-        "x": 3.0514895315504917,
-        "y": 6.93
+        "x": 8.666061903552379,
+        "y": 2.565405130810262
       },
       "prevControl": {
-        "x": 1.8423118869307835,
-        "y": 6.5876424741136965
+        "x": 6.291229725316593,
+        "y": 1.0554809681047945
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Fast Note A"
+      "linkedName": "Fast Note 4"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": 27.05,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Infeed",
-      "waypointRelativePos": 0.15,
+      "name": "infeed",
+      "waypointRelativePos": 0.75,
       "command": {
         "type": "parallel",
         "data": {
@@ -47,24 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Infeed"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Pivot",
-      "waypointRelativePos": 0.65,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "4 Piece A"
+                "name": "Smart Infeed"
               }
             }
           ]
@@ -80,7 +57,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 27.0,
+    "rotation": 24.69155816347811,
     "rotateFast": false
   },
   "reversed": false,

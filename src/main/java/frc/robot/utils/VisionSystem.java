@@ -115,6 +115,10 @@ public class VisionSystem {
     public void setPipeline(int pipelineIndex) {
     }
 
+    public int getPipeline() {
+        return 0;
+    }
+
     public Command setPipelineCommand(int pipelineIndex) {
         return Commands.runOnce(() -> setPipeline(pipelineIndex));
     }

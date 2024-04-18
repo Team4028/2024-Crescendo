@@ -9,7 +9,6 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -41,9 +40,6 @@ public class Robot extends TimedRobot {
         // Do this every 100 ms
         addPeriodic(() -> {
             DashboardStore.update();
-            if (!RobotState.isAutonomous()) {
-                m_robotContainer.updateDrivePoseMT2();
-            }
         }, 0.1);
     }
 
@@ -116,6 +112,8 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         LogStore.update();
+
+        m_robotContainer.updateDrivePoseMT2();
     }
 
     @Override

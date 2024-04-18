@@ -3,32 +3,38 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.2004514763244254,
-        "y": 6.95
+        "x": 3.0514895315504917,
+        "y": 6.93
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.209799912057677,
-        "y": 6.4255374071528975
+        "x": 2.060837967283743,
+        "y": 6.405537407152897
       },
       "isLocked": false,
       "linkedName": "Fast Note A"
     },
     {
       "anchor": {
-        "x": 3.1931672736459937,
-        "y": 4.013595675816019
+        "x": 2.96,
+        "y": 4.21
       },
       "prevControl": {
-        "x": 2.0495474531321736,
-        "y": 4.807573767765103
+        "x": 1.204397837367104,
+        "y": 4.9010265249101925
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Fast Note C"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -31.0,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [
     {
@@ -42,6 +48,23 @@
               "type": "named",
               "data": {
                 "name": "Infeed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Pivot",
+      "waypointRelativePos": 0.75,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "4 Piece C"
               }
             }
           ]

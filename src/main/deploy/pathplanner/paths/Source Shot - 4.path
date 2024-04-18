@@ -3,35 +3,35 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.8872307611518506,
-        "y": 5.543278238286734
+        "x": 3.8050402986342795,
+        "y": 2.564039342808056
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7217583326027346,
-        "y": 5.397594184718094
+        "x": 6.071337856961428,
+        "y": 0.7916107260785962
       },
       "isLocked": false,
-      "linkedName": "Note B"
+      "linkedName": "Source Shot Prime"
     },
     {
       "anchor": {
-        "x": 3.0514895315504917,
-        "y": 6.93
+        "x": 8.419456801161923,
+        "y": 2.4522539774945327
       },
       "prevControl": {
-        "x": 1.8423118869307835,
-        "y": 6.5876424741136965
+        "x": 7.5985271593026384,
+        "y": 1.9538324092228252
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Fast Note A"
+      "linkedName": "Note 4"
     }
   ],
   "rotationTargets": [
     {
       "waypointRelativePos": 0.5,
-      "rotationDegrees": 27.05,
+      "rotationDegrees": 31.612217980294517,
       "rotateFast": false
     }
   ],
@@ -39,7 +39,7 @@
   "eventMarkers": [
     {
       "name": "Infeed",
-      "waypointRelativePos": 0.15,
+      "waypointRelativePos": 0.6,
       "command": {
         "type": "parallel",
         "data": {
@@ -47,24 +47,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Infeed"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Pivot",
-      "waypointRelativePos": 0.65,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "4 Piece A"
+                "name": "Smart Infeed"
               }
             }
           ]
@@ -80,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 27.0,
+    "rotation": 29.70481256288089,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Middle",
+  "folder": "Source",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -33.56403724552352,
     "velocity": 0
   },
   "useDefaultConstraints": true

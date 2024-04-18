@@ -32,6 +32,7 @@ public class Conveyor extends SubsystemBase {
     }
 
     private static final int CAN_ID = 11;
+    private static final double PID_THRESHOLD = 0.06;
 
     private double target;
 
@@ -78,6 +79,11 @@ public class Conveyor extends SubsystemBase {
     // SHOOTER COMMANDS
     // ==================================
 
+    /* Get the current encoder error. */
+    public double getError() {
+        return target - encoder.getPosition();
+    }
+
     /* Check if shooter is running */
     public boolean isRunning() {
         return Math.abs(motor.getAppliedOutput()) > 0.1;
@@ -87,7 +93,8 @@ public class Conveyor extends SubsystemBase {
         return runOnce(() -> {
             target = encoder.getPosition() + x;
             pid.setReference(target, ControlType.kPosition);
-        }).andThen(Commands.idle(this)).until(() -> Math.abs(target - encoder.getPosition()) < 0.06);
+        }).andThen(Commands.waitUntil(() -> Math.signum(x) == -1 ? //
+                getError() > -PID_THRESHOLD : getError() < PID_THRESHOLD));
     }
 
     public final void runMotor(double vBus) {
@@ -113,5 +120,6 @@ public class Conveyor extends SubsystemBase {
     }
 
     @Override
-    public void periodic() {}
+    public void periodic() {
+    }
 }

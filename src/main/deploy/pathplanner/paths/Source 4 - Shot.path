@@ -3,43 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.8872307611518506,
-        "y": 5.543278238286734
+        "x": 8.419456801161923,
+        "y": 2.4522539774945327
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7217583326027346,
-        "y": 5.397594184718094
+        "x": 7.390689067092421,
+        "y": 1.4512863311440911
       },
       "isLocked": false,
-      "linkedName": "Note B"
+      "linkedName": "Note 4"
     },
     {
       "anchor": {
-        "x": 3.0514895315504917,
-        "y": 6.93
+        "x": 3.8050402986342795,
+        "y": 2.564039342808056
       },
       "prevControl": {
-        "x": 1.8423118869307835,
-        "y": 6.5876424741136965
+        "x": 5.045175804637324,
+        "y": 1.2167350048985814
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Fast Note A"
+      "linkedName": "Source Shot Prime"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": 27.05,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Infeed",
-      "waypointRelativePos": 0.15,
+      "name": "Finish infeed",
+      "waypointRelativePos": 0,
       "command": {
         "type": "parallel",
         "data": {
@@ -47,24 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Infeed"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Pivot",
-      "waypointRelativePos": 0.65,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "4 Piece A"
+                "name": "Finish Infeed"
               }
             }
           ]
@@ -80,11 +57,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 27.0,
+    "rotation": -35.59047175169025,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Middle",
+  "folder": "Source",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0

@@ -23,7 +23,7 @@ public class ShootingStrategy {
     private final VisionSystem vision;
     private final CameraLerpStrat visionStrategy;
 
-    private static final Rotation2d OFFSET = Rotation2d.fromDegrees(-3.0);
+    public static final Rotation2d OFFSET = Rotation2d.fromDegrees(-3.0);
 
     /** Seconds */
     private static final double FORWARD_LOOK_TIME = 0.1;
@@ -42,7 +42,7 @@ public class ShootingStrategy {
         visionStrategy = null;
     }
 
-    public Translation2d getDrivetrainTranslation(boolean moving) {
+    public Translation2d getDrivetrainFieldTranslation(boolean moving) {
         Translation2d pose = drivetrain.getTranslation();
 
         if (moving) {
@@ -53,15 +53,19 @@ public class ShootingStrategy {
             );
         }
 
-        return BeakUtils.goalTranslation(pose);
+        return pose;
     }
 
-    public Rotation2d getTargetOffset(boolean moving) {
+    public Translation2d getDrivetrainGoalTranslation(boolean moving) {
+        return BeakUtils.goalTranslation(getDrivetrainFieldTranslation(moving));
+    }
+
+    public Rotation2d getTargetOffset(Rotation2d offset, boolean moving) {
         if (vision == null) {
-            Translation2d translation = getDrivetrainTranslation(moving);
+            Translation2d translation = getDrivetrainGoalTranslation(moving);
 
             Rotation2d totalAngle = translation.getAngle();
-            return totalAngle.minus(drivetrain.getRotation()).plus(OFFSET);
+            return totalAngle.minus(drivetrain.getRotation()).plus(offset);
         } else if (drivetrain == null) {
             Optional<Rotation2d> angle = vision.getTagYaw(BeakUtils.speakerTagID());
 
@@ -69,21 +73,25 @@ public class ShootingStrategy {
                 return new Rotation2d();
             }
 
-            return angle.get().plus(OFFSET);
+            return angle.get().plus(offset);
         } else {
             return new Rotation2d();
         }
     }
 
+    public Rotation2d getTargetOffset(boolean moving) {
+        return getTargetOffset(OFFSET, moving);
+    }
+
     public Rotation2d getTargetOffset() {
-        return getTargetOffset(false);
+        return getTargetOffset(OFFSET, false);
     }
 
     public ShooterTableEntry getTargetEntry(boolean moving) {
         if (vision == null) {
-            Translation2d translation = getDrivetrainTranslation(moving);
+            Translation2d translation = getDrivetrainGoalTranslation(moving);
 
-            return ShooterTable.calcShooterTableEntry(Meters.of(translation.getNorm()));
+            return ShooterTable.calcShooterTableEntry(Meters.of(translation.getNorm()).plus(Feet.of(0.2)));
         } else if (drivetrain == null) {
             Optional<Rotation2d> pitch = vision.getTagPitch(BeakUtils.speakerTagID());
 

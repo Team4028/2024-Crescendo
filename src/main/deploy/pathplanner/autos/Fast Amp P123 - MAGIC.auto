@@ -46,6 +46,18 @@
           "data": {
             "name": "Magic Shoot"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Amp Magic - 3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Smart Infeed"
+          }
         }
       ]
     }

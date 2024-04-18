@@ -15,7 +15,16 @@
       "Drive": {
         "open": true
       },
+      "Shuffleboard": {
+        "open": true
+      },
       "SmartDashboard": {
+        "Auto Chooser": {
+          "open": true,
+          "string[]##v_/SmartDashboard/Auto Chooser/options": {
+            "open": true
+          }
+        },
         "open": true
       }
     }

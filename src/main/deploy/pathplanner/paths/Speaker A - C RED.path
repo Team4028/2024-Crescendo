@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 2.94,
-        "y": 4.122858715992498
+        "x": 2.96,
+        "y": 4.21
       },
       "prevControl": {
-        "x": 1.79638017948618,
-        "y": 4.916836807941584
+        "x": 1.81638017948618,
+        "y": 5.003978091949086
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Fast Note C"
     }
   ],
   "rotationTargets": [
