@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 
 /** Add your docs here. */
 public class Limelight extends VisionSystem {
@@ -29,6 +30,13 @@ public class Limelight extends VisionSystem {
 
     public Optional<Rotation2d> getTagYaw(int tagID) {
         return getTargetX();
+    }
+
+    public Optional<Double> getTagDistance(int tagID) {
+        var dist = super.getTagDistance(tagID);
+        var tx = getTargetX();
+        if (dist.isEmpty() || tx.isEmpty()) return dist;
+        return Optional.of(dist.get() / Math.cos(tx.get().getRadians()));
     }
 
     public Optional<Rotation2d> getTargetY() {

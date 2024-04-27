@@ -27,6 +27,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
@@ -131,7 +132,8 @@ public class RobotContainer {
 
     private final Limelight shooterLimelight = new Limelight(SHOOTER_LIMELIGHT, new Transform3d());
 
-    private final Limelight chassisLimelight = new Limelight(CHASSIS_LIMELIGHT, new Transform3d());
+    private final Limelight chassisLimelight = new Limelight(CHASSIS_LIMELIGHT,
+            new Transform3d(-0.278, 0.143, 0.203, new Rotation3d(0, Units.degreesToRadians(33), 0)));
     private final Limelight infeedLimelight3G = new Limelight(INFEED_LIMELIGHT_3G, new Transform3d());
 
     /** Shooting Strategies */
@@ -279,6 +281,13 @@ public class RobotContainer {
         DashboardStore.add("Shooter Table Index", () -> currentIndex);
         DashboardStore.add("Shooter Table Name",
                 () -> indexMap.containsKey(currentIndex) ? indexMap.get(currentIndex) : "Manual");
+
+        DashboardStore.add("2d l3g distance",
+                () -> {
+                    var res = chassisLimelight.getTagDistance(7);
+                    if (res.isPresent()) return Units.metersToFeet(res.get());
+                    return Double.NaN;
+                });
 
         // this is weird
         DashboardStore.add("Snapped",
@@ -1060,7 +1069,11 @@ public class RobotContainer {
                 .andThen(driverCamera.setShooterCameraCommand())
                 .andThen(runEntryCommand(() -> entryToRun,
                         () -> ShotSpeeds.FAST)
-                        .alongWith(drivetrain.speakerAlign(strategy, offset).withTimeout(0.5))
+                        .alongWith(drivetrain.speakerAlign(strategy, offset).withTimeout(0.5)) // TODO: have an .until()
+                                                                                               // to when we are pointed
+                                                                                               // in the right spot? Or
+                                                                                               // just reduce this
+                                                                                               // timeout slightly?
                         .onlyIf(() -> lock))
                 .andThen(shootCommand(() -> entryToRun));
     }
@@ -1226,7 +1239,7 @@ public class RobotContainer {
 
     /** Push limelight data to the CANdle */
     public Command encodeLimelights() {
-        return candle.encodeLimelights(shooterLimelight, chassisLimelight, infeedLimelight3G);
+        return candle.encodeLimelights(chassisLimelight, chassisLimelight, infeedLimelight3G);
     }
 
     /** Put Current ST Index Data to Dashboard */
@@ -1353,3 +1366,4 @@ public class RobotContainer {
         chassisLimelight.setPipeline(TY_PIPELINE);
     }
 }
+// TODO: Undo-trap sequence button?
