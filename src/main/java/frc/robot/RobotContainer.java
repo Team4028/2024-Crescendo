@@ -901,10 +901,9 @@ public class RobotContainer {
         // Stops fan spinn
         // After 2s, Fan Down
         // Finally, Pivot Down
-        return safeClimbCommand(climber.zeroCommand().until(climber::reverseLimit)).alongWith(m_fan.stopCommand())
-                .alongWith(
-                        Commands.waitSeconds(2).andThen(m_fanPivot.runToHomeCommand()))
-                .andThen(safePivotCommand(pivot.runToHomeCommand()));
+        return safeClimbCommand(climber.zeroCommand().until(climber::reverseLimitOn)).alongWith(m_fan.stopCommand())
+                .alongWith(shooter.stopCommand())
+                .alongWith(Commands.waitSeconds(1).andThen(m_fanPivot.runToHomeCommand()));
     }
 
     /** Shoot */
@@ -954,12 +953,12 @@ public class RobotContainer {
 
     private Command undoSequenceCommand() {
         return Commands.select(undoSequenceMap, () -> currentSequence)
-                .andThen(Commands.runOnce(this::decrementSequence));
+                .alongWith(Commands.runOnce(this::decrementSequence));
     }
 
     private Command toggleTrapCommand() {
         return Commands.either(pivot.runToTrapCommand(),
-                safeClimbCommand(climber.zeroCommand().until(climber::reverseLimit)).andThen(pivot.runToHomeCommand()),
+                safeClimbCommand(climber.zeroCommand().until(climber::reverseLimitOn)).andThen(pivot.runToHomeCommand()),
                 pivot::getIsAtHome);
     }
 
