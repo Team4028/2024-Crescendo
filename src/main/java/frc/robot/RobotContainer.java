@@ -716,7 +716,7 @@ public class RobotContainer {
 
         /* Climb Sequence */
         emergencyController.a().onTrue(sequenceCommand());
-        emergencyController.b().onTrue(undoSequenceCommand());
+        emergencyController.b().onTrue(dumbCancelClimbCommand());
 
         /* Prime Fan Pivot & Shooter Pivot */
         emergencyController.x().toggleOnTrue(
@@ -900,10 +900,22 @@ public class RobotContainer {
         // Climber Down
         // Stops fan spinn
         // After 2s, Fan Down
-        // Finally, Pivot Down
         return safeClimbCommand(climber.zeroCommand().until(climber::reverseLimitOn)).alongWith(m_fan.stopCommand())
                 .alongWith(shooter.stopCommand())
                 .alongWith(Commands.waitSeconds(1).andThen(m_fanPivot.runToHomeCommand()));
+    }
+
+    private Command dumbCancelClimbCommand() {
+        // Climber Down
+        // Stops fan spinn
+        // After 2s, Fan Down
+        // Finally, Pivot Down
+        return Commands.runOnce(() -> currentSequence = ClimbSequence.Default).andThen(m_fanPivot.runToTrapCommand()
+                .andThen(safeClimbCommand(climber.zeroCommand().until(climber::reverseLimitOn))
+                        .andThen(pivot.runToHomeCommand())
+                        .alongWith(m_fan.stopCommand())
+                        .alongWith(shooter.stopCommand())
+                        .alongWith(Commands.waitSeconds(1).andThen(m_fanPivot.runToHomeCommand()))));
     }
 
     /** Shoot */
@@ -958,7 +970,8 @@ public class RobotContainer {
 
     private Command toggleTrapCommand() {
         return Commands.either(pivot.runToTrapCommand(),
-                safeClimbCommand(climber.zeroCommand().until(climber::reverseLimitOn)).andThen(pivot.runToHomeCommand()),
+                safeClimbCommand(climber.zeroCommand().until(climber::reverseLimitOn))
+                        .andThen(pivot.runToHomeCommand()),
                 pivot::getIsAtHome);
     }
 

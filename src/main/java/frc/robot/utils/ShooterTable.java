@@ -13,11 +13,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 
 public class ShooterTable {
+    private static final boolean AT_HOME_SHUTTLE_TABLE = true;
+    
     public static final class ShooterTableEntry {
         public Measure<Distance> Distance;
         public double Angle;
         public double Beans;
         public Measure<Distance> HeckyOffset;
+
 
         public ShooterTableEntry(Measure<Distance> distance, double angle, double beans,
                 Measure<Distance> heckyOffset) {
@@ -94,12 +97,15 @@ public class ShooterTable {
         shooterTable.add(new ShooterTableEntry(Feet.of(27), 0.25 + 0.25, 0.98, Feet.of(0.0))); // 20 degrees
 
         // shuttle table entries
-        // shuttleTable.add(new ShooterTableEntry(Feet.of(27), 28.5, 0.63, Feet.zero()));
-        // shuttleTable.add(new ShooterTableEntry(Feet.of(31), 28.5, 0.675, Feet.zero())); REAL
-        // shuttleTable.add(new ShooterTableEntry(Feet.of(36), 24, 0.70, Feet.zero()));
-        shuttleTable.add(new ShooterTableEntry(Feet.of(27), 0.25, 0.2, Feet.zero()));
-        shuttleTable.add(new ShooterTableEntry(Feet.of(31), 4.65, 0.25, Feet.zero()));
-        shuttleTable.add(new ShooterTableEntry(Feet.of(36), 7.95, 0.3, Feet.zero()));
+        if (AT_HOME_SHUTTLE_TABLE) {
+            shuttleTable.add(new ShooterTableEntry(Feet.of(27), 18, 0.55, Feet.zero()));
+            shuttleTable.add(new ShooterTableEntry(Feet.of(31), 14, 0.55, Feet.zero()));
+            shuttleTable.add(new ShooterTableEntry(Feet.of(36), 12, 0.65, Feet.zero()));
+        } else {
+            shuttleTable.add(new ShooterTableEntry(Feet.of(27), 28.5, 0.63, Feet.zero()));
+            shuttleTable.add(new ShooterTableEntry(Feet.of(31), 28.5, 0.675, Feet.zero()));
+            shuttleTable.add(new ShooterTableEntry(Feet.of(36), 24, 0.70, Feet.zero()));
+        }
 
         
         // vision table entries
