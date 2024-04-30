@@ -108,12 +108,12 @@ public class VisionSystem {
         double distance = PhotonUtils.calculateDistanceToTargetMeters(
                 offset.getZ(), layout.getTagPose(tagID).get().getZ(), offset.getRotation().getY(),
                 pitch.get().getRadians());
-                System.out.println("====================================================");
-                System.out.println("offset.getZ: " + offset.getZ());
-                System.out.println("layout.getTagPose: " + layout.getTagPose(tagID).get().getZ());
-                System.out.println("camera pitch: " + offset.getRotation().getY());
-                System.out.println("Tag pitch: " + pitch.get().getRadians());
-                System.out.println("DISTANCE CALCULATION: " + distance);
+                // System.out.println("====================================================");
+                // System.out.println("offset.getZ: " + offset.getZ());
+                // System.out.println("layout.getTagPose: " + layout.getTagPose(tagID).get().getZ());
+                // System.out.println("camera pitch: " + offset.getRotation().getY());
+                // System.out.println("Tag pitch: " + pitch.get().getRadians());
+                // System.out.println("DISTANCE CALCULATION: " + distance);
 
         return Optional.of(distance);
     }

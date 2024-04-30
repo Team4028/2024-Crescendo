@@ -36,12 +36,12 @@ public class Limelight extends VisionSystem {
         if (dist.isEmpty() || tx.isEmpty())
             return dist;
 
-        var compensatedDistance = dist.get() / Math.cos(-tx.get().getRadians());
+        // var compensatedDistance = dist.get() / Math.cos(-tx.get().getRadians());
 
-        System.out.println("tx: " + tx.get());
-        System.out.println("Compensated distance: " + compensatedDistance);
-        System.out.println("======================================================================");
-        return Optional.of(compensatedDistance);
+        // System.out.println("tx: " + tx.get());
+        // System.out.println("Compensated distance: " + compensatedDistance);
+        // System.out.println("======================================================================");
+        return Optional.of(/*compensatedDistance*/dist.get() / Math.cos(-tx.get().getRadians()));
     }
 
     public Optional<Rotation2d> getTargetY() {
