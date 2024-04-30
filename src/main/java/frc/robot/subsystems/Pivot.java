@@ -43,6 +43,8 @@ public class Pivot extends SubsystemBase {
 
     private static final int CAN_ID = 13;
 
+    private boolean atHome = true;
+
     public final static double MAX_POSITION = 60.0;
     public final static double MIN_POSITION = 1.0;
 
@@ -181,6 +183,10 @@ public class Pivot extends SubsystemBase {
 
     public void runToPosition(double position) {
         targetPosition = position;
+        if (position == HOLD_POSITION)
+            atHome = true;
+        else if (position == HARD_STOP || position == STAGE_PIVOT)
+            atHome = false;
         pid.setReference(position, ControlType.kPosition);
     }
 
@@ -230,6 +236,10 @@ public class Pivot extends SubsystemBase {
 
     public boolean inPosition() {
         return Math.abs(getPosition() - targetPosition) < IN_POSITION_THRESHOLD;
+    }
+
+    public boolean getIsAtHome() {
+        return atHome;
     }
 
     public BooleanSupplier inPositionSupplier() {

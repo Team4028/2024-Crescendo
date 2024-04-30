@@ -94,9 +94,13 @@ public class ShooterTable {
         shooterTable.add(new ShooterTableEntry(Feet.of(27), 0.25 + 0.25, 0.98, Feet.of(0.0))); // 20 degrees
 
         // shuttle table entries
-        shuttleTable.add(new ShooterTableEntry(Feet.of(27), 28.5, 0.63, Feet.zero()));
-        shuttleTable.add(new ShooterTableEntry(Feet.of(31), 28.5, 0.675, Feet.zero()));
-        shuttleTable.add(new ShooterTableEntry(Feet.of(36), 24, 0.70, Feet.zero()));
+        // shuttleTable.add(new ShooterTableEntry(Feet.of(27), 28.5, 0.63, Feet.zero()));
+        // shuttleTable.add(new ShooterTableEntry(Feet.of(31), 28.5, 0.675, Feet.zero())); REAL
+        // shuttleTable.add(new ShooterTableEntry(Feet.of(36), 24, 0.70, Feet.zero()));
+        shuttleTable.add(new ShooterTableEntry(Feet.of(27), 0.25, 0.2, Feet.zero()));
+        shuttleTable.add(new ShooterTableEntry(Feet.of(31), 4.65, 0.25, Feet.zero()));
+        shuttleTable.add(new ShooterTableEntry(Feet.of(36), 7.95, 0.3, Feet.zero()));
+
         
         // vision table entries
         visionTable.add(new VisionTableEntry(Feet.of(4.4), 4.34, 0, 20.87, 15.7 ));

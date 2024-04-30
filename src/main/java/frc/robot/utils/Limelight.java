@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.util.Units;
 
 /** Add your docs here. */
 public class Limelight extends VisionSystem {
@@ -21,9 +20,8 @@ public class Limelight extends VisionSystem {
     }
 
     public Optional<Rotation2d> getTargetX() {
-        if (LimelightHelpers.getTV(cameraName)) {
-            return Optional.of(Rotation2d.fromDegrees(-LimelightHelpers.getTX(cameraName)));
-        }
+        if (LimelightHelpers.getTV(cameraName))
+            return Optional.of(Rotation2d.fromDegrees(-LimelightHelpers.getLimelightNTDouble(cameraName, "txnc")));
 
         return Optional.empty();
     }
@@ -35,21 +33,21 @@ public class Limelight extends VisionSystem {
     public Optional<Double> getTagDistance(int tagID) {
         var dist = super.getTagDistance(tagID);
         var tx = getTargetX();
-        if (dist.isEmpty() || tx.isEmpty()) return dist;
-        return Optional.of(dist.get() / Math.cos(tx.get().getRadians()));
+        if (dist.isEmpty() || tx.isEmpty())
+            return dist;
+        return Optional.of(dist.get() / Math.cos(-/*negative shouldn't make a diff but wtvr*/tx.get().getRadians()));
     }
 
     public Optional<Rotation2d> getTargetY() {
-        if (LimelightHelpers.getTV(cameraName)) {
-            return Optional.of(Rotation2d.fromDegrees(LimelightHelpers.getTY(cameraName)));
-        }
+        if (LimelightHelpers.getTV(cameraName))
+            return Optional.of(Rotation2d.fromDegrees(LimelightHelpers.getLimelightNTDouble(cameraName, "tync")));
 
         return Optional.empty();
     }
 
-        public Optional<Rotation2d> getTagPitch(int tagID) {
-            return getTargetY();
-        }
+    public Optional<Rotation2d> getTagPitch(int tagID) {
+        return getTargetY();
+    }
 
     public int getTV() {
         return LimelightHelpers.getTV(cameraName) ? 1 : 0;

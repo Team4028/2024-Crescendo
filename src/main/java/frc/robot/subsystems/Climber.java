@@ -145,6 +145,14 @@ public class Climber extends SubsystemBase {
         return reverseLimitSwitch.get() && voltage.getValueAsDouble() < -0.2;
     }
 
+    public boolean forwardLimitOn() {
+        return forwardLimitSwitch.get();
+    }
+
+    public boolean reverseLimitOn() {
+        return reverseLimitSwitch.get();
+    }
+
     public void stop() {
         runMotor(0.0, false);
     }

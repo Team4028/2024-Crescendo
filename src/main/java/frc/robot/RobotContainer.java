@@ -7,6 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Meters;
 
+import java.lang.annotation.Retention;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -223,6 +224,14 @@ public class RobotContainer {
             ClimbSequence.End, endSequenceCommand(),
             ClimbSequence.Climb, climbCommand());
 
+    private final Map<ClimbSequence, Command> undoSequenceMap = Map.of(
+            ClimbSequence.Default, Commands.none(),
+            ClimbSequence.Prep, undoPrepClimbCommand(),
+            ClimbSequence.Fan, undoFanReadyCommand(),
+            ClimbSequence.Shoot, undoFanReadyCommand(),
+            ClimbSequence.End, undoEndSequenceCommand(),
+            ClimbSequence.Climb, undoClimbCommand());
+
     private static double MAX_INDEX = 27.;
     private static double MIN_INDEX = 4.2;
 
@@ -282,10 +291,11 @@ public class RobotContainer {
         DashboardStore.add("Shooter Table Name",
                 () -> indexMap.containsKey(currentIndex) ? indexMap.get(currentIndex) : "Manual");
 
-        DashboardStore.add("2d l3g distance",
+        DashboardStore.add("Chassis 2D Distance",
                 () -> {
                     var res = chassisLimelight.getTagDistance(7);
-                    if (res.isPresent()) return Units.metersToFeet(res.get());
+                    if (res.isPresent())
+                        return Units.metersToFeet(res.get());
                     return Double.NaN;
                 });
 
@@ -305,7 +315,6 @@ public class RobotContainer {
                 () -> shooterLimelightStrategy.getTargetEntry().Distance.in(Feet));
         DashboardStore.add("LimelightG Distance",
                 () -> chassisLimelight2dStrategy.getTargetEntry().Distance.in(Feet));
-        DashboardStore.add("Limelight Yaw", () -> LimelightHelpers.getTX(SHOOTER_LIMELIGHT));
 
         DashboardStore.add("Last Shot", () -> m_lastShot);
         DashboardStore.add("Odometry Distance",
@@ -630,7 +639,9 @@ public class RobotContainer {
         operatorController.start().onTrue(zeroCommand());
 
         /* Run Pivot Zero */
-        operatorController.a().onTrue(pivot.runToHomeCommand());
+        // operatorController.a().onTrue(pivot.runToHomeCommand());
+        operatorController.a()
+                .onTrue(Commands.runOnce(() -> selectedStrategy = odometryStrategy).andThen(shuttleCommand()));
 
         /* Zero Climber */
         operatorController.rightStick().onTrue(safeClimbCommand(climber.zeroCommand()));
@@ -642,7 +653,7 @@ public class RobotContainer {
         operatorController.b().onTrue(ampPrep).onFalse(stopAllCommand(true));
 
         operatorController.y()
-                .onTrue(pivot.runToTrapCommand());
+                .onTrue(toggleTrapCommand());
 
         // ==================== //
         /* EMERGENCY CONTROLLER */
@@ -705,6 +716,7 @@ public class RobotContainer {
 
         /* Climb Sequence */
         emergencyController.a().onTrue(sequenceCommand());
+        emergencyController.b().onTrue(undoSequenceCommand());
 
         /* Prime Fan Pivot & Shooter Pivot */
         emergencyController.x().toggleOnTrue(
@@ -718,9 +730,11 @@ public class RobotContainer {
                         },
                         m_fanPivot, m_fan));
 
-        emergencyController.b().toggleOnTrue(coolShootCommand());
-        emergencyController.y()
-                .toggleOnTrue(magicShootCommand(() -> selectedStrategy, true, Rotation2d.fromDegrees(-4.0)));
+        // emergencyController.b().toggleOnTrue(coolShootCommand());
+        // emergencyController.y()
+        // .toggleOnTrue(magicShootCommand(() -> selectedStrategy, ztrue,
+        // Rotation2d.fromDegrees(-4.0)));
+        emergencyController.y().onTrue(toggleTrapCommand());
 
         /* Full Outfeed: left Y */
         emergencyController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
@@ -804,8 +818,12 @@ public class RobotContainer {
         return command.onlyIf(() -> pivot.getPosition() > PIVOT_UP_THRESHOLD);
     }
 
+    private Command safePivotCommand(Command command) {
+        return command.onlyIf(climber::reverseLimitOn);
+    }
+
     /** Iterate Climb Sequence */
-    private void updateSequence() {
+    private void incrementSequence() {
         ClimbSequence seq = ClimbSequence.Default;
 
         switch (currentSequence) {
@@ -832,14 +850,40 @@ public class RobotContainer {
         currentSequence = seq;
     }
 
+    private void decrementSequence() {
+        ClimbSequence seq = ClimbSequence.Default;
+
+        switch (currentSequence) {
+            case Default -> seq = ClimbSequence.Default;
+            case Prep -> seq = ClimbSequence.Default;
+            case Fan -> seq = ClimbSequence.Prep;
+            case Shoot -> seq = ClimbSequence.Prep;
+            case End -> seq = ClimbSequence.Fan;
+            default -> seq = ClimbSequence.Default;
+        }
+
+        currentSequence = seq;
+    }
+
     /** Climb Preparation */
     private Command prepClimbCommand() {
+        // Pivot => Trap Position
+        // Shooter => Trap Mode
         return pivot.runToTrapCommand()
                 .alongWith(shooter.setSlotCommand(Slots.TRAP));
     }
 
+    private Command undoPrepClimbCommand() {
+        // Pivot => Home Position
+        // Shooter => Fast Mode
+        return pivot.runToHomeCommand().alongWith(shooter.setSlotCommand(Slots.FAST));
+    }
+
     /** Prime the fan & shooter */
     private Command fanReadyCommand() {
+        // Fan Pivot Up
+        // Shooting Routine
+        // Climber Up
         return m_fanPivot.runToTrapCommand()
                 .alongWith(m_fan.runMotorCommand(FAN_VBUS)
                         .andThen(BeakCommands.repeatCommand(fixNoteCommand(), 2))
@@ -852,28 +896,71 @@ public class RobotContainer {
                                         .getPosition() > PIVOT_UP_THRESHOLD));
     }
 
+    private Command undoFanReadyCommand() {
+        // Climber Down
+        // Stops fan spinn
+        // After 2s, Fan Down
+        // Finally, Pivot Down
+        return safeClimbCommand(climber.zeroCommand().until(climber::reverseLimit)).alongWith(m_fan.stopCommand())
+                .alongWith(
+                        Commands.waitSeconds(2).andThen(m_fanPivot.runToHomeCommand()))
+                .andThen(safePivotCommand(pivot.runToHomeCommand()));
+    }
+
     /** Shoot */
     private Command trapShootCommand() {
+        // Shoot Note
         return conveyCommand();
     }
 
     /** Home everything */
     private Command endSequenceCommand() {
+        // Fan Down
+        // Fan Stop
+        // Shooter Stop/Fast Mode
+        // Pivot Down if not climbing
         return m_fanPivot.runToHomeCommand()
                 .alongWith(m_fan.stopCommand())
                 .alongWith(shooter.stopCommand().andThen(shooter.setSlotCommand(Slots.FAST)))
-                .alongWith(pivot.runToHomeCommand().unless(() -> enableClimber));
+                .alongWith(safePivotCommand(pivot.runToHomeCommand()).unless(() -> enableClimber));
+    }
+
+    private Command undoEndSequenceCommand() {
+        // Pivot Up
+        // Then:
+        // Fan Pivot Up
+        // Shooting Routine
+        // Climber Up
+        return pivot.runToTrapCommand().alongWith(
+                Commands.waitUntil(pivot.inPositionSupplier()).andThen(fanReadyCommand()));
     }
 
     /** Climb!!!!! */
     private Command climbCommand() {
+        // Climber Down
         return safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.CLIMB, true));
+    }
+
+    private Command undoClimbCommand() {
+        // Climber Up
+        return safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY, false));
     }
 
     /** Update Sequence */
     private Command sequenceCommand() {
-        return Commands.runOnce(this::updateSequence)
+        return Commands.runOnce(this::incrementSequence)
                 .andThen(Commands.select(sequenceCommandMap, () -> currentSequence));
+    }
+
+    private Command undoSequenceCommand() {
+        return Commands.select(undoSequenceMap, () -> currentSequence)
+                .andThen(Commands.runOnce(this::decrementSequence));
+    }
+
+    private Command toggleTrapCommand() {
+        return Commands.either(pivot.runToTrapCommand(),
+                safeClimbCommand(climber.zeroCommand().until(climber::reverseLimit)).andThen(pivot.runToHomeCommand()),
+                pivot::getIsAtHome);
     }
 
     // =========================== //
