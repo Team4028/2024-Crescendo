@@ -134,7 +134,7 @@ public class RobotContainer {
     private final Limelight shooterLimelight = new Limelight(SHOOTER_LIMELIGHT, new Transform3d());
 
     private final Limelight chassisLimelight = new Limelight(CHASSIS_LIMELIGHT,
-            new Transform3d(-0.278, 0.143, 0.203, new Rotation3d(0, Units.degreesToRadians(33), 0)));
+            new Transform3d(-0.278, 0.17, 0.203, new Rotation3d(0, Units.degreesToRadians(33), 0)));
     private final Limelight infeedLimelight3G = new Limelight(INFEED_LIMELIGHT_3G, new Transform3d());
 
     /** Shooting Strategies */
