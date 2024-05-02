@@ -23,6 +23,7 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -32,11 +33,13 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -61,7 +64,6 @@ import frc.robot.utils.BeakUtils;
 import frc.robot.utils.DashboardStore;
 import frc.robot.utils.DriverCamera;
 import frc.robot.utils.Limelight;
-import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.LogStore;
 import frc.robot.utils.NoteSensing;
 import frc.robot.utils.ShooterTable;
@@ -1211,6 +1213,36 @@ public class RobotContainer {
                         setMT2Pipeline();
                     }
                 }));
+    }
+
+    public Command autonQueryTryNextNote(int currNote, int targetNote, boolean usePathfinding) {
+        if (currNote > 5 || currNote < 1 || targetNote > 5 || targetNote < 1) {
+            DriverStation.reportError("Error: note(s) specified are out of range",
+                    Thread.currentThread().getStackTrace());
+            return Commands.none();
+        }
+        return new ConditionalCommand(
+                drivetrain.mirrorablePathFindCommand(new Pose2d(Constants.NotePoses.values()[targetNote - 1].pose,
+                        currNote > targetNote ? Constants.NotePoses.UPWARD_ROTATION
+                                : Constants.NotePoses.DOWNWARD_ROTATION),
+                        0.875, 0),
+                AutoBuilder.followPath(PathPlannerPath.fromPathFile("Trans " + currNote + "-" + targetNote)),
+                () -> usePathfinding).onlyIf(() -> !noteSensing.hasInfed());
+    }
+
+    public Command autonQueryTryNextNote(int targetNote, boolean usePathfinding) {
+        double[] closestNote = { 0.0, Double.MAX_VALUE };
+        double tmpLength;
+        for (var i = 0; i < Constants.NotePoses.values().length; i++)
+            if ((tmpLength = Constants.NotePoses.values()[i].pose.minus(drivetrain.getTranslation())
+                    .getNorm()) < closestNote[1]) {
+                closestNote[0] = i;
+                closestNote[1] = tmpLength;
+            }
+
+        if (closestNote[0] > 0)
+            return autonQueryTryNextNote((int) closestNote[0], targetNote, usePathfinding);
+        return Commands.none();
     }
 
     /**

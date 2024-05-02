@@ -33,6 +33,22 @@ public final class Constants {
     public static final Pose2d LEFT_SHOT = new Pose2d(5.3, 6.5, Rotation2d.fromDegrees(14.));
 
     public static final Pose2d NOTE_C_SHOT = new Pose2d(2.75, 4.15, Rotation2d.fromDegrees(-34.));
+
+    public static enum NotePoses {
+        NOTE1(new Translation2d(8.4, 7.29)),
+        NOTE2(new Translation2d(8.4, 5.65)),
+        NOTE3(new Translation2d(8.4, 3.95)),
+        NOTE4(new Translation2d(8.4, 2.45)),
+        NOTE5(new Translation2d(8.4, 0.71));
+
+        public static Rotation2d UPWARD_ROTATION = Rotation2d.fromDegrees(42.5);
+        public static Rotation2d DOWNWARD_ROTATION = Rotation2d.fromDegrees(-42.5);
+        public Translation2d pose;
+
+        NotePoses(Translation2d pose) {
+            this.pose = pose;
+        }
+    }
 }
 
 // RED: CCW: RIGHT
