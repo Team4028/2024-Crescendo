@@ -7,7 +7,6 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Meters;
 
-import java.lang.annotation.Retention;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -534,8 +533,10 @@ public class RobotContainer {
                 .onFalse(coolNoteFixCommand(0.15).andThen(driverCamera.setShooterCameraCommand()));
 
         /* Smart Infeed */
-        driverController.leftTrigger()
-                .whileTrue(smartInfeedCommand().andThen(driverCamera.setShooterCameraCommand()));
+        // driverController.leftTrigger()
+        // .whileTrue(smartInfeedCommand().andThen(driverCamera.setShooterCameraCommand()));
+        driverController.leftTrigger().whileTrue(runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS))
+                .onFalse(conveyBackCommand(-2.0, 0.5).alongWith(driverCamera.setShooterCameraCommand()));
 
         // ========================== //
         /* Drivetain & Vision Control */
