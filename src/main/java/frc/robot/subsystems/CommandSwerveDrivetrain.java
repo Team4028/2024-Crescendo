@@ -150,8 +150,8 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     // }
 
     public CommandSwerveDrivetrain(SwerveDrivetrainConstants drivetrainConstants, double OdometryUpdateFrequency,
-            Matrix<N3, N1> odometryStdDevs, Matrix<N3, N1> visionStdDevs, SwerveModuleConstants... modules) {
-        super(drivetrainConstants, OdometryUpdateFrequency, odometryStdDevs, visionStdDevs, modules);
+            SwerveModuleConstants... modules) {
+        super(drivetrainConstants, OdometryUpdateFrequency, modules);
         if (Utils.isSimulation()) {
             startSimThread();
         }

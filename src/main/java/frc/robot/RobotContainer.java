@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Meters;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -176,6 +178,8 @@ public class RobotContainer {
 
     private double currentSpeed = BASE_SPEED;
 
+    private final boolean skillIssues = true;
+
     private enum SnapDirection {
         None(Double.NaN),
         Forward(0),
@@ -271,7 +275,7 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.Velocity);
 
     public RobotContainer() {
-        snapDrive.HeadingController = new PhoenixPIDController(7.5, 0., 0.);
+        snapDrive.HeadingController = new PhoenixPIDController(10, 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
         /* Init Index Map */
@@ -536,7 +540,7 @@ public class RobotContainer {
         // driverController.leftTrigger()
         // .whileTrue(smartInfeedCommand().andThen(driverCamera.setShooterCameraCommand()));
         driverController.leftTrigger().whileTrue(runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS))
-                .onFalse(conveyBackCommand(-2.0, 0.5).alongWith(driverCamera.setShooterCameraCommand()));
+                .onFalse(conveyBackCommand(-0.5, 0.5).alongWith(driverCamera.setShooterCameraCommand()));
 
         // ========================== //
         /* Drivetain & Vision Control */
@@ -1420,36 +1424,27 @@ public class RobotContainer {
     public void updateMTRot() {
         chassisLimelight.setRobotRotationMT2(drivetrain.getRotation().getDegrees());
         infeedLimelight3G.setRobotRotationMT2(drivetrain.getRotation().getDegrees());
+
     }
 
     public void updateDrivePoseMT2() {
         updateMTRot();
 
-        if (Math.abs(drivetrain.getCurrentRobotChassisSpeeds().omegaRadiansPerSecond) > 0.33) {
+        // Apply Chassis Limelight
+        var visionResult = chassisLimelight.getBotposeEstimateMT2();
+        var visionStdDevs = chassisLimelight.getSTDevsXY(drivetrain);
+        if (visionStdDevs.isEmpty())
             return;
-        }
+        drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
+                VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
 
-        var llLeftPoseEst = chassisLimelight.getBotposeEstimateMT2();
-        var llRightPoseEst = infeedLimelight3G.getBotposeEstimateMT2();
-        Pose2d llAvgPose;
-
-        if (llLeftPoseEst.tagCount <= 0 && llRightPoseEst.tagCount <= 0) {
+        // Apply Infeed Limelight
+        visionResult = infeedLimelight3G.getBotposeEstimateMT2();
+        visionStdDevs = infeedLimelight3G.getSTDevsXY(drivetrain);
+        if (visionStdDevs.isEmpty())
             return;
-        } else if (llLeftPoseEst.tagCount <= 0) {
-            llAvgPose = new Pose2d(llRightPoseEst.pose.getTranslation(),
-                    drivetrain.getRotation());
-        } else if (llRightPoseEst.tagCount <= 0) {
-            llAvgPose = new Pose2d(llLeftPoseEst.pose.getTranslation(),
-                    drivetrain.getRotation());
-        } else {
-            llAvgPose = new Pose2d(
-                    llLeftPoseEst.pose.getTranslation().plus(llRightPoseEst.pose.getTranslation())
-                            .div(2.),
-                    drivetrain.getRotation());
-        }
-
-        double llAvgTimestamp = (llLeftPoseEst.timestampSeconds + llRightPoseEst.timestampSeconds) / 2;
-        drivetrain.addVisionMeasurement(llAvgPose, llAvgTimestamp);
+        drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
+                VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
     }
 
     public Command updateDrivePoseMT2Command() {
