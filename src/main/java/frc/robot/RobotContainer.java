@@ -406,6 +406,18 @@ public class RobotContainer {
         NamedCommands.registerCommand("Mega Tag Shoot", magicShootCommand(() -> odometryStrategy));
         NamedCommands.registerCommand("Choose Shoot", magicShootCommand());
 
+        NamedCommands.registerCommand("Spit Wipe Note 5-3",
+                drivetrain.staticAlign(() -> Constants.NotePoses.DOWNWARD_ROTATION).withTimeout(0.5)
+                        .andThen(conveyCommand().withTimeout(0.5))
+                        .andThen(drivetrain.staticAlign(() -> Rotation2d.fromDegrees(90.0)).withTimeout(0.5))
+                        .onlyIf(noteSensing.hasInfedSupplier()));
+
+        NamedCommands.registerCommand("Spit Wipe Note 2",
+                drivetrain.staticAlign(() -> Constants.NotePoses.UPWARD_ROTATION).withTimeout(0.5)
+                        .andThen(runThree(() -> FAST_CONVEYOR_VBUS, () -> INFEED_VBUS, () -> 0.2).withTimeout(0.25))
+                        .andThen(drivetrain.staticAlign(() -> Rotation2d.fromDegrees(90.0)).withTimeout(0.5))
+                        .onlyIf(noteSensing.hasInfedSupplier()));
+
         /* Shooter & Pivot */
         NamedCommands.registerCommand("Fast Shooter",
                 shooter.runShotCommand(ShotSpeeds.FAST));
