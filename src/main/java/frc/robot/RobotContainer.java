@@ -365,9 +365,7 @@ public class RobotContainer {
     private void initNamedCommands() {
         NamedCommands.registerCommand("Pivot Zero", pivot.zeroCommand());
 
-        // NamedCommands.registerCommand("AprilTag Zero",
-        // new InstantCommand(() ->
-        // drivetrain.addMeasurementCommand(this::getBestPose)));
+        NamedCommands.registerCommand("Update Odometry", updateDrivePoseMT2Command());
 
         // NamedCommands.registerCommand("Limelight Acquire",
         // drivetrain.targetAcquire(() -> 0.6 * MAX_SPEED, infeedLimelight)
