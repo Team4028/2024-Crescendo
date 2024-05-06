@@ -36,6 +36,7 @@ public final class Constants {
 
     public static enum AutoPoses {
         AMP_SHOT(new Translation2d(4.73, 6.95)),
+        MID_SHOT(new Translation2d(2.89, 5.54)),
         SOURCE_SHOT(new Translation2d(3.87, 2.56)),
         NOTE1(new Translation2d(8.4, 7.29)),
         NOTE2(new Translation2d(8.4, 5.65)),
@@ -46,6 +47,7 @@ public final class Constants {
         public static Rotation2d UPWARD_ROTATION = Rotation2d.fromDegrees(42.5);
         public static Rotation2d DOWNWARD_ROTATION = Rotation2d.fromDegrees(-42.5);
         public static Rotation2d AMP_SHOT_ROTATION = Rotation2d.fromDegrees(30.05);
+        public static Rotation2d MID_SHOT_ROTATION = Rotation2d.fromDegrees(0);
         public static Rotation2d SOURCE_SHOT_ROTATION = Rotation2d.fromDegrees(-36);
         public Translation2d pose;
 

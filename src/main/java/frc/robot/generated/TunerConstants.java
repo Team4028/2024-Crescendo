@@ -35,12 +35,6 @@ public class TunerConstants {
             .withKP(6.).withKI(0).withKD(0.05)
             .withKS(kS).withKV(kV).withKA(kA);
 
-    // ============================================================
-    // ||         VISION STDEVS - big so nick can see            ||
-    // ============================================================
-    private static final Matrix<N3, N1> odometryStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
-    private static final Matrix<N3, N1> visionStdDevs = VecBuilder.fill(0.4, 0.4, 0.9);
-
     // The closed-loop output type to use for the steer motors;
     // This affects the PID/FF gains for the steer motors
     private static final ClosedLoopOutputType steerClosedLoopOutput = ClosedLoopOutputType.Voltage;
@@ -151,5 +145,5 @@ public class TunerConstants {
             Units.inchesToMeters(kBackRightXPosInches), Units.inchesToMeters(kBackRightYPosInches), kInvertRightSide);
 
     public static final CommandSwerveDrivetrain DriveTrain = new CommandSwerveDrivetrain(DrivetrainConstants, 0,
-            odometryStdDevs, visionStdDevs, FrontLeft, FrontRight, BackLeft, BackRight);
+            FrontLeft, FrontRight, BackLeft, BackRight);
 }

@@ -109,21 +109,21 @@ public class ShooterTable {
 
         
         // vision table entries
-        visionTable.add(new VisionTableEntry(Feet.of(4.4), 4.34, 0, 20.87, 15.7 ));
-        visionTable.add(new VisionTableEntry(Feet.of(5), 5.09, 1.565, 16.2, 11.06));
-        visionTable.add(new VisionTableEntry(Feet.of(6), 6.094, 1.884, 8.83, 3.8));
-        visionTable.add(new VisionTableEntry(Feet.of(8), 7.799, 2.392, -0.59, -5.68));
-        visionTable.add(new VisionTableEntry(Feet.of(10), 9.17, 2.821, -5.88, -11.18));
-        visionTable.add(new VisionTableEntry(Feet.of(11.5), 9.17, 2.821, -9.45, -14.86));
-        visionTable.add(new VisionTableEntry(Feet.of(13), 11.34, 3.443, -11.76, -17.21));
-        visionTable.add(new VisionTableEntry(Feet.of(14.5), 11.34, 3.443, -13.45, -19.04));
-        visionTable.add(new VisionTableEntry(Feet.of(16), 13.115, 3.954, -15.03, -20.75));
-        visionTable.add(new VisionTableEntry(Feet.of(17.5), 13.115, 3.954, -15.4, -21.17));
-        visionTable.add(new VisionTableEntry(Feet.of(19), 13.845, 4.168, -16.26, -22.13));
-        visionTable.add(new VisionTableEntry(Feet.of(20.5), 13.845, 4.168, -17.18, -23.12));
-        visionTable.add(new VisionTableEntry(Feet.of(22), 15.095, 4.504, -17.93, -23.9));
-        visionTable.add(new VisionTableEntry(Feet.of(24), 15.095, 4.504, -18.77, -24.8));
-        visionTable.add(new VisionTableEntry(Feet.of(27), 17.24, 5.111, -20.32, -26.44));
+        visionTable.add(new VisionTableEntry(Feet.of(4.4), 4.34, 0, 20.87, 12.57));
+        visionTable.add(new VisionTableEntry(Feet.of(5), 5.09, 1.565, 16.2, 7.81));
+        visionTable.add(new VisionTableEntry(Feet.of(6), 6.094, 1.884, 8.83, 0.57));
+        visionTable.add(new VisionTableEntry(Feet.of(8), 7.799, 2.392, -0.59, -8.61));
+        visionTable.add(new VisionTableEntry(Feet.of(10), 9.17, 2.821, -5.88, -14.02));
+        visionTable.add(new VisionTableEntry(Feet.of(11.5), 9.17, 2.821, -9.45, -17.53));
+        visionTable.add(new VisionTableEntry(Feet.of(13), 11.34, 3.443, -11.76, -19.95));
+        visionTable.add(new VisionTableEntry(Feet.of(14.5), 11.34, 3.443, -13.45, -21.98));
+        visionTable.add(new VisionTableEntry(Feet.of(16), 13.115, 3.954, -15.03, -23.49));
+        visionTable.add(new VisionTableEntry(Feet.of(17.5), 13.115, 3.954, -15.4, -23.93));
+        visionTable.add(new VisionTableEntry(Feet.of(19), 13.845, 4.168, -16.26, -24.97));
+        visionTable.add(new VisionTableEntry(Feet.of(20.5), 13.845, 4.168, -17.18, -25.89));
+        visionTable.add(new VisionTableEntry(Feet.of(22), 15.095, 4.504, -17.93, -26.7));
+        visionTable.add(new VisionTableEntry(Feet.of(24), 15.095, 4.504, -18.77, -27.55));
+        visionTable.add(new VisionTableEntry(Feet.of(27), 17.24, 5.111, -20.32, -29.14));
     }
 
     static {

@@ -7,8 +7,8 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Meters;
 
-import java.lang.annotation.Retention;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,6 +28,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -181,8 +182,14 @@ public class RobotContainer {
 
     private double currentSpeed = BASE_SPEED;
 
+    private final boolean skillIssues = true;
+
     private int autonTargetNote = 0;
     private boolean missedAutoNote = false;
+
+    private static enum AutonSides {
+        AMP, MIDDLE, SOURCE
+    }
 
     private enum SnapDirection {
         None(Double.NaN),
@@ -279,7 +286,7 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.Velocity);
 
     public RobotContainer() {
-        snapDrive.HeadingController = new PhoenixPIDController(7.5, 0., 0.);
+        snapDrive.HeadingController = new PhoenixPIDController(10, 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
         /* Init Index Map */
@@ -331,8 +338,8 @@ public class RobotContainer {
 
         DashboardStore.add("Strategy", () -> strategyMap.get(selectedStrategy));
 
-        LogStore.add("/Buttons/New Shoot", () -> emergencyController.y().getAsBoolean());
-        LogStore.add("/Buttons/Magic Shoot", () -> operatorController.x().getAsBoolean());
+        LogStore.add("/Buttons/New Shoot", () -> emergencyController.getHID().getAButton()); // emergencyController.y().getAsBoolean());
+        LogStore.add("/Buttons/Magic Shoot", () -> operatorController.getHID().getXButton()); // operatorController.x().getAsBoolean());
 
         initNamedCommands();
 
@@ -369,9 +376,7 @@ public class RobotContainer {
     private void initNamedCommands() {
         NamedCommands.registerCommand("Pivot Zero", pivot.zeroCommand());
 
-        // NamedCommands.registerCommand("AprilTag Zero",
-        // new InstantCommand(() ->
-        // drivetrain.addMeasurementCommand(this::getBestPose)));
+        NamedCommands.registerCommand("Update Odometry", updateDrivePoseMT2Command());
 
         // NamedCommands.registerCommand("Limelight Acquire",
         // drivetrain.targetAcquire(() -> 0.6 * MAX_SPEED, infeedLimelight)
@@ -501,12 +506,16 @@ public class RobotContainer {
         NamedCommands.registerCommand("Source Missed Note 5", autonTryNextNote(5, 4, false));
         NamedCommands.registerCommand("Source Missed Note 4", autonTryNextNote(4, 3, false));
         NamedCommands.registerCommand("Source Missed Note 3", autonTryNextNote(3, 2, false));
-        NamedCommands.registerCommand("Source Recover Missed Note", autonReturnTryNextNote(false, false));
+        NamedCommands.registerCommand("Source Recover Missed Note", autonReturnTryNextNote(AutonSides.SOURCE, false));
+
+        NamedCommands.registerCommand("Middle Missed Note 3", autonTryNextNote(3, 4, false));
+        NamedCommands.registerCommand("Middle Missed Note 4", autonTryNextNote(4, 5, false));
+        NamedCommands.registerCommand("Middle Recover Missed Note", autonReturnTryNextNote(AutonSides.MIDDLE, false));
 
         NamedCommands.registerCommand("Amp Missed Note 1", autonTryNextNote(1, 2, false));
         NamedCommands.registerCommand("Amp Missed Note 2", autonTryNextNote(2, 3, false));
         NamedCommands.registerCommand("Amp Missed Note 3", autonTryNextNote(3, 4, false));
-        NamedCommands.registerCommand("Amp Recover Missed Note", autonReturnTryNextNote(false, false));
+        NamedCommands.registerCommand("Amp Recover Missed Note", autonReturnTryNextNote(AutonSides.AMP, false));
     }
 
     // =========================== //
@@ -563,8 +572,10 @@ public class RobotContainer {
                 .onFalse(coolNoteFixCommand(0.15).andThen(driverCamera.setShooterCameraCommand()));
 
         /* Smart Infeed */
-        driverController.leftTrigger()
-                .whileTrue(smartInfeedCommand().andThen(driverCamera.setShooterCameraCommand()));
+        // driverController.leftTrigger()
+        // .whileTrue(smartInfeedCommand().andThen(driverCamera.setShooterCameraCommand()));
+        driverController.leftTrigger().whileTrue(runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS))
+                .onFalse(conveyBackCommand(-0.5, 0.5).alongWith(driverCamera.setShooterCameraCommand()));
 
         // ========================== //
         /* Drivetain & Vision Control */
@@ -1274,26 +1285,39 @@ public class RobotContainer {
         return Commands.none();
     }
 
-    public Command autonReturnTryNextNote(boolean ampSide, boolean usePathfinding, int currNote) {
+    public Command autonReturnTryNextNote(AutonSides side, boolean usePathfinding, int currNote) {
         Optional<String> optPathName;
         return new ConditionalCommand((usePathfinding
                 ? drivetrain
                         .mirrorablePathFindCommand(
-                                new Pose2d(ampSide ? AutoPoses.AMP_SHOT.pose : AutoPoses.SOURCE_SHOT.pose,
-                                        ampSide ? AutoPoses.AMP_SHOT_ROTATION : AutoPoses.SOURCE_SHOT_ROTATION),
+                                new Pose2d(
+                                        switch (side) {
+                                            case AMP -> AutoPoses.AMP_SHOT.pose;
+                                            case MIDDLE -> AutoPoses.MID_SHOT.pose;
+                                            case SOURCE -> AutoPoses.SOURCE_SHOT.pose;
+                                        },
+                                        switch (side) {
+                                            case AMP -> AutoPoses.AMP_SHOT_ROTATION;
+                                            case MIDDLE -> AutoPoses.MID_SHOT_ROTATION;
+                                            case SOURCE -> AutoPoses.SOURCE_SHOT_ROTATION;
+                                        }),
                                 0.875, 0)
                 : AutoBuilder
-                        .followPath(PathPlannerPath.fromPathFile("Note " + currNote + (ampSide ? " Amp" : " Source"))))
+                        .followPath(PathPlannerPath.fromPathFile("Note " + currNote + switch (side) {
+                            case AMP -> " Amp";
+                            case MIDDLE -> " Mid";
+                            case SOURCE -> " Source";
+                        })))
                 .alongWith(new InstantCommand(() -> missedAutoNote = false)),
-                (optPathName = getReturnPath(ampSide, currNote)).isPresent()
+                (optPathName = getReturnPath(side, currNote)).isPresent()
                         ? AutoBuilder.followPath(PathPlannerPath.fromPathFile(optPathName.get()))
                         : Commands.none(),
                 () -> missedAutoNote);
     }
 
-    public Command autonReturnTryNextNote(boolean ampSide, boolean usePathfinding) {
+    public Command autonReturnTryNextNote(AutonSides side, boolean usePathfinding) {
         if (autonTargetNote != 0)
-            return autonReturnTryNextNote(ampSide, usePathfinding, autonTargetNote);
+            return autonReturnTryNextNote(side, usePathfinding, autonTargetNote);
         double[] closestNote = { 0.0, Double.MAX_VALUE };
         double tmpLength;
         for (var i = 0; i < Constants.AutoPoses.values().length; i++)
@@ -1304,22 +1328,27 @@ public class RobotContainer {
             }
 
         if (closestNote[0] > 0)
-            return autonReturnTryNextNote(ampSide, usePathfinding, (int) closestNote[0]);
+            return autonReturnTryNextNote(side, usePathfinding, (int) closestNote[0]);
         return Commands.none();
     }
 
-    private Optional<String> getReturnPath(boolean ampSide, int currNote) {
+    private Optional<String> getReturnPath(AutonSides side, int currNote) {
         boolean red = !BeakUtils.allianceIsBlue();
-        if (ampSide)
+        if (side == AutonSides.AMP)
             return switch (currNote) {
                 case 1, 2, 3 -> Optional.of("Amp " + currNote + " - Magic" + (red ? " RED" : ""));
                 default -> Optional.empty();
             };
-        else
+        else if (side == AutonSides.SOURCE)
             return switch (currNote) {
                 case 5 -> Optional.of("Source Move 5 Shoot" + (red ? " RED" : ""));
                 case 4 -> Optional.of("Source Move 4 - Shot" + (red ? " RED" : ""));
                 case 3 -> Optional.of("Source Shot - 3" + (red ? " RED" : ""));
+                default -> Optional.empty();
+            };
+        else
+            return switch (currNote) {
+                case 3 -> Optional.of("Fast Speaker 3 - B");
                 default -> Optional.empty();
             };
     }
@@ -1530,36 +1559,27 @@ public class RobotContainer {
     public void updateMTRot() {
         chassisLimelight.setRobotRotationMT2(drivetrain.getRotation().getDegrees());
         infeedLimelight3G.setRobotRotationMT2(drivetrain.getRotation().getDegrees());
+
     }
 
     public void updateDrivePoseMT2() {
         updateMTRot();
 
-        if (Math.abs(drivetrain.getCurrentRobotChassisSpeeds().omegaRadiansPerSecond) > 0.33) {
+        // Apply Chassis Limelight
+        var visionResult = chassisLimelight.getBotposeEstimateMT2();
+        var visionStdDevs = chassisLimelight.getSTDevsXY(drivetrain);
+        if (visionStdDevs.isEmpty())
             return;
-        }
+        drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
+                VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
 
-        var llLeftPoseEst = chassisLimelight.getBotposeEstimateMT2();
-        var llRightPoseEst = infeedLimelight3G.getBotposeEstimateMT2();
-        Pose2d llAvgPose;
-
-        if (llLeftPoseEst.tagCount <= 0 && llRightPoseEst.tagCount <= 0) {
+        // Apply Infeed Limelight
+        visionResult = infeedLimelight3G.getBotposeEstimateMT2();
+        visionStdDevs = infeedLimelight3G.getSTDevsXY(drivetrain);
+        if (visionStdDevs.isEmpty())
             return;
-        } else if (llLeftPoseEst.tagCount <= 0) {
-            llAvgPose = new Pose2d(llRightPoseEst.pose.getTranslation(),
-                    drivetrain.getRotation());
-        } else if (llRightPoseEst.tagCount <= 0) {
-            llAvgPose = new Pose2d(llLeftPoseEst.pose.getTranslation(),
-                    drivetrain.getRotation());
-        } else {
-            llAvgPose = new Pose2d(
-                    llLeftPoseEst.pose.getTranslation().plus(llRightPoseEst.pose.getTranslation())
-                            .div(2.),
-                    drivetrain.getRotation());
-        }
-
-        double llAvgTimestamp = (llLeftPoseEst.timestampSeconds + llRightPoseEst.timestampSeconds) / 2;
-        drivetrain.addVisionMeasurement(llAvgPose, llAvgTimestamp);
+        drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
+                VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
     }
 
     public Command updateDrivePoseMT2Command() {

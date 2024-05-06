@@ -24,9 +24,15 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Fast Speaker 3 - B"
+            "name": "Middle Missed Note 3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Middle Recover Missed Note"
           }
         },
         {
@@ -57,6 +63,12 @@
           "type": "path",
           "data": {
             "pathName": "Fast Speaker C - 4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Middle Missed Note 4"
           }
         },
         {
