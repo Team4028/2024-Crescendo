@@ -18,9 +18,15 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Amp 1 - Magic RED"
+            "name": "Amp Missed Note 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Amp Recover Missed Note"
           }
         },
         {
@@ -36,9 +42,15 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Amp 2 - Magic RED"
+            "name": "Amp Missed Note 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Amp Recover Missed Note"
           }
         },
         {

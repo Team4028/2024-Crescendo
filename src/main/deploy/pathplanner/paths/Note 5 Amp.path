@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.357666972654265,
+        "y": 0.7138518624863336
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.333389616845654,
+        "y": 7.330983677663953
+      },
+      "isLocked": false,
+      "linkedName": "Note 5"
+    },
+    {
+      "anchor": {
+        "x": 4.73,
+        "y": 6.95
+      },
+      "prevControl": {
+        "x": 5.588474971529114,
+        "y": 6.75715268691593
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Magic Shoot"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 4.5,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 1080.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "Note to Shot",
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

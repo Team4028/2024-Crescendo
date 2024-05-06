@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.474214215509177,
+        "y": 3.95
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.365969077159265,
+        "y": 4.965394695411359
+      },
+      "isLocked": false,
+      "linkedName": "Note 3"
+    },
+    {
+      "anchor": {
+        "x": 3.866981999299233,
+        "y": 2.5646732035261492
+      },
+      "prevControl": {
+        "x": 3.7967169800245437,
+        "y": 3.3024559059103855
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Spitless Source Shot"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 4.5,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 1080.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -36.0,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": "Note to Shot",
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

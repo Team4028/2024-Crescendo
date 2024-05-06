@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
@@ -21,6 +22,7 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
+import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -44,7 +46,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
+import frc.robot.Constants.AutoPoses;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Candle;
 import frc.robot.subsystems.Climber;
@@ -178,6 +180,9 @@ public class RobotContainer {
     private static final double SLOW_SPEED = 0.07;
 
     private double currentSpeed = BASE_SPEED;
+
+    private int autonTargetNote = 0;
+    private boolean missedAutoNote = false;
 
     private enum SnapDirection {
         None(Double.NaN),
@@ -407,13 +412,13 @@ public class RobotContainer {
         NamedCommands.registerCommand("Choose Shoot", magicShootCommand());
 
         NamedCommands.registerCommand("Spit Wipe Note 5-3",
-                drivetrain.staticAlign(() -> Constants.NotePoses.DOWNWARD_ROTATION).withTimeout(0.5)
+                drivetrain.staticAlign(() -> Constants.AutoPoses.DOWNWARD_ROTATION).withTimeout(0.5)
                         .andThen(conveyCommand().withTimeout(0.5))
                         .andThen(drivetrain.staticAlign(() -> Rotation2d.fromDegrees(90.0)).withTimeout(0.5))
                         .onlyIf(noteSensing.hasInfedSupplier()));
 
         NamedCommands.registerCommand("Spit Wipe Note 2",
-                drivetrain.staticAlign(() -> Constants.NotePoses.UPWARD_ROTATION).withTimeout(0.5)
+                drivetrain.staticAlign(() -> Constants.AutoPoses.UPWARD_ROTATION).withTimeout(0.5)
                         .andThen(runThree(() -> FAST_CONVEYOR_VBUS, () -> INFEED_VBUS, () -> 0.2).withTimeout(0.25))
                         .andThen(drivetrain.staticAlign(() -> Rotation2d.fromDegrees(90.0)).withTimeout(0.5))
                         .onlyIf(noteSensing.hasInfedSupplier()));
@@ -492,6 +497,16 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("4 Piece A", pivot.runToPositionCommand(13.75));
         NamedCommands.registerCommand("4 Piece C", pivot.runToPositionCommand(14.0));
+
+        NamedCommands.registerCommand("Source Missed Note 5", autonTryNextNote(5, 4, false));
+        NamedCommands.registerCommand("Source Missed Note 4", autonTryNextNote(4, 3, false));
+        NamedCommands.registerCommand("Source Missed Note 3", autonTryNextNote(3, 2, false));
+        NamedCommands.registerCommand("Source Recover Missed Note", autonReturnTryNextNote(false, false));
+
+        NamedCommands.registerCommand("Amp Missed Note 1", autonTryNextNote(1, 2, false));
+        NamedCommands.registerCommand("Amp Missed Note 2", autonTryNextNote(2, 3, false));
+        NamedCommands.registerCommand("Amp Missed Note 3", autonTryNextNote(3, 4, false));
+        NamedCommands.registerCommand("Amp Recover Missed Note", autonReturnTryNextNote(false, false));
     }
 
     // =========================== //
@@ -1227,34 +1242,86 @@ public class RobotContainer {
                 }));
     }
 
-    public Command autonQueryTryNextNote(int currNote, int targetNote, boolean usePathfinding) {
+    public Command autonTryNextNote(int currNote, int targetNote, boolean usePathfinding) {
+        autonTargetNote = targetNote;
+        missedAutoNote = !noteSensing.hasInfed();
         if (currNote > 5 || currNote < 1 || targetNote > 5 || targetNote < 1) {
             DriverStation.reportError("Error: note(s) specified are out of range",
                     Thread.currentThread().getStackTrace());
             return Commands.none();
         }
         return new ConditionalCommand(
-                drivetrain.mirrorablePathFindCommand(new Pose2d(Constants.NotePoses.values()[targetNote - 1].pose,
-                        currNote > targetNote ? Constants.NotePoses.UPWARD_ROTATION
-                                : Constants.NotePoses.DOWNWARD_ROTATION),
+                drivetrain.mirrorablePathFindCommand(new Pose2d(Constants.AutoPoses.values()[targetNote - 1].pose,
+                        currNote > targetNote ? Constants.AutoPoses.UPWARD_ROTATION
+                                : Constants.AutoPoses.DOWNWARD_ROTATION),
                         0.875, 0),
                 AutoBuilder.followPath(PathPlannerPath.fromPathFile("Trans " + currNote + "-" + targetNote)),
                 () -> usePathfinding).onlyIf(() -> !noteSensing.hasInfed());
     }
 
-    public Command autonQueryTryNextNote(int targetNote, boolean usePathfinding) {
+    public Command autonTryNextNote(int targetNote, boolean usePathfinding) {
         double[] closestNote = { 0.0, Double.MAX_VALUE };
         double tmpLength;
-        for (var i = 0; i < Constants.NotePoses.values().length; i++)
-            if ((tmpLength = Constants.NotePoses.values()[i].pose.minus(drivetrain.getTranslation())
+        for (var i = 0; i < Constants.AutoPoses.values().length; i++)
+            if ((tmpLength = Constants.AutoPoses.values()[i].pose.minus(drivetrain.getTranslation())
                     .getNorm()) < closestNote[1]) {
                 closestNote[0] = i;
                 closestNote[1] = tmpLength;
             }
 
         if (closestNote[0] > 0)
-            return autonQueryTryNextNote((int) closestNote[0], targetNote, usePathfinding);
+            return autonTryNextNote((int) closestNote[0], targetNote, usePathfinding);
         return Commands.none();
+    }
+
+    public Command autonReturnTryNextNote(boolean ampSide, boolean usePathfinding, int currNote) {
+        Optional<String> optPathName;
+        return new ConditionalCommand((usePathfinding
+                ? drivetrain
+                        .mirrorablePathFindCommand(
+                                new Pose2d(ampSide ? AutoPoses.AMP_SHOT.pose : AutoPoses.SOURCE_SHOT.pose,
+                                        ampSide ? AutoPoses.AMP_SHOT_ROTATION : AutoPoses.SOURCE_SHOT_ROTATION),
+                                0.875, 0)
+                : AutoBuilder
+                        .followPath(PathPlannerPath.fromPathFile("Note " + currNote + (ampSide ? " Amp" : " Source"))))
+                .alongWith(new InstantCommand(() -> missedAutoNote = false)),
+                (optPathName = getReturnPath(ampSide, currNote)).isPresent()
+                        ? AutoBuilder.followPath(PathPlannerPath.fromPathFile(optPathName.get()))
+                        : Commands.none(),
+                () -> missedAutoNote);
+    }
+
+    public Command autonReturnTryNextNote(boolean ampSide, boolean usePathfinding) {
+        if (autonTargetNote != 0)
+            return autonReturnTryNextNote(ampSide, usePathfinding, autonTargetNote);
+        double[] closestNote = { 0.0, Double.MAX_VALUE };
+        double tmpLength;
+        for (var i = 0; i < Constants.AutoPoses.values().length; i++)
+            if ((tmpLength = Constants.AutoPoses.values()[i].pose.minus(drivetrain.getTranslation())
+                    .getNorm()) < closestNote[1]) {
+                closestNote[0] = i;
+                closestNote[1] = tmpLength;
+            }
+
+        if (closestNote[0] > 0)
+            return autonReturnTryNextNote(ampSide, usePathfinding, (int) closestNote[0]);
+        return Commands.none();
+    }
+
+    private Optional<String> getReturnPath(boolean ampSide, int currNote) {
+        boolean red = !BeakUtils.allianceIsBlue();
+        if (ampSide)
+            return switch (currNote) {
+                case 1, 2, 3 -> Optional.of("Amp " + currNote + " - Magic" + (red ? " RED" : ""));
+                default -> Optional.empty();
+            };
+        else
+            return switch (currNote) {
+                case 5 -> Optional.of("Source Move 5 Shoot" + (red ? " RED" : ""));
+                case 4 -> Optional.of("Source Move 4 - Shot" + (red ? " RED" : ""));
+                case 3 -> Optional.of("Source Shot - 3" + (red ? " RED" : ""));
+                default -> Optional.empty();
+            };
     }
 
     /**
