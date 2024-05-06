@@ -327,8 +327,8 @@ public class RobotContainer {
 
         DashboardStore.add("Strategy", () -> strategyMap.get(selectedStrategy));
 
-        LogStore.add("/Buttons/New Shoot", () -> emergencyController.y().getAsBoolean());
-        LogStore.add("/Buttons/Magic Shoot", () -> operatorController.x().getAsBoolean());
+        LogStore.add("/Buttons/New Shoot", () -> emergencyController.getHID().getAButton()); //emergencyController.y().getAsBoolean());
+        LogStore.add("/Buttons/Magic Shoot", () -> operatorController.getHID().getXButton()); //operatorController.x().getAsBoolean());
 
         initNamedCommands();
 
