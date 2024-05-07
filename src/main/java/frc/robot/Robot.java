@@ -71,14 +71,16 @@ public class Robot extends TimedRobot {
         hasZeroedPivot = true;
         DataLogManager.start();
 
+        m_robotContainer.setMT2Pipeline();
+        m_robotContainer.setAutonMT2RotationThresholds();
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
+        
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
         }
-
-        m_robotContainer.setChassisPipeline();
-
+        
+        // m_robotContainer.setChassisPipeline();
+        
         // m_robotContainer.zero();
         // m_robotContainer.configVisionFieldOrigins();
     }
@@ -94,13 +96,15 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
-        SignalLogger.setPath("/media/sda1/ctre");
+        SignalLogger.setPath("/media/sda1/ctre/");
         DataLogManager.start();
         SignalLogger.start();
 
         if (m_autonomousCommand != null) {
             m_autonomousCommand.cancel();
         }
+
+        m_robotContainer.setTeleopMT2RotationThresholds();
 
         m_robotContainer.stopShooter();
         if (!hasZeroedPivot)

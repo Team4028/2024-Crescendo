@@ -8,10 +8,17 @@ import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 /** Add your docs here. */
 public class Limelight extends VisionSystem {
+
+    private final double TELEOP_MT2_ROTATION_THRESHOLD = 0.5;
+    private final double AUTON_MT2_ROTATION_THRESHOLD = 0.0;
+
+    private double angularVelocityThreshold = 0.5; // how many rad/sec to update MT2 pose
+
     public Limelight(String cameraName, Transform3d robotToCamera) {
         super(cameraName, robotToCamera);
     }
@@ -70,22 +77,20 @@ public class Limelight extends VisionSystem {
 
     public Optional<Double[]> getSTDevsXY(CommandSwerveDrivetrain drivetrain) {
         var visionResults = getBotposeEstimateMT2();
+        boolean validPose = drivetrain.getTranslation().getDistance(visionResults.pose.getTranslation()) <= 1.0;
 
-        if (drivetrain.getState().speeds.omegaRadiansPerSecond > 0.33
+        if (Math.abs(drivetrain.getState().speeds.omegaRadiansPerSecond) > angularVelocityThreshold
                 || Math.sqrt(Math.pow(drivetrain.getState().speeds.vxMetersPerSecond, 2)
-                        + Math.pow(drivetrain.getState().speeds.vyMetersPerSecond, 2)) > 5)
+                        + Math.pow(drivetrain.getState().speeds.vyMetersPerSecond, 2)) > 5) {
             return Optional.empty();
-
-        if (visionResults.tagCount <= 1 && visionResults.avgTagArea < 0.8
-                && drivetrain.getTranslation().getDistance(visionResults.pose.getTranslation()) > 0.5)
-            return Optional.empty();
-        else if (visionResults.tagCount >= 2)
+        } else if (visionResults.tagCount >= 2) {
             return Optional.of(new Double[] { 0.1, 0.1 });
-        else if (visionResults.tagCount == 1 && visionResults.avgTagArea >= 0.8
-                && drivetrain.getTranslation().getDistance(visionResults.pose.getTranslation()) <= 0.5)
+        } else if (visionResults.tagCount == 1 && visionResults.avgTagArea >= 0.4
+                && validPose) {
             return Optional.of(new Double[] { 1.0, 1.0 });
-        else
+        } else {
             return Optional.empty();
+        }
     }
 
     public void setPipeline(int pipeline) {
@@ -94,5 +99,14 @@ public class Limelight extends VisionSystem {
 
     public int getPipeline() {
         return (int) LimelightHelpers.getCurrentPipelineIndex(cameraName);
+    }
+
+    public void setTeleopMT2Threshold() {
+        angularVelocityThreshold = TELEOP_MT2_ROTATION_THRESHOLD;
+    }
+
+    
+    public void setAutonMT2Threshold() {
+        angularVelocityThreshold = AUTON_MT2_ROTATION_THRESHOLD;
     }
 }

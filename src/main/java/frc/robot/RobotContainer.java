@@ -40,6 +40,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -327,8 +328,8 @@ public class RobotContainer {
 
         DashboardStore.add("Strategy", () -> strategyMap.get(selectedStrategy));
 
-        LogStore.add("/Buttons/New Shoot", () -> emergencyController.getHID().getAButton()); //emergencyController.y().getAsBoolean());
-        LogStore.add("/Buttons/Magic Shoot", () -> operatorController.getHID().getXButton()); //operatorController.x().getAsBoolean());
+        LogStore.add("/Buttons/New Shoot", () -> emergencyController.getHID().getAButton()); // emergencyController.y().getAsBoolean());
+        LogStore.add("/Buttons/Magic Shoot", () -> operatorController.getHID().getXButton()); // operatorController.x().getAsBoolean());
 
         initNamedCommands();
 
@@ -401,8 +402,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("Finish Infeed",
                 smartInfeedAutoCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST)));
 
-        NamedCommands.registerCommand("Magic Shoot", magicShootCommand(() -> chassisLimelight2dStrategy));
-        NamedCommands.registerCommand("Mega Tag Shoot", magicShootCommand(() -> odometryStrategy));
+        NamedCommands.registerCommand("Magic Shoot", updateDrivePoseMT2Command().repeatedly().withTimeout(0.1).andThen(magicShootCommand(() -> odometryStrategy)));
+        NamedCommands.registerCommand("Mega Tag Shoot", magicShootCommand(() -> odometryStrategy)); 
         NamedCommands.registerCommand("Choose Shoot", magicShootCommand());
 
         /* Shooter & Pivot */
@@ -1431,18 +1432,17 @@ public class RobotContainer {
         // Apply Chassis Limelight
         var visionResult = chassisLimelight.getBotposeEstimateMT2();
         var visionStdDevs = chassisLimelight.getSTDevsXY(drivetrain);
-        if (visionStdDevs.isEmpty())
-            return;
-        drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
-                VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
-
+        if (visionStdDevs.isEmpty() == false) {
+            drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
+                    VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
+        }
         // Apply Infeed Limelight
         visionResult = infeedLimelight3G.getBotposeEstimateMT2();
         visionStdDevs = infeedLimelight3G.getSTDevsXY(drivetrain);
-        if (visionStdDevs.isEmpty())
-            return;
-        drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
-                VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
+        if (visionStdDevs.isEmpty() == false) {
+            drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
+                    VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
+        }
     }
 
     public Command updateDrivePoseMT2Command() {
@@ -1458,5 +1458,14 @@ public class RobotContainer {
         selectedStrategy = chassisLimelight2dStrategy;
         chassisLimelight.setPipeline(TY_PIPELINE);
     }
+
+    public void setTeleopMT2RotationThresholds() {
+        chassisLimelight.setTeleopMT2Threshold();
+        infeedLimelight3G.setTeleopMT2Threshold();
+    }
+
+    public void setAutonMT2RotationThresholds() {
+        chassisLimelight.setAutonMT2Threshold();
+        infeedLimelight3G.setAutonMT2Threshold();
+    }
 }
-// TODO: Undo-trap sequence button?
