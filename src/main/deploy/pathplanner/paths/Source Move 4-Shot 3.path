@@ -1,0 +1,70 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.47,
+        "y": 3.77
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.017561708213855,
+        "y": 3.333250963734452
+      },
+      "isLocked": false,
+      "linkedName": "Note 3 Spit"
+    },
+    {
+      "anchor": {
+        "x": 4.6867405575039385,
+        "y": 4.496961233580098
+      },
+      "prevControl": {
+        "x": 5.2254390386098875,
+        "y": 4.04023860829462
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Easy Chain"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "Finish Infeed",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Finish Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 4.5,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 1080.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -11.889999999999986,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "Source",
+  "previewStartingState": {
+    "rotation": 50.0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

@@ -1,0 +1,70 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.907220607593853,
+        "y": 0.6909393562011086
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 8.118015665417921,
+        "y": 3.4898292906428905
+      },
+      "isLocked": false,
+      "linkedName": "Note Re5"
+    },
+    {
+      "anchor": {
+        "x": 4.6867405575039385,
+        "y": 4.496961233580098
+      },
+      "prevControl": {
+        "x": 5.354258240613484,
+        "y": 4.180768646843998
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Easy Chain"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "Finish Infeed",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Finish Infeed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 4.5,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 1080.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -22.69379494509231,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "Source",
+  "previewStartingState": {
+    "rotation": -90.0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

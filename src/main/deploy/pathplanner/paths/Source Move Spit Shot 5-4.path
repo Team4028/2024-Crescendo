@@ -1,0 +1,76 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.357666972654265,
+        "y": 0.7138518624863336
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 8.357666972654265,
+        "y": 1.7138518624863335
+      },
+      "isLocked": false,
+      "linkedName": "Note 5"
+    },
+    {
+      "anchor": {
+        "x": 8.1,
+        "y": 2.4522539774945327
+      },
+      "prevControl": {
+        "x": 8.1,
+        "y": 1.4522539774945327
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Note 4 Spit"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.0,
+      "rotationDegrees": 50.0,
+      "rotateFast": true
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "Spit",
+      "waypointRelativePos": 0.7,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Spit Note"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 4.5,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 1080.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 50.0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "Source",
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}
