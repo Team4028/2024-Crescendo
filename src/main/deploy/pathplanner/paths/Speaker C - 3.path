@@ -3,37 +3,43 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.9798487247981211,
-        "y": 4.6572218396114655
-      },
-      "prevControl": null,
-      "nextControl": {
-        "x": 2.1827517858964063,
-        "y": 4.544859410449553
-      },
-      "isLocked": false,
-      "linkedName": "Note 1 Shoot EPIC"
-    },
-    {
-      "anchor": {
         "x": 2.94,
         "y": 4.12
       },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.7513583651783449,
+        "y": 6.377747299307387
+      },
+      "isLocked": false,
+      "linkedName": "Note C"
+    },
+    {
+      "anchor": {
+        "x": 8.474214215509177,
+        "y": 3.95
+      },
       "prevControl": {
-        "x": 2.630965330714319,
-        "y": 4.319857646652515
+        "x": 6.46935675637733,
+        "y": 4.057871591526659
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Note C"
+      "linkedName": "Note 3"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -13.589999999999975,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Shooter & Infeed",
-      "waypointRelativePos": 0.5,
+      "name": "Home Pivot",
+      "waypointRelativePos": 0.0,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,19 +47,24 @@
             {
               "type": "named",
               "data": {
-                "name": "Shooter"
+                "name": "Home Pivot"
               }
-            },
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Infeed",
+      "waypointRelativePos": 0.55,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
             {
               "type": "named",
               "data": {
-                "name": "Note C"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "Infeed"
+                "name": "Smart Infeed"
               }
             }
           ]
@@ -69,13 +80,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -24.86544681341096,
-    "rotateFast": true
+    "rotation": -13.589999999999975,
+    "rotateFast": false
   },
   "reversed": false,
-  "folder": "Amp",
+  "folder": "Middle",
   "previewStartingState": {
-    "rotation": -28.87700000000001,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

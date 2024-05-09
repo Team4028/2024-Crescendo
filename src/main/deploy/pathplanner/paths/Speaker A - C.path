@@ -17,15 +17,15 @@
     {
       "anchor": {
         "x": 2.94,
-        "y": 4.122858715992498
+        "y": 4.12
       },
       "prevControl": {
         "x": 1.79638017948618,
-        "y": 4.916836807941584
+        "y": 4.913978091949086
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Note C"
     }
   ],
   "rotationTargets": [

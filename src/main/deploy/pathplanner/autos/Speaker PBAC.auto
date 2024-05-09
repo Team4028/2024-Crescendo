@@ -70,6 +70,12 @@
           "data": {
             "name": "Stationary Shot C"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Speaker C - 3"
+          }
         }
       ]
     }
