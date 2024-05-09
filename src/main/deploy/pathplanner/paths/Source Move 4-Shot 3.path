@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 4.6867405575039385,
+        "x": 5.0,
         "y": 4.496961233580098
       },
       "prevControl": {
-        "x": 5.2254390386098875,
+        "x": 5.538698481105949,
         "y": 4.04023860829462
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Easy Chain"
+      "linkedName": "Easy Chain 3"
     }
   ],
   "rotationTargets": [],

@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.6867405575039385,
+        "x": 5.0,
         "y": 4.496961233580098
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.720631281718403,
+        "x": 8.033890724214466,
         "y": 4.736132549188175
       },
       "isLocked": false,
-      "linkedName": "Easy Chain"
+      "linkedName": "Easy Chain 3"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Note Re5"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
