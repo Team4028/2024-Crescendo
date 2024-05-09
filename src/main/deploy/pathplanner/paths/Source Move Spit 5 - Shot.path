@@ -3,43 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.357666972654265,
-        "y": 0.7138518624863336
+        "x": 8.14162084164624,
+        "y": 0.5613194132371174
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.357666972654265,
-        "y": 1.7138518624863335
+        "x": 7.306180100109486,
+        "y": 3.8000917522954833
       },
       "isLocked": false,
-      "linkedName": "Note 5"
+      "linkedName": "Note 5 Spit"
     },
     {
       "anchor": {
-        "x": 8.41058639382236,
-        "y": 2.3739133518153084
+        "x": 4.6867405575039385,
+        "y": 4.496961233580098
       },
       "prevControl": {
-        "x": 8.41058639382236,
-        "y": 1.3739133518153084
+        "x": 6.41088598416513,
+        "y": 3.9409300471022597
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Note 4 Spit"
+      "linkedName": "Easy Chain"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.0,
-      "rotationDegrees": 50.0,
-      "rotateFast": true
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Spit",
-      "waypointRelativePos": 0.7,
+      "name": "finnish infeed",
+      "waypointRelativePos": 0.2,
       "command": {
         "type": "parallel",
         "data": {
@@ -47,7 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Spit Note"
+                "name": "Finish Infeed"
               }
             }
           ]
@@ -63,13 +57,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 50.0,
+    "rotation": -14.567324446889197,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "Source",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -50.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

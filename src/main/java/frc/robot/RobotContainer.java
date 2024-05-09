@@ -376,7 +376,7 @@ public class RobotContainer {
     private void initNamedCommands() {
         NamedCommands.registerCommand("Pivot Zero", pivot.zeroCommand());
 
-        NamedCommands.registerCommand("Update Odometry", updateDrivePoseMT2Command());
+        NamedCommands.registerCommand("Update Odometr18y", updateDrivePoseMT2Command());
 
         // NamedCommands.registerCommand("Limelight Acquire",
         // drivetrain.targetAcquire(() -> 0.6 * MAX_SPEED, infeedLimelight)
@@ -399,7 +399,6 @@ public class RobotContainer {
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
                 .alongWith(shooter.spinBothCommand(0.20))
                 .repeatedly());
-
         NamedCommands.registerCommand("Spit Note", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
                 .alongWith(shooter.spinBothCommand(0.11))
@@ -412,7 +411,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Finish Infeed",
                 smartInfeedAutoCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST)));
 
-        NamedCommands.registerCommand("Magic Shoot", updateDrivePoseMT2Command().andThen(magicShootCommand(() -> odometryStrategy)));
+        NamedCommands.registerCommand("Magic Shoot", magicShootCommand(() -> chassisLimelight2dStrategy));
         NamedCommands.registerCommand("Mega Tag Shoot", magicShootCommand(() -> odometryStrategy));
         NamedCommands.registerCommand("Choose Shoot", magicShootCommand());
 
@@ -491,6 +490,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Stationary Shot Amp", shootCommand(13.5));
 
         NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(5.0));
+        NamedCommands.registerCommand("Source Pivot 4", pivot.runToPositionCommand(6.0));
         NamedCommands.registerCommand("Source Pivot Red", pivot.runToPositionCommand(5.0));
 
         NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(4.75));

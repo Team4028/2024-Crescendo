@@ -3,43 +3,43 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.357666972654265,
-        "y": 0.7138518624863336
-      },
-      "prevControl": null,
-      "nextControl": {
-        "x": 8.357666972654265,
-        "y": 1.7138518624863335
-      },
-      "isLocked": false,
-      "linkedName": "Note 5"
-    },
-    {
-      "anchor": {
         "x": 8.41058639382236,
         "y": 2.3739133518153084
       },
-      "prevControl": {
+      "prevControl": null,
+      "nextControl": {
         "x": 8.41058639382236,
-        "y": 1.3739133518153084
+        "y": 1.6125370570196884
+      },
+      "isLocked": false,
+      "linkedName": "Note 4 Spit"
+    },
+    {
+      "anchor": {
+        "x": 8.14162084164624,
+        "y": 0.5613194132371174
+      },
+      "prevControl": {
+        "x": 8.14162084164624,
+        "y": 1.561319413237118
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Note 4 Spit"
+      "linkedName": "Note 5 Spit"
     }
   ],
   "rotationTargets": [
     {
       "waypointRelativePos": 0.0,
-      "rotationDegrees": 50.0,
+      "rotationDegrees": -50.0,
       "rotateFast": true
     }
   ],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Spit",
-      "waypointRelativePos": 0.7,
+      "name": "Infeed and Home Pivot",
+      "waypointRelativePos": 0.5,
       "command": {
         "type": "parallel",
         "data": {
@@ -47,7 +47,13 @@
             {
               "type": "named",
               "data": {
-                "name": "Spit Note"
+                "name": "Smart Infeed"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Home Pivot"
               }
             }
           ]
@@ -63,7 +69,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 50.0,
+    "rotation": -50.0,
     "rotateFast": false
   },
   "reversed": false,
