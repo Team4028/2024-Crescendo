@@ -16,22 +16,38 @@
     },
     {
       "anchor": {
-        "x": 8.357666972654265,
-        "y": 0.7138518624863336
+        "x": 5.861260725370453,
+        "y": 1.6605699308264719
       },
       "prevControl": {
-        "x": 5.953880088771713,
-        "y": 1.136335617835389
+        "x": 4.890645906647938,
+        "y": 1.777511475250871
+      },
+      "nextControl": {
+        "x": 6.80883013262357,
+        "y": 1.5464049420007955
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.41058639382236,
+        "y": 2.3739133518153084
+      },
+      "prevControl": {
+        "x": 7.7351491832637205,
+        "y": 1.7108650040140863
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Note 5"
+      "linkedName": "Note 4 Spit"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.25,
-      "rotationDegrees": -41.5,
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -31.5,
       "rotateFast": true
     }
   ],
@@ -39,7 +55,7 @@
     {
       "name": "New Constraints Zone",
       "minWaypointRelativePos": 0.15,
-      "maxWaypointRelativePos": 0.5,
+      "maxWaypointRelativePos": 0.65,
       "constraints": {
         "maxVelocity": 3.0,
         "maxAcceleration": 3.0,
@@ -76,7 +92,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Source Pivot"
+                "name": "Source Pivot 4"
               }
             },
             {
@@ -90,8 +106,8 @@
       }
     },
     {
-      "name": "Infeed",
-      "waypointRelativePos": 0.45,
+      "name": "Prepare Spit",
+      "waypointRelativePos": 0.65,
       "command": {
         "type": "parallel",
         "data": {
@@ -99,7 +115,24 @@
             {
               "type": "named",
               "data": {
-                "name": "Smart Infeed"
+                "name": "Prepare Spit"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Spit Note",
+      "waypointRelativePos": 1.15,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "First Spit Note"
               }
             }
           ]
@@ -115,7 +148,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -24.360000000000014,
+    "rotation": 41.987212495816635,
     "rotateFast": false
   },
   "reversed": false,

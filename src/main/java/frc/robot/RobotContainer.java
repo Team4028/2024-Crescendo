@@ -575,7 +575,7 @@ public class RobotContainer {
         // driverController.leftTrigger()
         // .whileTrue(smartInfeedCommand().andThen(driverCamera.setShooterCameraCommand()));
         driverController.leftTrigger().whileTrue(runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS))
-                .onFalse(conveyBackCommand(-0.5, 0.5).alongWith(driverCamera.setShooterCameraCommand()));
+                .onFalse(conveyBackCommand(-1.5, 0.5).alongWith(driverCamera.setShooterCameraCommand()));
 
         // ========================== //
         /* Drivetain & Vision Control */
@@ -1053,7 +1053,7 @@ public class RobotContainer {
     /** Fix Note Sequence */
     private Command fixNoteCommand() {
         return runBoth(true, FAST_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(0.25).andThen(
-                conveyBackCommand(-2.0, 0.1));
+                conveyBackCommand(-2.0, 0.25));
     }
 
     /** Fix Note Backwards */

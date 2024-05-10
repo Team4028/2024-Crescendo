@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4376744281438871,
-      "y": 5.543278238286734
+      "x": 1.4,
+      "y": 7.0
     },
     "rotation": 0
   },
@@ -14,48 +14,42 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Fast Speaker P - B"
+            "pathName": "Fast Amp P - 1 RED"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Fast Speaker B - 3"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Fast Speaker 3 - B"
+            "pathName": "Amp 1 - Magic RED"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Convey"
+            "name": "Magic Shoot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Fast Speaker B - A"
+            "pathName": "Amp Magic - 2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Fast Speaker A - C"
+            "pathName": "Amp 2 - Magic RED"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Infeed"
+            "name": "Magic Shoot"
           }
         }
       ]
     }
   },
-  "folder": "Middle",
+  "folder": "Amp",
   "choreoAuto": false
 }

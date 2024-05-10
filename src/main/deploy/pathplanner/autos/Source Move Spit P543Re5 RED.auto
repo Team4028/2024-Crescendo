@@ -14,13 +14,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Source Move Shot"
+            "pathName": "Source Move Spit Shot 5 RED"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Source Move 5 Shoot"
+            "pathName": "Source Move Spit Shot 5-Shot 4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source Move Spit 4 Shot"
           }
         },
         {
@@ -32,13 +38,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Source Shot - 4"
+            "pathName": "Source Move Spit Shot 4-3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Source 4 - Shot"
+            "pathName": "Source Move 4-Shot 3"
           }
         },
         {
@@ -50,13 +56,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Source Move Shot - 3"
+            "pathName": "Source Move Spit Shot 4-Re5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source Move Spit Shot Re5"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Smart Infeed"
+            "name": "Magic Shoot"
           }
         }
       ]

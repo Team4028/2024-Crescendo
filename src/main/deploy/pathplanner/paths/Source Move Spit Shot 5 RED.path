@@ -31,7 +31,7 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 0.25,
-      "rotationDegrees": -41.5,
+      "rotationDegrees": -31.5,
       "rotateFast": true
     }
   ],
@@ -90,7 +90,7 @@
       }
     },
     {
-      "name": "Infeed",
+      "name": "Prepare Spit",
       "waypointRelativePos": 0.45,
       "command": {
         "type": "parallel",
@@ -99,7 +99,24 @@
             {
               "type": "named",
               "data": {
-                "name": "Smart Infeed"
+                "name": "Prepare Spit"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Spit Note",
+      "waypointRelativePos": 0.55,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "First Spit Note"
               }
             }
           ]

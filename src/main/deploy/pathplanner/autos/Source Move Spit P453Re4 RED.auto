@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4376744281438871,
-      "y": 5.543278238286734
+      "x": 1.28,
+      "y": 3.34
     },
     "rotation": 0
   },
@@ -14,48 +14,66 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Fast Speaker P - B"
+            "pathName": "Source Move Shot 4 RED"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Fast Speaker B - 3"
+            "pathName": "Source Spit 4 -5"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Fast Speaker 3 - B"
+            "pathName": "Source Move Spit 5 - Shot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Convey"
+            "name": "Magic Shoot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Fast Speaker B - A"
+            "pathName": "Source Move Spit Shot 4-3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Fast Speaker A - C"
+            "pathName": "Source Move 4-Shot 3"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Infeed"
+            "name": "Magic Shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source Move Spit Shot 4-Re5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source Move Spit Shot Re5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Magic Shoot"
           }
         }
       ]
     }
   },
-  "folder": "Middle",
+  "folder": "Source",
   "choreoAuto": false
 }

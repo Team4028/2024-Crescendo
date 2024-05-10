@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 2.94,
-        "y": 4.12
+        "y": 4.22
       },
       "prevControl": null,
       "nextControl": {
         "x": 3.1271064710790384,
-        "y": 6.961679529512906
+        "y": 7.061679529512905
       },
       "isLocked": false,
       "linkedName": "Note C"

@@ -18,15 +18,9 @@
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Source Missed Note 5"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Source Recover Missed Note"
+            "pathName": "Source Move 5 Shoot RED"
           }
         },
         {
@@ -42,15 +36,9 @@
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Source Missed Note 4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Source Recover Missed Note"
+            "pathName": "Source 4 - Shot"
           }
         },
         {
@@ -63,18 +51,6 @@
           "type": "path",
           "data": {
             "pathName": "Source Move Shot - 3"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Source Missed Note 3"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Source Recover Missed Note"
           }
         },
         {

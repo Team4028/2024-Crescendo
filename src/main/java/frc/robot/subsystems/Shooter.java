@@ -68,7 +68,7 @@ public class Shooter extends SubsystemBase {
         FAST(4800, 3400),
         MEDIUM(3840, 2700),
         TRAP(1370, 1370),
-        AMP(677., 677.);
+        AMP(727., 727.);
 
         public final double RightRPM;
         public final double LeftRPM;
