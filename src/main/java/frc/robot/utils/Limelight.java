@@ -5,6 +5,7 @@
 package frc.robot.utils;
 
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -12,6 +13,8 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 /** Add your docs here. */
 public class Limelight extends VisionSystem {
+    int targetPipeline = 0;
+
     public Limelight(String cameraName, Transform3d robotToCamera) {
         super(cameraName, robotToCamera);
     }
@@ -90,6 +93,11 @@ public class Limelight extends VisionSystem {
 
     public void setPipeline(int pipeline) {
         LimelightHelpers.setPipelineIndex(cameraName, pipeline);
+        targetPipeline = pipeline;
+    }
+
+    public BooleanSupplier getPipelineReady() {
+        return () -> targetPipeline == getPipeline();
     }
 
     public int getPipeline() {

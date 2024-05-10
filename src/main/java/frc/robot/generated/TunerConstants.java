@@ -99,7 +99,7 @@ public class TunerConstants {
     public static final int kFrontLeftDriveMotorId = 2;
     private static final int kFrontLeftSteerMotorId = 1;
     private static final int kFrontLeftEncoderId = 1;
-    private static final double kFrontLeftEncoderOffset = -0.05029296875;
+    private static final double kFrontLeftEncoderOffset = -0.0478515625;//-0.05029296875;
 
     private static final double kFrontLeftXPosInches = 9.875;
     private static final double kFrontLeftYPosInches = 11.875;
@@ -108,7 +108,7 @@ public class TunerConstants {
     public static final int kFrontRightDriveMotorId = 4;
     private static final int kFrontRightSteerMotorId = 3;
     private static final int kFrontRightEncoderId = 2;
-    private static final double kFrontRightEncoderOffset = 0.437255859375;
+    private static final double kFrontRightEncoderOffset = 0.44287109375;  //0.437255859375;
 
     private static final double kFrontRightXPosInches = 9.875;
     private static final double kFrontRightYPosInches = -11.875;
@@ -117,7 +117,7 @@ public class TunerConstants {
     public static final int kBackLeftDriveMotorId = 6;
     private static final int kBackLeftSteerMotorId = 5;
     private static final int kBackLeftEncoderId = 3;
-    private static final double kBackLeftEncoderOffset = -0.387939453125;
+    private static final double kBackLeftEncoderOffset = -0.388671875; //-0.387939453125;
 
     private static final double kBackLeftXPosInches = -9.875;
     private static final double kBackLeftYPosInches = 11.875;
@@ -126,7 +126,7 @@ public class TunerConstants {
     public static final int kBackRightDriveMotorId = 8;
     private static final int kBackRightSteerMotorId = 7;
     private static final int kBackRightEncoderId = 4;
-    private static final double kBackRightEncoderOffset = -0.06982421875;
+    private static final double kBackRightEncoderOffset = -0.069091796875; //-0.06982421875;
 
     private static final double kBackRightXPosInches = -9.875;
     private static final double kBackRightYPosInches = -11.875;
