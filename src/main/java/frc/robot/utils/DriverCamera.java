@@ -16,7 +16,7 @@ public class DriverCamera {
     private final VideoSink m_dashboardCamera;
 
     private static final String SHOOTER_CAMERA_URL = "http://limelight-shooter.local:5800";
-    private static final String INFEED_CAMERA_URL = "http://limelight.local:5800";
+    private static final String INFEED_CAMERA_URL = "http://limelight-gi.local:5800";
 
     /** Creates a new DriverCamera. */
     public DriverCamera() {

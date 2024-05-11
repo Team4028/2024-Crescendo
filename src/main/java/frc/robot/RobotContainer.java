@@ -330,6 +330,12 @@ public class RobotContainer {
         DashboardStore.add("LimelightG Distance",
                 () -> chassisLimelight2dStrategy.getTargetEntry().Distance.in(Feet));
 
+        DashboardStore.add("Chassis MT2 Distance", () -> BeakUtils
+                .goalTranslation(chassisLimelight.getBotposeEstimateMT2().pose.getTranslation()).getNorm());
+
+        DashboardStore.add("Infeed MT2 Distance", () -> BeakUtils
+                .goalTranslation(infeedLimelight3G.getBotposeEstimateMT2().pose.getTranslation()).getNorm());
+
         DashboardStore.add("Last Shot", () -> m_lastShot);
         DashboardStore.add("Odometry Distance",
                 () -> Units.metersToFeet(
@@ -503,19 +509,30 @@ public class RobotContainer {
         NamedCommands.registerCommand("4 Piece A", pivot.runToPositionCommand(13.75));
         NamedCommands.registerCommand("4 Piece C", pivot.runToPositionCommand(14.0));
 
-        // NamedCommands.registerCommand("Source Missed Note 5", autonTryNextNote(5, 4, false));
-        // NamedCommands.registerCommand("Source Missed Note 4", autonTryNextNote(4, 3, false));
-        // NamedCommands.registerCommand("Source Missed Note 3", autonTryNextNote(3, 2, false));
-        // NamedCommands.registerCommand("Source Recover Missed Note", autonReturnTryNextNote(AutonSides.SOURCE, false));
+        // NamedCommands.registerCommand("Source Missed Note 5", autonTryNextNote(5, 4,
+        // false));
+        // NamedCommands.registerCommand("Source Missed Note 4", autonTryNextNote(4, 3,
+        // false));
+        // NamedCommands.registerCommand("Source Missed Note 3", autonTryNextNote(3, 2,
+        // false));
+        // NamedCommands.registerCommand("Source Recover Missed Note",
+        // autonReturnTryNextNote(AutonSides.SOURCE, false));
 
-        // NamedCommands.registerCommand("Middle Missed Note 3", autonTryNextNote(3, 4, false));
-        // NamedCommands.registerCommand("Middle Missed Note 4", autonTryNextNote(4, 5, false));
-        // NamedCommands.registerCommand("Middle Recover Missed Note", autonReturnTryNextNote(AutonSides.MIDDLE, false));
+        // NamedCommands.registerCommand("Middle Missed Note 3", autonTryNextNote(3, 4,
+        // false));
+        // NamedCommands.registerCommand("Middle Missed Note 4", autonTryNextNote(4, 5,
+        // false));
+        // NamedCommands.registerCommand("Middle Recover Missed Note",
+        // autonReturnTryNextNote(AutonSides.MIDDLE, false));
 
-        // NamedCommands.registerCommand("Amp Missed Note 1", autonTryNextNote(1, 2, false));
-        // NamedCommands.registerCommand("Amp Missed Note 2", autonTryNextNote(2, 3, false));
-        // NamedCommands.registerCommand("Amp Missed Note 3", autonTryNextNote(3, 4, false));
-        // NamedCommands.registerCommand("Amp Recover Missed Note", autonReturnTryNextNote(AutonSides.AMP, false));
+        // NamedCommands.registerCommand("Amp Missed Note 1", autonTryNextNote(1, 2,
+        // false));
+        // NamedCommands.registerCommand("Amp Missed Note 2", autonTryNextNote(2, 3,
+        // false));
+        // NamedCommands.registerCommand("Amp Missed Note 3", autonTryNextNote(3, 4,
+        // false));
+        // NamedCommands.registerCommand("Amp Recover Missed Note",
+        // autonReturnTryNextNote(AutonSides.AMP, false));
     }
 
     // =========================== //
@@ -1253,104 +1270,112 @@ public class RobotContainer {
                 }));
     }
 
-    // public Command autonTryNextNote(int currNote, int targetNote, boolean usePathfinding) {
-    //     autonTargetNote = targetNote;
-    //     missedAutoNote = !noteSensing.hasInfed();
-    //     if (currNote > 5 || currNote < 1 || targetNote > 5 || targetNote < 1) {
-    //         DriverStation.reportError("Error: note(s) specified are out of range",
-    //                 Thread.currentThread().getStackTrace());
-    //         return Commands.none();
-    //     }
-    //     return new ConditionalCommand(
-    //             drivetrain.mirrorablePathFindCommand(new Pose2d(Constants.AutoPoses.values()[targetNote - 1].pose,
-    //                     currNote > targetNote ? Constants.AutoPoses.UPWARD_ROTATION
-    //                             : Constants.AutoPoses.DOWNWARD_ROTATION),
-    //                     0.875, 0),
-    //             AutoBuilder.followPath(PathPlannerPath.fromPathFile("Trans " + currNote + "-" + targetNote)),
-    //             () -> usePathfinding).onlyIf(() -> !noteSensing.hasInfed());
+    // public Command autonTryNextNote(int currNote, int targetNote, boolean
+    // usePathfinding) {
+    // autonTargetNote = targetNote;
+    // missedAutoNote = !noteSensing.hasInfed();
+    // if (currNote > 5 || currNote < 1 || targetNote > 5 || targetNote < 1) {
+    // DriverStation.reportError("Error: note(s) specified are out of range",
+    // Thread.currentThread().getStackTrace());
+    // return Commands.none();
+    // }
+    // return new ConditionalCommand(
+    // drivetrain.mirrorablePathFindCommand(new
+    // Pose2d(Constants.AutoPoses.values()[targetNote - 1].pose,
+    // currNote > targetNote ? Constants.AutoPoses.UPWARD_ROTATION
+    // : Constants.AutoPoses.DOWNWARD_ROTATION),
+    // 0.875, 0),
+    // AutoBuilder.followPath(PathPlannerPath.fromPathFile("Trans " + currNote + "-"
+    // + targetNote)),
+    // () -> usePathfinding).onlyIf(() -> !noteSensing.hasInfed());
     // }
 
     // public Command autonTryNextNote(int targetNote, boolean usePathfinding) {
-    //     double[] closestNote = { 0.0, Double.MAX_VALUE };
-    //     double tmpLength;
-    //     for (var i = 0; i < Constants.AutoPoses.values().length; i++)
-    //         if ((tmpLength = Constants.AutoPoses.values()[i].pose.minus(drivetrain.getTranslation())
-    //                 .getNorm()) < closestNote[1]) {
-    //             closestNote[0] = i;
-    //             closestNote[1] = tmpLength;
-    //         }
-
-    //     if (closestNote[0] > 0)
-    //         return autonTryNextNote((int) closestNote[0], targetNote, usePathfinding);
-    //     return Commands.none();
+    // double[] closestNote = { 0.0, Double.MAX_VALUE };
+    // double tmpLength;
+    // for (var i = 0; i < Constants.AutoPoses.values().length; i++)
+    // if ((tmpLength =
+    // Constants.AutoPoses.values()[i].pose.minus(drivetrain.getTranslation())
+    // .getNorm()) < closestNote[1]) {
+    // closestNote[0] = i;
+    // closestNote[1] = tmpLength;
     // }
 
-    // public Command autonReturnTryNextNote(AutonSides side, boolean usePathfinding, int currNote) {
-    //     Optional<String> optPathName;
-    //     return new ConditionalCommand((usePathfinding
-    //             ? drivetrain
-    //                     .mirrorablePathFindCommand(
-    //                             new Pose2d(
-    //                                     switch (side) {
-    //                                         case AMP -> AutoPoses.AMP_SHOT.pose;
-    //                                         case MIDDLE -> AutoPoses.MID_SHOT.pose;
-    //                                         case SOURCE -> AutoPoses.SOURCE_SHOT.pose;
-    //                                     },
-    //                                     switch (side) {
-    //                                         case AMP -> AutoPoses.AMP_SHOT_ROTATION;
-    //                                         case MIDDLE -> AutoPoses.MID_SHOT_ROTATION;
-    //                                         case SOURCE -> AutoPoses.SOURCE_SHOT_ROTATION;
-    //                                     }),
-    //                             0.875, 0)
-    //             : AutoBuilder
-    //                     .followPath(PathPlannerPath.fromPathFile("Note " + currNote + switch (side) {
-    //                         case AMP -> " Amp";
-    //                         case MIDDLE -> " Mid";
-    //                         case SOURCE -> " Source";
-    //                     })))
-    //             .alongWith(new InstantCommand(() -> missedAutoNote = false)),
-    //             (optPathName = getReturnPath(side, currNote)).isPresent()
-    //                     ? AutoBuilder.followPath(PathPlannerPath.fromPathFile(optPathName.get()))
-    //                     : Commands.none(),
-    //             () -> missedAutoNote);
+    // if (closestNote[0] > 0)
+    // return autonTryNextNote((int) closestNote[0], targetNote, usePathfinding);
+    // return Commands.none();
     // }
 
-    // public Command autonReturnTryNextNote(AutonSides side, boolean usePathfinding) {
-    //     if (autonTargetNote != 0)
-    //         return autonReturnTryNextNote(side, usePathfinding, autonTargetNote);
-    //     double[] closestNote = { 0.0, Double.MAX_VALUE };
-    //     double tmpLength;
-    //     for (var i = 0; i < Constants.AutoPoses.values().length; i++)
-    //         if ((tmpLength = Constants.AutoPoses.values()[i].pose.minus(drivetrain.getTranslation())
-    //                 .getNorm()) < closestNote[1]) {
-    //             closestNote[0] = i;
-    //             closestNote[1] = tmpLength;
-    //         }
+    // public Command autonReturnTryNextNote(AutonSides side, boolean
+    // usePathfinding, int currNote) {
+    // Optional<String> optPathName;
+    // return new ConditionalCommand((usePathfinding
+    // ? drivetrain
+    // .mirrorablePathFindCommand(
+    // new Pose2d(
+    // switch (side) {
+    // case AMP -> AutoPoses.AMP_SHOT.pose;
+    // case MIDDLE -> AutoPoses.MID_SHOT.pose;
+    // case SOURCE -> AutoPoses.SOURCE_SHOT.pose;
+    // },
+    // switch (side) {
+    // case AMP -> AutoPoses.AMP_SHOT_ROTATION;
+    // case MIDDLE -> AutoPoses.MID_SHOT_ROTATION;
+    // case SOURCE -> AutoPoses.SOURCE_SHOT_ROTATION;
+    // }),
+    // 0.875, 0)
+    // : AutoBuilder
+    // .followPath(PathPlannerPath.fromPathFile("Note " + currNote + switch (side) {
+    // case AMP -> " Amp";
+    // case MIDDLE -> " Mid";
+    // case SOURCE -> " Source";
+    // })))
+    // .alongWith(new InstantCommand(() -> missedAutoNote = false)),
+    // (optPathName = getReturnPath(side, currNote)).isPresent()
+    // ? AutoBuilder.followPath(PathPlannerPath.fromPathFile(optPathName.get()))
+    // : Commands.none(),
+    // () -> missedAutoNote);
+    // }
 
-    //     if (closestNote[0] > 0)
-    //         return autonReturnTryNextNote(side, usePathfinding, (int) closestNote[0]);
-    //     return Commands.none();
+    // public Command autonReturnTryNextNote(AutonSides side, boolean
+    // usePathfinding) {
+    // if (autonTargetNote != 0)
+    // return autonReturnTryNextNote(side, usePathfinding, autonTargetNote);
+    // double[] closestNote = { 0.0, Double.MAX_VALUE };
+    // double tmpLength;
+    // for (var i = 0; i < Constants.AutoPoses.values().length; i++)
+    // if ((tmpLength =
+    // Constants.AutoPoses.values()[i].pose.minus(drivetrain.getTranslation())
+    // .getNorm()) < closestNote[1]) {
+    // closestNote[0] = i;
+    // closestNote[1] = tmpLength;
+    // }
+
+    // if (closestNote[0] > 0)
+    // return autonReturnTryNextNote(side, usePathfinding, (int) closestNote[0]);
+    // return Commands.none();
     // }
 
     // private Optional<String> getReturnPath(AutonSides side, int currNote) {
-    //     boolean red = !BeakUtils.allianceIsBlue();
-    //     if (side == AutonSides.AMP)
-    //         return switch (currNote) {
-    //             case 1, 2, 3 -> Optional.of("Amp " + currNote + " - Magic" + (red ? " RED" : ""));
-    //             default -> Optional.empty();
-    //         };
-    //     else if (side == AutonSides.SOURCE)
-    //         return switch (currNote) {
-    //             case 5 -> Optional.of("Source Move 5 Shoot" + (red ? " RED" : ""));
-    //             case 4 -> Optional.of("Source Move 4 - Shot" + (red ? " RED" : ""));
-    //             case 3 -> Optional.of("Source Shot - 3" + (red ? " RED" : ""));
-    //             default -> Optional.empty();
-    //         };
-    //     else
-    //         return switch (currNote) {
-    //             case 3 -> Optional.of("Fast Speaker 3 - B");
-    //             default -> Optional.empty();
-    //         };
+    // boolean red = !BeakUtils.allianceIsBlue();
+    // if (side == AutonSides.AMP)
+    // return switch (currNote) {
+    // case 1, 2, 3 -> Optional.of("Amp " + currNote + " - Magic" + (red ? " RED" :
+    // ""));
+    // default -> Optional.empty();
+    // };
+    // else if (side == AutonSides.SOURCE)
+    // return switch (currNote) {
+    // case 5 -> Optional.of("Source Move 5 Shoot" + (red ? " RED" : ""));
+    // case 4 -> Optional.of("Source Move 4 - Shot" + (red ? " RED" : ""));
+    // case 3 -> Optional.of("Source Shot - 3" + (red ? " RED" : ""));
+    // default -> Optional.empty();
+    // };
+    // else
+    // return switch (currNote) {
+    // case 3 -> Optional.of("Fast Speaker 3 - B");
+    // default -> Optional.empty();
+    // };
     // }
 
     /**
@@ -1497,10 +1522,7 @@ public class RobotContainer {
 
     /** Auton Command */
     public Command getAutonomousCommand() {
-        return Commands.runOnce(() -> {
-            chassisLimelight.setPipeline(TY_PIPELINE);
-            selectedStrategy = chassisLimelight2dStrategy;
-        }).andThen(new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d())))
+        return new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d()))
                 .andThen(NamedCommands.getCommand("AprilTag Zero"))
                 .andThen(autonChooser.getSelected());
     }
@@ -1568,18 +1590,16 @@ public class RobotContainer {
         // Apply Chassis Limelight
         var visionResult = chassisLimelight.getBotposeEstimateMT2();
         var visionStdDevs = chassisLimelight.getSTDevsXY(drivetrain);
-        if (visionStdDevs.isEmpty())
-            return;
-        drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
-                VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
+        if (visionStdDevs.isPresent())
+            drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
+                    VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
 
         // Apply Infeed Limelight
         visionResult = infeedLimelight3G.getBotposeEstimateMT2();
         visionStdDevs = infeedLimelight3G.getSTDevsXY(drivetrain);
-        if (visionStdDevs.isEmpty())
-            return;
-        drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
-                VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
+        if (visionStdDevs.isPresent())
+            drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
+                    VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
     }
 
     public Command updateDrivePoseMT2Command() {
@@ -1594,6 +1614,16 @@ public class RobotContainer {
     public void setChassisPipeline() {
         selectedStrategy = chassisLimelight2dStrategy;
         chassisLimelight.setPipeline(TY_PIPELINE);
+    }
+
+    public void setTeleopMT2RotationThresholds() {
+        chassisLimelight.setTeleopMT2Threshold();
+        infeedLimelight3G.setTeleopMT2Threshold();
+    }
+
+    public void setAutonMT2RotationThresholds() {
+        chassisLimelight.setAutonMT2Threshold();
+        infeedLimelight3G.setAutonMT2Threshold();
     }
 }
 // TODO: Undo-trap sequence button?

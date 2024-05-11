@@ -107,6 +107,7 @@ public class Robot extends TimedRobot {
             m_robotContainer.zero();
 
         m_robotContainer.setMT2Pipeline();
+        m_robotContainer.setTeleopMT2RotationThresholds();
     }
 
     @Override
