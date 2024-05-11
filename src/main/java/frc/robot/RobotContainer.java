@@ -488,9 +488,9 @@ public class RobotContainer {
                 mirroredPathfindingShotCommand(12.35, Constants.NOTE_C_SHOT, 0.85, 0.));
         // PBAC Auto Commands
         NamedCommands.registerCommand("Preload Stationary", shootCommand(4.2));
-        NamedCommands.registerCommand("Stationary Shot B", shootCommand(9.4));
-        NamedCommands.registerCommand("Stationary Shot A", shootCommand(9.4));
-        NamedCommands.registerCommand("Stationary Shot C", shootCommand(9.4));
+        NamedCommands.registerCommand("Stationary Shot B", shootCommand(10));
+        NamedCommands.registerCommand("Stationary Shot A", shootCommand(10));
+        NamedCommands.registerCommand("Stationary Shot C", shootCommand(9.6));
 
         NamedCommands.registerCommand("P Amp Shot", shootCommand(13.5));
         NamedCommands.registerCommand("Stationary Shot Amp", shootCommand(13.5));
