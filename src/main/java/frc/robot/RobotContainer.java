@@ -301,7 +301,7 @@ public class RobotContainer {
         // ================================================================================
         // ================================================================================
         // ================================================================================
-        ShooterTable.setHeckinessLevel(() -> drivetrain.getRotation());  // |||||||||||||||
+        ShooterTable.setHeckinessLevel(() -> drivetrain.getRotation()); // |||||||||||||||
         // ================================================================================
         // ================================================================================
         // ================================================================================
@@ -546,243 +546,13 @@ public class RobotContainer {
     // =========================== //
     private void configureBindings() {
 
-        /* Climber Limit Switch Triggers */
-        new Trigger(climber::forwardLimit).onTrue(climber.hitForwardLimitCommand());
-        new Trigger(climber::reverseLimit).onTrue(climber.hitReverseLimitCommand());
-
-        // // LED Triggers //
-        // // infeed has jam
-        // new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.ORANGE, 5))
-        // .onFalse(CANdle.runBurnyBurnCommand());
-        // // checks if it has a note
-        // new Trigger(conveyor.hasInfedSupplier()).onTrue(CANdle.blink(Color.GREEN, 5))
-        // .onFalse(CANdle.runBurnyBurnCommand());
-        // // flashes purple
-        // new Trigger(shooter.isReadySupplier()).onTrue(CANdle.blink(Color.PURPLE, 3))
-        // .onFalse(CANdle.runBurnyBurnCommand())
-        // // Flashes white while shooting
-        // new
-        // Trigger(shooter.isRunningSupplier()).onTrue(CANdle.runShootFlow(Color.WHITE))
-        // .onFalse(CANdle.runBurnyBurnCommand());
-        // // Turns red while the shooter is inoperable
-        // new Trigger(shooter.isWorkingSupplier())
-        // .onTrue(CANdle.runBurnyBurnCommand())
-        // .onFalse(CANdle.blink(Color.RED, 10));
-
-        // ================ //
-        /* Default Commands */
-        // ================ //
-
-        drivetrain.setDefaultCommand(
-                drivetrain.applyRequest(() -> drive
-                        .withVelocityX(getXSpeed(true))
-                        .withVelocityY(getYSpeed(true))
-                        .withRotationalRate(getRotationSpeed())));
-
-        conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
-        infeed.setDefaultCommand(infeed.runMotorCommand(0.));
-
-        // ================= //
-        /* DRIVER CONTROLLER */
-        // ================= //
-
-        // ========================= //
-        /* Infeed & Conveyor Control */
-        // ========================= //
-
-        /* Dumb Infeed */
-        driverController.leftBumper().onTrue(runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS))
-                .onFalse(coolNoteFixCommand(0.15).andThen(driverCamera.setShooterCameraCommand()));
-
-        /* Smart Infeed */
-        // driverController.leftTrigger()
-        // .whileTrue(smartInfeedCommand().andThen(driverCamera.setShooterCameraCommand()));
-        driverController.leftTrigger().whileTrue(runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS))
+        driverController.a().whileTrue(runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS))
                 .onFalse(conveyBackCommand(-1.5, 0.5).alongWith(driverCamera.setShooterCameraCommand()));
 
-        // ========================== //
-        /* Drivetain & Vision Control */
-        // ========================== //
+        driverController.b().onTrue(runThree(() -> 0.8, () -> 0.8, () -> 0.8))
+                .onFalse(runThree(() -> 0., () -> 0., () -> 0.));
 
-        /* Robot-Relative Drive */
-        driverController.y().toggleOnTrue(drivetrain.applyRequest(() -> robotRelativeDrive
-                .withVelocityX(getXSpeed(false))
-                .withVelocityY(getYSpeed(false))
-                .withRotationalRate(getRotationSpeed())));
-
-        /* X-Drive */
-        driverController.x().whileTrue(drivetrain.applyRequest(() -> xDrive));
-
-        /* Reset Field-Centric Heading */
-        driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative(new Pose2d())));
-
-        /* Toggle Chassis Mode */
-        driverController.rightBumper().onTrue(Commands.runOnce(() -> currentSpeed = SLOW_SPEED))
-                .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
-
-        /* Shooter Lock */
-        driverController.leftStick().onTrue(magicLockCommand());
-
-        // ========================= //
-        /* Misc */
-        // ========================= //
-
-        /* End snap, limelight & stop all motors */
-        driverController.rightStick().onTrue(stopAllCommand(true).alongWith(drivetrain.runOnce(() -> {
-        })));
-
-        driverController.a().onTrue(runEntryCommand(() -> PASSING_SHOT, () -> ShotSpeeds.FAST)
-                .andThen(Commands.either(
-                        snapCommand(SnapDirection.BluePass),
-                        snapCommand(SnapDirection.RedPass),
-                        () -> BeakUtils.allianceIsBlue())));
-
-        // =================== //
-        /* OPERATOR CONTROLLER */
-        // =================== //
-
-        // ========================= //
-        /* Driver Help Control */
-        // ========================= //
-
-        /* Snap to Amp */
-        operatorController.povUp().toggleOnTrue(snapCommand(SnapDirection.Left));
-
-        // ======================= //
-        /* Shooter Control */
-        // ======================= //
-
-        /* Spin Up Shooter */
-        operatorController.leftTrigger()
-                .onTrue(runEntryCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(currentIndex)),
-                        () -> ShotSpeeds.FAST))
-                .onFalse(stopAllCommand()
-                        .andThen(Commands.runOnce(this::setCameraWithWait)));
-
-        /* Convey Note */
-        operatorController.rightTrigger()
-                .whileTrue(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS));
-
-        /* Magic Shoot */
-        operatorController.x().toggleOnTrue(magicShootCommand());
-
-        /* Magic Shoot Strategies */
-        operatorController.povRight().onTrue(setStrategyCommand(shooterLimelightStrategy));
-        operatorController.povDown().onTrue(setStrategyCommand(chassisLimelight2dStrategy)
-                .alongWith(chassisLimelight.setPipelineCommand(TY_PIPELINE)));
-        operatorController.povLeft().onTrue(setStrategyCommand(odometryStrategy)
-                .alongWith(chassisLimelight.setPipelineCommand(MEGATAG_PIPELINE)));
-
-        /* Manual/Preset Mode */
-        operatorController.back()
-                .onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));
-
-        /* Shooter Table Index Up */
-        operatorController.rightBumper().onTrue(
-                Commands.either(
-                        Commands.runOnce(() -> manualIndex += 1.0),
-                        Commands.runOnce(() -> presetIndex += 1),
-                        () -> useManual).andThen(this::pushIndexData));
-
-        /* Shooter Table Index Down */
-        operatorController.leftBumper().onTrue(
-                Commands.either(
-                        Commands.runOnce(() -> manualIndex -= 1.0),
-                        Commands.runOnce(() -> presetIndex -= 1),
-                        () -> useManual).andThen(this::pushIndexData));
-
-        /* Shuttle Prep */
-        operatorController.leftStick().onTrue(shuttleCommand());
-
-        // ========================= //
-        /* Pivot Control */
-        // ========================= //
-
-        /* Zero Pivot */
-        operatorController.start().onTrue(zeroCommand());
-
-        /* Run Pivot Zero */
-        // operatorController.a().onTrue(pivot.runToHomeCommand());
-        operatorController.a()
-                .onTrue(Commands.runOnce(() -> selectedStrategy = odometryStrategy).andThen(shuttleCommand()));
-
-        /* Zero Climber */
-        operatorController.rightStick().onTrue(safeClimbCommand(climber.zeroCommand()));
-
-        // ================ //
-        /* Amp & Trap Magic */
-        // ================ //
-
-        operatorController.b().onTrue(ampPrep).onFalse(stopAllCommand(true));
-
-        operatorController.y()
-                .onTrue(toggleTrapCommand());
-
-        // ==================== //
-        /* EMERGENCY CONTROLLER */
-        // ==================== //
-
-        // ==================== //
-        /* Manual Pivot Control */
-        // ==================== //
-
-        // /* Bump Pivot Up */
-        emergencyController.rightBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 1)));
-
-        /* Bump Pivot Down */
-        emergencyController.leftBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 1)));
-
-        // ============== //
-        /* Manual Climber */
-        // ============== //
-
-        /* Climber Up */
-        emergencyController.rightTrigger(0.2).whileTrue(
-                safeClimbCommand(climber.runMotorCommand(CLIMBER_VBUS, true)))
-                .onFalse(climber.stopCommand());
-
-        /* Climber Down FULL SEND */
-        emergencyController.leftTrigger(0.2).whileTrue(
-                safeClimbCommand(climber.runMotorCommand(-FAST_CLIMBER_VBUS, true)))
-                .onFalse(climber.holdCurrentPositionCommand());
-
-        /* Ready Climb */
-        emergencyController.povUp()
-                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS,
-                        ClimberPositions.READY, false)))
-                .onFalse(climber.stopCommand());
-
-        /* Climb */
-        emergencyController.povDown()
-                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS,
-                        ClimberPositions.CLIMB, true)))
-                .onFalse(climber.holdCurrentPositionCommand());
-
-        /* funk */
-        emergencyController.povLeft().onTrue(safeClimbCommand(climber.holdCommand()))
-                .onFalse(climber.stopCommand());
-
-        /* Stop Hold */
-        emergencyController.povRight().onTrue(Commands.runOnce(() -> climber.getCurrentCommand().cancel()));
-
-        // ======================= //
-        /* Trap & Climb Sequencing */
-        // ======================= //
-
-        /* Enable Trap */
-        emergencyController.start().onTrue(Commands.runOnce(() -> enableTrap = !enableTrap));
-
-        /* Enable Climber */
-        emergencyController.back().onTrue(Commands.runOnce(() -> enableClimber = !enableClimber));
-
-        /* Climb Sequence */
-        emergencyController.a().onTrue(sequenceCommand());
-        emergencyController.b().onTrue(dumbCancelClimbCommand());
-
-        /* Prime Fan Pivot & Shooter Pivot */
-        emergencyController.x().toggleOnTrue(
+        driverController.x().toggleOnTrue(
                 Commands.startEnd(() -> {
                     m_fanPivot.runToTrap();
                     m_fan.runMotor(FAN_VBUS);
@@ -793,26 +563,293 @@ public class RobotContainer {
                         },
                         m_fanPivot, m_fan));
 
-        // emergencyController.b().toggleOnTrue(coolShootCommand());
-        // emergencyController.y()
-        // .toggleOnTrue(magicShootCommand(() -> selectedStrategy, ztrue,
-        // Rotation2d.fromDegrees(-4.0)));
-        emergencyController.y().onTrue(toggleTrapCommand());
+        // /* Climber Limit Switch Triggers */
+        // new Trigger(climber::forwardLimit).onTrue(climber.hitForwardLimitCommand());
+        // new Trigger(climber::reverseLimit).onTrue(climber.hitReverseLimitCommand());
 
-        /* Full Outfeed: left Y */
-        emergencyController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
-                .or(emergencyController.axisLessThan(XboxController.Axis.kLeftY.value, -0.2))
-                .whileTrue(
-                        runThree(
-                                () -> -emergencyController.getLeftY(),
-                                () -> -emergencyController.getLeftY(),
-                                () -> -emergencyController.getLeftY()));
+        // // // LED Triggers //
+        // // // infeed has jam
+        // // new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.ORANGE,
+        // 5))
+        // // .onFalse(CANdle.runBurnyBurnCommand());
+        // // // checks if it has a note
+        // // new Trigger(conveyor.hasInfedSupplier()).onTrue(CANdle.blink(Color.GREEN,
+        // 5))
+        // // .onFalse(CANdle.runBurnyBurnCommand());
+        // // // flashes purple
+        // // new Trigger(shooter.isReadySupplier()).onTrue(CANdle.blink(Color.PURPLE,
+        // 3))
+        // // .onFalse(CANdle.runBurnyBurnCommand())
+        // // // Flashes white while shooting
+        // // new
+        // //
+        // Trigger(shooter.isRunningSupplier()).onTrue(CANdle.runShootFlow(Color.WHITE))
+        // // .onFalse(CANdle.runBurnyBurnCommand());
+        // // // Turns red while the shooter is inoperable
+        // // new Trigger(shooter.isWorkingSupplier())
+        // // .onTrue(CANdle.runBurnyBurnCommand())
+        // // .onFalse(CANdle.blink(Color.RED, 10));
 
-        if (Utils.isSimulation()) {
-            drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
-        }
+        // // ================ //
+        // /* Default Commands */
+        // // ================ //
 
-        drivetrain.registerTelemetry(logger::telemeterize);
+        // drivetrain.setDefaultCommand(
+        // drivetrain.applyRequest(() -> drive
+        // .withVelocityX(getXSpeed(true))
+        // .withVelocityY(getYSpeed(true))
+        // .withRotationalRate(getRotationSpeed())));
+
+        // conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
+        // infeed.setDefaultCommand(infeed.runMotorCommand(0.));
+
+        // // ================= //
+        // /* DRIVER CONTROLLER */
+        // // ================= //
+
+        // // ========================= //
+        // /* Infeed & Conveyor Control */
+        // // ========================= //
+
+        // /* Dumb Infeed */
+        // driverController.leftBumper().onTrue(runBoth(true, SLOW_CONVEYOR_VBUS,
+        // INFEED_VBUS))
+        // .onFalse(coolNoteFixCommand(0.15).andThen(driverCamera.setShooterCameraCommand()));
+
+        // /* Smart Infeed */
+        // // driverController.leftTrigger()
+        // //
+        // .whileTrue(smartInfeedCommand().andThen(driverCamera.setShooterCameraCommand()));
+        // driverController.leftTrigger().whileTrue(runBoth(true, SLOW_CONVEYOR_VBUS,
+        // INFEED_VBUS))
+        // .onFalse(conveyBackCommand(-1.5,
+        // 0.5).alongWith(driverCamera.setShooterCameraCommand()));
+
+        // // ========================== //
+        // /* Drivetain & Vision Control */
+        // // ========================== //
+
+        // /* Robot-Relative Drive */
+        // driverController.y().toggleOnTrue(drivetrain.applyRequest(() ->
+        // robotRelativeDrive
+        // .withVelocityX(getXSpeed(false))
+        // .withVelocityY(getYSpeed(false))
+        // .withRotationalRate(getRotationSpeed())));
+
+        // /* X-Drive */
+        // driverController.x().whileTrue(drivetrain.applyRequest(() -> xDrive));
+
+        // /* Reset Field-Centric Heading */
+        // driverController.start().onTrue(drivetrain.runOnce(() ->
+        // drivetrain.seedFieldRelative(new Pose2d())));
+
+        // /* Toggle Chassis Mode */
+        // driverController.rightBumper().onTrue(Commands.runOnce(() -> currentSpeed =
+        // SLOW_SPEED))
+        // .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
+
+        // /* Shooter Lock */
+        // driverController.leftStick().onTrue(magicLockCommand());
+
+        // // ========================= //
+        // /* Misc */
+        // // ========================= //
+
+        // /* End snap, limelight & stop all motors */
+        // driverController.rightStick().onTrue(stopAllCommand(true).alongWith(drivetrain.runOnce(()
+        // -> {
+        // })));
+
+        // driverController.a().onTrue(runEntryCommand(() -> PASSING_SHOT, () ->
+        // ShotSpeeds.FAST)
+        // .andThen(Commands.either(
+        // snapCommand(SnapDirection.BluePass),
+        // snapCommand(SnapDirection.RedPass),
+        // () -> BeakUtils.allianceIsBlue())));
+
+        // // =================== //
+        // /* OPERATOR CONTROLLER */
+        // // =================== //
+
+        // // ========================= //
+        // /* Driver Help Control */
+        // // ========================= //
+
+        // /* Snap to Amp */
+        // operatorController.povUp().toggleOnTrue(snapCommand(SnapDirection.Left));
+
+        // // ======================= //
+        // /* Shooter Control */
+        // // ======================= //
+
+        // /* Spin Up Shooter */
+        // operatorController.leftTrigger()
+        // .onTrue(runEntryCommand(() ->
+        // ShooterTable.calcShooterTableEntry(Feet.of(currentIndex)),
+        // () -> ShotSpeeds.FAST))
+        // .onFalse(stopAllCommand()
+        // .andThen(Commands.runOnce(this::setCameraWithWait)));
+
+        // /* Convey Note */
+        // operatorController.rightTrigger()
+        // .whileTrue(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS));
+
+        // /* Magic Shoot */
+        // operatorController.x().toggleOnTrue(magicShootCommand());
+
+        // /* Magic Shoot Strategies */
+        // operatorController.povRight().onTrue(setStrategyCommand(shooterLimelightStrategy));
+        // operatorController.povDown().onTrue(setStrategyCommand(chassisLimelight2dStrategy)
+        // .alongWith(chassisLimelight.setPipelineCommand(TY_PIPELINE)));
+        // operatorController.povLeft().onTrue(setStrategyCommand(odometryStrategy)
+        // .alongWith(chassisLimelight.setPipelineCommand(MEGATAG_PIPELINE)));
+
+        // /* Manual/Preset Mode */
+        // operatorController.back()
+        // .onTrue(Commands.runOnce(() -> useManual =
+        // !useManual).andThen(this::pushIndexData));
+
+        // /* Shooter Table Index Up */
+        // operatorController.rightBumper().onTrue(
+        // Commands.either(
+        // Commands.runOnce(() -> manualIndex += 1.0),
+        // Commands.runOnce(() -> presetIndex += 1),
+        // () -> useManual).andThen(this::pushIndexData));
+
+        // /* Shooter Table Index Down */
+        // operatorController.leftBumper().onTrue(
+        // Commands.either(
+        // Commands.runOnce(() -> manualIndex -= 1.0),
+        // Commands.runOnce(() -> presetIndex -= 1),
+        // () -> useManual).andThen(this::pushIndexData));
+
+        // /* Shuttle Prep */
+        // operatorController.leftStick().onTrue(shuttleCommand());
+
+        // // ========================= //
+        // /* Pivot Control */
+        // // ========================= //
+
+        // /* Zero Pivot */
+        // operatorController.start().onTrue(zeroCommand());
+
+        // /* Run Pivot Zero */
+        // // operatorController.a().onTrue(pivot.runToHomeCommand());
+        // operatorController.a()
+        // .onTrue(Commands.runOnce(() -> selectedStrategy =
+        // odometryStrategy).andThen(shuttleCommand()));
+
+        // /* Zero Climber */
+        // operatorController.rightStick().onTrue(safeClimbCommand(climber.zeroCommand()));
+
+        // // ================ //
+        // /* Amp & Trap Magic */
+        // // ================ //
+
+        // operatorController.b().onTrue(ampPrep).onFalse(stopAllCommand(true));
+
+        // operatorController.y()
+        // .onTrue(toggleTrapCommand());
+
+        // // ==================== //
+        // /* EMERGENCY CONTROLLER */
+        // // ==================== //
+
+        // // ==================== //
+        // /* Manual Pivot Control */
+        // // ==================== //
+
+        // // /* Bump Pivot Up */
+        // emergencyController.rightBumper()
+        // .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 1)));
+
+        // /* Bump Pivot Down */
+        // emergencyController.leftBumper()
+        // .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 1)));
+
+        // // ============== //
+        // /* Manual Climber */
+        // // ============== //
+
+        // /* Climber Up */
+        // emergencyController.rightTrigger(0.2).whileTrue(
+        // safeClimbCommand(climber.runMotorCommand(CLIMBER_VBUS, true)))
+        // .onFalse(climber.stopCommand());
+
+        // /* Climber Down FULL SEND */
+        // emergencyController.leftTrigger(0.2).whileTrue(
+        // safeClimbCommand(climber.runMotorCommand(-FAST_CLIMBER_VBUS, true)))
+        // .onFalse(climber.holdCurrentPositionCommand());
+
+        // /* Ready Climb */
+        // emergencyController.povUp()
+        // .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS,
+        // ClimberPositions.READY, false)))
+        // .onFalse(climber.stopCommand());
+
+        // /* Climb */
+        // emergencyController.povDown()
+        // .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS,
+        // ClimberPositions.CLIMB, true)))
+        // .onFalse(climber.holdCurrentPositionCommand());
+
+        // /* funk */
+        // emergencyController.povLeft().onTrue(safeClimbCommand(climber.holdCommand()))
+        // .onFalse(climber.stopCommand());
+
+        // /* Stop Hold */
+        // emergencyController.povRight().onTrue(Commands.runOnce(() ->
+        // climber.getCurrentCommand().cancel()));
+
+        // // ======================= //
+        // /* Trap & Climb Sequencing */
+        // // ======================= //
+
+        // /* Enable Trap */
+        // emergencyController.start().onTrue(Commands.runOnce(() -> enableTrap =
+        // !enableTrap));
+
+        // /* Enable Climber */
+        // emergencyController.back().onTrue(Commands.runOnce(() -> enableClimber =
+        // !enableClimber));
+
+        // /* Climb Sequence */
+        // emergencyController.a().onTrue(sequenceCommand());
+        // emergencyController.b().onTrue(dumbCancelClimbCommand());
+
+        // /* Prime Fan Pivot & Shooter Pivot */
+        // emergencyController.x().toggleOnTrue(
+        // Commands.startEnd(() -> {
+        // m_fanPivot.runToTrap();
+        // m_fan.runMotor(FAN_VBUS);
+        // },
+        // () -> {
+        // m_fanPivot.hold();
+        // m_fan.stop();
+        // },
+        // m_fanPivot, m_fan));
+
+        // // emergencyController.b().toggleOnTrue(coolShootCommand());
+        // // emergencyController.y()
+        // // .toggleOnTrue(magicShootCommand(() -> selectedStrategy, ztrue,
+        // // Rotation2d.fromDegrees(-4.0)));
+        // emergencyController.y().onTrue(toggleTrapCommand());
+
+        // /* Full Outfeed: left Y */
+        // emergencyController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
+        // .or(emergencyController.axisLessThan(XboxController.Axis.kLeftY.value, -0.2))
+        // .whileTrue(
+        // runThree(
+        // () -> -emergencyController.getLeftY(),
+        // () -> -emergencyController.getLeftY(),
+        // () -> -emergencyController.getLeftY()));
+
+        // if (Utils.isSimulation()) {
+        // drivetrain.seedFieldRelative(new Pose2d(new Translation2d(),
+        // Rotation2d.fromDegrees(90)));
+        // }
+
+        // drivetrain.registerTelemetry(logger::telemeterize);
 
     }
 
@@ -1528,9 +1565,10 @@ public class RobotContainer {
 
     /** Auton Command */
     public Command getAutonomousCommand() {
-        return new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d()))
-                .andThen(NamedCommands.getCommand("AprilTag Zero"))
-                .andThen(autonChooser.getSelected());
+        // return new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d()))
+        //         .andThen(NamedCommands.getCommand("AprilTag Zero"))
+        //         .andThen(autonChooser.getSelected());
+        return Commands.none();
     }
 
     // ================ //
