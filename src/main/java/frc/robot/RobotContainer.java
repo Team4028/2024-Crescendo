@@ -423,7 +423,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("Finish Infeed",
                 smartInfeedAutoCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST)));
 
-        NamedCommands.registerCommand("Magic Shoot", magicShootCommand(() -> chassisLimelight2dStrategy));
+        // NamedCommands.registerCommand("Magic Shoot", magicShootCommand(() -> chassisLimelight2dStrategy));
+        NamedCommands.registerCommand("Magic Shoot", updateDrivePoseMT2Command().repeatedly().withTimeout(0.1).andThen(magicShootCommand(() -> odometryStrategy)));
+
         NamedCommands.registerCommand("Mega Tag Shoot", magicShootCommand(() -> odometryStrategy));
         NamedCommands.registerCommand("Choose Shoot", magicShootCommand());
 
@@ -1597,8 +1599,14 @@ public class RobotContainer {
         var visionResult = chassisLimelight.getBotposeEstimateMT2();
         var visionStdDevs = chassisLimelight.getSTDevsXY(drivetrain);
         if (visionStdDevs.isPresent())
+        {
+            System.out.println("Current Pose: X: " + drivetrain.getPose().getX() + " -- Y: " + drivetrain.getPose().getY());
+            System.out.println("Vision Pose: X: " + visionResult.pose.getX() + " -- Y: " + visionResult.pose.getY());
+            System.out.println("UPDATING POSE BY: " + drivetrain.getTranslation().getDistance(visionResult.pose.getTranslation()));
             drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
-                    VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
+                VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
+
+        }
 
         // Apply Infeed Limelight
         visionResult = infeedLimelight3G.getBotposeEstimateMT2();
@@ -1630,6 +1638,10 @@ public class RobotContainer {
     public void setAutonMT2RotationThresholds() {
         chassisLimelight.setAutonMT2Threshold();
         infeedLimelight3G.setAutonMT2Threshold();
+    }
+
+    public void homeFanPivot() {
+        m_fanPivot.runToHomeCommand().schedule();
     }
 }
 // TODO: Undo-trap sequence button?

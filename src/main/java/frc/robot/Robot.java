@@ -71,13 +71,15 @@ public class Robot extends TimedRobot {
         hasZeroedPivot = true;
         DataLogManager.start();
 
+        // m_robotContainer.setChassisPipeline();
+        m_robotContainer.setMT2Pipeline();
+        m_robotContainer.setAutonMT2RotationThresholds();
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
         }
 
-        m_robotContainer.setChassisPipeline();
 
         // m_robotContainer.zero();
         // m_robotContainer.configVisionFieldOrigins();
@@ -86,6 +88,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousPeriodic() {
         LogStore.update();
+        m_robotContainer.updateMTRot();
     }
 
     @Override
