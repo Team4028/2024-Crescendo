@@ -390,11 +390,6 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Update Odometr18y", updateDrivePoseMT2Command());
 
-        // NamedCommands.registerCommand("Limelight Acquire",
-        // drivetrain.targetAcquire(() -> 0.6 * MAX_SPEED, infeedLimelight)
-        // .until(noteSensing.hasInfedSupplier())
-        // .raceWith(smartInfeedCommand().withTimeout(1.2)));
-
         /* Infeed & Spit */
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
 
@@ -424,7 +419,7 @@ public class RobotContainer {
                 smartInfeedAutoCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST)));
 
         // NamedCommands.registerCommand("Magic Shoot", magicShootCommand(() -> chassisLimelight2dStrategy));
-        NamedCommands.registerCommand("Magic Shoot", updateDrivePoseMT2Command().repeatedly().withTimeout(0.1).andThen(magicShootCommand(() -> odometryStrategy)));
+        NamedCommands.registerCommand("Magic Shoot", Commands.waitSeconds(0.1).andThen(magicShootCommand(() -> odometryStrategy)));//updateDrivePoseMT2Command().repeatedly().withTimeout(0.1).andThen(magicShootCommand(() -> odometryStrategy)));
 
         NamedCommands.registerCommand("Mega Tag Shoot", magicShootCommand(() -> odometryStrategy));
         NamedCommands.registerCommand("Choose Shoot", magicShootCommand());
@@ -1600,9 +1595,9 @@ public class RobotContainer {
         var visionStdDevs = chassisLimelight.getSTDevsXY(drivetrain);
         if (visionStdDevs.isPresent())
         {
-            System.out.println("Current Pose: X: " + drivetrain.getPose().getX() + " -- Y: " + drivetrain.getPose().getY());
-            System.out.println("Vision Pose: X: " + visionResult.pose.getX() + " -- Y: " + visionResult.pose.getY());
-            System.out.println("UPDATING POSE BY: " + drivetrain.getTranslation().getDistance(visionResult.pose.getTranslation()));
+            // System.out.println("Current Pose: X: " + drivetrain.getPose().getX() + " -- Y: " + drivetrain.getPose().getY());
+            // System.out.println("Vision Pose: X: " + visionResult.pose.getX() + " -- Y: " + visionResult.pose.getY());
+            // System.out.println("UPDATING POSE BY: " + drivetrain.getTranslation().getDistance(visionResult.pose.getTranslation()));
             drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
                 VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
 

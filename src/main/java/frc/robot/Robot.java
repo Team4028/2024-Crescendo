@@ -88,7 +88,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousPeriodic() {
         LogStore.update();
-        m_robotContainer.updateMTRot();
+        m_robotContainer.updateDrivePoseMT2();
     }
 
     @Override

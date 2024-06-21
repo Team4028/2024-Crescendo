@@ -16,9 +16,13 @@ public class Limelight extends VisionSystem {
     int targetPipeline = 0;
 
     private final double TELEOP_MT2_ROTATION_THRESHOLD = 0.5;
-    private final double AUTON_MT2_ROTATION_THRESHOLD = 0.0;
+    private final double AUTON_MT2_ROTATION_THRESHOLD = 0.1;
 
-    private double angularVelocityThreshold = 0.5; // how many rad/sec to update MT2 pose
+    private final double TELEOP_MT2_DISTANCE_THRESHOLD = 1.0;
+    private final double AUTON_MT2_DISTANCE_THRESHOLD = 0.25;
+
+    private double angularVelocityThreshold = TELEOP_MT2_ROTATION_THRESHOLD; // how many rad/sec to update MT2 pose
+    private double poseDifferenceThreshold = TELEOP_MT2_DISTANCE_THRESHOLD;
 
     public Limelight(String cameraName, Transform3d robotToCamera) {
         super(cameraName, robotToCamera);
@@ -78,9 +82,9 @@ public class Limelight extends VisionSystem {
 
     public Optional<Double[]> getSTDevsXY(CommandSwerveDrivetrain drivetrain) {
         var visionResults = getBotposeEstimateMT2();
-        boolean validPose = drivetrain.getTranslation().getDistance(visionResults.pose.getTranslation()) <= 1.0;
+        boolean validPose = drivetrain.getTranslation().getDistance(visionResults.pose.getTranslation()) <= poseDifferenceThreshold;
 
-        if (Math.abs(drivetrain.getState().speeds.omegaRadiansPerSecond) > 0.33
+        if (Math.abs(drivetrain.getState().speeds.omegaRadiansPerSecond) > angularVelocityThreshold
                 || Math.sqrt(Math.pow(drivetrain.getState().speeds.vxMetersPerSecond, 2)
                         + Math.pow(drivetrain.getState().speeds.vyMetersPerSecond, 2)) > 5){
             return Optional.empty();
@@ -110,10 +114,12 @@ public class Limelight extends VisionSystem {
 
     public void setTeleopMT2Threshold() {
         angularVelocityThreshold = TELEOP_MT2_ROTATION_THRESHOLD;
+        poseDifferenceThreshold = TELEOP_MT2_DISTANCE_THRESHOLD;
     }
 
     
     public void setAutonMT2Threshold() {
         angularVelocityThreshold = AUTON_MT2_ROTATION_THRESHOLD;
+        poseDifferenceThreshold = AUTON_MT2_DISTANCE_THRESHOLD;
     }
 }

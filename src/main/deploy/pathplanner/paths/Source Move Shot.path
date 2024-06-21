@@ -37,12 +37,23 @@
   ],
   "constraintZones": [
     {
-      "name": "New Constraints Zone",
+      "name": "Slow For Shoot",
       "minWaypointRelativePos": 0.15,
       "maxWaypointRelativePos": 0.5,
       "constraints": {
         "maxVelocity": 3.0,
         "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 1080.0
+      }
+    },
+    {
+      "name": "Slow at Start",
+      "minWaypointRelativePos": 0,
+      "maxWaypointRelativePos": 0.15,
+      "constraints": {
+        "maxVelocity": 6.0,
+        "maxAcceleration": 4.5,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 1080.0
       }
