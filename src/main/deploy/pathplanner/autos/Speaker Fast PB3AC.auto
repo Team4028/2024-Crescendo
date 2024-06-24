@@ -32,13 +32,25 @@
         {
           "type": "named",
           "data": {
-            "name": "Convey"
+            "name": "Magic Shoot"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "Fast Speaker B - A"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Magic Shoot"
           }
         },
         {
@@ -50,7 +62,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Infeed"
+            "name": "Finish Infeed"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Magic Shoot"
           }
         }
       ]

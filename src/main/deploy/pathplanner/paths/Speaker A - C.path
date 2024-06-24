@@ -38,8 +38,8 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Infeed",
-      "waypointRelativePos": 0.2,
+      "name": "Smart Infeed",
+      "waypointRelativePos": 0.45,
       "command": {
         "type": "parallel",
         "data": {

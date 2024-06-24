@@ -38,8 +38,8 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Infeed",
-      "waypointRelativePos": 0.15,
+      "name": "Smart Infeed",
+      "waypointRelativePos": 0.2,
       "command": {
         "type": "parallel",
         "data": {
@@ -47,24 +47,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Infeed"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Pivot",
-      "waypointRelativePos": 0.65,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "4 Piece A"
+                "name": "Smart Infeed"
               }
             }
           ]

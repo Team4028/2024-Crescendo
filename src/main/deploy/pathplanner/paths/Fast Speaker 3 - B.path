@@ -59,40 +59,6 @@
           ]
         }
       }
-    },
-    {
-      "name": "Pivot Up",
-      "waypointRelativePos": 0.85,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "4 Piece Pivot"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Spin Shooter",
-      "waypointRelativePos": 0.45,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "Fast Shooter"
-              }
-            }
-          ]
-        }
-      }
     }
   ],
   "globalConstraints": {

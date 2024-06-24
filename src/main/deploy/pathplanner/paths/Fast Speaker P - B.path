@@ -16,11 +16,11 @@
     },
     {
       "anchor": {
-        "x": 2.8945149638302823,
+        "x": 2.8872307611518506,
         "y": 5.543278238286734
       },
       "prevControl": {
-        "x": 1.7747366497640065,
+        "x": 1.7674524470855748,
         "y": 5.565561131880005
       },
       "nextControl": null,
@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "Infeed",
-      "waypointRelativePos": 0.8,
+      "waypointRelativePos": 0.9,
       "command": {
         "type": "parallel",
         "data": {
