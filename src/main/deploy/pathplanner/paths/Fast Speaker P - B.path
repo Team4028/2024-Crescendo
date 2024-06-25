@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "Infeed",
-      "waypointRelativePos": 0.9,
+      "waypointRelativePos": 0.6,
       "command": {
         "type": "parallel",
         "data": {
@@ -49,8 +49,8 @@
       }
     },
     {
-      "name": "Start Shooter Pivot",
-      "waypointRelativePos": 0,
+      "name": "B Shooter Pivot",
+      "waypointRelativePos": 0.9,
       "command": {
         "type": "parallel",
         "data": {
@@ -59,6 +59,23 @@
               "type": "named",
               "data": {
                 "name": "4 Piece Pivot"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "P Shooter Pivot",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "P Pivot"
               }
             },
             {

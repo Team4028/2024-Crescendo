@@ -3,42 +3,36 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.0514895315504917,
-        "y": 6.93
+        "x": 2.8863569834762997,
+        "y": 7.0036710477008395
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.060837967283743,
-        "y": 6.405537407152897
+        "x": 1.895705419209551,
+        "y": 6.479208454853737
       },
       "isLocked": false,
       "linkedName": "Fast Note A"
     },
     {
       "anchor": {
-        "x": 2.96,
-        "y": 4.21
+        "x": 2.8863569834762997,
+        "y": 4.1046482092964185
       },
       "prevControl": {
-        "x": 1.204397837367104,
-        "y": 4.9010265249101925
+        "x": 1.1307548208434037,
+        "y": 4.795674734206611
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "Fast Note C"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": -31.0,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Infeed",
+      "name": "Smart Infeed",
       "waypointRelativePos": 0.2,
       "command": {
         "type": "parallel",
@@ -47,24 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Infeed"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Pivot",
-      "waypointRelativePos": 0.75,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "4 Piece C"
+                "name": "Smart Infeed"
               }
             }
           ]
