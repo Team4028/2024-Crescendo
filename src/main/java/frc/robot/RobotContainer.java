@@ -391,7 +391,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("Finish Infeed",
                 smartInfeedAutoCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST)));
 
-        NamedCommands.registerCommand("Magic Shoot", Commands.waitSeconds(0.1).andThen(magicShootCommand(() -> odometryStrategy)));//updateDrivePoseMT2Command().repeatedly().withTimeout(0.1).andThen(magicShootCommand(() -> odometryStrategy)));
+        NamedCommands.registerCommand("Magic Shoot",
+                Commands.waitSeconds(0.1).andThen(magicShootCommand(() -> odometryStrategy)));// updateDrivePoseMT2Command().repeatedly().withTimeout(0.1).andThen(magicShootCommand(()
+                                                                                              // -> odometryStrategy)));
 
         NamedCommands.registerCommand("Mega Tag Shoot", magicShootCommand(() -> odometryStrategy));
         NamedCommands.registerCommand("Choose Shoot", magicShootCommand());
@@ -1111,11 +1113,8 @@ public class RobotContainer {
                 .andThen(driverCamera.setShooterCameraCommand())
                 .andThen(runEntryCommand(() -> entryToRun,
                         () -> ShotSpeeds.FAST)
-                        .alongWith(drivetrain.speakerAlign(strategy, offset).withTimeout(0.5)) // TODO: have an .until()
-                                                                                               // to when we are pointed
-                                                                                               // in the right spot? Or
-                                                                                               // just reduce this
-                                                                                               // timeout slightly?
+                        .alongWith(drivetrain.speakerAlign(strategy, offset).withTimeout(0.5)
+                                .until(() -> Math.abs(strategy.get().getTargetOffset().getDegrees()) < 0.25))
                         .onlyIf(() -> lock))
                 .andThen(shootCommand(() -> entryToRun));
     }
@@ -1344,13 +1343,15 @@ public class RobotContainer {
         // Apply Chassis Limelight
         var visionResult = chassisLimelight.getBotposeEstimateMT2();
         var visionStdDevs = chassisLimelight.getSTDevsXY(drivetrain);
-        if (visionStdDevs.isPresent())
-        {
-            // System.out.println("Current Pose: X: " + drivetrain.getPose().getX() + " -- Y: " + drivetrain.getPose().getY());
-            // System.out.println("Vision Pose: X: " + visionResult.pose.getX() + " -- Y: " + visionResult.pose.getY());
-            // System.out.println("UPDATING POSE BY: " + drivetrain.getTranslation().getDistance(visionResult.pose.getTranslation()));
+        if (visionStdDevs.isPresent()) {
+            // System.out.println("Current Pose: X: " + drivetrain.getPose().getX() + " --
+            // Y: " + drivetrain.getPose().getY());
+            // System.out.println("Vision Pose: X: " + visionResult.pose.getX() + " -- Y: "
+            // + visionResult.pose.getY());
+            // System.out.println("UPDATING POSE BY: " +
+            // drivetrain.getTranslation().getDistance(visionResult.pose.getTranslation()));
             drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
-                VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
+                    VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
 
         }
 
