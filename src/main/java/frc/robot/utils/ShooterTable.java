@@ -76,7 +76,7 @@ public class ShooterTable {
 
     private static Supplier<Rotation2d> heckinessSupplier;
 
-    private static void fillInTable() { // TODO: fill in photonStationaryDistance values
+    private static void fillInTable() {
         // put entries here
         // Distances must go from top to bottom: shortest to longest
         // IF YOU INCREASE DISTANCE, SHOOTER ANGLE GOES UP

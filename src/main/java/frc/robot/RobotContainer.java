@@ -8,12 +8,10 @@ import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Meters;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
@@ -22,11 +20,8 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
-import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.path.PathPlannerPath;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -36,18 +31,15 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.AutoPoses;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Candle;
 import frc.robot.subsystems.Climber;
@@ -73,6 +65,7 @@ import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 import frc.robot.utils.ShootingStrategy;
+import frc.robot.utils.SubAutos;
 
 public class RobotContainer {
     // =============================================== //
@@ -166,6 +159,8 @@ public class RobotContainer {
     private final Command ampPrep;
     private SendableChooser<Command> autonChooser;
 
+    private final SubAutos m_autos;
+
     // ====================================================== //
     /** Drivetrain Constants, Magic numbers, and ` Limiters */
     // ====================================================== //
@@ -181,15 +176,6 @@ public class RobotContainer {
     private static final double SLOW_SPEED = 0.07;
 
     private double currentSpeed = BASE_SPEED;
-
-    private final boolean skillIssues = true;
-
-    private int autonTargetNote = 0;
-    private boolean missedAutoNote = false;
-
-    private static enum AutonSides {
-        AMP, MIDDLE, SOURCE
-    }
 
     private enum SnapDirection {
         None(Double.NaN),
@@ -238,14 +224,6 @@ public class RobotContainer {
             ClimbSequence.End, endSequenceCommand(),
             ClimbSequence.Climb, climbCommand());
 
-    private final Map<ClimbSequence, Command> undoSequenceMap = Map.of(
-            ClimbSequence.Default, Commands.none(),
-            ClimbSequence.Prep, undoPrepClimbCommand(),
-            ClimbSequence.Fan, undoFanReadyCommand(),
-            ClimbSequence.Shoot, undoFanReadyCommand(),
-            ClimbSequence.End, undoEndSequenceCommand(),
-            ClimbSequence.Climb, undoClimbCommand());
-
     private static double MAX_INDEX = 27.;
     private static double MIN_INDEX = 4.2;
 
@@ -289,6 +267,8 @@ public class RobotContainer {
         snapDrive.HeadingController = new PhoenixPIDController(10, 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
+        m_autos = new SubAutos(noteSensing);
+
         /* Init Index Map */
         indexMap.put(4.2, "Speaker");
         indexMap.put(5.2, "SideWoofer");
@@ -298,13 +278,7 @@ public class RobotContainer {
         indexMap.put(19.0, "Left Wing");
         indexMap.put(22.0, "Right Wing");
 
-        // ================================================================================
-        // ================================================================================
-        // ================================================================================
-        ShooterTable.setHeckinessLevel(() -> drivetrain.getRotation());  // |||||||||||||||
-        // ================================================================================
-        // ================================================================================
-        // ================================================================================
+        ShooterTable.setHeckinessLevel(() -> drivetrain.getRotation());
 
         /* Dashboard */
         DashboardStore.add("Shooter Table Index", () -> currentIndex);
@@ -386,9 +360,8 @@ public class RobotContainer {
     }
 
     private void initNamedCommands() {
+        /* ... */
         NamedCommands.registerCommand("Pivot Zero", pivot.zeroCommand());
-
-        NamedCommands.registerCommand("Update Odometr18y", updateDrivePoseMT2Command());
 
         /* Infeed & Spit */
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
@@ -418,7 +391,6 @@ public class RobotContainer {
         NamedCommands.registerCommand("Finish Infeed",
                 smartInfeedAutoCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST)));
 
-        // NamedCommands.registerCommand("Magic Shoot", magicShootCommand(() -> chassisLimelight2dStrategy));
         NamedCommands.registerCommand("Magic Shoot", Commands.waitSeconds(0.1).andThen(magicShootCommand(() -> odometryStrategy)));//updateDrivePoseMT2Command().repeatedly().withTimeout(0.1).andThen(magicShootCommand(() -> odometryStrategy)));
 
         NamedCommands.registerCommand("Mega Tag Shoot", magicShootCommand(() -> odometryStrategy));
@@ -513,30 +485,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("4 Piece A", pivot.runToPositionCommand(13.75));
         NamedCommands.registerCommand("4 Piece C", pivot.runToPositionCommand(14.0));
 
-        // NamedCommands.registerCommand("Source Missed Note 5", autonTryNextNote(5, 4,
-        // false));
-        // NamedCommands.registerCommand("Source Missed Note 4", autonTryNextNote(4, 3,
-        // false));
-        // NamedCommands.registerCommand("Source Missed Note 3", autonTryNextNote(3, 2,
-        // false));
-        // NamedCommands.registerCommand("Source Recover Missed Note",
-        // autonReturnTryNextNote(AutonSides.SOURCE, false));
-
-        // NamedCommands.registerCommand("Middle Missed Note 3", autonTryNextNote(3, 4,
-        // false));
-        // NamedCommands.registerCommand("Middle Missed Note 4", autonTryNextNote(4, 5,
-        // false));
-        // NamedCommands.registerCommand("Middle Recover Missed Note",
-        // autonReturnTryNextNote(AutonSides.MIDDLE, false));
-
-        // NamedCommands.registerCommand("Amp Missed Note 1", autonTryNextNote(1, 2,
-        // false));
-        // NamedCommands.registerCommand("Amp Missed Note 2", autonTryNextNote(2, 3,
-        // false));
-        // NamedCommands.registerCommand("Amp Missed Note 3", autonTryNextNote(3, 4,
-        // false));
-        // NamedCommands.registerCommand("Amp Recover Missed Note",
-        // autonReturnTryNextNote(AutonSides.AMP, false));
+        /* Sub Autos */
+        NamedCommands.registerCommand("5 Or 4", m_autos.note5or4());
+        NamedCommands.registerCommand("4 Or 3", m_autos.note4or3());
     }
 
     // =========================== //
@@ -547,25 +498,6 @@ public class RobotContainer {
         /* Climber Limit Switch Triggers */
         new Trigger(climber::forwardLimit).onTrue(climber.hitForwardLimitCommand());
         new Trigger(climber::reverseLimit).onTrue(climber.hitReverseLimitCommand());
-
-        // // LED Triggers //
-        // // infeed has jam
-        // new Trigger(conveyor.hasJamSupplier()).onTrue(CANdle.blink(Color.ORANGE, 5))
-        // .onFalse(CANdle.runBurnyBurnCommand());
-        // // checks if it has a note
-        // new Trigger(conveyor.hasInfedSupplier()).onTrue(CANdle.blink(Color.GREEN, 5))
-        // .onFalse(CANdle.runBurnyBurnCommand());
-        // // flashes purple
-        // new Trigger(shooter.isReadySupplier()).onTrue(CANdle.blink(Color.PURPLE, 3))
-        // .onFalse(CANdle.runBurnyBurnCommand())
-        // // Flashes white while shooting
-        // new
-        // Trigger(shooter.isRunningSupplier()).onTrue(CANdle.runShootFlow(Color.WHITE))
-        // .onFalse(CANdle.runBurnyBurnCommand());
-        // // Turns red while the shooter is inoperable
-        // new Trigger(shooter.isWorkingSupplier())
-        // .onTrue(CANdle.runBurnyBurnCommand())
-        // .onFalse(CANdle.blink(Color.RED, 10));
 
         // ================ //
         /* Default Commands */
@@ -817,13 +749,13 @@ public class RobotContainer {
     //
 
     // =========================================== //
-    /** Additional Commands, Getters, and Utilities */
+    /* Additional Commands, Getters, and Utilities */
     // =========================================== //
 
     //
 
     // =========================================== //
-    /** Joystick & Driving Values */
+    /* Joystick & Driving Values */
     // =========================================== //
 
     //
@@ -911,33 +843,12 @@ public class RobotContainer {
         currentSequence = seq;
     }
 
-    private void decrementSequence() {
-        ClimbSequence seq = ClimbSequence.Default;
-
-        switch (currentSequence) {
-            case Default -> seq = ClimbSequence.Default;
-            case Prep -> seq = ClimbSequence.Default;
-            case Fan -> seq = ClimbSequence.Prep;
-            case Shoot -> seq = ClimbSequence.Prep;
-            case End -> seq = ClimbSequence.Fan;
-            default -> seq = ClimbSequence.Default;
-        }
-
-        currentSequence = seq;
-    }
-
     /** Climb Preparation */
     private Command prepClimbCommand() {
         // Pivot => Trap Position
         // Shooter => Trap Mode
         return pivot.runToTrapCommand()
                 .alongWith(shooter.setSlotCommand(Slots.TRAP));
-    }
-
-    private Command undoPrepClimbCommand() {
-        // Pivot => Home Position
-        // Shooter => Fast Mode
-        return pivot.runToHomeCommand().alongWith(shooter.setSlotCommand(Slots.FAST));
     }
 
     /** Prime the fan & shooter */
@@ -955,15 +866,6 @@ public class RobotContainer {
                                 false)
                                 .onlyIf(() -> enableClimber && pivot
                                         .getPosition() > PIVOT_UP_THRESHOLD));
-    }
-
-    private Command undoFanReadyCommand() {
-        // Climber Down
-        // Stops fan spinn
-        // After 2s, Fan Down
-        return safeClimbCommand(climber.zeroCommand().until(climber::reverseLimitOn)).alongWith(m_fan.stopCommand())
-                .alongWith(shooter.stopCommand())
-                .alongWith(Commands.waitSeconds(1).andThen(m_fanPivot.runToHomeCommand()));
     }
 
     private Command dumbCancelClimbCommand() {
@@ -997,36 +899,16 @@ public class RobotContainer {
                 .alongWith(safePivotCommand(pivot.runToHomeCommand()).unless(() -> enableClimber));
     }
 
-    private Command undoEndSequenceCommand() {
-        // Pivot Up
-        // Then:
-        // Fan Pivot Up
-        // Shooting Routine
-        // Climber Up
-        return pivot.runToTrapCommand().alongWith(
-                Commands.waitUntil(pivot.inPositionSupplier()).andThen(fanReadyCommand()));
-    }
-
     /** Climb!!!!! */
     private Command climbCommand() {
         // Climber Down
         return safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.CLIMB, true));
     }
 
-    private Command undoClimbCommand() {
-        // Climber Up
-        return safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY, false));
-    }
-
     /** Update Sequence */
     private Command sequenceCommand() {
         return Commands.runOnce(this::incrementSequence)
                 .andThen(Commands.select(sequenceCommandMap, () -> currentSequence));
-    }
-
-    private Command undoSequenceCommand() {
-        return Commands.select(undoSequenceMap, () -> currentSequence)
-                .alongWith(Commands.runOnce(this::decrementSequence));
     }
 
     private Command toggleTrapCommand() {
@@ -1249,138 +1131,6 @@ public class RobotContainer {
             boolean lock) {
         return magicShootCommand(entry, strategy, lock, ShootingStrategy.OFFSET);
     }
-
-    /**
-     * Golly
-     */
-    private Command coolShootCommand() {
-        return Commands.runOnce(() -> entryToRun = odometryStrategy.getTargetEntry())
-                .andThen(chassisLimelight.setPipelineCommand(TY_PIPELINE))
-                .andThen(fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier()))
-                .andThen(driverCamera.setShooterCameraCommand())
-                .andThen(runEntryCommand(() -> entryToRun,
-                        () -> ShotSpeeds.FAST)
-                        .alongWith(
-                                Commands.waitUntil(() -> chassisLimelight.getPipeline() == TY_PIPELINE)
-                                        .andThen(drivetrain.speakerAlign(() -> chassisLimelight2dStrategy)
-                                                .withTimeout(0.5))))
-                .andThen(shootCommand(() -> entryToRun))
-                .andThen(Commands.runOnce(() -> {
-                    if (selectedStrategy == chassisLimelight2dStrategy) {
-                        setChassisPipeline();
-                    } else {
-                        setMT2Pipeline();
-                    }
-                }));
-    }
-
-    // public Command autonTryNextNote(int currNote, int targetNote, boolean
-    // usePathfinding) {
-    // autonTargetNote = targetNote;
-    // missedAutoNote = !noteSensing.hasInfed();
-    // if (currNote > 5 || currNote < 1 || targetNote > 5 || targetNote < 1) {
-    // DriverStation.reportError("Error: note(s) specified are out of range",
-    // Thread.currentThread().getStackTrace());
-    // return Commands.none();
-    // }
-    // return new ConditionalCommand(
-    // drivetrain.mirrorablePathFindCommand(new
-    // Pose2d(Constants.AutoPoses.values()[targetNote - 1].pose,
-    // currNote > targetNote ? Constants.AutoPoses.UPWARD_ROTATION
-    // : Constants.AutoPoses.DOWNWARD_ROTATION),
-    // 0.875, 0),
-    // AutoBuilder.followPath(PathPlannerPath.fromPathFile("Trans " + currNote + "-"
-    // + targetNote)),
-    // () -> usePathfinding).onlyIf(() -> !noteSensing.hasInfed());
-    // }
-
-    // public Command autonTryNextNote(int targetNote, boolean usePathfinding) {
-    // double[] closestNote = { 0.0, Double.MAX_VALUE };
-    // double tmpLength;
-    // for (var i = 0; i < Constants.AutoPoses.values().length; i++)
-    // if ((tmpLength =
-    // Constants.AutoPoses.values()[i].pose.minus(drivetrain.getTranslation())
-    // .getNorm()) < closestNote[1]) {
-    // closestNote[0] = i;
-    // closestNote[1] = tmpLength;
-    // }
-
-    // if (closestNote[0] > 0)
-    // return autonTryNextNote((int) closestNote[0], targetNote, usePathfinding);
-    // return Commands.none();
-    // }
-
-    // public Command autonReturnTryNextNote(AutonSides side, boolean
-    // usePathfinding, int currNote) {
-    // Optional<String> optPathName;
-    // return new ConditionalCommand((usePathfinding
-    // ? drivetrain
-    // .mirrorablePathFindCommand(
-    // new Pose2d(
-    // switch (side) {
-    // case AMP -> AutoPoses.AMP_SHOT.pose;
-    // case MIDDLE -> AutoPoses.MID_SHOT.pose;
-    // case SOURCE -> AutoPoses.SOURCE_SHOT.pose;
-    // },
-    // switch (side) {
-    // case AMP -> AutoPoses.AMP_SHOT_ROTATION;
-    // case MIDDLE -> AutoPoses.MID_SHOT_ROTATION;
-    // case SOURCE -> AutoPoses.SOURCE_SHOT_ROTATION;
-    // }),
-    // 0.875, 0)
-    // : AutoBuilder
-    // .followPath(PathPlannerPath.fromPathFile("Note " + currNote + switch (side) {
-    // case AMP -> " Amp";
-    // case MIDDLE -> " Mid";
-    // case SOURCE -> " Source";
-    // })))
-    // .alongWith(new InstantCommand(() -> missedAutoNote = false)),
-    // (optPathName = getReturnPath(side, currNote)).isPresent()
-    // ? AutoBuilder.followPath(PathPlannerPath.fromPathFile(optPathName.get()))
-    // : Commands.none(),
-    // () -> missedAutoNote);
-    // }
-
-    // public Command autonReturnTryNextNote(AutonSides side, boolean
-    // usePathfinding) {
-    // if (autonTargetNote != 0)
-    // return autonReturnTryNextNote(side, usePathfinding, autonTargetNote);
-    // double[] closestNote = { 0.0, Double.MAX_VALUE };
-    // double tmpLength;
-    // for (var i = 0; i < Constants.AutoPoses.values().length; i++)
-    // if ((tmpLength =
-    // Constants.AutoPoses.values()[i].pose.minus(drivetrain.getTranslation())
-    // .getNorm()) < closestNote[1]) {
-    // closestNote[0] = i;
-    // closestNote[1] = tmpLength;
-    // }
-
-    // if (closestNote[0] > 0)
-    // return autonReturnTryNextNote(side, usePathfinding, (int) closestNote[0]);
-    // return Commands.none();
-    // }
-
-    // private Optional<String> getReturnPath(AutonSides side, int currNote) {
-    // boolean red = !BeakUtils.allianceIsBlue();
-    // if (side == AutonSides.AMP)
-    // return switch (currNote) {
-    // case 1, 2, 3 -> Optional.of("Amp " + currNote + " - Magic" + (red ? " RED" :
-    // ""));
-    // default -> Optional.empty();
-    // };
-    // else if (side == AutonSides.SOURCE)
-    // return switch (currNote) {
-    // case 5 -> Optional.of("Source Move 5 Shoot" + (red ? " RED" : ""));
-    // case 4 -> Optional.of("Source Move 4 - Shot" + (red ? " RED" : ""));
-    // case 3 -> Optional.of("Source Shot - 3" + (red ? " RED" : ""));
-    // default -> Optional.empty();
-    // };
-    // else
-    // return switch (currNote) {
-    // case 3 -> Optional.of("Fast Speaker 3 - B");
-    // default -> Optional.empty();
-    // };
-    // }
 
     /**
      * Generate a command to use the specified distance to run a magic shot.
@@ -1640,4 +1390,3 @@ public class RobotContainer {
         m_fanPivot.runToHomeCommand().schedule();
     }
 }
-// TODO: Undo-trap sequence button?
