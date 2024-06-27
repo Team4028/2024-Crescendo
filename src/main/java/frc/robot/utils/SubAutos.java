@@ -14,21 +14,29 @@ public class SubAutos {
         m_decision = new DecisionCommands(sensing);
     }
 
-    public Command note5or4() {
-        Command shoot = new SubAutoGenerator().addPath("Source Move 5 Shoot")
+    private Command standardMagic(String successPath, String returnPath, String bailPath) {
+        Command shoot = new SubAutoGenerator().addPath(successPath)
                 .addNamedCommand("Magic Shoot")
-                .addPath("Source Shot - 4");
-        Command bail = new SubAutoGenerator().addPath("Source 5-4");
+                .addPath(returnPath);
+        Command bail = new SubAutoGenerator().addPath(bailPath);
 
         return m_decision.noteDecision(shoot, bail);
+
+    }
+
+    public Command note5or4() {
+        return standardMagic("Source Move 5 Shoot", "Source Shot - 4", "Source 5-4");
     }
 
     public Command note4or3() {
-        Command shoot = new SubAutoGenerator().addPath("Source 4 - Shot")
-                .addNamedCommand("Magic Shoot")
-                .addPath("Source Move Shot - 3");
-        Command bail = new SubAutoGenerator().addPath("Source 4 - 3");
+        return standardMagic("Source 4 - Shot", "Source Move Shot - 3", "Source 4 - 3");
+    }
 
-        return m_decision.noteDecision(shoot, bail);
+    public Command note1or2() {
+        return standardMagic("Amp 1 - Magic", "Amp Magic - 2", "Amp 1 - 2");
+    }
+
+    public Command note2or3() {
+        return standardMagic("Amp 2 - Magic", "Amp Magic - 3", "Amp 2 - 3");
     }
 }

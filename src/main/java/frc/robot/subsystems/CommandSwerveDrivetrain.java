@@ -92,7 +92,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     private static final double STATIC_ALIGN_VELOCITY = 6.0;
     private static final double STATIC_ALIGN_ACCELERATION = 12.0;
 
-    private static final double LOCK_ALIGN_kP = 10.0;
+    private static final double LOCK_ALIGN_kP = 8.5;
 
     private static final double TARGET_ACQUIRE_THRESHOLD = 1.0;
     private static final double TARGET_ACQUIRE_kP = 6.0;

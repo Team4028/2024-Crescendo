@@ -1,0 +1,49 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.4,
+      "y": 7.0
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Fast Amp P - 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "1 Or 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "2 Or 3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Amp 3 - Magic"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Magic Shoot"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Amp",
+  "choreoAuto": false
+}

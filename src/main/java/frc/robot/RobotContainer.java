@@ -490,6 +490,9 @@ public class RobotContainer {
         /* Sub Autos */
         NamedCommands.registerCommand("5 Or 4", m_autos.note5or4());
         NamedCommands.registerCommand("4 Or 3", m_autos.note4or3());
+
+        NamedCommands.registerCommand("1 Or 2", m_autos.note1or2());
+        NamedCommands.registerCommand("2 Or 3", m_autos.note2or3());
     }
 
     // =========================== //

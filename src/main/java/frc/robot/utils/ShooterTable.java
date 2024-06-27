@@ -21,7 +21,6 @@ public class ShooterTable {
         public double Beans;
         public Measure<Distance> HeckyOffset;
 
-
         public ShooterTableEntry(Measure<Distance> distance, double angle, double beans,
                 Measure<Distance> heckyOffset) {
             Angle = angle;

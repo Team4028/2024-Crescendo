@@ -3,37 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.29786628183122,
-        "y": 4.1046482092964185
+        "x": 7.859619544742445,
+        "y": 7.332280822279766
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.237359146467175,
-        "y": 5.707404164210171
+        "x": 6.601258779928784,
+        "y": 6.804036913964029
       },
       "isLocked": false,
-      "linkedName": "Note 3"
+      "linkedName": "Note 1"
     },
     {
       "anchor": {
-        "x": 5.51582290717155,
-        "y": 6.907771326059532
+        "x": 8.004999676106735,
+        "y": 5.7683414150385355
       },
       "prevControl": {
-        "x": 7.031966404929399,
-        "y": 6.62916636974648
+        "x": 6.812204660483146,
+        "y": 6.0581869989243335
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Amp Shot"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Finish Infeeding",
-      "waypointRelativePos": 0,
+      "name": "Infeed",
+      "waypointRelativePos": 0.5,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,7 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Finish Infeed"
+                "name": "Smart Infeed"
               }
             }
           ]
@@ -51,20 +51,20 @@
   ],
   "globalConstraints": {
     "maxVelocity": 6.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 1080.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 10.96,
+    "rotation": -28.91942083714058,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "Amp",
   "previewStartingState": {
-    "rotation": -34.48000000000002,
+    "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }
