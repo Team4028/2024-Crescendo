@@ -1,0 +1,49 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.28,
+      "y": 3.34
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source Move Shot 4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "4 Or 5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "5 Or 3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source Move 3 - Shot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Magic Shoot"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Source",
+  "choreoAuto": false
+}

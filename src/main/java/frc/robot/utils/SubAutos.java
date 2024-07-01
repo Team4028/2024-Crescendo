@@ -28,6 +28,14 @@ public class SubAutos {
         return standardMagic("Source Move 5 Shoot", "Source Shot - 4", "Source 5-4");
     }
 
+    public Command note4or5() {
+        return standardMagic("Source 4 - Shot", "Source Shot - 5", "Source 4-5");
+    }
+
+    public Command note5or3() {
+        return standardMagic("Source Move 5 Shoot", "Source Move Shot - 3", "Trans 5-3");
+    }
+
     public Command note4or3() {
         return standardMagic("Source 4 - Shot", "Source Move Shot - 3", "Source 4 - 3");
     }
