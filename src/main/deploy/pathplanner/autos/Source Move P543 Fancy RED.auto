@@ -12,9 +12,21 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "MT2 Loc OFF"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Source Move Shot RED"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "MT2 Loc ON"
           }
         },
         {

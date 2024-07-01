@@ -100,6 +100,7 @@ public class Robot extends TimedRobot {
         SignalLogger.setPath("/media/sda1/ctre");
         DataLogManager.start();
         SignalLogger.start();
+        m_robotContainer.setUseMT2(true);
 
         if (m_autonomousCommand != null) {
             m_autonomousCommand.cancel();

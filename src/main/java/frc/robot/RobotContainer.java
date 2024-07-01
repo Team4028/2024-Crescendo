@@ -22,6 +22,7 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -160,6 +161,7 @@ public class RobotContainer {
     private SendableChooser<Command> autonChooser;
 
     private final SubAutos autos;
+    private boolean useMT2 = true;
 
     // ====================================================== //
     /** Drivetrain Constants, Magic numbers, and ` Limiters */
@@ -499,6 +501,9 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("2 Or 1", autos.note2or1());
         NamedCommands.registerCommand("1 Or 3", autos.note1or3());
+
+        NamedCommands.registerCommand("MT2 Loc ON", Commands.runOnce(() -> useMT2 = true));
+        NamedCommands.registerCommand("MT2 Loc OFF", Commands.runOnce(() -> useMT2 = false));
     }
 
     // =========================== //
@@ -1349,6 +1354,9 @@ public class RobotContainer {
     public void updateDrivePoseMT2() {
         updateMTRot();
 
+        if (useMT2)
+            return;
+
         // Apply Chassis Limelight
         var visionResult = chassisLimelight.getBotposeEstimateMT2();
         var visionStdDevs = chassisLimelight.getSTDevsXY(drivetrain);
@@ -1384,6 +1392,14 @@ public class RobotContainer {
     public void setChassisPipeline() {
         selectedStrategy = chassisLimelight2dStrategy;
         chassisLimelight.setPipeline(TY_PIPELINE);
+    }
+
+    public boolean getUseMT2() {
+        return useMT2;
+    }
+
+    public void setUseMT2(boolean useMT2) {
+        this.useMT2 = useMT2;
     }
 
     public void setTeleopMT2RotationThresholds() {
