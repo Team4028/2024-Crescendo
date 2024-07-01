@@ -22,6 +22,7 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.SwerveDriveBrake;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -159,7 +160,8 @@ public class RobotContainer {
     private final Command ampPrep;
     private SendableChooser<Command> autonChooser;
 
-    private final SubAutos m_autos;
+    private final SubAutos autos;
+    private boolean useMT2 = true;
 
     // ====================================================== //
     /** Drivetrain Constants, Magic numbers, and ` Limiters */
@@ -267,7 +269,7 @@ public class RobotContainer {
         snapDrive.HeadingController = new PhoenixPIDController(10, 0., 0.);
         snapDrive.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
-        m_autos = new SubAutos(noteSensing);
+        autos = new SubAutos(noteSensing);
 
         /* Init Index Map */
         indexMap.put(4.2, "Speaker");
@@ -488,14 +490,20 @@ public class RobotContainer {
         NamedCommands.registerCommand("4 Piece C", pivot.runToPositionCommand(14.0));
 
         /* Sub Autos */
-        NamedCommands.registerCommand("5 Or 4", m_autos.note5or4());
-        NamedCommands.registerCommand("4 Or 3", m_autos.note4or3());
+        NamedCommands.registerCommand("5 Or 4", autos.note5or4());
+        NamedCommands.registerCommand("4 Or 3", autos.note4or3());
 
-        NamedCommands.registerCommand("1 Or 2", m_autos.note1or2());
-        NamedCommands.registerCommand("2 Or 3", m_autos.note2or3());
+        NamedCommands.registerCommand("1 Or 2", autos.note1or2());
+        NamedCommands.registerCommand("2 Or 3", autos.note2or3());
 
-        NamedCommands.registerCommand("4 Or 5", m_autos.note4or5());
-        NamedCommands.registerCommand("5 Or 3", m_autos.note5or3());
+        NamedCommands.registerCommand("4 Or 5", autos.note4or5());
+        NamedCommands.registerCommand("5 Or 3", autos.note5or3());
+
+        NamedCommands.registerCommand("2 Or 1", autos.note2or1());
+        NamedCommands.registerCommand("1 Or 3", autos.note1or3());
+
+        NamedCommands.registerCommand("MT2 Loc ON", Commands.runOnce(() -> useMT2 = true));
+        NamedCommands.registerCommand("MT2 Loc OFF", Commands.runOnce(() -> useMT2 = false));
     }
 
     // =========================== //
@@ -1346,6 +1354,9 @@ public class RobotContainer {
     public void updateDrivePoseMT2() {
         updateMTRot();
 
+        if (useMT2)
+            return;
+
         // Apply Chassis Limelight
         var visionResult = chassisLimelight.getBotposeEstimateMT2();
         var visionStdDevs = chassisLimelight.getSTDevsXY(drivetrain);
@@ -1381,6 +1392,14 @@ public class RobotContainer {
     public void setChassisPipeline() {
         selectedStrategy = chassisLimelight2dStrategy;
         chassisLimelight.setPipeline(TY_PIPELINE);
+    }
+
+    public boolean getUseMT2() {
+        return useMT2;
+    }
+
+    public void setUseMT2(boolean useMT2) {
+        this.useMT2 = useMT2;
     }
 
     public void setTeleopMT2RotationThresholds() {
