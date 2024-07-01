@@ -44,6 +44,14 @@ public class SubAutos {
         return standardMagic("Amp 1 - Magic", "Amp Magic - 2", "Amp 1 - 2");
     }
 
+    public Command note2or1() {
+        return standardMagic("Amp 2 - Magic", "Amp Magic - 1", "Trans 2-1");
+    }
+
+    public Command note1or3() {
+        return standardMagic("Amp 1 - Magic", "Amp Magic - 3", "Trans 1-3");
+    }
+
     public Command note2or3() {
         return standardMagic("Amp 2 - Magic", "Amp Magic - 3", "Amp 2 - 3");
     }
