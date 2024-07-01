@@ -88,7 +88,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
 
     private Rotation2d alignmentTarget = new Rotation2d();
 
-    private static final double STATIC_ALIGN_kP = 8.0;
+    private static final double STATIC_ALIGN_kP = 6.0;
     private static final double STATIC_ALIGN_VELOCITY = 6.0;
     private static final double STATIC_ALIGN_ACCELERATION = 12.0;
 

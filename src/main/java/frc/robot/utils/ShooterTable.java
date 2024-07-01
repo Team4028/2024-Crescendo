@@ -89,11 +89,11 @@ public class ShooterTable {
         shooterTable.add(new ShooterTableEntry(Feet.of(14.5), 6.5 + 0.25, 1.0, Feet.of(0.0)));
         shooterTable.add(new ShooterTableEntry(Feet.of(16), 5.1 + 0.25, 1.0, Feet.of(0.0))); 
         shooterTable.add(new ShooterTableEntry(Feet.of(17.5), 4.9 + 0.25, 1.0, Feet.of(0.0)));
-        shooterTable.add(new ShooterTableEntry(Feet.of(19), 4.4 + 0.25, 1.0, Feet.of(0.0)));        
-        shooterTable.add(new ShooterTableEntry(Feet.of(20.5), 3.58 + 0.25, 1.0, Feet.of(0.0)));     
-        shooterTable.add(new ShooterTableEntry(Feet.of(22), 3.1 + 0.25, 1.0, Feet.of(0.0))); 
-        shooterTable.add(new ShooterTableEntry(Feet.of(24), 2.6 + 0.25, 1.0, Feet.of(0.0)));
-        shooterTable.add(new ShooterTableEntry(Feet.of(27), 0.25 + 0.25, 0.98, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(19), 4.4 + 0.125, 1.0, Feet.of(0.0)));        
+        shooterTable.add(new ShooterTableEntry(Feet.of(20.5), 3.5 + 0., 1.0, Feet.of(0.0)));     
+        shooterTable.add(new ShooterTableEntry(Feet.of(22), 3.1 + 0., 1.0, Feet.of(0.0))); 
+        shooterTable.add(new ShooterTableEntry(Feet.of(24), 2.6 + 0., 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(27), 0.25 + 0., 0.98, Feet.of(0.0)));
 
         // shuttle table entries
         if (AT_HOME_SHUTTLE_TABLE) {

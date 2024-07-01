@@ -1120,7 +1120,7 @@ public class RobotContainer {
                 .andThen(runEntryCommand(() -> entryToRun,
                         () -> ShotSpeeds.FAST)
                         .alongWith(drivetrain.speakerAlign(strategy, offset).withTimeout(0.5)
-                                .until(() -> Math.abs(strategy.get().getTargetOffset().getDegrees()) < 0.25))
+                                .unless(() -> Math.abs(strategy.get().getTargetOffset().getDegrees()) < 0.25))
                         .onlyIf(() -> lock))
                 .andThen(shootCommand(() -> entryToRun));
     }
