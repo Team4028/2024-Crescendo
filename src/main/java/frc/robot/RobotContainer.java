@@ -326,6 +326,15 @@ public class RobotContainer {
 
         DashboardStore.add("Strategy", () -> strategyMap.get(selectedStrategy));
 
+        DashboardStore.add("Auton Color", () -> {
+            if (autonChooser.getSelected().getName().contains("RED"))
+                return "RED";
+            else if (AutoBuilder.getAllAutoNames().contains(autonChooser.getSelected().getName() + " RED"))
+                return "BLUE";
+            else
+                return "NULL";
+        });
+
         LogStore.add("/Buttons/New Shoot", () -> emergencyController.getHID().getAButton()); // emergencyController.y().getAsBoolean());
         LogStore.add("/Buttons/Magic Shoot", () -> operatorController.getHID().getXButton()); // operatorController.x().getAsBoolean());
 
@@ -501,6 +510,8 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("2 Or 1", autos.note2or1());
         NamedCommands.registerCommand("1 Or 3", autos.note1or3());
+
+        NamedCommands.registerCommand("3 Or None", autos.note3orStop());
 
         NamedCommands.registerCommand("MT2 Loc ON", Commands.runOnce(() -> useMT2 = true));
         NamedCommands.registerCommand("MT2 Loc OFF", Commands.runOnce(() -> useMT2 = false));
@@ -1354,7 +1365,7 @@ public class RobotContainer {
     public void updateDrivePoseMT2() {
         updateMTRot();
 
-        if (useMT2)
+        if (!useMT2)
             return;
 
         // Apply Chassis Limelight

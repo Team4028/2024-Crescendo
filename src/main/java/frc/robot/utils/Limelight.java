@@ -82,14 +82,18 @@ public class Limelight extends VisionSystem {
 
     public Optional<Double[]> getSTDevsXY(CommandSwerveDrivetrain drivetrain) {
         var visionResults = getBotposeEstimateMT2();
-        boolean validPose = drivetrain.getTranslation().getDistance(visionResults.pose.getTranslation()) <= poseDifferenceThreshold;
+        boolean validPose = drivetrain.getTranslation()
+                .getDistance(visionResults.pose.getTranslation()) <= poseDifferenceThreshold;
 
         if (Math.abs(drivetrain.getState().speeds.omegaRadiansPerSecond) > angularVelocityThreshold
                 || Math.sqrt(Math.pow(drivetrain.getState().speeds.vxMetersPerSecond, 2)
-                        + Math.pow(drivetrain.getState().speeds.vyMetersPerSecond, 2)) > 5){
+                        + Math.pow(drivetrain.getState().speeds.vyMetersPerSecond, 2)) > 5) {
             return Optional.empty();
 
         } else if (visionResults.tagCount >= 2) {
+            if (!validPose) {
+                return Optional.of(new Double[] { 1.0, 1.0 });
+            }
             return Optional.of(new Double[] { 0.1, 0.1 });
         } else if (visionResults.tagCount == 1 && visionResults.avgTagArea >= 0.4
                 && validPose) {
@@ -117,7 +121,6 @@ public class Limelight extends VisionSystem {
         poseDifferenceThreshold = TELEOP_MT2_DISTANCE_THRESHOLD;
     }
 
-    
     public void setAutonMT2Threshold() {
         angularVelocityThreshold = AUTON_MT2_ROTATION_THRESHOLD;
         poseDifferenceThreshold = AUTON_MT2_DISTANCE_THRESHOLD;

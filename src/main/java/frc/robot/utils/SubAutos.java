@@ -5,22 +5,26 @@
 package frc.robot.utils;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 /** Add your docs here. */
 public class SubAutos {
-    private final DecisionCommands m_decision;
+    private final DecisionCommands decision;
 
     public SubAutos(NoteSensing sensing) {
-        m_decision = new DecisionCommands(sensing);
+        decision = new DecisionCommands(sensing);
     }
 
     private Command standardMagic(String successPath, String returnPath, String bailPath) {
-        Command shoot = new SubAutoGenerator().addPath(successPath)
-                .addNamedCommand("Magic Shoot")
-                .addPath(returnPath);
-        Command bail = new SubAutoGenerator().addPath(bailPath);
+        SubAutoGenerator shoot = new SubAutoGenerator().addPath(successPath)
+                .addNamedCommand("Magic Shoot");
+        if (returnPath != null)
+                shoot.addPath(returnPath);
+        Command bail = Commands.none();
+        if (bailPath != null)
+            bail = new SubAutoGenerator().addPath(bailPath);
 
-        return m_decision.noteDecision(shoot, bail);
+        return decision.noteDecision(shoot, bail);
 
     }
 
@@ -29,7 +33,7 @@ public class SubAutos {
     }
 
     public Command note4or5() {
-        return standardMagic("Source 4 - Shot", "Source Shot - 5", "Source 4-5");
+        return standardMagic("Source 4 - Shot", "Source Shot - 5", "Trans 4-5");
     }
 
     public Command note5or3() {
@@ -38,6 +42,10 @@ public class SubAutos {
 
     public Command note4or3() {
         return standardMagic("Source 4 - Shot", "Source Move Shot - 3", "Source 4 - 3");
+    }
+
+    public Command note3orStop() {
+        return standardMagic("Source Move 3 - Shot", null, null);
     }
 
     public Command note1or2() {

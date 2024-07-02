@@ -12,21 +12,9 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "MT2 Loc OFF"
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "Source Move Shot 4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "MT2 Loc ON"
+            "pathName": "Source Move Shot 4 No Spit"
           }
         },
         {
@@ -42,9 +30,9 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Source Move 3 - Shot"
+            "name": "3 Or None"
           }
         },
         {

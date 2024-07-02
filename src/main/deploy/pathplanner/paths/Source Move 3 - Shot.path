@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.421019051686065,
-        "y": 4.211590892754914
+        "x": 4.85069226914488,
+        "y": 4.321298685393376
       },
       "isLocked": false,
       "linkedName": "Note 3"
@@ -20,8 +20,8 @@
         "y": 2.564039342808056
       },
       "prevControl": {
-        "x": 5.014217943253985,
-        "y": 4.348668999023888
+        "x": 4.639897211320813,
+        "y": 4.2978770123018135
       },
       "nextControl": null,
       "isLocked": false,
@@ -29,7 +29,19 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Slow to Shot",
+      "minWaypointRelativePos": 0.5,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 6.0,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 1080.0
+      }
+    }
+  ],
   "eventMarkers": [
     {
       "name": "Finish Infeed",

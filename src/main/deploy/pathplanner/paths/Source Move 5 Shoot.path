@@ -29,7 +29,19 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Slow to Shoot",
+      "minWaypointRelativePos": 0.55,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 6.0,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 1080.0
+      }
+    }
+  ],
   "eventMarkers": [
     {
       "name": "Finish Infeed",
