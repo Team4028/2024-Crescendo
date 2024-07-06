@@ -44,8 +44,8 @@
   ],
   "eventMarkers": [
     {
-      "name": "Stop Infeed",
-      "waypointRelativePos": 0,
+      "name": "Finnish Infeed",
+      "waypointRelativePos": 0.5,
       "command": {
         "type": "parallel",
         "data": {
@@ -54,6 +54,23 @@
               "type": "named",
               "data": {
                 "name": "Finish Infeed"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Cache",
+      "waypointRelativePos": 0.1,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Cache hasInfed"
               }
             }
           ]

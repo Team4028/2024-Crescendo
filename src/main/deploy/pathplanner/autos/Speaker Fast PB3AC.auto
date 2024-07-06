@@ -30,15 +30,9 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.1
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "Magic Shoot"
+            "name": "PB3AC skip shot"
           }
         },
         {
@@ -56,7 +50,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Magic Shoot"
+            "name": "Magic Shoot++"
           }
         },
         {
@@ -74,7 +68,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Magic Shoot"
+            "name": "Magic Shoot++"
           }
         }
       ]

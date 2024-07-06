@@ -4,6 +4,7 @@
 
 package frc.robot.utils;
 
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 import com.playingwithfusion.TimeOfFlight;
@@ -12,6 +13,8 @@ import com.playingwithfusion.TimeOfFlight.RangingMode;
 public class NoteSensing {
     private final TimeOfFlight conveyorSensor;
     private final TimeOfFlight shooterSensor;
+
+    private boolean hasInfedCache = false;
 
     private static final double SHOOTER_THRESHOLD = 100.;
     private static final double CONVEYOR_THRESHOLD = 80.;
@@ -49,5 +52,17 @@ public class NoteSensing {
 
     public BooleanSupplier conveyorSeesNoteSupplier() {
         return this::conveyorSeesNote;
+    }
+
+    public BooleanSupplier getHasInfedCache() {
+        return () -> hasInfedCache;
+    }
+
+    public void setHasInfedCache(BooleanSupplier hasInfed) {
+        hasInfedCache = hasInfed.getAsBoolean();
+    }
+
+    public void cacheInfeedState() {
+        hasInfedCache = hasInfed();
     }
 }

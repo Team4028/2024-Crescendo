@@ -335,6 +335,8 @@ public class RobotContainer {
                 return "NULL";
         });
 
+        DashboardStore.add("Infed Cache", noteSensing.getHasInfedCache());
+
         LogStore.add("/Buttons/New Shoot", () -> emergencyController.getHID().getAButton()); // emergencyController.y().getAsBoolean());
         LogStore.add("/Buttons/Magic Shoot", () -> operatorController.getHID().getXButton()); // operatorController.x().getAsBoolean());
 
@@ -405,6 +407,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("Magic Shoot",
                 Commands.waitSeconds(0.1).andThen(magicShootCommand(() -> odometryStrategy)));// updateDrivePoseMT2Command().repeatedly().withTimeout(0.1).andThen(magicShootCommand(()
                                                                                               // -> odometryStrategy)));
+
+        NamedCommands.registerCommand("Magic Shoot++", magicShootCommand(() -> odometryStrategy));
 
         NamedCommands.registerCommand("Mega Tag Shoot", magicShootCommand(() -> odometryStrategy));
         NamedCommands.registerCommand("Choose Shoot", magicShootCommand());
@@ -515,6 +519,12 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("MT2 Loc ON", Commands.runOnce(() -> useMT2 = true));
         NamedCommands.registerCommand("MT2 Loc OFF", Commands.runOnce(() -> useMT2 = false));
+
+        NamedCommands.registerCommand("PB3AC skip shot", (Commands.waitSeconds(0.2)
+                .andThen(magicShootCommand(() -> odometryStrategy))).onlyIf(noteSensing.getHasInfedCache()));
+
+        NamedCommands.registerCommand("Cache hasInfed",
+                Commands.runOnce(noteSensing::cacheInfeedState));
     }
 
     // =========================== //
