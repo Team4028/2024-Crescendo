@@ -30,9 +30,9 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Amp 3 - Magic"
+            "name": "3 Or None Amp"
           }
         },
         {

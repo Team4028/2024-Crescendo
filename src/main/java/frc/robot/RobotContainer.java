@@ -516,6 +516,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("1 Or 3", autos.note1or3());
 
         NamedCommands.registerCommand("3 Or None", autos.note3orStop());
+        NamedCommands.registerCommand("3 Or None Amp", autos.note3orStopAmp());
 
         NamedCommands.registerCommand("MT2 Loc ON", Commands.runOnce(() -> useMT2 = true));
         NamedCommands.registerCommand("MT2 Loc OFF", Commands.runOnce(() -> useMT2 = false));
@@ -911,11 +912,11 @@ public class RobotContainer {
         // After 2s, Fan Down
         // Finally, Pivot Down
         return Commands.runOnce(() -> currentSequence = ClimbSequence.Default).andThen(m_fanPivot.runToTrapCommand()
-                .andThen(safeClimbCommand(climber.zeroCommand().until(climber::reverseLimitOn))
+                .andThen(safeClimbCommand(climber.zeroCommand().until(climber::reverseLimitOn))))
                         .andThen(pivot.runToHomeCommand())
                         .alongWith(m_fan.stopCommand())
                         .alongWith(shooter.stopCommand())
-                        .alongWith(Commands.waitSeconds(1).andThen(m_fanPivot.runToHomeCommand()))));
+                        .alongWith(Commands.waitSeconds(1).andThen(m_fanPivot.runToHomeCommand()));
     }
 
     /** Shoot */
