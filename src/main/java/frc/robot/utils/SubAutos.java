@@ -45,7 +45,7 @@ public class SubAutos {
     }
 
     public Command note3orStop() {
-        return standardMagic("Source Move 3 - Shot", null, null);
+        return standardMagic("Source Move 3 - Shot", "Source Move 3 - Shot", null);
     }
 
     public Command note1or2() {

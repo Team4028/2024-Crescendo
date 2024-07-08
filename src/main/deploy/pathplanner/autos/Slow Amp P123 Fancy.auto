@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.28,
-      "y": 3.34
+      "x": 1.4,
+      "y": 7.0
     },
     "rotation": 0
   },
@@ -12,21 +12,45 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "MT2 Loc OFF"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "Source Move Shot RED"
+            "pathName": "Slow Amp P"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "5 Or 4"
+            "name": "Magic Shoot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "4 Or 3"
+            "name": "MT2 Loc ON"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Slow Amp P - 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "2 Or 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "1 Or 3"
           }
         },
         {
@@ -44,6 +68,6 @@
       ]
     }
   },
-  "folder": "Source",
+  "folder": "Amp",
   "choreoAuto": false
 }
