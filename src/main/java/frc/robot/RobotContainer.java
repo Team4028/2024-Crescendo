@@ -245,7 +245,7 @@ public class RobotContainer {
     private boolean enableClimber = false;
     private boolean enableTrap = false;
 
-    private double m_lastShot = 0.0;
+    private double lastShot = 0.0;
 
     // ======================== //
     /** Swerve Control & Logging */
@@ -318,7 +318,7 @@ public class RobotContainer {
         DashboardStore.add("Infeed MT2 Distance", () -> BeakUtils
                 .goalTranslation(infeedLimelight3G.getBotposeEstimateMT2().pose.getTranslation()).getNorm());
 
-        DashboardStore.add("Last Shot", () -> m_lastShot);
+        DashboardStore.add("Last Shot", () -> lastShot);
         DashboardStore.add("Odometry Distance",
                 () -> Units.metersToFeet(
                         BeakUtils.goalTranslation(drivetrain.getTranslation())
@@ -1220,7 +1220,7 @@ public class RobotContainer {
     private Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShotSpeeds> speed) {
         return shooter.runEntryCommand(entry, speed)
                 .alongWith(pivot.runToPositionCommand(() -> entry.get().Angle))
-                .alongWith(Commands.runOnce(() -> m_lastShot = entry.get().Distance.in(Feet))
+                .alongWith(Commands.runOnce(() -> lastShot = entry.get().Distance.in(Feet))
                         .onlyIf(() -> entry.get().Distance != null));
     }
 

@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4,
-      "y": 7.0
+      "x": 1.41,
+      "y": 7.29
     },
     "rotation": 0
   },
@@ -11,12 +11,6 @@
     "type": "sequential",
     "data": {
       "commands": [
-        {
-          "type": "named",
-          "data": {
-            "name": "MT2 Loc OFF"
-          }
-        },
         {
           "type": "path",
           "data": {
@@ -30,12 +24,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "MT2 Loc ON"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Slow Amp P - 1"
@@ -44,13 +32,13 @@
         {
           "type": "named",
           "data": {
-            "name": "2 Or 1"
+            "name": "1 Or 2"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "1 Or 3"
+            "name": "2 Or 3"
           }
         },
         {

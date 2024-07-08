@@ -149,6 +149,40 @@
           ]
         }
       }
+    },
+    {
+      "name": "AT Off",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "MT2 Loc OFF"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "AT On",
+      "waypointRelativePos": 1.1,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "MT2 Loc ON"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "globalConstraints": {

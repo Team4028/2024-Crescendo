@@ -12,12 +12,6 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "MT2 Loc OFF"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Slow Amp P"
@@ -27,12 +21,6 @@
           "type": "named",
           "data": {
             "name": "Magic Shoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "MT2 Loc ON"
           }
         },
         {

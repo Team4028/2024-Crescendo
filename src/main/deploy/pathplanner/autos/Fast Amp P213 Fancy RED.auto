@@ -12,21 +12,9 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "MT2 Loc OFF"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Fast Amp P - 2 RED"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "MT2 Loc ON"
           }
         },
         {
