@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.function.BooleanSupplier;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -137,6 +139,10 @@ public class Climber extends SubsystemBase {
         });
     }
 
+    public Command runMotorRepeatedlyUnsafeCommand(double vBus, boolean useFoc) {
+        return run(() -> runMotor(vBus, useFoc));
+    }
+
     public boolean forwardLimit() {
         return forwardLimitSwitch.get() && voltage.getValueAsDouble() > 0.2;
     }
@@ -151,6 +157,14 @@ public class Climber extends SubsystemBase {
 
     public boolean reverseLimitOn() {
         return reverseLimitSwitch.get();
+    }
+
+    public BooleanSupplier forwardLimitOnSupplier() {
+        return forwardLimitSwitch::get;
+    }
+
+    public BooleanSupplier reverseLimitOnSupplier() {
+        return reverseLimitSwitch::get;
     }
 
     public void stop() {
@@ -219,6 +233,10 @@ public class Climber extends SubsystemBase {
 
     public Command zeroCommand() {
         return runMotorCommand(ZERO_VBUS, false).repeatedly();
+    }
+
+    public Command zeroUnsafeCommand() {
+        return runMotorRepeatedlyUnsafeCommand(ZERO_VBUS, false);
     }
 
     @Override

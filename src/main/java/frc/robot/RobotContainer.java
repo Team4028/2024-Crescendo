@@ -32,6 +32,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -104,7 +105,7 @@ public class RobotContainer {
     private final Climber climber = new Climber();
     private final Pivot pivot = new Pivot();
     private final Fan m_fan = new Fan();
-    private final FanPivot m_fanPivot = new FanPivot();
+    private final FanPivot fanPivot = new FanPivot();
     private final Whippy whippy = new Whippy();
 
     private final Candle candle = new Candle();
@@ -686,6 +687,14 @@ public class RobotContainer {
         operatorController.y()
                 .onTrue(toggleTrapCommand());
 
+        /* Full Outfeed: left Y */
+        operatorController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
+                .or(operatorController.axisLessThan(XboxController.Axis.kLeftY.value, -0.2))
+                .whileTrue(
+                        runThree(
+                                () -> -operatorController.getLeftY(),
+                                () -> -operatorController.getLeftY(),
+                                () -> -operatorController.getLeftY()));
         // ==================== //
         /* EMERGENCY CONTROLLER */
         // ==================== //
@@ -750,16 +759,16 @@ public class RobotContainer {
         emergencyController.b().onTrue(dumbCancelClimbCommand());
 
         /* Prime Fan Pivot & Shooter Pivot */
-        emergencyController.x().toggleOnTrue(
+        emergencyController.x().toggleOnTrue( // very bad
                 Commands.startEnd(() -> {
-                    m_fanPivot.runToTrap();
+                    fanPivot.runToTrap();
                     m_fan.runMotor(FAN_VBUS);
                 },
                         () -> {
-                            m_fanPivot.hold();
+                            fanPivot.hold();
                             m_fan.stop();
                         },
-                        m_fanPivot, m_fan));
+                        fanPivot, m_fan));
 
         // emergencyController.b().toggleOnTrue(coolShootCommand());
         // emergencyController.y()
@@ -894,7 +903,7 @@ public class RobotContainer {
         // Fan Pivot Up
         // Shooting Routine
         // Climber Up
-        return m_fanPivot.runToTrapCommand()
+        return fanPivot.runToTrapCommand()
                 .alongWith(m_fan.runMotorCommand(FAN_VBUS)
                         .andThen(BeakCommands.repeatCommand(fixNoteCommand(), 2))
                         .andThen(shooter.runShotCommand(ShotSpeeds.TRAP))
@@ -908,15 +917,22 @@ public class RobotContainer {
 
     private Command dumbCancelClimbCommand() {
         // Climber Down
-        // Stops fan spinn
-        // After 2s, Fan Down
+        // Stops fan/shooter spinn
+        // After 1s, Fan Down
         // Finally, Pivot Down
-        return Commands.runOnce(() -> currentSequence = ClimbSequence.Default).andThen(m_fanPivot.runToTrapCommand()
-                .andThen(safeClimbCommand(climber.zeroCommand().until(climber::reverseLimitOn))))
-                        .andThen(pivot.runToHomeCommand())
-                        .alongWith(m_fan.stopCommand())
-                        .alongWith(shooter.stopCommand())
-                        .alongWith(Commands.waitSeconds(1).andThen(m_fanPivot.runToHomeCommand()));
+        return Commands.runOnce(() -> currentSequence = ClimbSequence.Default).andThen(
+                fanPivot.runToTrapCommand(),
+                Commands.waitSeconds(0.2),
+                safeClimbCommand(
+                        climber.zeroUnsafeCommand().until(climber.reverseLimitOnSupplier())
+                                .alongWith(
+                                        Commands.waitSeconds(1).andThen(fanPivot.runToHomeCommand()),
+                                        m_fan.stopCommand(),
+                                        shooter.stopCommand())
+                                .andThen(
+                                        Commands.runOnce(() -> DriverStation.reportWarning("exited climb :)",
+                                                Thread.currentThread().getStackTrace())),
+                                        pivot.runToHomeCommand())));
     }
 
     /** Shoot */
@@ -931,7 +947,7 @@ public class RobotContainer {
         // Fan Stop
         // Shooter Stop/Fast Mode
         // Pivot Down if not climbing
-        return m_fanPivot.runToHomeCommand()
+        return fanPivot.runToHomeCommand()
                 .alongWith(m_fan.stopCommand())
                 .alongWith(shooter.stopCommand().andThen(shooter.setSlotCommand(Slots.FAST)))
                 .alongWith(safePivotCommand(pivot.runToHomeCommand()).unless(() -> enableClimber));
@@ -1251,7 +1267,7 @@ public class RobotContainer {
                 shooter.stopCommand().andThen(shooter.setSlotCommand(Shooter.Slots.FAST)),
                 pivot.runToHomeCommand(),
                 m_fan.stopCommand(),
-                m_fanPivot.runToHomeCommand(),
+                fanPivot.runToHomeCommand(),
                 whippy.stopCommand(),
                 driverCamera.setInfeedCameraCommand().onlyIf(() -> switchCamera),
                 Commands.runOnce(() -> currentSequence = ClimbSequence.Default));
@@ -1264,7 +1280,7 @@ public class RobotContainer {
 
     /** Zeroing Command */
     public Command zeroCommand() {
-        return pivot.zeroCommand().alongWith(m_fanPivot.runToHomeCommand());// .alongWith(climber.zeroCommand());
+        return pivot.zeroCommand().alongWith(fanPivot.runToHomeCommand());// .alongWith(climber.zeroCommand());
     }
 
     /** Asynchronous Zero */
@@ -1435,6 +1451,6 @@ public class RobotContainer {
     }
 
     public void homeFanPivot() {
-        m_fanPivot.runToHomeCommand().schedule();
+        fanPivot.runToHomeCommand().schedule();
     }
 }
