@@ -245,6 +245,7 @@ public class RobotContainer {
 
     private boolean enableClimber = false;
     private boolean enableTrap = false;
+    private boolean cancelClimbRequestShooterDown = false;
 
     private double lastShot = 0.0;
 
@@ -537,6 +538,8 @@ public class RobotContainer {
         /* Climber Limit Switch Triggers */
         new Trigger(climber::forwardLimit).onTrue(climber.hitForwardLimitCommand());
         new Trigger(climber::reverseLimit).onTrue(climber.hitReverseLimitCommand());
+        new Trigger(climber.reverseLimitOnSupplier()).and(() -> cancelClimbRequestShooterDown).onTrue(
+                pivot.runToHomeCommand().andThen(Commands.runOnce(() -> cancelClimbRequestShooterDown = false))); // I hate it but it works lol
 
         // ================ //
         /* Default Commands */
@@ -920,7 +923,10 @@ public class RobotContainer {
         // Stops fan/shooter spinn
         // After 1s, Fan Down
         // Finally, Pivot Down
-        return Commands.runOnce(() -> currentSequence = ClimbSequence.Default).andThen(
+        return Commands.runOnce(() -> {
+            currentSequence = ClimbSequence.Default;
+            cancelClimbRequestShooterDown = true;
+        }).andThen(
                 fanPivot.runToTrapCommand(),
                 Commands.waitSeconds(0.2),
                 safeClimbCommand(
@@ -931,8 +937,8 @@ public class RobotContainer {
                                         shooter.stopCommand())
                                 .andThen(
                                         Commands.runOnce(() -> DriverStation.reportWarning("exited climb :)",
-                                                Thread.currentThread().getStackTrace())),
-                                        pivot.runToHomeCommand())));
+                                                Thread.currentThread().getStackTrace()))// ,
+                                /* pivot.runToHomeCommand() */)));
     }
 
     /** Shoot */
