@@ -539,7 +539,13 @@ public class RobotContainer {
         new Trigger(climber::forwardLimit).onTrue(climber.hitForwardLimitCommand());
         new Trigger(climber::reverseLimit).onTrue(climber.hitReverseLimitCommand());
         new Trigger(climber.reverseLimitOnSupplier()).and(() -> cancelClimbRequestShooterDown).onTrue(
-                pivot.runToHomeCommand().andThen(Commands.runOnce(() -> cancelClimbRequestShooterDown = false))); // I hate it but it works lol
+                pivot.runToHomeCommand().andThen(Commands.runOnce(() -> cancelClimbRequestShooterDown = false))); // I
+                                                                                                                  // hate
+                                                                                                                  // it
+                                                                                                                  // but
+                                                                                                                  // it
+                                                                                                                  // works
+                                                                                                                  // lol
 
         // ================ //
         /* Default Commands */
@@ -759,7 +765,7 @@ public class RobotContainer {
 
         /* Climb Sequence */
         emergencyController.a().onTrue(sequenceCommand());
-        emergencyController.b().onTrue(dumbCancelClimbCommand());
+        emergencyController.y().onTrue(dumbCancelClimbCommand());
 
         /* Prime Fan Pivot & Shooter Pivot */
         emergencyController.x().toggleOnTrue( // very bad
@@ -777,7 +783,7 @@ public class RobotContainer {
         // emergencyController.y()
         // .toggleOnTrue(magicShootCommand(() -> selectedStrategy, ztrue,
         // Rotation2d.fromDegrees(-4.0)));
-        emergencyController.y().onTrue(toggleTrapCommand());
+        emergencyController.b().onTrue(toggleTrapCommand());
 
         /* Full Outfeed: left Y */
         emergencyController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
@@ -919,10 +925,7 @@ public class RobotContainer {
     }
 
     private Command dumbCancelClimbCommand() {
-        // Climber Down
-        // Stops fan/shooter spinn
-        // After 1s, Fan Down
-        // Finally, Pivot Down
+
         return Commands.runOnce(() -> {
             currentSequence = ClimbSequence.Default;
             cancelClimbRequestShooterDown = true;
@@ -930,15 +933,11 @@ public class RobotContainer {
                 fanPivot.runToTrapCommand(),
                 Commands.waitSeconds(0.2),
                 safeClimbCommand(
-                        climber.zeroUnsafeCommand().until(climber.reverseLimitOnSupplier())
+                        climber.zeroCommand().until(climber.reverseLimitOnSupplier())
                                 .alongWith(
                                         Commands.waitSeconds(1).andThen(fanPivot.runToHomeCommand()),
                                         m_fan.stopCommand(),
-                                        shooter.stopCommand())
-                                .andThen(
-                                        Commands.runOnce(() -> DriverStation.reportWarning("exited climb :)",
-                                                Thread.currentThread().getStackTrace()))// ,
-                                /* pivot.runToHomeCommand() */)));
+                                        shooter.stopCommand())));
     }
 
     /** Shoot */

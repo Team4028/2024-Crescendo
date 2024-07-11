@@ -59,6 +59,23 @@
           ]
         }
       }
+    },
+    {
+      "name": "Cache Infeed",
+      "waypointRelativePos": 0.5,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Cache hasInfed"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "globalConstraints": {

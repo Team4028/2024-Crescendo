@@ -32,16 +32,16 @@
     },
     {
       "anchor": {
-        "x": 8.41058639382236,
-        "y": 2.3739133518153084
+        "x": 8.399075742516676,
+        "y": 2.5412515304345873
       },
       "prevControl": {
-        "x": 7.7351491832637205,
-        "y": 1.7108650040140863
+        "x": 7.723638531958036,
+        "y": 1.878203182633365
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Note 4 Spit"
+      "linkedName": null
     }
   ],
   "rotationTargets": [

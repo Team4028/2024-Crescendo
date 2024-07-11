@@ -6,15 +6,17 @@ package frc.robot.utils;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants;
 
 /** Add your docs here. */
 public class DecisionCommands {
     // private final CommandSwerveDrivetrain m_drivetrain;
     private final NoteSensing m_sensing;
 
-    // public DecisionCommands(CommandSwerveDrivetrain drivetrain, NoteSensing sensing) {
-    //     m_drivetrain = drivetrain;
-    //     m_sensing = sensing;
+    // public DecisionCommands(CommandSwerveDrivetrain drivetrain, NoteSensing
+    // sensing) {
+    // m_drivetrain = drivetrain;
+    // m_sensing = sensing;
     // }
 
     public DecisionCommands(NoteSensing m_sensing) {
@@ -22,8 +24,8 @@ public class DecisionCommands {
     }
 
     public Command noteDecision(Command hasNote, Command noNote) {
-        return Commands.waitUntil(m_sensing::hasInfed).withTimeout(0.5)
-        .andThen(Commands.either(
-            hasNote, noNote, m_sensing::hasInfed));
+        return Commands.waitUntil(m_sensing::hasInfed).withTimeout(Constants.AUTON_SECONDS_LINE_DELAY)
+                .andThen(Commands.either(
+                        hasNote, noNote, m_sensing::hasInfed));
     }
 }
