@@ -235,13 +235,8 @@ public class Climber extends SubsystemBase {
         return runMotorCommand(ZERO_VBUS, false).repeatedly();
     }
 
-    public Command zeroUnsafeCommand() {
-        return runMotorRepeatedlyUnsafeCommand(ZERO_VBUS, false);
-    }
-
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        // motor.set(SmartDashboard.getNumber("Climber VBus", ));
     }
 }

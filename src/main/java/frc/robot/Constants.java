@@ -34,7 +34,7 @@ public final class Constants {
 
     public static final Pose2d NOTE_C_SHOT = new Pose2d(2.75, 4.15, Rotation2d.fromDegrees(-34.));
 
-    public static final double AUTON_SECONDS_LINE_DELAY = 1.d;
+    public static final double AUTON_SECONDS_LINE_DELAY = 0.5;
 
     public static enum AutoPoses {
         AMP_SHOT(new Translation2d(4.73, 6.95)),
