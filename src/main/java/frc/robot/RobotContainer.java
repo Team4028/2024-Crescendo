@@ -693,9 +693,6 @@ public class RobotContainer {
 
         operatorController.b().onTrue(ampPrep).onFalse(stopAllCommand(true));
 
-        operatorController.y()
-                .onTrue(toggleTrapCommand());
-
         /* Full Outfeed: left Y */
         operatorController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
                 .or(operatorController.axisLessThan(XboxController.Axis.kLeftY.value, -0.2))
