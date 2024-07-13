@@ -104,8 +104,8 @@ public class ShooterTable {
             shuttleTable.add(new ShooterTableEntry(Feet.of(31), 14, 0.55, Feet.zero()));
             shuttleTable.add(new ShooterTableEntry(Feet.of(36), 12, 0.65, Feet.zero()));
         } else {
-            shuttleTable.add(new ShooterTableEntry(Feet.of(27), 28.5, 0.63, Feet.zero()));
-            shuttleTable.add(new ShooterTableEntry(Feet.of(31), 28.5, 0.675, Feet.zero()));
+            shuttleTable.add(new ShooterTableEntry(Feet.of(27), 28.5, 0.55, Feet.zero()));
+            shuttleTable.add(new ShooterTableEntry(Feet.of(31), 28.5, 0.65, Feet.zero()));
             shuttleTable.add(new ShooterTableEntry(Feet.of(36), 24, 0.70, Feet.zero()));
         }
 
