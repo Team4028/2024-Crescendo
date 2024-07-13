@@ -1122,7 +1122,8 @@ public class RobotContainer {
                                         Meters.of(odometryStrategy
                                                 .getDrivetrainGoalTranslation(
                                                         true)
-                                                .getNorm())),
+                                                .getNorm()))
+                                        .addBeans(shortShuttle ? Constants.SHUTTLE_BEAN_MODIFIER : 0),
                                 () -> ShotSpeeds.FAST))
                         .repeatedly());
     }

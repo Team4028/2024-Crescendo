@@ -29,6 +29,11 @@ public class ShooterTable {
             HeckyOffset = heckyOffset;
         }
 
+        public ShooterTableEntry addBeans(double beans) {
+            this.Beans += beans;
+            return this;
+        }
+
         public ShooterTableEntry average(ShooterTableEntry other) {
             return new ShooterTableEntry(Distance.plus(other.Distance).divide(2.), (Angle + other.Angle) / 2,
                     (Beans + other.Beans) / 2, Feet.zero());
