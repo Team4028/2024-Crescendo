@@ -669,9 +669,6 @@ public class RobotContainer {
                         Commands.runOnce(() -> presetIndex -= 1),
                         () -> useManual).andThen(this::pushIndexData));
 
-        /* Shuttle Prep */
-        operatorController.leftStick().onTrue(shuttleCommand());
-
         // ========================= //
         /* Pivot Control */
         // ========================= //
@@ -682,7 +679,10 @@ public class RobotContainer {
         /* Run Pivot Zero */
         // operatorController.a().onTrue(pivot.runToHomeCommand());
         operatorController.a()
-                .onTrue(Commands.runOnce(() -> selectedStrategy = odometryStrategy).andThen(shuttleCommand()));
+                .onTrue(Commands.runOnce(() -> selectedStrategy = odometryStrategy).andThen(shuttleCommand(false)));
+
+        operatorController.y()
+                .onTrue(Commands.runOnce(() -> selectedStrategy = odometryStrategy).andThen(shuttleCommand(true)));
 
         /* Zero Climber */
         operatorController.rightStick().onTrue(safeClimbCommand(climber.zeroCommand()));
@@ -1111,13 +1111,13 @@ public class RobotContainer {
         return magicLockCommand(() -> selectedStrategy);
     }
 
-    private Command shuttleCommand() {
+    private Command shuttleCommand(boolean shortShuttle) {
         return updateDrivePoseMT2Command()
                 .andThen(drivetrain
                         .applyRequest(() -> snapDrive.withTargetDirection(
                                 BeakUtils.passingTranslation(odometryStrategy
                                         .getDrivetrainFieldTranslation(true))
-                                        .getAngle())
+                                        .getAngle().rotateBy(BeakUtils.getShuttleOffset(shortShuttle)))
                                 .withVelocityX(getXSpeed(true))
                                 .withVelocityY(getYSpeed(true)))
                         .alongWith(runEntryCommand(
