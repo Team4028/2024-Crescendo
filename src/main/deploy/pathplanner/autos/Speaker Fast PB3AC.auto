@@ -12,9 +12,21 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "MT2 Loc OFF"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Fast Speaker P - B"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "MT2 Loc ON"
           }
         },
         {
