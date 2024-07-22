@@ -50,10 +50,4 @@ public final class BeakUtils {
     public static Translation2d passingTarget() {
         return allianceIsBlue() ? Constants.SHUTTLE_BLUE : Constants.SPEAKER_RED;
     }
-
-    public static Rotation2d getShuttleOffset(boolean shortShuttle) {
-        if (!shortShuttle)
-            return Rotation2d.fromDegrees(0);
-        return allianceIsBlue() ? Constants.SHUTTLE_SHORT_OFFSET_BLUE : Constants.SHUTTLE_SHORT_OFFSET_RED;
-    }
 }

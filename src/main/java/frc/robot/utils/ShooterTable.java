@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants;
 import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 
 public class ShooterTable {
@@ -77,6 +78,7 @@ public class ShooterTable {
 
     private static ArrayList<ShooterTableEntry> shooterTable = new ArrayList<>();
     private static ArrayList<ShooterTableEntry> shuttleTable = new ArrayList<>();
+    private static ArrayList<ShooterTableEntry> shortShuttleTable = new ArrayList<>();
     private static ArrayList<VisionTableEntry> visionTable = new ArrayList<>();
 
     private static Supplier<Rotation2d> heckinessSupplier;
@@ -109,10 +111,13 @@ public class ShooterTable {
             shuttleTable.add(new ShooterTableEntry(Feet.of(31), 14, 0.55, Feet.zero()));
             shuttleTable.add(new ShooterTableEntry(Feet.of(36), 12, 0.65, Feet.zero()));
         } else {
-            shuttleTable.add(new ShooterTableEntry(Feet.of(27), 28.5, 0.55, Feet.zero()));
+            shuttleTable.add(new ShooterTableEntry(Feet.of(27), 28.5, 0.60, Feet.zero()));
             shuttleTable.add(new ShooterTableEntry(Feet.of(31), 28.5, 0.65, Feet.zero()));
             shuttleTable.add(new ShooterTableEntry(Feet.of(36), 24, 0.70, Feet.zero()));
         }
+
+        for (var ste : shuttleTable)
+            shortShuttleTable.add(ste.addBeans(Constants.SHUTTLE_BEAN_MODIFIER));
 
         // vision table entries
         visionTable.add(new VisionTableEntry(Feet.of(4.4), 4.34, 0, 20.87, 12.57));
@@ -210,47 +215,87 @@ public class ShooterTable {
 
         return new VisionTableEntry(interpolatedDistance, cameraValue, cameraValue, cameraValue, cameraValue);
     }
-
-    public static ShooterTableEntry calcShuttleTableEntry(Measure<Distance> distance) {
-        ShooterTableEntry closestLower = shuttleTable.get(0);
-        ShooterTableEntry closestHigher = shuttleTable.get(shuttleTable.size() - 1);
-
-        if (distance.lte(closestLower.Distance))
-            return closestLower;
-        if (distance.gte(closestHigher.Distance))
-            return closestHigher;
-
-        // loop thru all of the entrys of the shootertable
-        for (ShooterTableEntry entry : shooterTable) {
-            if (entry.Distance.lt(distance)
-                    && (Math.abs(distance.minus(closestLower.Distance).baseUnitMagnitude()) > Math
-                            .abs(distance.minus(entry.Distance).baseUnitMagnitude()))) {
-                closestLower = entry;
-            } else if (entry.Distance.gt(distance)
-                    && (Math.abs(closestHigher.Distance.minus(distance).baseUnitMagnitude()) > Math
-                            .abs(entry.Distance.minus(distance).baseUnitMagnitude()))) {
-                closestHigher = entry;
-            } else if (entry.Distance.isEquivalent(distance)) {
-                return entry;
+    
+        public static ShooterTableEntry calcShuttleTableEntry(Measure<Distance> distance) {
+            ShooterTableEntry closestLower = shuttleTable.get(0);
+            ShooterTableEntry closestHigher = shuttleTable.get(shuttleTable.size() - 1);
+    
+            if (distance.lte(closestLower.Distance))
+                return closestLower;
+            if (distance.gte(closestHigher.Distance))
+                return closestHigher;
+    
+            // loop thru all of the entrys of the shootertable
+            for (ShooterTableEntry entry : shooterTable) {
+                if (entry.Distance.lt(distance)
+                        && (Math.abs(distance.minus(closestLower.Distance).baseUnitMagnitude()) > Math
+                                .abs(distance.minus(entry.Distance).baseUnitMagnitude()))) {
+                    closestLower = entry;
+                } else if (entry.Distance.gt(distance)
+                        && (Math.abs(closestHigher.Distance.minus(distance).baseUnitMagnitude()) > Math
+                                .abs(entry.Distance.minus(distance).baseUnitMagnitude()))) {
+                    closestHigher = entry;
+                } else if (entry.Distance.isEquivalent(distance)) {
+                    return entry;
+                }
             }
+    
+            double scaleFactor = (distance.minus(closestLower.Distance).baseUnitMagnitude())
+                    / (closestHigher.Distance.minus(closestLower.Distance).baseUnitMagnitude());
+    
+            double calculatedBeans = scaleFactor * (closestHigher.Beans -
+                    closestLower.Beans)
+                    + closestLower.Beans;
+    
+            double calculatedAngle = scaleFactor * (closestHigher.Angle -
+                    closestLower.Angle) + closestLower.Angle;
+    
+            var calculatedHeckyOffset = closestHigher.HeckyOffset.minus(closestLower.HeckyOffset).times(scaleFactor)
+                    .plus(closestLower.HeckyOffset);
+    
+            return new ShooterTableEntry(distance, calculatedAngle, calculatedBeans, calculatedHeckyOffset);
         }
-
-        double scaleFactor = (distance.minus(closestLower.Distance).baseUnitMagnitude())
-                / (closestHigher.Distance.minus(closestLower.Distance).baseUnitMagnitude());
-
-        double calculatedBeans = scaleFactor * (closestHigher.Beans -
-                closestLower.Beans)
-                + closestLower.Beans;
-
-        double calculatedAngle = scaleFactor * (closestHigher.Angle -
-                closestLower.Angle) + closestLower.Angle;
-
-        var calculatedHeckyOffset = closestHigher.HeckyOffset.minus(closestLower.HeckyOffset).times(scaleFactor)
-                .plus(closestLower.HeckyOffset);
-
-        return new ShooterTableEntry(distance, calculatedAngle, calculatedBeans, calculatedHeckyOffset);
-    }
-
+    
+        public static ShooterTableEntry calcShortShuttleTableEntry(Measure<Distance> distance) {
+            ShooterTableEntry closestLower = shortShuttleTable.get(0);
+            ShooterTableEntry closestHigher = shortShuttleTable.get(shortShuttleTable.size() - 1);
+    
+            if (distance.lte(closestLower.Distance))
+                return closestLower;
+            if (distance.gte(closestHigher.Distance))
+                return closestHigher;
+    
+            // loop thru all of the entrys of the shootertable
+            for (ShooterTableEntry entry : shooterTable) {
+                if (entry.Distance.lt(distance)
+                        && (Math.abs(distance.minus(closestLower.Distance).baseUnitMagnitude()) > Math
+                                .abs(distance.minus(entry.Distance).baseUnitMagnitude()))) {
+                    closestLower = entry;
+                } else if (entry.Distance.gt(distance)
+                        && (Math.abs(closestHigher.Distance.minus(distance).baseUnitMagnitude()) > Math
+                                .abs(entry.Distance.minus(distance).baseUnitMagnitude()))) {
+                    closestHigher = entry;
+                } else if (entry.Distance.isEquivalent(distance)) {
+                    return entry;
+                }
+            }
+    
+            double scaleFactor = (distance.minus(closestLower.Distance).baseUnitMagnitude())
+                    / (closestHigher.Distance.minus(closestLower.Distance).baseUnitMagnitude());
+    
+            double calculatedBeans = scaleFactor * (closestHigher.Beans -
+                    closestLower.Beans)
+                    + closestLower.Beans;
+    
+            double calculatedAngle = scaleFactor * (closestHigher.Angle -
+                    closestLower.Angle) + closestLower.Angle;
+    
+            var calculatedHeckyOffset = closestHigher.HeckyOffset.minus(closestLower.HeckyOffset).times(scaleFactor)
+                    .plus(closestLower.HeckyOffset);
+    
+            return new ShooterTableEntry(distance, calculatedAngle, calculatedBeans, calculatedHeckyOffset);
+        }
+    
     public static ShooterTableEntry calcShooterTableEntry(Measure<Distance> distance) {
         SmartDashboard.putNumber("Index", distance.in(Feet));
         ShooterTableEntry closestLower = shooterTable.get(0);

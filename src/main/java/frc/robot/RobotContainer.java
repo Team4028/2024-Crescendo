@@ -679,10 +679,10 @@ public class RobotContainer {
         /* Run Pivot Zero */
         // operatorController.a().onTrue(pivot.runToHomeCommand());
         operatorController.a()
-                .onTrue(Commands.runOnce(() -> selectedStrategy = odometryStrategy).andThen(shuttleCommand(false)));
+                .onTrue(Commands.runOnce(() -> selectedStrategy = odometryStrategy).andThen(shuttleCommand()));
 
         operatorController.y()
-                .onTrue(Commands.runOnce(() -> selectedStrategy = odometryStrategy).andThen(shuttleCommand(true)));
+                .onTrue(Commands.runOnce(() -> selectedStrategy = odometryStrategy).andThen(shuttleShortCommand()));
 
         /* Zero Climber */
         operatorController.rightStick().onTrue(safeClimbCommand(climber.zeroCommand()));
@@ -1108,13 +1108,13 @@ public class RobotContainer {
         return magicLockCommand(() -> selectedStrategy);
     }
 
-    private Command shuttleCommand(boolean shortShuttle) {
+    private Command shuttleCommand() {
         return updateDrivePoseMT2Command()
                 .andThen(drivetrain
                         .applyRequest(() -> snapDrive.withTargetDirection(
                                 BeakUtils.passingTranslation(odometryStrategy
                                         .getDrivetrainFieldTranslation(true))
-                                        .getAngle().rotateBy(BeakUtils.getShuttleOffset(shortShuttle)))
+                                        .getAngle())
                                 .withVelocityX(getXSpeed(true))
                                 .withVelocityY(getYSpeed(true)))
                         .alongWith(runEntryCommand(
@@ -1122,8 +1122,28 @@ public class RobotContainer {
                                         Meters.of(odometryStrategy
                                                 .getDrivetrainGoalTranslation(
                                                         true)
-                                                .getNorm()))
-                                        .addBeans(shortShuttle ? Constants.SHUTTLE_BEAN_MODIFIER : 0),
+                                                .getNorm())),
+                                () -> ShotSpeeds.FAST))
+                        .repeatedly());
+    }
+
+    private Command shuttleShortCommand() {
+        return updateDrivePoseMT2Command()
+                .andThen(drivetrain
+                        .applyRequest(() -> snapDrive.withTargetDirection(
+                                BeakUtils.passingTranslation(odometryStrategy
+                                        .getDrivetrainFieldTranslation(true))
+                                        .getAngle()
+                                        .rotateBy(BeakUtils.allianceIsBlue() ? Constants.SHUTTLE_SHORT_OFFSET_BLUE
+                                                : Constants.SHUTTLE_SHORT_OFFSET_RED))
+                                .withVelocityX(getXSpeed(true))
+                                .withVelocityY(getYSpeed(true)))
+                        .alongWith(runEntryCommand(
+                                () -> ShooterTable.calcShortShuttleTableEntry(
+                                        Meters.of(odometryStrategy
+                                                .getDrivetrainGoalTranslation(
+                                                        true)
+                                                .getNorm())),
                                 () -> ShotSpeeds.FAST))
                         .repeatedly());
     }
