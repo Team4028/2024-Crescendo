@@ -563,6 +563,13 @@ public class RobotContainer {
                         },
                         m_fanPivot, m_fan));
 
+        driverController.y().onTrue(whippy.whippyWheelsCommand(WHIPPY_VBUS)).onFalse(whippy.stopCommand());
+
+        operatorController.a().onTrue(shootCommand(25)
+                .andThen(shooter.stopCommand().alongWith(infeed.stopCommand())));
+
+        
+
         // /* Climber Limit Switch Triggers */
         // new Trigger(climber::forwardLimit).onTrue(climber.hitForwardLimitCommand());
         // new Trigger(climber::reverseLimit).onTrue(climber.hitReverseLimitCommand());
@@ -1566,8 +1573,8 @@ public class RobotContainer {
     /** Auton Command */
     public Command getAutonomousCommand() {
         // return new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d()))
-        //         .andThen(NamedCommands.getCommand("AprilTag Zero"))
-        //         .andThen(autonChooser.getSelected());
+        // .andThen(NamedCommands.getCommand("AprilTag Zero"))
+        // .andThen(autonChooser.getSelected());
         return Commands.none();
     }
 

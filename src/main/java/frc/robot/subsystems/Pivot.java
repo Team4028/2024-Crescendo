@@ -145,7 +145,7 @@ public class Pivot extends SubsystemBase {
         DashboardStore.add("Pivot Velocity", encoder::getVelocity);
     }
 
-    private double convertEncoderToRadians(double encoder) {
+    public static double convertEncoderToRadians(double encoder) {
         double sideC = (encoder / ConversionConstants.LINEAR_ACTUATOR_REDUCTION
                 * ConversionConstants.LINEAR_ACTUATOR_ROTATIONS_TO_INCHES_SCALAR)
                 + ConversionConstants.LINEAR_ACTUATOR_INITIAL_LENGTH;
@@ -159,6 +159,25 @@ public class Pivot extends SubsystemBase {
                                 * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT));
 
         return angle - INCIDENT_OFFSET;
+    }
+
+    public static double convertRadiansToEncoder(double radians) {
+        // e / LAR * LARTIS + L0 = sc
+        // cos = (SPTLAP^2 + SPTTSP^2 - sc * sc) / 2(SPTLAP * SPTTSP)
+        // cos / 2(SPTLAP * SPTTSP) = SPTLAP^2 + SPTTSP^2 - sc^2
+        // -(cos / 2(SPTLAP * SPTTSP) - SPTLAP^2 - SPTTSP^2) = sc^2
+        // sqrt(-(cos / 2(SPTLAP * SPTTSP) - SPTLAP^2 - SPTTSP^2)) = sc
+        // sqrt(-(cos / 2(SPTLAP * SPTTSP) - SPTLAP^2 - SPTTSP^2)) * LAR / LARTIS - L0 =
+        // e
+        double sideC = Math.sqrt(-(Math.cos(radians + INCIDENT_OFFSET) / 2
+                * (ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                        * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT)
+                - Math.pow(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT, 2)
+                - Math.pow(ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT, 2)));
+
+        return Math.max(MIN_POSITION, Math.min(MAX_POSITION, sideC * ConversionConstants.LINEAR_ACTUATOR_REDUCTION
+                / ConversionConstants.LINEAR_ACTUATOR_ROTATIONS_TO_INCHES_SCALAR
+                - ConversionConstants.LINEAR_ACTUATOR_INITIAL_LENGTH));
     }
 
     // ==================================

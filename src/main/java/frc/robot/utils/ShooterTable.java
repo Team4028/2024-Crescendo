@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.subsystems.Pivot;
 import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 
 public class ShooterTable {
@@ -75,6 +76,8 @@ public class ShooterTable {
     private static ArrayList<VisionTableEntry> visionTable = new ArrayList<>();
 
     private static Supplier<Rotation2d> heckinessSupplier;
+
+    public static final ShooterTableEntry FAT_MAN = new ShooterTableEntry(Feet.of(7), 23.8, 1.0, Feet.of(0));
 
     private static void fillInTable() { // TODO: fill in photonStationaryDistance values
         // put entries here
