@@ -14,7 +14,7 @@ import frc.robot.Constants;
 import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 
 public class ShooterTable {
-    private static final boolean AT_HOME_SHUTTLE_TABLE = false;
+    private static final boolean AT_HOME_SHUTTLE_TABLE = true;
 
     public static final class ShooterTableEntry {
         public Measure<Distance> Distance;
