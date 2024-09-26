@@ -1,0 +1,25 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.4301601648330688,
+      "y": 5.55
+    },
+    "rotation": 9.649598742249632e-23
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "PB3AC"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Choreo Middle",
+  "choreoAuto": true
+}
