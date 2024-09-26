@@ -93,7 +93,7 @@ public class ShooterTable {
         shooterTable.add(new ShooterTableEntry(Feet.of(5), 28.0 + GLOBAL_OFFSET + 0.25, 0.7, Feet.of(0.0)));
         shooterTable.add(new ShooterTableEntry(Feet.of(6), 23.8 + GLOBAL_OFFSET + 0.25, 0.8, Feet.of(0.0)));
         shooterTable.add(new ShooterTableEntry(Feet.of(8), 17.0 + GLOBAL_OFFSET + 0.25, 0.9, Feet.of(0.0)));
-        shooterTable.add(new ShooterTableEntry(Feet.of(10), 13.1 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(10), 13.1 + GLOBAL_OFFSET + 0.25, 0.5, Feet.of(0.0)));
         shooterTable.add(new ShooterTableEntry(Feet.of(11.5), 10.2 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
         shooterTable.add(new ShooterTableEntry(Feet.of(13), 7.7 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
         shooterTable.add(new ShooterTableEntry(Feet.of(14.5), 6.5 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));

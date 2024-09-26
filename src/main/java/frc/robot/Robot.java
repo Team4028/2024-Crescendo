@@ -56,6 +56,9 @@ public class Robot extends TimedRobot {
     public void disabledInit() {
         DataLogManager.stop();
         SignalLogger.stop();
+
+        var tmp = m_robotContainer.getFan().getCurrentCommand();
+        if (tmp != null) tmp.cancel();
     }
 
     @Override
