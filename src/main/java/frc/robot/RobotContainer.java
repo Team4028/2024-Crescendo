@@ -176,7 +176,7 @@ public class RobotContainer {
     private static final double MAX_ANGULAR_SPEED = 4 * Math.PI; // 2rps
 
     private static final double BASE_SPEED = 0.25;
-    private static final double SLOW_SPEED = 0.07;
+    private static final double SLOW_SPEED = 0.14;
 
     private double currentSpeed = SLOW_SPEED;
 
@@ -586,7 +586,7 @@ public class RobotContainer {
 
         operatorController.b().onTrue(new InstantCommand(() -> deadmanOn = true))
                 .onFalse(new InstantCommand(() -> deadmanOn = false));
-        operatorController.a().onTrue(shootCommand(10));
+        operatorController.a().onTrue(shootCommand(() -> new ShooterTableEntry(Feet.zero(), 0, 0.5, Feet.zero())));
         operatorController.back().onTrue(Commands.runOnce(() -> fanEnabled = !fanEnabled));
 
         // // ================= //
