@@ -20,88 +20,81 @@ import frc.robot.utils.LogStore;
 import frc.robot.utils.SignalStore;
 
 public class FanPivot extends SubsystemBase {
-    private final TalonFX motor;
+	private final TalonFX motor;
 
-    private final StatusSignal<Double> position, current;
+	private final StatusSignal<Double> position, current;
 
-    private static final int CAN_ID = 17;
+	private static final int CAN_ID = 17;
 
-    public static final double TRAP_POSITION = 0.57;
+	public static final double TRAP_POSITION = 0.57;
 
-    /* Requests */
-    private final PositionDutyCycle positionRequest = new PositionDutyCycle(0.)
-            .withOverrideBrakeDurNeutral(true);
+	/* Requests */
+	private final PositionDutyCycle positionRequest = new PositionDutyCycle(0.).withOverrideBrakeDurNeutral(true);
 
-    private final Slot0Configs trapConfigs = new Slot0Configs()
-            .withKP(0.4)
-            .withKI(0.0)
-            .withKD(0.0);
+	private final Slot0Configs trapConfigs = new Slot0Configs().withKP(0.4).withKI(0.0).withKD(0.0);
 
-    private final Slot1Configs holdConfigs = new Slot1Configs()
-            .withKP(0.8);
+	private final Slot1Configs holdConfigs = new Slot1Configs().withKP(0.8);
 
-    private final ClosedLoopRampsConfigs closedLoopRampsConfigs = new ClosedLoopRampsConfigs()
-            .withDutyCycleClosedLoopRampPeriod(0.25);
+	private final ClosedLoopRampsConfigs closedLoopRampsConfigs = new ClosedLoopRampsConfigs()
+			.withDutyCycleClosedLoopRampPeriod(0.25);
 
-    double targetPosition = 0;
+	double targetPosition = 0;
 
-    /** Creates a new FanPivot. */
-    public FanPivot() {
-        /* Setup */
-        motor = new TalonFX(CAN_ID);
-        motor.setNeutralMode(NeutralModeValue.Brake);
+	/** Creates a new FanPivot. */
+	public FanPivot() {
+		/* Setup */
+		motor = new TalonFX(CAN_ID);
+		motor.setNeutralMode(NeutralModeValue.Brake);
 
-        position = motor.getPosition();
-        current = motor.getStatorCurrent();
+		position = motor.getPosition();
+		current = motor.getStatorCurrent();
 
-        motor.getConfigurator().apply(trapConfigs);
-        motor.getConfigurator().apply(holdConfigs);
-        motor.getConfigurator().apply(closedLoopRampsConfigs);
-        motor.setPosition(0.);
+		motor.getConfigurator().apply(trapConfigs);
+		motor.getConfigurator().apply(holdConfigs);
+		motor.getConfigurator().apply(closedLoopRampsConfigs);
+		motor.setPosition(0.);
 
-        /* CAN Bus */
-        BaseStatusSignal.setUpdateFrequencyForAll(20.0, current, position);
-        motor.optimizeBusUtilization();
+		/* CAN Bus */
+		BaseStatusSignal.setUpdateFrequencyForAll(20.0, current, position);
+		motor.optimizeBusUtilization();
 
-        SignalStore.add(current, position);
+		SignalStore.add(current, position);
 
-        /* Logs */
-        LogStore.add("/Fan/Pivot/Position", position::getValueAsDouble);
-        LogStore.add("/Fan/Pivot/Current", current::getValueAsDouble);
+		/* Logs */
+		LogStore.add("/Fan/Pivot/Position", position::getValueAsDouble);
+		LogStore.add("/Fan/Pivot/Current", current::getValueAsDouble);
 
-        DashboardStore.add("Fan Pivot Position", position::getValueAsDouble);
-    }
+		DashboardStore.add("Fan Pivot Position", position::getValueAsDouble);
+	}
 
-    public void runToTrap() {
-        targetPosition = TRAP_POSITION;
-        motor.setControl(positionRequest.withPosition(targetPosition).withSlot(0));
-    }
+	public void runToTrap() {
+		targetPosition = TRAP_POSITION;
+		motor.setControl(positionRequest.withPosition(targetPosition).withSlot(0));
+	}
 
-    public Command runToTrapCommand() {
-        return runOnce(this::runToTrap);
-    }
+	public Command runToTrapCommand() {
+		return runOnce(this::runToTrap);
+	}
 
-    public void hold() {
-        targetPosition = 0.0;
-        motor.setControl(positionRequest.withPosition(targetPosition).withSlot(1));
-    }
+	public void hold() {
+		targetPosition = 0.0;
+		motor.setControl(positionRequest.withPosition(targetPosition).withSlot(1));
+	}
 
-    public Command runToHomeCommand() {
-        return runOnce(this::hold);
-    }
+	public Command runToHomeCommand() {
+		return runOnce(this::hold);
+	}
 
-    public void runMotor(double vbus) {
-        motor.set(vbus);
-    }
+	public void runMotor(double vbus) {
+		motor.set(vbus);
+	}
 
-    public Command runMotorCommand(double vbus) {
-        return startEnd(
-                () -> runMotor(vbus),
-                () -> runMotor(0.));
-    }
+	public Command runMotorCommand(double vbus) {
+		return startEnd(() -> runMotor(vbus), () -> runMotor(0.));
+	}
 
-    @Override
-    public void periodic() {
-        // This method will be called once per scheduler run
-    }
+	@Override
+	public void periodic() {
+		// This method will be called once per scheduler run
+	}
 }

@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.WrapperCommand;
 
 /** Add your docs here. */
 public class BeakWrappedCommand extends WrapperCommand {
-    public BeakWrappedCommand(Command command) {
-        super(command);
-    }
+	public BeakWrappedCommand(Command command) {
+		super(command);
+	}
 }

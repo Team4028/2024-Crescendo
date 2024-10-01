@@ -17,35 +17,35 @@ import edu.wpi.first.wpilibj.DataLogManager;
 
 /** Add your docs here. */
 public final class LogStore {
-    private static final DataLog log = DataLogManager.getLog();
+	private static final DataLog log = DataLogManager.getLog();
 
-    private static HashMap<DoubleLogEntry, DoubleSupplier> doubleEntries = new HashMap<>();
-    private static HashMap<StringLogEntry, Supplier<String>> stringEntries = new HashMap<>();
-    private static HashMap<BooleanLogEntry, BooleanSupplier> boolEntries = new HashMap<>();
+	private static HashMap<DoubleLogEntry, DoubleSupplier> doubleEntries = new HashMap<>();
+	private static HashMap<StringLogEntry, Supplier<String>> stringEntries = new HashMap<>();
+	private static HashMap<BooleanLogEntry, BooleanSupplier> boolEntries = new HashMap<>();
 
-    public static void add(String name, DoubleSupplier value) {
-        doubleEntries.put(new DoubleLogEntry(log, name), value);
-    }
+	public static void add(String name, DoubleSupplier value) {
+		doubleEntries.put(new DoubleLogEntry(log, name), value);
+	}
 
-    public static void add(String name, Supplier<String> value) {
-        stringEntries.put(new StringLogEntry(log, name), value);
-    }
+	public static void add(String name, Supplier<String> value) {
+		stringEntries.put(new StringLogEntry(log, name), value);
+	}
 
-    public static void add(String name, BooleanSupplier value) {
-        boolEntries.put(new BooleanLogEntry(log, name), value);
-    }
+	public static void add(String name, BooleanSupplier value) {
+		boolEntries.put(new BooleanLogEntry(log, name), value);
+	}
 
-    public static void update() {
-        doubleEntries.forEach((entry, value) -> {
-            entry.append(value.getAsDouble());
-        });
+	public static void update() {
+		doubleEntries.forEach((entry, value) -> {
+			entry.append(value.getAsDouble());
+		});
 
-        stringEntries.forEach((entry, value) -> {
-            entry.append(value.get());
-        });
+		stringEntries.forEach((entry, value) -> {
+			entry.append(value.get());
+		});
 
-        boolEntries.forEach((entry, value) -> {
-            entry.append(value.getAsBoolean());
-        });
-    }
+		boolEntries.forEach((entry, value) -> {
+			entry.append(value.getAsBoolean());
+		});
+	}
 }

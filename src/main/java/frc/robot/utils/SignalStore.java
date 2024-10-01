@@ -10,16 +10,16 @@ import com.ctre.phoenix6.BaseStatusSignal;
 
 /** Add your docs here. */
 public final class SignalStore {
-    private static ArrayList<BaseStatusSignal> signals = new ArrayList<>();
+	private static ArrayList<BaseStatusSignal> signals = new ArrayList<>();
 
-    public static void add(BaseStatusSignal... signal) {
-        for (BaseStatusSignal status : signal) {
-            signals.add(status);
-            System.out.println(signals);
-        }
-    }
+	public static void add(BaseStatusSignal... signal) {
+		for (BaseStatusSignal status : signal) {
+			signals.add(status);
+			System.out.println(signals);
+		}
+	}
 
-    public static void update() {
-        BaseStatusSignal.refreshAll(signals.toArray(new BaseStatusSignal[0]));
-    }
+	public static void update() {
+		BaseStatusSignal.refreshAll(signals.toArray(new BaseStatusSignal[0]));
+	}
 }

@@ -10,22 +10,21 @@ import frc.robot.Constants;
 
 /** Add your docs here. */
 public class DecisionCommands {
-    // private final CommandSwerveDrivetrain m_drivetrain;
-    private final NoteSensing m_sensing;
+	// private final CommandSwerveDrivetrain m_drivetrain;
+	private final NoteSensing m_sensing;
 
-    // public DecisionCommands(CommandSwerveDrivetrain drivetrain, NoteSensing
-    // sensing) {
-    // m_drivetrain = drivetrain;
-    // m_sensing = sensing;
-    // }
+	// public DecisionCommands(CommandSwerveDrivetrain drivetrain, NoteSensing
+	// sensing) {
+	// m_drivetrain = drivetrain;
+	// m_sensing = sensing;
+	// }
 
-    public DecisionCommands(NoteSensing m_sensing) {
-        this.m_sensing = m_sensing;
-    }
+	public DecisionCommands(NoteSensing m_sensing) {
+		this.m_sensing = m_sensing;
+	}
 
-    public Command noteDecision(Command hasNote, Command noNote) {
-        return Commands.waitUntil(m_sensing::hasInfed).withTimeout(Constants.AUTON_SECONDS_LINE_DELAY)
-                .andThen(Commands.either(
-                        hasNote, noNote, m_sensing::hasInfed));
-    }
+	public Command noteDecision(Command hasNote, Command noNote) {
+		return Commands.waitUntil(m_sensing::hasInfed).withTimeout(Constants.AUTON_SECONDS_LINE_DELAY)
+				.andThen(Commands.either(hasNote, noNote, m_sensing::hasInfed));
+	}
 }

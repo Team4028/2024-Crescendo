@@ -1,7 +1,18 @@
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2024.3.2"
+    id "com.diffplug.spotless" version "7.0.0.BETA2"
 }
+
+spotless {
+    java {
+        removeUnusedImports()
+        eclipse()
+        formatAnnotations()
+    }
+}
+
+compileJava.dependsOn 'spotlessApply'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -56,6 +67,7 @@ def includeDesktopSupport = true
 // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
 // Also defines JUnit 5.
 dependencies {
+
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
 

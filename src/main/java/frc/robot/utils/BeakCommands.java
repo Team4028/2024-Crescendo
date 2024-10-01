@@ -10,18 +10,18 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 /** Some Command helpers. */
 public final class BeakCommands {
-    /*
-     * Repeat the specified command n number of times.
-     */
-    public static Command repeatCommand(Command command, int n) {
-        SequentialCommandGroup cmd = new SequentialCommandGroup();
+	/*
+	 * Repeat the specified command n number of times.
+	 */
+	public static Command repeatCommand(Command command, int n) {
+		SequentialCommandGroup cmd = new SequentialCommandGroup();
 
-        for (int i = 0; i < n; ++i) {
-            BeakWrappedCommand copy = new BeakWrappedCommand(command);
-            cmd.addCommands(copy);
-            CommandScheduler.getInstance().removeComposedCommand(command);
-        }
+		for (int i = 0; i < n; ++i) {
+			BeakWrappedCommand copy = new BeakWrappedCommand(command);
+			cmd.addCommands(copy);
+			CommandScheduler.getInstance().removeComposedCommand(command);
+		}
 
-        return cmd;
-    }
+		return cmd;
+	}
 }

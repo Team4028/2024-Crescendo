@@ -18,99 +18,98 @@ import edu.wpi.first.math.geometry.Transform3d;
 
 /** Add your docs here. */
 public class PhotonVision extends VisionSystem {
-    private final PhotonCamera camera;
+	private final PhotonCamera camera;
 
-    private final PhotonPoseEstimator estimator;
+	private final PhotonPoseEstimator estimator;
 
-    public PhotonVision(String cameraName, Transform3d robotToCamera) {
-        super(cameraName, robotToCamera);
+	public PhotonVision(String cameraName, Transform3d robotToCamera) {
+		super(cameraName, robotToCamera);
 
-        camera = new PhotonCamera(cameraName);
+		camera = new PhotonCamera(cameraName);
 
-        estimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera,
-                robotToCamera);
-        estimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
+		estimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, robotToCamera);
+		estimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
 
-    }
+	}
 
-    private Optional<PhotonTrackedTarget> getTag(int tagID) {
-        for (PhotonTrackedTarget target : camera.getLatestResult().getTargets()) {
-            if (target.getFiducialId() == tagID) {
-                return Optional.of(target);
-            }
-        }
+	private Optional<PhotonTrackedTarget> getTag(int tagID) {
+		for (PhotonTrackedTarget target : camera.getLatestResult().getTargets()) {
+			if (target.getFiducialId() == tagID) {
+				return Optional.of(target);
+			}
+		}
 
-        return Optional.empty();
-    }
+		return Optional.empty();
+	}
 
-    public boolean getHasTarget() {
-        return camera.getLatestResult().hasTargets();
-    }
+	public boolean getHasTarget() {
+		return camera.getLatestResult().hasTargets();
+	}
 
-    public Optional<Rotation2d> getTagYaw(int tagID) {
-        Optional<PhotonTrackedTarget> target = getTag(tagID);
-        if (target.isEmpty())
-            return Optional.empty();
+	public Optional<Rotation2d> getTagYaw(int tagID) {
+		Optional<PhotonTrackedTarget> target = getTag(tagID);
+		if (target.isEmpty())
+			return Optional.empty();
 
-        Rotation2d yaw = Rotation2d.fromDegrees(target.get().getYaw());
+		Rotation2d yaw = Rotation2d.fromDegrees(target.get().getYaw());
 
-        return Optional.of(yaw);
-    }
+		return Optional.of(yaw);
+	}
 
-    public Optional<Rotation2d> getTagPitch(int tagID) {
-        Optional<PhotonTrackedTarget> target = getTag(tagID);
-        if (target.isEmpty())
-            return Optional.empty();
+	public Optional<Rotation2d> getTagPitch(int tagID) {
+		Optional<PhotonTrackedTarget> target = getTag(tagID);
+		if (target.isEmpty())
+			return Optional.empty();
 
-        Rotation2d pitch = Rotation2d.fromDegrees(target.get().getPitch());
+		Rotation2d pitch = Rotation2d.fromDegrees(target.get().getPitch());
 
-        return Optional.of(pitch);
-    }
+		return Optional.of(pitch);
+	}
 
-    public Optional<EstimatedRobotPose> getCameraResult(Pose2d prevPose) {
-        estimator.setReferencePose(prevPose);
-        Optional<EstimatedRobotPose> pose = estimator.update();
-        if (pose.isPresent() && !pose.get().strategy.equals(PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR)) {
-            int cameraTargetID = pose.get().targetsUsed.get(0).getFiducialId();
-            if (cameraTargetID != 7 && cameraTargetID != 8)
-                return Optional.empty();
-        }
-        return pose;
-    }
+	public Optional<EstimatedRobotPose> getCameraResult(Pose2d prevPose) {
+		estimator.setReferencePose(prevPose);
+		Optional<EstimatedRobotPose> pose = estimator.update();
+		if (pose.isPresent() && !pose.get().strategy.equals(PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR)) {
+			int cameraTargetID = pose.get().targetsUsed.get(0).getFiducialId();
+			if (cameraTargetID != 7 && cameraTargetID != 8)
+				return Optional.empty();
+		}
+		return pose;
+	}
 
-    // private Optional<Translation2d> getBestTranslationToTarget(int tagID) {
-    // var target = this.getTag(tagID);
+	// private Optional<Translation2d> getBestTranslationToTarget(int tagID) {
+	// var target = this.getTag(tagID);
 
-    // // cam: 9'11.5" real: 9'1"
-    // //
+	// // cam: 9'11.5" real: 9'1"
+	// //
 
-    // if (target.isEmpty()) {
-    // return Optional.empty();
-    // }
+	// if (target.isEmpty()) {
+	// return Optional.empty();
+	// }
 
-    // return
-    // Optional.of(target.get().getBestCameraToTarget().getTranslation().toTranslation2d());
-    // }
+	// return
+	// Optional.of(target.get().getBestCameraToTarget().getTranslation().toTranslation2d());
+	// }
 
-    // private PhotonTrackedTarget getBestTarget() {
-    // var result = camera.getLatestResult();
-    // if (!result.hasTargets())
-    // return null;
-    // return result.getBestTarget();
-    // }
+	// private PhotonTrackedTarget getBestTarget() {
+	// var result = camera.getLatestResult();
+	// if (!result.hasTargets())
+	// return null;
+	// return result.getBestTarget();
+	// }
 
-    // private PhotonTrackedTarget getTargetById(int id) {
-    // var result = camera.getLatestResult();
+	// private PhotonTrackedTarget getTargetById(int id) {
+	// var result = camera.getLatestResult();
 
-    // for (var target : result.getTargets()) {
-    // if (target.getFiducialId() == id)
-    // return target;
-    // }
+	// for (var target : result.getTargets()) {
+	// if (target.getFiducialId() == id)
+	// return target;
+	// }
 
-    // return null;
-    // }
+	// return null;
+	// }
 
-    public void setPipeline(int pipelineIndex) {
-        camera.setPipelineIndex(pipelineIndex);
-    }
+	public void setPipeline(int pipelineIndex) {
+		camera.setPipelineIndex(pipelineIndex);
+	}
 }

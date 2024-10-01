@@ -14,65 +14,65 @@ import frc.robot.utils.DashboardStore;
 import frc.robot.utils.LogStore;
 
 public class Whippy extends SubsystemBase {
-    private final CANSparkFlex motor;
+	private final CANSparkFlex motor;
 
-    private static final int CAN_ID = 16;
-    private static final int CURRENT_LIMIT = 40;
+	private static final int CAN_ID = 16;
+	private static final int CURRENT_LIMIT = 40;
 
-    /** Creates a new WhippyWheels. */
+	/** Creates a new WhippyWheels. */
 
-    public Whippy() {
-        motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
-        motor.setInverted(true);
-        motor.setSmartCurrentLimit(CURRENT_LIMIT);
+	public Whippy() {
+		motor = new CANSparkFlex(CAN_ID, MotorType.kBrushless);
+		motor.setInverted(true);
+		motor.setSmartCurrentLimit(CURRENT_LIMIT);
 
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 21);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 50);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 107);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 101);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 102);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 103);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
-        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
+		motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 21);
+		motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 50);
+		motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 107);
+		motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 101);
+		motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 102);
+		motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 103);
+		motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 104);
+		motor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 106);
 
-        /* Burn Flash */
-        motor.burnFlash();
+		/* Burn Flash */
+		motor.burnFlash();
 
-        /* Logging */
-        LogStore.add("Whippy/Velocity", motor.getEncoder()::getVelocity);
+		/* Logging */
+		LogStore.add("Whippy/Velocity", motor.getEncoder()::getVelocity);
 
-        /* Dashboard */
-        DashboardStore.add("Running/Whippy", this::isRunning);
-    }
+		/* Dashboard */
+		DashboardStore.add("Running/Whippy", this::isRunning);
+	}
 
-    // ==================================
-    // SHOOTER COMMANDS
-    // ==================================
+	// ==================================
+	// SHOOTER COMMANDS
+	// ==================================
 
-    /* Check if shooter is running */
-    public boolean isRunning() {
-        return Math.abs(motor.getEncoder().getVelocity()) > 50;
-    }
+	/* Check if shooter is running */
+	public boolean isRunning() {
+		return Math.abs(motor.getEncoder().getVelocity()) > 50;
+	}
 
-    public void whippyWheels(double vbus) {
-        motor.set(vbus);
-    }
+	public void whippyWheels(double vbus) {
+		motor.set(vbus);
+	}
 
-    public Command whippyWheelsCommand(double vbus) {
-        return runOnce(() -> whippyWheels(vbus));
-    }
+	public Command whippyWheelsCommand(double vbus) {
+		return runOnce(() -> whippyWheels(vbus));
+	}
 
-    public void stop() {
-        whippyWheels(0.);
-    }
+	public void stop() {
+		whippyWheels(0.);
+	}
 
-    public Command stopCommand() {
-        return whippyWheelsCommand(0.);
-    }
+	public Command stopCommand() {
+		return whippyWheelsCommand(0.);
+	}
 
-    @Override
-    public void periodic() {
-        // This method will be called once per scheduler ru
+	@Override
+	public void periodic() {
+		// This method will be called once per scheduler ru
 
-    }
+	}
 }

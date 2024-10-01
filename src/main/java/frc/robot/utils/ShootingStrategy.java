@@ -18,94 +18,92 @@ import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 
 /** Add your docs here. */
 public class ShootingStrategy {
-    private final CommandSwerveDrivetrain drivetrain;
+	private final CommandSwerveDrivetrain drivetrain;
 
-    private final VisionSystem vision;
-    private final CameraLerpStrat visionStrategy;
+	private final VisionSystem vision;
+	private final CameraLerpStrat visionStrategy;
 
-    public static final Rotation2d OFFSET = Rotation2d.fromDegrees(-3.0);
+	public static final Rotation2d OFFSET = Rotation2d.fromDegrees(-3.0);
 
-    /** Seconds */
-    private static final double FORWARD_LOOK_TIME = 0.1;
+	/** Seconds */
+	private static final double FORWARD_LOOK_TIME = 0.1;
 
-    public ShootingStrategy(VisionSystem vision, CameraLerpStrat visionStrategy) {
-        this.vision = vision;
-        this.visionStrategy = visionStrategy;
+	public ShootingStrategy(VisionSystem vision, CameraLerpStrat visionStrategy) {
+		this.vision = vision;
+		this.visionStrategy = visionStrategy;
 
-        drivetrain = null;
-    }
+		drivetrain = null;
+	}
 
-    public ShootingStrategy(CommandSwerveDrivetrain drivetrain) {
-        this.drivetrain = drivetrain;
+	public ShootingStrategy(CommandSwerveDrivetrain drivetrain) {
+		this.drivetrain = drivetrain;
 
-        vision = null;
-        visionStrategy = null;
-    }
+		vision = null;
+		visionStrategy = null;
+	}
 
-    public Translation2d getDrivetrainFieldTranslation(boolean moving) {
-        Translation2d pose = drivetrain.getTranslation();
+	public Translation2d getDrivetrainFieldTranslation(boolean moving) {
+		Translation2d pose = drivetrain.getTranslation();
 
-        if (moving) {
-            ChassisSpeeds speeds = drivetrain.getFieldRelativeChassisSpeeds();
-            pose = new Translation2d(
-                pose.getX() + speeds.vxMetersPerSecond * FORWARD_LOOK_TIME,
-                pose.getY() + speeds.vyMetersPerSecond * FORWARD_LOOK_TIME
-            );
-        }
+		if (moving) {
+			ChassisSpeeds speeds = drivetrain.getFieldRelativeChassisSpeeds();
+			pose = new Translation2d(pose.getX() + speeds.vxMetersPerSecond * FORWARD_LOOK_TIME,
+					pose.getY() + speeds.vyMetersPerSecond * FORWARD_LOOK_TIME);
+		}
 
-        return pose;
-    }
+		return pose;
+	}
 
-    public Translation2d getDrivetrainGoalTranslation(boolean moving) {
-        return BeakUtils.goalTranslation(getDrivetrainFieldTranslation(moving));
-    }
+	public Translation2d getDrivetrainGoalTranslation(boolean moving) {
+		return BeakUtils.goalTranslation(getDrivetrainFieldTranslation(moving));
+	}
 
-    public Rotation2d getTargetOffset(Rotation2d offset, boolean moving) {
-        if (vision == null) {
-            Translation2d translation = getDrivetrainGoalTranslation(moving);
+	public Rotation2d getTargetOffset(Rotation2d offset, boolean moving) {
+		if (vision == null) {
+			Translation2d translation = getDrivetrainGoalTranslation(moving);
 
-            Rotation2d totalAngle = translation.getAngle();
-            return totalAngle.minus(drivetrain.getRotation()).plus(offset);
-        } else if (drivetrain == null) {
-            Optional<Rotation2d> angle = vision.getTagYaw(BeakUtils.speakerTagID());
+			Rotation2d totalAngle = translation.getAngle();
+			return totalAngle.minus(drivetrain.getRotation()).plus(offset);
+		} else if (drivetrain == null) {
+			Optional<Rotation2d> angle = vision.getTagYaw(BeakUtils.speakerTagID());
 
-            if (angle.isEmpty()) {
-                return new Rotation2d();
-            }
+			if (angle.isEmpty()) {
+				return new Rotation2d();
+			}
 
-            return angle.get().plus(offset);
-        } else {
-            return new Rotation2d();
-        }
-    }
+			return angle.get().plus(offset);
+		} else {
+			return new Rotation2d();
+		}
+	}
 
-    public Rotation2d getTargetOffset(boolean moving) {
-        return getTargetOffset(OFFSET, moving);
-    }
+	public Rotation2d getTargetOffset(boolean moving) {
+		return getTargetOffset(OFFSET, moving);
+	}
 
-    public Rotation2d getTargetOffset() {
-        return getTargetOffset(OFFSET, false);
-    }
+	public Rotation2d getTargetOffset() {
+		return getTargetOffset(OFFSET, false);
+	}
 
-    public ShooterTableEntry getTargetEntry(boolean moving) {
-        if (vision == null) {
-            Translation2d translation = getDrivetrainGoalTranslation(moving);
+	public ShooterTableEntry getTargetEntry(boolean moving) {
+		if (vision == null) {
+			Translation2d translation = getDrivetrainGoalTranslation(moving);
 
-            return ShooterTable.calcShooterTableEntry(Meters.of(translation.getNorm()).plus(Feet.of(0.2)));
-        } else if (drivetrain == null) {
-            Optional<Rotation2d> pitch = vision.getTagPitch(BeakUtils.speakerTagID());
+			return ShooterTable.calcShooterTableEntry(Meters.of(translation.getNorm()).plus(Feet.of(0.2)));
+		} else if (drivetrain == null) {
+			Optional<Rotation2d> pitch = vision.getTagPitch(BeakUtils.speakerTagID());
 
-            if (pitch.isEmpty()) {
-                return ShooterTable.calcShooterTableEntry(Feet.of(20.0));
-            }
+			if (pitch.isEmpty()) {
+				return ShooterTable.calcShooterTableEntry(Feet.of(20.0));
+			}
 
-            return ShooterTable.calcShooterTableEntryCamera(pitch.get().getDegrees(), visionStrategy);
-        } else {
-            return ShooterTable.calcShooterTableEntry(Feet.of(20.0));
-        }
-    }
+			return ShooterTable.calcShooterTableEntryCamera(pitch.get().getDegrees(), visionStrategy);
+		} else {
+			return ShooterTable.calcShooterTableEntry(Feet.of(20.0));
+		}
+	}
 
-    public ShooterTableEntry getTargetEntry() {
-        return getTargetEntry(false);
-    }
+	public ShooterTableEntry getTargetEntry() {
+		return getTargetEntry(false);
+	}
 }

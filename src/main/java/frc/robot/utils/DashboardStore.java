@@ -18,32 +18,32 @@ import edu.wpi.first.networktables.NetworkTableValue;
 
 /** Add your docs here. */
 public final class DashboardStore {
-    private static Map<NetworkTableEntry, Supplier<NetworkTableValue>> values = new HashMap<NetworkTableEntry, Supplier<NetworkTableValue>>();
+	private static Map<NetworkTableEntry, Supplier<NetworkTableValue>> values = new HashMap<NetworkTableEntry, Supplier<NetworkTableValue>>();
 
-    private static NetworkTableEntry smartDashboardEntry(String key) {
-        return NetworkTableInstance.getDefault().getEntry("/SmartDashboard/" + key);
-    }
+	private static NetworkTableEntry smartDashboardEntry(String key) {
+		return NetworkTableInstance.getDefault().getEntry("/SmartDashboard/" + key);
+	}
 
-    public static void add(String key, BooleanSupplier value) {
-        values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeBoolean(value.getAsBoolean()));
-    }
+	public static void add(String key, BooleanSupplier value) {
+		values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeBoolean(value.getAsBoolean()));
+	}
 
-    public static void add(String key, DoubleSupplier value) {
-        values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeDouble(value.getAsDouble()));
-    }
+	public static void add(String key, DoubleSupplier value) {
+		values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeDouble(value.getAsDouble()));
+	}
 
-    public static void add(String key, IntSupplier value) {
-        values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeInteger(value.getAsInt()));
-    }
+	public static void add(String key, IntSupplier value) {
+		values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeInteger(value.getAsInt()));
+	}
 
-    public static void add(String key, Supplier<String> value) {
-        values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeString(value.get()));
-    }
+	public static void add(String key, Supplier<String> value) {
+		values.put(smartDashboardEntry(key), () -> NetworkTableValue.makeString(value.get()));
+	}
 
-    public static void update() {
-        values.forEach((key, value) -> {
-            key.setValue(value.get());
-        });
-    }
+	public static void update() {
+		values.forEach((key, value) -> {
+			key.setValue(value.get());
+		});
+	}
 
 }

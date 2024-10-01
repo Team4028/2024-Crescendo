@@ -12,20 +12,20 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 public class SubAutoGenerator extends SequentialCommandGroup {
-    /** Creates a new SubAutoGenerator. */
-    public SubAutoGenerator() {
-    }
+	/** Creates a new SubAutoGenerator. */
+	public SubAutoGenerator() {
+	}
 
-    public SubAutoGenerator addPath(String pathName) {
-        return addCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)));
-    }
+	public SubAutoGenerator addPath(String pathName) {
+		return addCommand(AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)));
+	}
 
-    public SubAutoGenerator addCommand(Command command) {
-        addCommands(command);
-        return this;
-    }
+	public SubAutoGenerator addCommand(Command command) {
+		addCommands(command);
+		return this;
+	}
 
-    public SubAutoGenerator addNamedCommand(String name) {
-        return addCommand(NamedCommands.getCommand(name));
-    }
+	public SubAutoGenerator addNamedCommand(String name) {
+		return addCommand(NamedCommands.getCommand(name));
+	}
 }

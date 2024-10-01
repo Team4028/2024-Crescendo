@@ -10,57 +10,51 @@ import edu.wpi.first.math.geometry.Translation2d;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
- * numerical or boolean
- * constants. This class should not be used for any other purpose. All constants
- * should be declared
- * globally (i.e. public static). Do not put anything functional in this class.
+ * numerical or boolean constants. This class should not be used for any other
+ * purpose. All constants should be declared globally (i.e. public static). Do
+ * not put anything functional in this class.
  *
  * <p>
  * It is advised to statically import this class (or one of its inner classes)
- * wherever the
- * constants are needed, to reduce verbosity.
+ * wherever the constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final Translation2d SPEAKER_BLUE = new Translation2d(0.0, 5.5);
-    public static final Translation2d SPEAKER_RED = new Translation2d(16.52, 5.5);
+	public static final Translation2d SPEAKER_BLUE = new Translation2d(0.0, 5.5);
+	public static final Translation2d SPEAKER_RED = new Translation2d(16.52, 5.5);
 
-    public static final Rotation2d SHUTTLE_SHORT_OFFSET_BLUE = Rotation2d.fromDegrees(5);
-    public static final Rotation2d SHUTTLE_SHORT_OFFSET_RED = Rotation2d.fromDegrees(-5);
-    public static final double SHUTTLE_BEAN_MODIFIER = -0.01;
+	public static final Rotation2d SHUTTLE_SHORT_OFFSET_BLUE = Rotation2d.fromDegrees(5);
+	public static final Rotation2d SHUTTLE_SHORT_OFFSET_RED = Rotation2d.fromDegrees(-5);
+	public static final double SHUTTLE_BEAN_MODIFIER = -0.01;
 
-    public static final Pose2d AMP_TARGET = new Pose2d(1.83, 7.27, new Rotation2d(Math.PI / 2.));
+	public static final Pose2d AMP_TARGET = new Pose2d(1.83, 7.27, new Rotation2d(Math.PI / 2.));
 
-    public static final Translation2d SHUTTLE_BLUE = new Translation2d(2.5, 8.22);
+	public static final Translation2d SHUTTLE_BLUE = new Translation2d(2.5, 8.22);
 
-    public static final Pose2d RIGHT_SHOT = new Pose2d(5.1, 1.9, Rotation2d.fromDegrees(-38.));
-    public static final Pose2d CENTER_SHOT = new Pose2d(4.5, 4.7, Rotation2d.fromDegrees(-15.5));
-    public static final Pose2d LEFT_SHOT = new Pose2d(5.3, 6.5, Rotation2d.fromDegrees(14.));
+	public static final Pose2d RIGHT_SHOT = new Pose2d(5.1, 1.9, Rotation2d.fromDegrees(-38.));
+	public static final Pose2d CENTER_SHOT = new Pose2d(4.5, 4.7, Rotation2d.fromDegrees(-15.5));
+	public static final Pose2d LEFT_SHOT = new Pose2d(5.3, 6.5, Rotation2d.fromDegrees(14.));
 
-    public static final Pose2d NOTE_C_SHOT = new Pose2d(2.75, 4.15, Rotation2d.fromDegrees(-34.));
+	public static final Pose2d NOTE_C_SHOT = new Pose2d(2.75, 4.15, Rotation2d.fromDegrees(-34.));
 
-    public static final double AUTON_SECONDS_LINE_DELAY = 0.5;
+	public static final double AUTON_SECONDS_LINE_DELAY = 0.5;
 
-    public static enum AutoPoses {
-        AMP_SHOT(new Translation2d(4.73, 6.95)),
-        MID_SHOT(new Translation2d(2.89, 5.54)),
-        SOURCE_SHOT(new Translation2d(3.87, 2.56)),
-        NOTE1(new Translation2d(8.4, 7.29)),
-        NOTE2(new Translation2d(8.4, 5.65)),
-        NOTE3(new Translation2d(8.4, 3.95)),
-        NOTE4(new Translation2d(8.4, 2.45)),
-        NOTE5(new Translation2d(8.4, 0.71));
+	public static enum AutoPoses {
+		AMP_SHOT(new Translation2d(4.73, 6.95)), MID_SHOT(new Translation2d(2.89, 5.54)), SOURCE_SHOT(
+				new Translation2d(3.87, 2.56)), NOTE1(new Translation2d(8.4, 7.29)), NOTE2(
+						new Translation2d(8.4, 5.65)), NOTE3(new Translation2d(8.4, 3.95)), NOTE4(
+								new Translation2d(8.4, 2.45)), NOTE5(new Translation2d(8.4, 0.71));
 
-        public static Rotation2d UPWARD_ROTATION = Rotation2d.fromDegrees(42.5);
-        public static Rotation2d DOWNWARD_ROTATION = Rotation2d.fromDegrees(-42.5);
-        public static Rotation2d AMP_SHOT_ROTATION = Rotation2d.fromDegrees(30.05);
-        public static Rotation2d MID_SHOT_ROTATION = Rotation2d.fromDegrees(0);
-        public static Rotation2d SOURCE_SHOT_ROTATION = Rotation2d.fromDegrees(-36);
-        public Translation2d pose;
+		public static Rotation2d UPWARD_ROTATION = Rotation2d.fromDegrees(42.5);
+		public static Rotation2d DOWNWARD_ROTATION = Rotation2d.fromDegrees(-42.5);
+		public static Rotation2d AMP_SHOT_ROTATION = Rotation2d.fromDegrees(30.05);
+		public static Rotation2d MID_SHOT_ROTATION = Rotation2d.fromDegrees(0);
+		public static Rotation2d SOURCE_SHOT_ROTATION = Rotation2d.fromDegrees(-36);
+		public Translation2d pose;
 
-        AutoPoses(Translation2d pose) {
-            this.pose = pose;
-        }
-    }
+		AutoPoses(Translation2d pose) {
+			this.pose = pose;
+		}
+	}
 }
 
 // RED: CCW: RIGHT

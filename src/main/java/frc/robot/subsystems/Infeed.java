@@ -17,63 +17,61 @@ import frc.robot.utils.LogStore;
 import frc.robot.utils.SignalStore;
 
 public class Infeed extends SubsystemBase {
-    private final TalonFX motor;
+	private final TalonFX motor;
 
-    private final StatusSignal<Double> current, velocity;
+	private final StatusSignal<Double> current, velocity;
 
-    private static final int CAN_ID = 18;
+	private static final int CAN_ID = 18;
 
-    private final CurrentLimitsConfigs currentLimitsConfigs = new CurrentLimitsConfigs()
-            .withSupplyCurrentLimit(50.)
-            .withStatorCurrentLimit(90.);
+	private final CurrentLimitsConfigs currentLimitsConfigs = new CurrentLimitsConfigs().withSupplyCurrentLimit(50.)
+			.withStatorCurrentLimit(90.);
 
-    private final MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs()
-            .withNeutralMode(NeutralModeValue.Brake)
-            .withInverted(InvertedValue.Clockwise_Positive);
+	private final MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs()
+			.withNeutralMode(NeutralModeValue.Brake).withInverted(InvertedValue.Clockwise_Positive);
 
-    /** Creates a new SensorMotor. */
-    public Infeed() {
-        motor = new TalonFX(CAN_ID);
+	/** Creates a new SensorMotor. */
+	public Infeed() {
+		motor = new TalonFX(CAN_ID);
 
-        current = motor.getStatorCurrent();
-        velocity = motor.getVelocity();
+		current = motor.getStatorCurrent();
+		velocity = motor.getVelocity();
 
-        motor.getConfigurator().apply(currentLimitsConfigs);
-        motor.getConfigurator().apply(motorOutputConfigs);
+		motor.getConfigurator().apply(currentLimitsConfigs);
+		motor.getConfigurator().apply(motorOutputConfigs);
 
-        /* CAN Bus */
-        BaseStatusSignal.setUpdateFrequencyForAll(10.0, velocity, current);
+		/* CAN Bus */
+		BaseStatusSignal.setUpdateFrequencyForAll(10.0, velocity, current);
 
-        motor.optimizeBusUtilization();
+		motor.optimizeBusUtilization();
 
-        SignalStore.add(current, velocity);
+		SignalStore.add(current, velocity);
 
-        /* Logs */
-        LogStore.add("/Infeed/Current", current::getValueAsDouble);
-        LogStore.add("/Infeed/Velocity", velocity::getValueAsDouble);
-    }
+		/* Logs */
+		LogStore.add("/Infeed/Current", current::getValueAsDouble);
+		LogStore.add("/Infeed/Velocity", velocity::getValueAsDouble);
+	}
 
-    // ==================================
-    // REAL STUFF
-    // ==================================
+	// ==================================
+	// REAL STUFF
+	// ==================================
 
-    public void runMotor(double vBus) {
-        motor.set(vBus);
-    }
+	public void runMotor(double vBus) {
+		motor.set(vBus);
+	}
 
-    public Command runMotorCommand(double vBus) {
-        return runOnce(() -> runMotor(vBus));
-    }
+	public Command runMotorCommand(double vBus) {
+		return runOnce(() -> runMotor(vBus));
+	}
 
-    public void stop() {
-        runMotor(0.);
-    }
+	public void stop() {
+		runMotor(0.);
+	}
 
-    public Command stopCommand() {
-        return runMotorCommand(0.);
-    }
+	public Command stopCommand() {
+		return runMotorCommand(0.);
+	}
 
-    @Override
-    public void periodic() {
-    }
+	@Override
+	public void periodic() {
+	}
 }

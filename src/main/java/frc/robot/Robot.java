@@ -20,125 +20,124 @@ import frc.robot.utils.SignalStore;
 import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 
 public class Robot extends TimedRobot {
-    private Command m_autonomousCommand;
+	private Command m_autonomousCommand;
 
-    private RobotContainer m_robotContainer;
+	private RobotContainer m_robotContainer;
 
-    private boolean hasZeroedPivot = false;
+	private boolean hasZeroedPivot = false;
 
-    @Override
-    public void robotInit() {
-        DataLogManager.start();
-        m_robotContainer = new RobotContainer();
-        m_robotContainer.setChassisPipeline();
+	@Override
+	public void robotInit() {
+		DataLogManager.start();
+		m_robotContainer = new RobotContainer();
+		m_robotContainer.setChassisPipeline();
 
-        // load static libs into memory
-        ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getLatestResults("").targetingResults.pipelineID,
-                CameraLerpStrat.LimelightTY);
-        FollowPathCommand.warmupCommand().schedule();
+		// load static libs into memory
+		ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getLatestResults("").targetingResults.pipelineID,
+				CameraLerpStrat.LimelightTY);
+		FollowPathCommand.warmupCommand().schedule();
 
-        // Do this every 100 ms
-        addPeriodic(() -> {
-            DashboardStore.update();
-        }, 0.1);
-    }
+		// Do this every 100 ms
+		addPeriodic(() -> {
+			DashboardStore.update();
+		}, 0.1);
+	}
 
-    @Override
-    public void robotPeriodic() {
-        CommandScheduler.getInstance().run();
-        // m_robotContainer.updateDrivePoseMT2();
-        // m_robotContainer.printDistanceValues();
-        m_robotContainer.encodeLimelights().ignoringDisable(true).schedule();
-        SignalStore.update();
-    }
+	@Override
+	public void robotPeriodic() {
+		CommandScheduler.getInstance().run();
+		// m_robotContainer.updateDrivePoseMT2();
+		// m_robotContainer.printDistanceValues();
+		m_robotContainer.encodeLimelights().ignoringDisable(true).schedule();
+		SignalStore.update();
+	}
 
-    @Override
-    public void disabledInit() {
-        DataLogManager.stop();
-        SignalLogger.stop();
-    }
+	@Override
+	public void disabledInit() {
+		DataLogManager.stop();
+		SignalLogger.stop();
+	}
 
-    @Override
-    public void disabledPeriodic() {
-    }
+	@Override
+	public void disabledPeriodic() {
+	}
 
-    @Override
-    public void disabledExit() {
-    }
+	@Override
+	public void disabledExit() {
+	}
 
-    @Override
-    public void autonomousInit() {
-        hasZeroedPivot = true;
-        DataLogManager.start();
+	@Override
+	public void autonomousInit() {
+		hasZeroedPivot = true;
+		DataLogManager.start();
 
-        // m_robotContainer.setChassisPipeline();
-        m_robotContainer.setMT2Pipeline();
-        m_robotContainer.setAutonMT2RotationThresholds();
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+		// m_robotContainer.setChassisPipeline();
+		m_robotContainer.setMT2Pipeline();
+		m_robotContainer.setAutonMT2RotationThresholds();
+		m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.schedule();
-        }
+		if (m_autonomousCommand != null) {
+			m_autonomousCommand.schedule();
+		}
 
+		// m_robotContainer.zero();
+		// m_robotContainer.configVisionFieldOrigins();
+	}
 
-        // m_robotContainer.zero();
-        // m_robotContainer.configVisionFieldOrigins();
-    }
+	@Override
+	public void autonomousPeriodic() {
+		LogStore.update();
+		m_robotContainer.updateDrivePoseMT2();
+	}
 
-    @Override
-    public void autonomousPeriodic() {
-        LogStore.update();
-        m_robotContainer.updateDrivePoseMT2();
-    }
+	@Override
+	public void autonomousExit() {
+	}
 
-    @Override
-    public void autonomousExit() {
-    }
+	@Override
+	public void teleopInit() {
+		SignalLogger.setPath("/media/sda1/ctre");
+		DataLogManager.start();
+		SignalLogger.start();
+		m_robotContainer.setUseMT2(true);
 
-    @Override
-    public void teleopInit() {
-        SignalLogger.setPath("/media/sda1/ctre");
-        DataLogManager.start();
-        SignalLogger.start();
-        m_robotContainer.setUseMT2(true);
+		if (m_autonomousCommand != null) {
+			m_autonomousCommand.cancel();
+		}
 
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.cancel();
-        }
+		m_robotContainer.stopShooter();
+		if (!hasZeroedPivot)
+			m_robotContainer.zero();
 
-        m_robotContainer.stopShooter();
-        if (!hasZeroedPivot)
-            m_robotContainer.zero();
+		m_robotContainer.setMT2Pipeline();
+		m_robotContainer.setTeleopMT2RotationThresholds();
+	}
 
-        m_robotContainer.setMT2Pipeline();
-        m_robotContainer.setTeleopMT2RotationThresholds();
-    }
+	@Override
+	public void teleopPeriodic() {
+		LogStore.update();
 
-    @Override
-    public void teleopPeriodic() {
-        LogStore.update();
+		m_robotContainer.updateDrivePoseMT2();
+	}
 
-        m_robotContainer.updateDrivePoseMT2();
-    }
+	@Override
+	public void teleopExit() {
+	}
 
-    @Override
-    public void teleopExit() {
-    }
+	@Override
+	public void testInit() {
+		CommandScheduler.getInstance().cancelAll();
+	}
 
-    @Override
-    public void testInit() {
-        CommandScheduler.getInstance().cancelAll();
-    }
+	@Override
+	public void testPeriodic() {
+	}
 
-    @Override
-    public void testPeriodic() {
-    }
+	@Override
+	public void testExit() {
+	}
 
-    @Override
-    public void testExit() {
-    }
-
-    @Override
-    public void simulationPeriodic() {
-    }
+	@Override
+	public void simulationPeriodic() {
+	}
 }
