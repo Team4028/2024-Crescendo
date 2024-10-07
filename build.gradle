@@ -1,4 +1,5 @@
 plugins {
+    id "com.diffplug.spotless" version "7.0.0.BETA2"
     id "java"
     id "edu.wpi.first.GradleRIO" version "2024.3.2"
 }
@@ -105,3 +106,12 @@ wpi.java.configureTestTasks(test)
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
 }
+
+spotless {
+    java {
+        removeUnusedImports()
+        eclipse()
+        formatAnnotations()
+    }
+}
+compileJava.dependsOn 'spotlessApply'
