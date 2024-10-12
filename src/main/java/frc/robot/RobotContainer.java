@@ -599,7 +599,7 @@ public class RobotContainer {
                 .onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
 
         /* Shooter Lock */
-        driverController.leftStick().onTrue(magicLockCommand());
+        // driverController.leftStick().onTrue(magicLockCommand());
 
         // ========================= //
         /* Misc */
@@ -685,7 +685,10 @@ public class RobotContainer {
                 .onTrue(Commands.runOnce(() -> selectedStrategy = odometryStrategy).andThen(shuttleShortCommand()));
 
         /* Zero Climber */
-        operatorController.rightStick().onTrue(safeClimbCommand(climber.zeroCommand()));
+        operatorController.leftStick().onTrue(safeClimbCommand(climber.zeroCommand()));
+          /* End snap, limelight & stop all motors */
+        operatorController.rightStick().onTrue(stopAllCommand(true).alongWith(drivetrain.runOnce(() -> {
+        })));
 
         // ================ //
         /* Amp & Trap Magic */
