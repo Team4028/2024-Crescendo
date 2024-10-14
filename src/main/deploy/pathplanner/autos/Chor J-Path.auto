@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 2.4094326496124268,
+      "x": 2.409432649612427,
       "y": 7.026061534881592
     },
-    "rotation": -2.795231186224202e-27
+    "rotation": -8.939763901716964e-27
   },
   "command": {
     "type": "sequential",
@@ -14,7 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "MT2 Loc OFF"
+            "name": "MT2 Loc ON"
           }
         },
         {

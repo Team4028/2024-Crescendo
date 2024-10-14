@@ -5,12 +5,18 @@
       "x": 1.4301601648330688,
       "y": 5.55
     },
-    "rotation": 9.649598742249632e-23
+    "rotation": 1.9324221517278234e-17
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "MT2 Loc ON"
+          }
+        },
         {
           "type": "path",
           "data": {
