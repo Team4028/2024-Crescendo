@@ -6003,7 +6003,7 @@
       }
     },
     {
-      "timestamp": 3.6390499358073027,
+      "timestamp": 4.539049935807303,
       "command": {
         "type": "parallel",
         "data": {
@@ -6019,7 +6019,7 @@
       }
     },
     {
-      "timestamp": 4.339049935807303,
+      "timestamp": 3.6390499358073027,
       "command": {
         "type": "named",
         "data": {
