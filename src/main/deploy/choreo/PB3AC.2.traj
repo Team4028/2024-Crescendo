@@ -907,15 +907,6 @@
           ]
         }
       }
-    },
-    {
-      "timestamp": 0,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "MT2 Loc ON"
-        }
-      }
     }
   ]
 }

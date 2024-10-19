@@ -916,24 +916,6 @@
           ]
         }
       }
-    },
-    {
-      "timestamp": 0,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "MT2 Loc OFF"
-        }
-      }
-    },
-    {
-      "timestamp": 1.1077019633391971,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "MT2 Loc ON"
-        }
-      }
     }
   ]
 }

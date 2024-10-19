@@ -887,15 +887,6 @@
           "name": "Finish Infeed"
         }
       }
-    },
-    {
-      "timestamp": 2.1337479213693844,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "PB3AC skip shot"
-        }
-      }
     }
   ]
 }

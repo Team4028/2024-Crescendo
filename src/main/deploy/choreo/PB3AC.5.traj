@@ -1718,50 +1718,6 @@
           ]
         }
       }
-    },
-    {
-      "timestamp": 0,
-      "command": {
-        "type": "sequential",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "Finish Infeed"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "Magic Shoot++"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "timestamp": 1.7295581977754537,
-      "command": {
-        "type": "sequential",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "Finish Infeed"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "Magic Shoot++"
-              }
-            }
-          ]
-        }
-      }
     }
   ]
 }
