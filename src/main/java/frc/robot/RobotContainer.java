@@ -723,16 +723,31 @@ public class RobotContainer {
         // ============== //
         /* Manual Climber */
         // ============== //
+//=====================================================================================================================
+//=====================================================================================================================
 
+        //AGS -- Override Emergency Controller triggers to ignore limit switches for CORI -- change made Oct 21, 2024
+
+        
         /* Climber Up */
         emergencyController.rightTrigger(0.2).whileTrue(
-                safeClimbCommand(climber.runMotorCommand(CLIMBER_VBUS, true)))
-                .onFalse(climber.stopCommand());
+                climber.runMotorCommand(CLIMBER_VBUS, true));
+
+        // emergencyController.rightTrigger(0.2).whileTrue(
+        //         safeClimbCommand(climber.runMotorCommand(CLIMBER_VBUS, true)))
+        //         .onFalse(climber.stopCommand());
 
         /* Climber Down FULL SEND */
         emergencyController.leftTrigger(0.2).whileTrue(
-                safeClimbCommand(climber.runMotorCommand(-FAST_CLIMBER_VBUS, true)))
-                .onFalse(climber.holdCurrentPositionCommand());
+           climber.runMotorCommand(-CLIMBER_VBUS, true));
+
+        // emergencyController.leftTrigger(0.2).whileTrue(
+        //         safeClimbCommand(climber.runMotorCommand(-FAST_CLIMBER_VBUS, true)))
+        //         .onFalse(climber.holdCurrentPositionCommand());
+
+//=====================================================================================================================
+//=====================================================================================================================
+
 
         /* Ready Climb */
         emergencyController.povUp()
