@@ -29,16 +29,11 @@ public class FanPivot extends SubsystemBase {
     public static final double TRAP_POSITION = 0.57;
 
     /* Requests */
-    private final PositionDutyCycle positionRequest = new PositionDutyCycle(0.)
-            .withOverrideBrakeDurNeutral(true);
+    private final PositionDutyCycle positionRequest = new PositionDutyCycle(0.).withOverrideBrakeDurNeutral(true);
 
-    private final Slot0Configs trapConfigs = new Slot0Configs()
-            .withKP(0.4)
-            .withKI(0.0)
-            .withKD(0.0);
+    private final Slot0Configs trapConfigs = new Slot0Configs().withKP(0.4).withKI(0.0).withKD(0.0);
 
-    private final Slot1Configs holdConfigs = new Slot1Configs()
-            .withKP(0.8);
+    private final Slot1Configs holdConfigs = new Slot1Configs().withKP(0.8);
 
     private final ClosedLoopRampsConfigs closedLoopRampsConfigs = new ClosedLoopRampsConfigs()
             .withDutyCycleClosedLoopRampPeriod(0.25);
@@ -95,9 +90,7 @@ public class FanPivot extends SubsystemBase {
     }
 
     public Command runMotorCommand(double vbus) {
-        return startEnd(
-                () -> runMotor(vbus),
-                () -> runMotor(0.));
+        return startEnd(() -> runMotor(vbus), () -> runMotor(0.));
     }
 
     @Override

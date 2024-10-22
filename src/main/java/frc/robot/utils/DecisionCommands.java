@@ -25,7 +25,6 @@ public class DecisionCommands {
 
     public Command noteDecision(Command hasNote, Command noNote) {
         return Commands.waitUntil(m_sensing::hasInfed).withTimeout(Constants.AUTON_SECONDS_LINE_DELAY)
-                .andThen(Commands.either(
-                        hasNote, noNote, m_sensing::hasInfed));
+                .andThen(Commands.either(hasNote, noNote, m_sensing::hasInfed));
     }
 }

@@ -4,7 +4,6 @@
 
 package frc.robot.utils;
 
-import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 import com.playingwithfusion.TimeOfFlight;

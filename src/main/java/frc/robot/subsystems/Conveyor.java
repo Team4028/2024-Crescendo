@@ -28,7 +28,7 @@ public class Conveyor extends SubsystemBase {
         private static final double kP = 0.2;
         private static final double kI = 0.0;
         private static final double kD = 0.0;
-        private static final double[] kOutputRange = new double[] { -0.3, 0.6 };
+        private static final double[] kOutputRange = new double[]{-0.3, 0.6};
     }
 
     private static final int CAN_ID = 11;
@@ -115,8 +115,7 @@ public class Conveyor extends SubsystemBase {
 
     public Command brakeStopCommand() {
         return runOnce(() -> pid.setReference(encoder.getPosition(), ControlType.kPosition))
-                .andThen(Commands.waitSeconds(0.2))
-                .andThen(stopCommand());
+                .andThen(Commands.waitSeconds(0.2)).andThen(stopCommand());
     }
 
     @Override

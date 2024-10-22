@@ -31,9 +31,8 @@ import frc.robot.utils.ShooterTable.ShooterTableEntry;
 public class Shooter extends SubsystemBase {
     private final TalonFX leftMotor, rightMotor;
 
-    private final StatusSignal<Double> rightCurrent, leftCurrent,
-            rightVelocity, leftVelocity,
-            rightVoltage, leftVoltage;
+    private final StatusSignal<Double> rightCurrent, leftCurrent, rightVelocity, leftVelocity, rightVoltage,
+            leftVoltage;
 
     private int slot = 0;
 
@@ -43,19 +42,15 @@ public class Shooter extends SubsystemBase {
     private static final int RIGHT_CAN_ID = 9;
 
     /* Configs */
-    private final VelocityVoltage leftVelocityRequest = new VelocityVoltage(0.)
-            .withEnableFOC(true);
+    private final VelocityVoltage leftVelocityRequest = new VelocityVoltage(0.).withEnableFOC(true);
 
-    private final VelocityVoltage rightVelocityRequest = new VelocityVoltage(0.)
-            .withEnableFOC(true);
+    private final VelocityVoltage rightVelocityRequest = new VelocityVoltage(0.).withEnableFOC(true);
 
     private final CurrentLimitsConfigs leftCurrentLimitsConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(120.)
-            .withSupplyCurrentLimit(80.);
+            .withStatorCurrentLimit(120.).withSupplyCurrentLimit(80.);
 
     private final CurrentLimitsConfigs rightCurrentLimitsConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(100.)
-            .withSupplyCurrentLimit(60.);
+            .withStatorCurrentLimit(100.).withSupplyCurrentLimit(60.);
 
     private final ClosedLoopRampsConfigs leftRampConfigs = new ClosedLoopRampsConfigs()
             .withVoltageClosedLoopRampPeriod(0.1);
@@ -65,10 +60,7 @@ public class Shooter extends SubsystemBase {
 
     public enum ShotSpeeds {
 
-        FAST(4800, 3400),
-        MEDIUM(3840, 2700),
-        TRAP(1340, 1340),
-        AMP(727., 727.);
+        FAST(4800, 3400), MEDIUM(3840, 2700), TRAP(1340, 1340), AMP(727., 727.);
 
         public final double RightRPM;
         public final double LeftRPM;
@@ -89,33 +81,21 @@ public class Shooter extends SubsystemBase {
         private static class Right {
             private static double kFF = 0.136;
 
-            private static final Slot2Configs Trap = new Slot2Configs()
-                    .withKP(0.02)
-                    .withKV(kFF); // 1300
+            private static final Slot2Configs Trap = new Slot2Configs().withKP(0.02).withKV(kFF); // 1300
 
-            private static final Slot1Configs Amp = new Slot1Configs()
-                    .withKP(0.02)
-                    .withKV(kFF); // 690
+            private static final Slot1Configs Amp = new Slot1Configs().withKP(0.02).withKV(kFF); // 690
 
-            private static final Slot0Configs Fast = new Slot0Configs()
-                    .withKP(0.1)
-                    .withKV(kFF); // 100%
+            private static final Slot0Configs Fast = new Slot0Configs().withKP(0.1).withKV(kFF); // 100%
         }
 
         private static class Left {
             private static double kFF = 0.132;
 
-            private static final Slot2Configs Trap = new Slot2Configs()
-                    .withKP(0.01)
-                    .withKV(kFF); // 1300
+            private static final Slot2Configs Trap = new Slot2Configs().withKP(0.01).withKV(kFF); // 1300
 
-            private static final Slot1Configs Amp = new Slot1Configs()
-                    .withKP(0.01)
-                    .withKV(kFF); // 690
+            private static final Slot1Configs Amp = new Slot1Configs().withKP(0.01).withKV(kFF); // 690
 
-            private static final Slot0Configs Fast = new Slot0Configs()
-                    .withKP(0.05)
-                    .withKV(kFF); // 100%
+            private static final Slot0Configs Fast = new Slot0Configs().withKP(0.05).withKV(kFF); // 100%
         }
     }
 
@@ -147,17 +127,13 @@ public class Shooter extends SubsystemBase {
         rightMotor.getConfigurator().apply(rightRampConfigs);
 
         /* CAN */
-        BaseStatusSignal.setUpdateFrequencyForAll(20.,
-                rightCurrent, leftCurrent,
-                rightVelocity, leftVelocity,
+        BaseStatusSignal.setUpdateFrequencyForAll(20., rightCurrent, leftCurrent, rightVelocity, leftVelocity,
                 rightVoltage, leftVoltage);
 
         leftMotor.optimizeBusUtilization();
         rightMotor.optimizeBusUtilization();
 
-        SignalStore.add(rightCurrent, leftCurrent,
-                rightVelocity, leftVelocity,
-                rightVoltage, leftVoltage);
+        SignalStore.add(rightCurrent, leftCurrent, rightVelocity, leftVelocity, rightVoltage, leftVoltage);
 
         // ==================================
         // SHOOTER PID
@@ -204,8 +180,8 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean isRunning() {
-        return leftMotor.getAppliedControl().getName() == "VelocityVoltage" &&
-                rightMotor.getAppliedControl().getName() == "VelocityVoltage";
+        return leftMotor.getAppliedControl().getName() == "VelocityVoltage"
+                && rightMotor.getAppliedControl().getName() == "VelocityVoltage";
     }
 
     /* Check if shooter is spinned up */
@@ -233,12 +209,10 @@ public class Shooter extends SubsystemBase {
      *         velocities.
      */
     public Command runVelocityCommand() {
-        return startEnd(
-                () -> {
-                    setLeftToVel(leftTarget);
-                    setRightToVel(rightTarget);
-                },
-                () -> stop());
+        return startEnd(() -> {
+            setLeftToVel(leftTarget);
+            setRightToVel(rightTarget);
+        }, () -> stop());
     }
 
     /* Run Based on Shooter Table Entry */
@@ -261,9 +235,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command brakeStopCommand() {
-        return runShotCommand(ShotSpeeds.AMP, 0.0).andThen(
-                Commands.waitSeconds(0.2),
-                stopCommand());
+        return runShotCommand(ShotSpeeds.AMP, 0.0).andThen(Commands.waitSeconds(0.2), stopCommand());
     }
 
     public void setSlot(int slot) {
@@ -294,17 +266,13 @@ public class Shooter extends SubsystemBase {
     public void setLeftToVel(double velRPM) {
         leftTarget = velRPM;
 
-        leftMotor.setControl(leftVelocityRequest
-                .withVelocity(velRPM / 60.)
-                .withSlot(slot));
+        leftMotor.setControl(leftVelocityRequest.withVelocity(velRPM / 60.).withSlot(slot));
     }
 
     public void setRightToVel(double velRPM) {
         rightTarget = velRPM;
 
-        rightMotor.setControl(rightVelocityRequest
-                .withVelocity(velRPM / 60.)
-                .withSlot(slot));
+        rightMotor.setControl(rightVelocityRequest.withVelocity(velRPM / 60.).withSlot(slot));
     }
 
     public void spinMotorLeft(double vBus) {

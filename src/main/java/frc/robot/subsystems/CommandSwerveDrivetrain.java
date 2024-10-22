@@ -59,8 +59,7 @@ import frc.robot.utils.VisionSystem;
 
 /**
  * Class that extends the Phoenix SwerveDrivetrain class and implements
- * subsystem
- * so it can be used in command-based projects easily.
+ * subsystem so it can be used in command-based projects easily.
  */
 public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsystem {
     private static final double kSimLoopPeriod = 0.005; // 5 ms
@@ -77,8 +76,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         private static final double kMaxAngAccel = 1.5 * Math.PI;
     }
 
-    private BaseStatusSignal currentFL, currentFR, currentBL, currentBR,
-            velocityFL, velocityFR, velocityBL, velocityBR,
+    private BaseStatusSignal currentFL, currentFR, currentBL, currentBR, velocityFL, velocityFR, velocityBL, velocityBR,
             vbusFL, vbusFR, vbusBL, vbusBR;
 
     private final SwerveRequest.ApplyChassisSpeeds autoRequest = new SwerveRequest.ApplyChassisSpeeds();
@@ -100,29 +98,21 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
 
     private static final ProfiledPIDController STATIC_ALIGN_CONTROLLER = new ProfiledPIDController(
             // The PID gains
-            STATIC_ALIGN_kP,
-            0.0,
-            0.0,
+            STATIC_ALIGN_kP, 0.0, 0.0,
             // The motion profile constraints
-            new TrapezoidProfile.Constraints(
-                    STATIC_ALIGN_VELOCITY,
-                    STATIC_ALIGN_ACCELERATION));
+            new TrapezoidProfile.Constraints(STATIC_ALIGN_VELOCITY, STATIC_ALIGN_ACCELERATION));
 
-    private static final PIDController LOCK_ALIGN_CONTROLLER = new PIDController(
-            LOCK_ALIGN_kP,
-            0.0,
-            0.0);
+    private static final PIDController LOCK_ALIGN_CONTROLLER = new PIDController(LOCK_ALIGN_kP, 0.0, 0.0);
 
-    private static final PIDController TARGET_ACQUIRE_CONTROLLER = new PIDController(
-            TARGET_ACQUIRE_kP, 0.0, TARGET_ACQUIRE_kD);
+    private static final PIDController TARGET_ACQUIRE_CONTROLLER = new PIDController(TARGET_ACQUIRE_kP, 0.0,
+            TARGET_ACQUIRE_kD);
 
     private final SwerveVoltRequest voltRequest = new SwerveVoltRequest();
 
     private final SysIdRoutine sysIdRoutine = new SysIdRoutine(
             new SysIdRoutine.Config(null, null, null, this::logSysIdState),
             new SysIdRoutine.Mechanism(
-                    (Measure<Voltage> volts) -> setControl(voltRequest.withVoltage(volts.in(Units.Volts))),
-                    null,
+                    (Measure<Voltage> volts) -> setControl(voltRequest.withVoltage(volts.in(Units.Volts))), null,
                     this));
 
     private void logSysIdState(State state) {
@@ -194,14 +184,13 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
             talonConfigs.CurrentLimits.SupplyCurrentLimit = 60.;
             talonConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-            talonConfigs.MotorOutput.Inverted = module.DriveMotorInverted ? InvertedValue.Clockwise_Positive
+            talonConfigs.MotorOutput.Inverted = module.DriveMotorInverted
+                    ? InvertedValue.Clockwise_Positive
                     : InvertedValue.CounterClockwise_Positive;
             StatusCode response = Modules[i].getDriveMotor().getConfigurator().apply(talonConfigs);
             if (!response.isOK()) {
-                System.out.println(
-                        "TalonFX ID " + Modules[i].getDriveMotor().getDeviceID()
-                                + " failed config with error "
-                                + response.toString());
+                System.out.println("TalonFX ID " + Modules[i].getDriveMotor().getDeviceID()
+                        + " failed config with error " + response.toString());
             }
             try {
                 Thread.sleep(250);
@@ -215,13 +204,13 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
             // Modify configuration to use remote CANcoder fused
             talonConfigs.Feedback.FeedbackRemoteSensorID = module.CANcoderId;
             switch (module.FeedbackSource) {
-                case RemoteCANcoder:
+                case RemoteCANcoder :
                     talonConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
                     break;
-                case FusedCANcoder:
+                case FusedCANcoder :
                     talonConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
                     break;
-                case SyncCANcoder:
+                case SyncCANcoder :
                     talonConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.SyncCANcoder;
                     break;
             }
@@ -234,16 +223,15 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
             talonConfigs.MotionMagic.MotionMagicExpo_kA = 0.1;
 
             talonConfigs.ClosedLoopGeneral.ContinuousWrap = true; // Enable continuous wrap for swerve
-                                                                  // modules
+                                                                    // modules
 
             talonConfigs.MotorOutput.Inverted = module.SteerMotorInverted
                     ? InvertedValue.Clockwise_Positive
                     : InvertedValue.CounterClockwise_Positive;
             response = Modules[i].getSteerMotor().getConfigurator().apply(talonConfigs);
             if (!response.isOK()) {
-                System.out.println(
-                        "TalonFX ID " + Modules[i].getSteerMotor() + " failed config with error "
-                                + response.toString());
+                System.out.println("TalonFX ID " + Modules[i].getSteerMotor() + " failed config with error "
+                        + response.toString());
             }
 
             i++;
@@ -251,16 +239,12 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     }
 
     private void configLogging() {
-        HashMap<String, Integer> idMap = new HashMap<>(Map.of(
-                "FL", 0,
-                "FR", 1,
-                "BL", 2,
-                "BR", 3));
+        HashMap<String, Integer> idMap = new HashMap<>(Map.of("FL", 0, "FR", 1, "BL", 2, "BR", 3));
 
-        HashMap<String, Function<SwerveModule, BaseStatusSignal>> signalNameMap = new HashMap<>(Map.of(
-                "current", (module) -> module.getDriveMotor().getStatorCurrent(),
-                "velocity", (module) -> module.getDriveMotor().getVelocity(),
-                "vbus", (module) -> module.getDriveMotor().getMotorVoltage()));
+        HashMap<String, Function<SwerveModule, BaseStatusSignal>> signalNameMap = new HashMap<>(
+                Map.of("current", (module) -> module.getDriveMotor().getStatorCurrent(), "velocity",
+                        (module) -> module.getDriveMotor().getVelocity(), "vbus",
+                        (module) -> module.getDriveMotor().getMotorVoltage()));
 
         for (Field field : this.getClass().getDeclaredFields()) {
             if (field.getName().matches("[cv][a-z]{3,8}[FB][RL]")) {
@@ -286,47 +270,34 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
 
                 statusSignal.setUpdateFrequency(UpdateFrequency);
 
-                LogStore.add("/Drive/" + location + "/" + signalLog,
-                        () -> statusSignal.getValueAsDouble());
+                LogStore.add("/Drive/" + location + "/" + signalLog, () -> statusSignal.getValueAsDouble());
                 SignalStore.add(statusSignal);
             }
         }
     }
 
     public Command pathFindCommand(Pose2d desiredPose, double scale, double endVel) {
-        PathConstraints constraints = new PathConstraints(
-                PathFindPlannerConstants.kMaxSpeed * scale,
-                PathFindPlannerConstants.kMaxAccel * scale,
-                PathFindPlannerConstants.kMaxAngSpeed,
+        PathConstraints constraints = new PathConstraints(PathFindPlannerConstants.kMaxSpeed * scale,
+                PathFindPlannerConstants.kMaxAccel * scale, PathFindPlannerConstants.kMaxAngSpeed,
                 PathFindPlannerConstants.kMaxAngAccel);
 
-        return AutoBuilder.pathfindToPose(
-                desiredPose,
-                constraints,
-                endVel);
+        return AutoBuilder.pathfindToPose(desiredPose, constraints, endVel);
     }
 
     public Command mirrorablePathFindCommand(Pose2d desiredPose, double scale, double endVel) { // may end up being
                                                                                                 // pathFindCommand
-        PathConstraints constraints = new PathConstraints(
-                PathFindPlannerConstants.kMaxSpeed * scale,
-                PathFindPlannerConstants.kMaxAccel * scale,
-                PathFindPlannerConstants.kMaxAngSpeed,
+        PathConstraints constraints = new PathConstraints(PathFindPlannerConstants.kMaxSpeed * scale,
+                PathFindPlannerConstants.kMaxAccel * scale, PathFindPlannerConstants.kMaxAngSpeed,
                 PathFindPlannerConstants.kMaxAngAccel);
 
         return AutoBuilder.pathfindToPoseFlipped(desiredPose, constraints, endVel);
     }
 
     public Command pathFindThenFollowCommand(PathPlannerPath path, double scale) {
-        PathConstraints constraints = new PathConstraints(
-                TunerConstants.kSpeedAt12VoltsMps * scale,
-                TunerConstants.kSpeedAt12VoltsMps * scale,
-                1.5 * Math.PI,
-                1.5 * Math.PI);
+        PathConstraints constraints = new PathConstraints(TunerConstants.kSpeedAt12VoltsMps * scale,
+                TunerConstants.kSpeedAt12VoltsMps * scale, 1.5 * Math.PI, 1.5 * Math.PI);
 
-        return AutoBuilder.pathfindThenFollowPath(
-                path,
-                constraints);
+        return AutoBuilder.pathfindThenFollowPath(path, constraints);
     }
 
     public Command addMeasurementCommand(Supplier<Pose2d> measurement, Supplier<Double> timeStamp) {
@@ -402,19 +373,11 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         for (var modLocation : m_moduleLocations)
             driveBaseRadius = Math.max(driveBaseRadius, modLocation.getNorm());
 
-        AutoBuilder.configureHolonomic(
-                () -> getPose(),
-                this::seedFieldRelative,
-                this::getCurrentRobotChassisSpeeds,
+        AutoBuilder.configureHolonomic(() -> getPose(), this::seedFieldRelative, this::getCurrentRobotChassisSpeeds,
                 (speeds) -> this.setControl(autoRequest.withSpeeds(speeds)),
-                new HolonomicPathFollowerConfig(
-                        AUTON_LINEAR_PID,
-                        AUTON_ANGULAR_PID,
-                        TunerConstants.kSpeedAt12VoltsMps,
-                        driveBaseRadius,
-                        new ReplanningConfig()),
-                () -> DriverStation.getAlliance().get() == Alliance.Red,
-                this);
+                new HolonomicPathFollowerConfig(AUTON_LINEAR_PID, AUTON_ANGULAR_PID, TunerConstants.kSpeedAt12VoltsMps,
+                        driveBaseRadius, new ReplanningConfig()),
+                () -> DriverStation.getAlliance().get() == Alliance.Red, this);
     }
 
     public ChassisSpeeds getFieldRelativeChassisSpeeds() {
@@ -422,10 +385,8 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         Rotation2d rotation = getRotation();
 
         return new ChassisSpeeds(
-                speeds.vxMetersPerSecond * rotation.getCos()
-                        - speeds.vyMetersPerSecond * rotation.getSin(),
-                speeds.vyMetersPerSecond * rotation.getCos()
-                        + speeds.vxMetersPerSecond * rotation.getSin(),
+                speeds.vxMetersPerSecond * rotation.getCos() - speeds.vyMetersPerSecond * rotation.getSin(),
+                speeds.vyMetersPerSecond * rotation.getCos() + speeds.vxMetersPerSecond * rotation.getSin(),
                 speeds.omegaRadiansPerSecond);
     }
 
@@ -441,18 +402,16 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         return getPose().getTranslation();
     }
 
-    public Command speakerLock(DoubleSupplier xSpeed, DoubleSupplier ySpeed,
-            Supplier<ShootingStrategy> strategy) {
+    public Command speakerLock(DoubleSupplier xSpeed, DoubleSupplier ySpeed, Supplier<ShootingStrategy> strategy) {
         return new PIDCommand(
                 // The ProfiledPIDController used by the command
-                LOCK_ALIGN_CONTROLLER,
-                () -> getRotation().getRadians(),
+                LOCK_ALIGN_CONTROLLER, () -> getRotation().getRadians(),
                 // This should return the goal (can also be a constant)
                 () -> getRotation().plus(strategy.get().getTargetOffset()).getRadians(),
                 // This uses the output
                 (output) -> {
-                    setControl(speakerLockDrive.withRotationalRate(output)
-                            .withVelocityX(xSpeed.getAsDouble()).withVelocityY(ySpeed.getAsDouble()));
+                    setControl(speakerLockDrive.withRotationalRate(output).withVelocityX(xSpeed.getAsDouble())
+                            .withVelocityY(ySpeed.getAsDouble()));
                 }, this);
     }
 
@@ -487,22 +446,18 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     }
 
     public Command targetAcquire(DoubleSupplier forwardVelocity, VisionSystem vision) {
-        return new PIDCommand(
-                TARGET_ACQUIRE_CONTROLLER,
-                () -> {
-                    Optional<Rotation2d> target = vision.getTargetX();
-                    return target.isPresent() ? target.get().getRadians() : 0.0;
-                },
-                () -> 0.0,
-                (output) -> {
-                    Optional<Rotation2d> tx = vision.getTargetX();
+        return new PIDCommand(TARGET_ACQUIRE_CONTROLLER, () -> {
+            Optional<Rotation2d> target = vision.getTargetX();
+            return target.isPresent() ? target.get().getRadians() : 0.0;
+        }, () -> 0.0, (output) -> {
+            Optional<Rotation2d> tx = vision.getTargetX();
 
-                    boolean useRotation = tx.isPresent() && Math.abs(tx.get().getDegrees()) < TARGET_ACQUIRE_THRESHOLD;
-                    boolean useDrive = vision.getHasTarget();
+            boolean useRotation = tx.isPresent() && Math.abs(tx.get().getDegrees()) < TARGET_ACQUIRE_THRESHOLD;
+            boolean useDrive = vision.getHasTarget();
 
-                    setControl(targetAcquireDrive.withVelocityX(
-                            vision.getHasTarget() && useDrive ? forwardVelocity.getAsDouble() : 0.0)
-                            .withRotationalRate(useRotation ? output : 0.0));
-                }, this);
+            setControl(targetAcquireDrive
+                    .withVelocityX(vision.getHasTarget() && useDrive ? forwardVelocity.getAsDouble() : 0.0)
+                    .withRotationalRate(useRotation ? output : 0.0));
+        }, this);
     }
 }

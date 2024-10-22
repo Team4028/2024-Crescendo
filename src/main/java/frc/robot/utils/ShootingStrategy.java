@@ -47,10 +47,8 @@ public class ShootingStrategy {
 
         if (moving) {
             ChassisSpeeds speeds = drivetrain.getFieldRelativeChassisSpeeds();
-            pose = new Translation2d(
-                pose.getX() + speeds.vxMetersPerSecond * FORWARD_LOOK_TIME,
-                pose.getY() + speeds.vyMetersPerSecond * FORWARD_LOOK_TIME
-            );
+            pose = new Translation2d(pose.getX() + speeds.vxMetersPerSecond * FORWARD_LOOK_TIME,
+                    pose.getY() + speeds.vyMetersPerSecond * FORWARD_LOOK_TIME);
         }
 
         return pose;

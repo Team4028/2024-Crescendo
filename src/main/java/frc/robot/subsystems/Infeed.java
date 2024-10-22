@@ -23,13 +23,11 @@ public class Infeed extends SubsystemBase {
 
     private static final int CAN_ID = 18;
 
-    private final CurrentLimitsConfigs currentLimitsConfigs = new CurrentLimitsConfigs()
-            .withSupplyCurrentLimit(50.)
+    private final CurrentLimitsConfigs currentLimitsConfigs = new CurrentLimitsConfigs().withSupplyCurrentLimit(50.)
             .withStatorCurrentLimit(90.);
 
     private final MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs()
-            .withNeutralMode(NeutralModeValue.Brake)
-            .withInverted(InvertedValue.Clockwise_Positive);
+            .withNeutralMode(NeutralModeValue.Brake).withInverted(InvertedValue.Clockwise_Positive);
 
     /** Creates a new SensorMotor. */
     public Infeed() {

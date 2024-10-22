@@ -22,15 +22,15 @@ import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
 
-    private RobotContainer m_robotContainer;
+    private RobotContainer robotContainer;
 
     private boolean hasZeroedPivot = false;
 
     @Override
     public void robotInit() {
         DataLogManager.start();
-        m_robotContainer = new RobotContainer();
-        m_robotContainer.setChassisPipeline();
+        robotContainer = new RobotContainer();
+        robotContainer.getCommandFactory().setChassisPipeline();
 
         // load static libs into memory
         ShooterTable.calcShooterTableEntryCamera(LimelightHelpers.getLatestResults("").targetingResults.pipelineID,
@@ -48,7 +48,7 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().run();
         // m_robotContainer.updateDrivePoseMT2();
         // m_robotContainer.printDistanceValues();
-        m_robotContainer.encodeLimelights().ignoringDisable(true).schedule();
+        robotContainer.getCommandFactory().encodeLimelights().ignoringDisable(true).schedule();
         SignalStore.update();
     }
 
@@ -72,14 +72,13 @@ public class Robot extends TimedRobot {
         DataLogManager.start();
 
         // m_robotContainer.setChassisPipeline();
-        m_robotContainer.setMT2Pipeline();
-        m_robotContainer.setAutonMT2RotationThresholds();
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        robotContainer.getCommandFactory().setMT2Pipeline();
+        robotContainer.getCommandFactory().setAutonMT2RotationThresholds();
+        m_autonomousCommand = robotContainer.getAutonomousCommand();
 
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
         }
-
 
         // m_robotContainer.zero();
         // m_robotContainer.configVisionFieldOrigins();
@@ -88,7 +87,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousPeriodic() {
         LogStore.update();
-        m_robotContainer.updateDrivePoseMT2();
+        robotContainer.getCommandFactory().updateDrivePoseMT2();
     }
 
     @Override
@@ -100,25 +99,25 @@ public class Robot extends TimedRobot {
         SignalLogger.setPath("/media/sda1/ctre");
         DataLogManager.start();
         SignalLogger.start();
-        m_robotContainer.setUseMT2(true);
+        robotContainer.getCommandFactory().setUseMT2(true);
 
         if (m_autonomousCommand != null) {
             m_autonomousCommand.cancel();
         }
 
-        m_robotContainer.stopShooter();
+        robotContainer.getCommandFactory().stopShooter();
         if (!hasZeroedPivot)
-            m_robotContainer.zero();
+            robotContainer.getCommandFactory().zero();
 
-        m_robotContainer.setMT2Pipeline();
-        m_robotContainer.setTeleopMT2RotationThresholds();
+        robotContainer.getCommandFactory().setMT2Pipeline();
+        robotContainer.getCommandFactory().setTeleopMT2RotationThresholds();
     }
 
     @Override
     public void teleopPeriodic() {
         LogStore.update();
 
-        m_robotContainer.updateDrivePoseMT2();
+        robotContainer.getCommandFactory().updateDrivePoseMT2();
     }
 
     @Override
