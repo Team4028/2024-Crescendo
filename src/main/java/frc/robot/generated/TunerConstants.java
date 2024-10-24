@@ -15,9 +15,9 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 public class TunerConstants {
 	// Both sets of gains need to be tuned to your individual robot.
 
-	private static final double kS = (0.11215 + 0.2336 + 0.082908 + 0.22205) / 4.;
-	private static final double kV = (0.12511 + 0.12462 + 0.12964 + 0.12337) / 4.;
-	private static final double kA = (0.025069 + 0.0063108 + 0.018517 + 0.017863) / 4.;
+	public static final double kSDrive = (0.11215 + 0.2336 + 0.082908 + 0.22205) / 4.;
+	public static final double kVDrive = (0.12511 + 0.12462 + 0.12964 + 0.12337) / 4.;
+	public static final double kADrive = (0.025069 + 0.0063108 + 0.018517 + 0.017863) / 4.;
 
 	// The steer motor uses any SwerveModule.SteerRequestType control request with
 	// the
@@ -26,8 +26,8 @@ public class TunerConstants {
 			.withKV(1.5).withKA(0);
 	// When using closed-loop control, the drive motor uses the control
 	// output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
-	private static final Slot0Configs driveGains = new Slot0Configs().withKP(6.).withKI(0).withKD(0.05).withKS(kS)
-			.withKV(kV).withKA(kA);
+	private static final Slot0Configs driveGains = new Slot0Configs().withKP(6.).withKI(0).withKD(0.05).withKS(kSDrive)
+			.withKV(kVDrive).withKA(kADrive);
 
 	// The closed-loop output type to use for the steer motors;
 	// This affects the PID/FF gains for the steer motors

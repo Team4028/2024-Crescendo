@@ -5,7 +5,7 @@
       "x": 1.4301601648330688,
       "y": 5.55
     },
-    "rotation": 1.7600013906552395e-17
+    "rotation": 2.454385671423811e-22
   },
   "command": {
     "type": "sequential",
@@ -44,7 +44,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Magic Shoot++"
+            "name": "PB3AC skip shot"
           }
         },
         {
@@ -81,6 +81,12 @@
           "type": "named",
           "data": {
             "name": "Magic Shoot++"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "PB3AC.6"
           }
         }
       ]

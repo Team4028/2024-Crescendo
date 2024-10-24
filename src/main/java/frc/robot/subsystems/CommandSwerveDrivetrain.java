@@ -66,7 +66,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
 	private Notifier m_simNotifier = null;
 	private double m_lastSimTime;
 
-	private static final PIDConstants AUTON_LINEAR_PID = new PIDConstants(10, 0, 0);
+	private static final PIDConstants AUTON_LINEAR_PID = new PIDConstants(6, 0, 0.05);
 	private static final PIDConstants AUTON_ANGULAR_PID = new PIDConstants(5, 0, 0);
 
 	private static final class PathFindPlannerConstants {
