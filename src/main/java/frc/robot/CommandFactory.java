@@ -21,28 +21,18 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.VBusConstants;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.subsystems.Candle;
-import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Climber.ClimberPositions;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.Conveyor;
-import frc.robot.subsystems.Fan;
-import frc.robot.subsystems.FanPivot;
-import frc.robot.subsystems.Infeed;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.ShotSpeeds;
 import frc.robot.subsystems.Shooter.Slots;
-import frc.robot.subsystems.Whippy;
 import frc.robot.utils.BeakCommands;
 import frc.robot.utils.BeakUtils;
-import frc.robot.utils.DriverCamera;
-import frc.robot.utils.Limelight;
-import frc.robot.utils.NoteSensing;
 import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.ShooterTableEntry;
 import frc.robot.utils.ShootingStrategy;
 import frc.robot.utils.SubAutos;
+import frc.robot.utils.SubsystemContainer;
 
 public class CommandFactory {
 
@@ -52,7 +42,8 @@ public class CommandFactory {
 
     public enum SnapDirection {
         None(Double.NaN), Forward(0), Left(90), Back(180), Right(270), LeftTrap(-60.), RightTrap(60.), BluePass(
-                -40.0), RedPass(-150.0);
+                -40.0),
+        RedPass(-150.0);
 
         public double Angle;
 
@@ -85,20 +76,7 @@ public class CommandFactory {
     // SECTION: Member Variables
     // ==============================
 
-    private final CommandSwerveDrivetrain drivetrain;
-    private final Infeed infeed;
-    private final Shooter shooter;
-    private final Conveyor conveyor;
-    private final Climber climber;
-    private final Pivot pivot;
-    private final Fan fan;
-    private final FanPivot fanPivot;
-    private final Whippy whippy;
-    private final Candle candle;
-    private final NoteSensing noteSensing;
-    private final DriverCamera driverCamera;
-    private final Limelight shooterLimelight, chassisLimelight, infeedLimelight3G;
-    private final ShootingStrategy shooterLimelightStrategy, odometryStrategy, chassisLimelight2dStrategy;
+    private final SubsystemContainer subsystems;
     private final SlewRateLimiter xLimiter, yLimiter, thetaLimiter;
     private final SwerveRequest.FieldCentricFacingAngle snapDrive;
     private final SubAutos autos;
@@ -127,30 +105,9 @@ public class CommandFactory {
     private int presetIndex = 0;
     private boolean useManual = false;
 
-    public CommandFactory(CommandSwerveDrivetrain drivetrain, Infeed infeed, Shooter shooter, Conveyor conveyor,
-            Climber climber, Pivot pivot, Fan fan, FanPivot fanPivot, Whippy whippy, Candle candle,
-            NoteSensing noteSensing, DriverCamera driverCamera, Limelight shooterLimelight, Limelight chassisLimelight,
-            Limelight infeedLimelight3G, ShootingStrategy shooterLimelightStrategy, ShootingStrategy odometryStrategy,
-            ShootingStrategy chassisLimelight2dStrategy, SlewRateLimiter xLimiter, SlewRateLimiter yLimiter,
+    public CommandFactory(SubsystemContainer subsystems, SlewRateLimiter xLimiter, SlewRateLimiter yLimiter,
             SlewRateLimiter thetaLimiter, SubAutos autos, RobotContainer robotContainer) {
-        this.drivetrain = drivetrain;
-        this.infeed = infeed;
-        this.shooter = shooter;
-        this.conveyor = conveyor;
-        this.climber = climber;
-        this.pivot = pivot;
-        this.fan = fan;
-        this.fanPivot = fanPivot;
-        this.whippy = whippy;
-        this.candle = candle;
-        this.noteSensing = noteSensing;
-        this.driverCamera = driverCamera;
-        this.shooterLimelight = shooterLimelight;
-        this.chassisLimelight = chassisLimelight;
-        this.infeedLimelight3G = infeedLimelight3G;
-        this.shooterLimelightStrategy = shooterLimelightStrategy;
-        this.odometryStrategy = odometryStrategy;
-        this.chassisLimelight2dStrategy = chassisLimelight2dStrategy;
+        this.subsystems = subsystems;
         this.xLimiter = xLimiter;
         this.yLimiter = yLimiter;
         this.thetaLimiter = thetaLimiter;
@@ -170,8 +127,10 @@ public class CommandFactory {
     }
 
     public Command getAmpPrep() {
-        return pivot.runToClimbCommand().alongWith(whippy.whippyWheelsCommand(VBusConstants.WHIPPY_VBUS))
-                .alongWith(shooter.setSlotCommand(Shooter.Slots.AMP).andThen(shooter.runShotCommand(ShotSpeeds.AMP)));
+        return subsystems.pivot.runToClimbCommand()
+                .alongWith(subsystems.whippy.whippyWheelsCommand(VBusConstants.WHIPPY_VBUS))
+                .alongWith(subsystems.shooter.setSlotCommand(Shooter.Slots.AMP)
+                        .andThen(subsystems.shooter.runShotCommand(ShotSpeeds.AMP)));
     }
 
     // ==============================
@@ -180,7 +139,7 @@ public class CommandFactory {
 
     /** Set Snap Direction Toggle */
     public Command snapCommand(SnapDirection direction) {
-        return drivetrain.applyRequest(() -> snapDrive.withVelocityX(robotContainer.getXSpeed(true))
+        return subsystems.drivetrain.applyRequest(() -> snapDrive.withVelocityX(robotContainer.getXSpeed(true))
                 .withVelocityY(robotContainer.getYSpeed(true))
                 .withTargetDirection(Rotation2d.fromDegrees(direction.Angle)));
     }
@@ -197,51 +156,55 @@ public class CommandFactory {
 
     /** Fix Note Backwards */
     public Command conveyBackCommand(double rotations, double timeout) {
-        return shooter.spinMotorLeftCommand(VBusConstants.SHOOTER_BACKOUT_VBUS).repeatedly()
-                .raceWith(conveyor.runXRotations(rotations).withTimeout(timeout)).alongWith(infeed.runMotorCommand(0.))
-                .andThen(shooter.stopCommand());
+        return subsystems.shooter.spinMotorLeftCommand(VBusConstants.SHOOTER_BACKOUT_VBUS).repeatedly()
+                .raceWith(subsystems.conveyor.runXRotations(rotations).withTimeout(timeout))
+                .alongWith(subsystems.infeed.runMotorCommand(0.))
+                .andThen(subsystems.shooter.stopCommand());
     }
 
     /** Special Note Fix */
     public Command coolNoteFixCommand(double timeout) {
-        return shooter.spinMotorLeftCommand(VBusConstants.SHOOTER_BACKOUT_VBUS).repeatedly()
-                .alongWith(infeed.runMotorCommand(0.)).alongWith(conveyor.runMotorCommand(-0.2)).withTimeout(timeout)
-                .andThen(shooter.stopCommand()).andThen(conveyor.brakeStopCommand());
+        return subsystems.shooter.spinMotorLeftCommand(VBusConstants.SHOOTER_BACKOUT_VBUS).repeatedly()
+                .alongWith(subsystems.infeed.runMotorCommand(0.)).alongWith(subsystems.conveyor.runMotorCommand(-0.2))
+                .withTimeout(timeout)
+                .andThen(subsystems.shooter.stopCommand()).andThen(subsystems.conveyor.brakeStopCommand());
     }
 
     /** Convey the Note */
     public Command conveyCommand() {
-        return conveyor.runXRotations(20.).alongWith(infeed.runMotorCommand(VBusConstants.SLOW_INFEED_VBUS));
+        return subsystems.conveyor.runXRotations(20.)
+                .alongWith(subsystems.infeed.runMotorCommand(VBusConstants.SLOW_INFEED_VBUS));
     }
 
     /** Smart Infeed Command Generator */
     public Command smartInfeedCommand() {
         return runBoth(true, VBusConstants.SLOW_CONVEYOR_VBUS, VBusConstants.INFEED_VBUS)
-                .until(noteSensing.hasInfedSupplier()).andThen(runBoth(true, 0., 0.).withTimeout(0.1))
-                .andThen(conveyBackCommand(-4.0, 0.5)).finallyDo(shooter::stop);
+                .until(subsystems.noteSensing.hasInfedSupplier()).andThen(runBoth(true, 0., 0.).withTimeout(0.1))
+                .andThen(conveyBackCommand(-4.0, 0.5)).finallyDo(subsystems.shooter::stop);
     }
 
     public Command smartInfeedAutoCommand() {
         return runBoth(true, VBusConstants.SLOW_CONVEYOR_VBUS, VBusConstants.INFEED_VBUS)
-                .until(noteSensing.hasInfedSupplier()).andThen(runBoth(true, 0., 0.).withTimeout(0.1))
-                .andThen(conveyBackCommand(-4.0, 0.1)).finallyDo(shooter::stop);
+                .until(subsystems.noteSensing.hasInfedSupplier()).andThen(runBoth(true, 0., 0.).withTimeout(0.1))
+                .andThen(conveyBackCommand(-4.0, 0.1)).finallyDo(subsystems.shooter::stop);
     }
 
     /** Run both Conveyor and Infeed */
     public Command runBoth(boolean stopShooter, double conveyorVbus, double infeedVbus) {
-        return shooter.brakeStopCommand().onlyIf(() -> stopShooter).alongWith(
-                infeed.runMotorCommand(infeedVbus).alongWith(conveyor.runMotorCommand(conveyorVbus)).repeatedly());
+        return subsystems.shooter.brakeStopCommand().onlyIf(() -> stopShooter).alongWith(
+                subsystems.infeed.runMotorCommand(infeedVbus)
+                        .alongWith(subsystems.conveyor.runMotorCommand(conveyorVbus)).repeatedly());
     }
 
     /** Run Conveyor, Infeed, and shooter if backwards */
     public Command runThree(Supplier<Double> conveyorVbus, Supplier<Double> infeedVbus, Supplier<Double> shooterVbus) {
         return new FunctionalCommand(() -> {
         }, () -> {
-            infeed.runMotor(infeedVbus.get());
-            conveyor.runMotor(conveyorVbus.get());
-            shooter.spinMotorRight(0.3 * shooterVbus.get());
-            shooter.spinMotorLeft(0.3 * shooterVbus.get());
-        }, (z) -> shooter.stop(), () -> false, infeed, conveyor);
+            subsystems.infeed.runMotor(infeedVbus.get());
+            subsystems.conveyor.runMotor(conveyorVbus.get());
+            subsystems.shooter.spinMotorRight(0.3 * shooterVbus.get());
+            subsystems.shooter.spinMotorLeft(0.3 * shooterVbus.get());
+        }, (z) -> subsystems.shooter.stop(), () -> false, subsystems.infeed, subsystems.conveyor);
     }
 
     // ==============================
@@ -250,10 +213,11 @@ public class CommandFactory {
 
     /** Stop all motors and zero everything */
     public Command stopAllCommand(boolean switchCamera) {
-        return Commands.parallel(infeed.stopCommand(), conveyor.stopCommand(),
-                shooter.stopCommand().andThen(shooter.setSlotCommand(Shooter.Slots.FAST)), pivot.runToHomeCommand(),
-                fan.stopCommand(), fanPivot.runToHomeCommand(), whippy.stopCommand(),
-                driverCamera.setInfeedCameraCommand().onlyIf(() -> switchCamera),
+        return Commands.parallel(subsystems.infeed.stopCommand(), subsystems.conveyor.stopCommand(),
+                subsystems.shooter.stopCommand().andThen(subsystems.shooter.setSlotCommand(Shooter.Slots.FAST)),
+                subsystems.pivot.runToHomeCommand(),
+                subsystems.fan.stopCommand(), subsystems.fanPivot.runToHomeCommand(), subsystems.whippy.stopCommand(),
+                subsystems.driverCamera.setInfeedCameraCommand().onlyIf(() -> switchCamera),
                 Commands.runOnce(() -> currentSequence = ClimbSequence.Default));
     }
 
@@ -264,7 +228,7 @@ public class CommandFactory {
 
     /** Zeroing Command */
     public Command zeroCommand() {
-        return pivot.zeroCommand().alongWith(fanPivot.runToHomeCommand());// .alongWith(climber.zeroCommand());
+        return subsystems.pivot.zeroCommand().alongWith(subsystems.fanPivot.runToHomeCommand());// .alongWith(climber.zeroCommand());
     }
 
     /** Asynchronous Zero */
@@ -281,17 +245,17 @@ public class CommandFactory {
      * target.
      * 
      * @param strategy
-     *            The {@link ShootingStrategy} to use.
+     *                 The {@link ShootingStrategy} to use.
      */
     public Command magicLockCommand(Supplier<ShootingStrategy> strategy) {
-        return fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier())
-                .andThen(driverCamera.setShooterCameraCommand())
-                .andThen(drivetrain
+        return fixNoteCommand().unless(subsystems.noteSensing.conveyorSeesNoteSupplier())
+                .andThen(subsystems.driverCamera.setShooterCameraCommand())
+                .andThen(subsystems.drivetrain
                         .speakerLock(() -> robotContainer.getXSpeed(true), () -> robotContainer.getYSpeed(true),
                                 strategy)
                         .alongWith(runEntryCommand(() -> strategy.get().getTargetEntry(true), () -> ShotSpeeds.FAST)
                                 .repeatedly()))
-                .finallyDo(driverCamera::setInfeedCamera);
+                .finallyDo(subsystems.driverCamera::setInfeedCamera);
     }
 
     /**
@@ -305,17 +269,18 @@ public class CommandFactory {
     public Command shuttleCommand() {
         return updateDrivePoseMT2Command()
                 .andThen(
-                        drivetrain
+                        subsystems.drivetrain
                                 .applyRequest(() -> snapDrive
                                         .withTargetDirection(BeakUtils
                                                 .passingTranslation(
-                                                        odometryStrategy.getDrivetrainFieldTranslation(true))
+                                                        subsystems.odometryStrategy.getDrivetrainFieldTranslation(true))
                                                 .getAngle())
                                         .withVelocityX(robotContainer.getXSpeed(true))
                                         .withVelocityY(robotContainer.getYSpeed(true)))
                                 .alongWith(runEntryCommand(
                                         () -> ShooterTable.calcShuttleTableEntry(Meters
-                                                .of(odometryStrategy.getDrivetrainGoalTranslation(true).getNorm())),
+                                                .of(subsystems.odometryStrategy.getDrivetrainGoalTranslation(true)
+                                                        .getNorm())),
                                         () -> ShotSpeeds.FAST))
                                 .repeatedly());
     }
@@ -323,12 +288,13 @@ public class CommandFactory {
     public Command shuttleShortCommand() {
         return updateDrivePoseMT2Command()
                 .andThen(
-                        drivetrain
+                        subsystems.drivetrain
                                 .applyRequest(
                                         () -> snapDrive
                                                 .withTargetDirection(BeakUtils
                                                         .passingTranslation(
-                                                                odometryStrategy.getDrivetrainFieldTranslation(true))
+                                                                subsystems.odometryStrategy
+                                                                        .getDrivetrainFieldTranslation(true))
                                                         .getAngle()
                                                         .rotateBy(BeakUtils.allianceIsBlue()
                                                                 ? Constants.SHUTTLE_SHORT_OFFSET_BLUE
@@ -337,7 +303,8 @@ public class CommandFactory {
                                                 .withVelocityY(robotContainer.getYSpeed(true)))
                                 .alongWith(runEntryCommand(
                                         () -> ShooterTable.calcShortShuttleTableEntry(Meters
-                                                .of(odometryStrategy.getDrivetrainGoalTranslation(true).getNorm())),
+                                                .of(subsystems.odometryStrategy.getDrivetrainGoalTranslation(true)
+                                                        .getNorm())),
                                         () -> ShotSpeeds.FAST))
                                 .repeatedly());
     }
@@ -346,14 +313,14 @@ public class CommandFactory {
      * Generate a command to run the shooter, convey, & stop everything thereafter.
      * 
      * @param entry
-     *            The entry to run.
+     *              The entry to run.
      */
     public Command shootCommand(Supplier<ShooterTableEntry> entry) {
-        return driverCamera.setShooterCameraCommand().andThen(runEntryCommand(entry, () -> ShotSpeeds.FAST))
+        return subsystems.driverCamera.setShooterCameraCommand().andThen(runEntryCommand(entry, () -> ShotSpeeds.FAST))
                 .andThen(Commands.waitUntil(shooterAndPivotReady())).andThen(conveyCommand().withTimeout(0.75))
                 .finallyDo(() -> {
-                    shooter.stop();
-                    pivot.runToPosition(Pivot.HOLD_POSITION);
+                    subsystems.shooter.stop();
+                    subsystems.pivot.runToPosition(Pivot.HOLD_POSITION);
                     setCameraWithWait();
                 });
     }
@@ -362,7 +329,7 @@ public class CommandFactory {
      * Generate a command to shoot based on a target distance.
      * 
      * @param distance
-     *            The target distance, in feet.
+     *                 The target distance, in feet.
      */
     public Command shootCommand(double distance) {
         return shootCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(distance)));
@@ -372,20 +339,20 @@ public class CommandFactory {
      * Generate a command to use the specified entry to run a magic shot.
      * 
      * @param entry
-     *            The entry to run.
+     *                 The entry to run.
      * @param strategy
-     *            The strategy to use for rotation.
+     *                 The strategy to use for rotation.
      * @param lock
-     *            Whether or not to align the drivetrain.
+     *                 Whether or not to align the drivetrain.
      */
     public Command magicShootCommand(Supplier<ShooterTableEntry> entry, Supplier<ShootingStrategy> strategy,
             boolean lock, Rotation2d offset) {
         return Commands.runOnce(() -> entryToRun = entry.get())
                 .andThen(
-                        fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier()))
-                .andThen(driverCamera.setShooterCameraCommand())
+                        fixNoteCommand().unless(subsystems.noteSensing.conveyorSeesNoteSupplier()))
+                .andThen(subsystems.driverCamera.setShooterCameraCommand())
                 .andThen(runEntryCommand(() -> entryToRun, () -> ShotSpeeds.FAST)
-                        .alongWith(drivetrain.speakerAlign(strategy, offset).withTimeout(0.5)
+                        .alongWith(subsystems.drivetrain.speakerAlign(strategy, offset).withTimeout(0.5)
                                 .unless(() -> Math.abs(strategy.get().getTargetOffset().getDegrees()) < 0.25))
                         .onlyIf(() -> lock))
                 .andThen(shootCommand(() -> entryToRun));
@@ -395,11 +362,11 @@ public class CommandFactory {
      * Generate a command to use the specified entry to run a magic shot.
      * 
      * @param entry
-     *            The entry to run.
+     *                 The entry to run.
      * @param strategy
-     *            The strategy to use for rotation.
+     *                 The strategy to use for rotation.
      * @param lock
-     *            Whether or not to align the drivetrain.
+     *                 Whether or not to align the drivetrain.
      */
     public Command magicShootCommand(Supplier<ShooterTableEntry> entry, Supplier<ShootingStrategy> strategy,
             boolean lock) {
@@ -410,11 +377,11 @@ public class CommandFactory {
      * Generate a command to use the specified distance to run a magic shot.
      * 
      * @param distance
-     *            The shot to run.
+     *                 The shot to run.
      * @param strategy
-     *            The strategy to use for rotation.
+     *                 The strategy to use for rotation.
      * @param lock
-     *            Whether or not to align the drivetrain.
+     *                 Whether or not to align the drivetrain.
      */
     public Command magicShootCommand(double distance, Supplier<ShootingStrategy> strategy, boolean lock) {
         return magicShootCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(distance)), strategy, lock);
@@ -424,9 +391,9 @@ public class CommandFactory {
      * Generate a command to use the specified strategy to run a magic shot.
      * 
      * @param strategy
-     *            The {@link ShootingStrategy} to use.
+     *                 The {@link ShootingStrategy} to use.
      * @param lock
-     *            Whether or not to align the drivetrain.
+     *                 Whether or not to align the drivetrain.
      */
     public Command magicShootCommand(Supplier<ShootingStrategy> strategy, boolean lock, Rotation2d offset) {
         return magicShootCommand(() -> strategy.get().getTargetEntry(), strategy, lock, offset);
@@ -436,9 +403,9 @@ public class CommandFactory {
      * Generate a command to use the specified strategy to run a magic shot.
      * 
      * @param strategy
-     *            The {@link ShootingStrategy} to use.
+     *                 The {@link ShootingStrategy} to use.
      * @param lock
-     *            Whether or not to align the drivetrain.
+     *                 Whether or not to align the drivetrain.
      */
     public Command magicShootCommand(Supplier<ShootingStrategy> strategy, boolean lock) {
         return magicShootCommand(() -> strategy.get().getTargetEntry(), strategy, lock, ShootingStrategy.OFFSET);
@@ -449,7 +416,7 @@ public class CommandFactory {
      * shot.
      * 
      * @param strategy
-     *            The {@link ShootingStrategy} to use.
+     *                 The {@link ShootingStrategy} to use.
      */
     public Command magicShootCommand(Supplier<ShootingStrategy> strategy) {
         return magicShootCommand(strategy, true);
@@ -465,14 +432,15 @@ public class CommandFactory {
 
     /** Run a Shooter Table Entry */
     public Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShotSpeeds> speed) {
-        return shooter.runEntryCommand(entry, speed).alongWith(pivot.runToPositionCommand(() -> entry.get().Angle))
+        return subsystems.shooter.runEntryCommand(entry, speed)
+                .alongWith(subsystems.pivot.runToPositionCommand(() -> entry.get().Angle))
                 .alongWith(Commands.runOnce(() -> lastShot = entry.get().Distance.in(Feet))
                         .onlyIf(() -> entry.get().Distance != null));
     }
 
     /** Shooter & Pivot Both Ready */
     public BooleanSupplier shooterAndPivotReady() {
-        return () -> shooter.isReady() && pivot.inPosition();
+        return () -> subsystems.shooter.isReady() && subsystems.pivot.inPosition();
     }
 
     /** Set the strategy to use for shooting/locking. */
@@ -488,15 +456,18 @@ public class CommandFactory {
         Pose2d redPose = new Pose2d(target.getTranslation(), target.getRotation().minus(Rotation2d.fromDegrees(6.)));
 
         return runBoth(false, VBusConstants.FAST_CONVEYOR_VBUS, VBusConstants.INFEED_VBUS).repeatedly()
-                .alongWith(pivot.runToPositionCommand(pivotAngle))
-                .alongWith(Commands.either(drivetrain.mirrorablePathFindCommand(target, scale, endVelocity),
-                        drivetrain.mirrorablePathFindCommand(redPose, scale, endVelocity), BeakUtils::allianceIsBlue));
+                .alongWith(subsystems.pivot.runToPositionCommand(pivotAngle))
+                .alongWith(Commands.either(subsystems.drivetrain.mirrorablePathFindCommand(target, scale, endVelocity),
+                        subsystems.drivetrain.mirrorablePathFindCommand(redPose, scale, endVelocity),
+                        BeakUtils::allianceIsBlue));
     }
 
     /** Pathfinding Auton Shot */
     public Command pathfindingShotCommand(double targetDistance, Pose2d target, double scale, double endVelocity) {
-        return drivetrain.mirrorablePathFindCommand(target, scale, endVelocity).deadlineWith(smartInfeedCommand()
-                .withTimeout(0.6).andThen(coolNoteFixCommand(0.2)).andThen(shooter.runShotCommand(ShotSpeeds.FAST)))
+        return subsystems.drivetrain.mirrorablePathFindCommand(target, scale, endVelocity)
+                .deadlineWith(smartInfeedCommand()
+                        .withTimeout(0.6).andThen(coolNoteFixCommand(0.2))
+                        .andThen(subsystems.shooter.runShotCommand(ShotSpeeds.FAST)))
                 .andThen(shootCommand(targetDistance));
     }
 
@@ -506,11 +477,11 @@ public class CommandFactory {
 
     /** Only run climb command if pivot good */
     public Command safeClimbCommand(Command command) {
-        return command.onlyIf(() -> pivot.getPosition() > PIVOT_UP_THRESHOLD);
+        return command.onlyIf(() -> subsystems.pivot.getPosition() > PIVOT_UP_THRESHOLD);
     }
 
     public Command safePivotCommand(Command command) {
-        return command.onlyIf(climber::reverseLimitOn);
+        return command.onlyIf(subsystems.climber::reverseLimitOn);
     }
 
     /** Iterate Climb Sequence */
@@ -518,22 +489,22 @@ public class CommandFactory {
         ClimbSequence seq = ClimbSequence.Default;
 
         switch (currentSequence) {
-            case Default :
+            case Default:
                 seq = enableTrap || enableClimber ? ClimbSequence.Prep : ClimbSequence.Default;
                 break;
-            case Prep :
+            case Prep:
                 seq = ClimbSequence.Fan;
                 break;
-            case Fan :
+            case Fan:
                 seq = enableTrap ? ClimbSequence.Shoot : ClimbSequence.End;
                 break;
-            case Shoot :
+            case Shoot:
                 seq = ClimbSequence.End;
                 break;
-            case End :
+            case End:
                 seq = enableClimber ? ClimbSequence.Climb : ClimbSequence.Default;
                 break;
-            default :
+            default:
                 seq = ClimbSequence.Default;
                 break;
         }
@@ -545,7 +516,7 @@ public class CommandFactory {
     public Command prepClimbCommand() {
         // Pivot => Trap Position
         // Shooter => Trap Mode
-        return pivot.runToTrapCommand().alongWith(shooter.setSlotCommand(Slots.TRAP));
+        return subsystems.pivot.runToTrapCommand().alongWith(subsystems.shooter.setSlotCommand(Slots.TRAP));
     }
 
     /** Prime the fan & shooter */
@@ -553,12 +524,13 @@ public class CommandFactory {
         // Fan Pivot Up
         // Shooting Routine
         // Climber Up
-        return fanPivot.runToTrapCommand()
-                .alongWith(fan.runMotorCommand(VBusConstants.FAN_VBUS)
+        return subsystems.fanPivot.runToTrapCommand()
+                .alongWith(subsystems.fan.runMotorCommand(VBusConstants.FAN_VBUS)
                         .andThen(BeakCommands.repeatCommand(fixNoteCommand(), 2))
-                        .andThen(shooter.runShotCommand(ShotSpeeds.TRAP)).onlyIf(() -> enableTrap))
-                .alongWith(climber.runToPositionCommand(VBusConstants.CLIMBER_VBUS, ClimberPositions.READY, false)
-                        .onlyIf(() -> enableClimber && pivot.getPosition() > PIVOT_UP_THRESHOLD));
+                        .andThen(subsystems.shooter.runShotCommand(ShotSpeeds.TRAP)).onlyIf(() -> enableTrap))
+                .alongWith(subsystems.climber
+                        .runToPositionCommand(VBusConstants.CLIMBER_VBUS, ClimberPositions.READY, false)
+                        .onlyIf(() -> enableClimber && subsystems.pivot.getPosition() > PIVOT_UP_THRESHOLD));
     }
 
     public Command dumbCancelClimbCommand() {
@@ -566,10 +538,12 @@ public class CommandFactory {
         return Commands.runOnce(() -> {
             currentSequence = ClimbSequence.Default;
             cancelClimbRequestShooterDown = true;
-        }).andThen(fanPivot.runToTrapCommand(), Commands.waitSeconds(0.2),
-                safeClimbCommand(climber.zeroCommand().until(climber.reverseLimitOnSupplier()).alongWith(
-                        Commands.waitSeconds(1).andThen(fanPivot.runToHomeCommand()), fan.stopCommand(),
-                        shooter.stopCommand())));
+        }).andThen(subsystems.fanPivot.runToTrapCommand(), Commands.waitSeconds(0.2),
+                safeClimbCommand(
+                        subsystems.climber.zeroCommand().until(subsystems.climber.reverseLimitOnSupplier()).alongWith(
+                                Commands.waitSeconds(1).andThen(subsystems.fanPivot.runToHomeCommand()),
+                                subsystems.fan.stopCommand(),
+                                subsystems.shooter.stopCommand())));
     }
 
     /** Shoot */
@@ -584,15 +558,16 @@ public class CommandFactory {
         // Fan Stop
         // Shooter Stop/Fast Mode
         // Pivot Down if not climbing
-        return fanPivot.runToHomeCommand().alongWith(fan.stopCommand())
-                .alongWith(shooter.stopCommand().andThen(shooter.setSlotCommand(Slots.FAST)))
-                .alongWith(safePivotCommand(pivot.runToHomeCommand()).unless(() -> enableClimber));
+        return subsystems.fanPivot.runToHomeCommand().alongWith(subsystems.fan.stopCommand())
+                .alongWith(subsystems.shooter.stopCommand().andThen(subsystems.shooter.setSlotCommand(Slots.FAST)))
+                .alongWith(safePivotCommand(subsystems.pivot.runToHomeCommand()).unless(() -> enableClimber));
     }
 
     /** Climb!!!!! */
     public Command climbCommand() {
         // Climber Down
-        return safeClimbCommand(climber.runToPositionCommand(VBusConstants.CLIMBER_VBUS, ClimberPositions.CLIMB, true));
+        return safeClimbCommand(
+                subsystems.climber.runToPositionCommand(VBusConstants.CLIMBER_VBUS, ClimberPositions.CLIMB, true));
     }
 
     /** Update Sequence */
@@ -602,10 +577,10 @@ public class CommandFactory {
     }
 
     public Command toggleTrapCommand() {
-        return Commands.either(pivot.runToTrapCommand(),
-                safeClimbCommand(climber.zeroCommand().until(climber::reverseLimitOn))
-                        .andThen(pivot.runToHomeCommand()),
-                pivot::getIsAtHome);
+        return Commands.either(subsystems.pivot.runToTrapCommand(),
+                safeClimbCommand(subsystems.climber.zeroCommand().until(subsystems.climber::reverseLimitOn))
+                        .andThen(subsystems.pivot.runToHomeCommand()),
+                subsystems.pivot::getIsAtHome);
     }
 
     // ==============================
@@ -614,13 +589,14 @@ public class CommandFactory {
 
     /** Set infeed camera asynchronously */
     public void setCameraWithWait() {
-        Commands.waitSeconds(VisionConstants.CAMERA_SWITCH_TIMEOUT).andThen(driverCamera.setInfeedCameraCommand())
+        Commands.waitSeconds(VisionConstants.CAMERA_SWITCH_TIMEOUT)
+                .andThen(subsystems.driverCamera.setInfeedCameraCommand())
                 .schedule();
     }
 
     public void updateMTRot() {
-        chassisLimelight.setRobotRotationMT2(drivetrain.getRotation().getDegrees());
-        infeedLimelight3G.setRobotRotationMT2(drivetrain.getRotation().getDegrees());
+        subsystems.chassisLimelight.setRobotRotationMT2(subsystems.drivetrain.getRotation().getDegrees());
+        subsystems.infeedLimelight3G.setRobotRotationMT2(subsystems.drivetrain.getRotation().getDegrees());
 
     }
 
@@ -631,19 +607,19 @@ public class CommandFactory {
             return;
 
         // Apply Chassis Limelight
-        var visionResult = chassisLimelight.getBotposeEstimateMT2();
-        var visionStdDevs = chassisLimelight.getSTDevsXY(drivetrain);
+        var visionResult = subsystems.chassisLimelight.getBotposeEstimateMT2();
+        var visionStdDevs = subsystems.chassisLimelight.getSTDevsXY(subsystems.drivetrain);
         if (visionStdDevs.isPresent()) {
-            drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
+            subsystems.drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
                     VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
 
         }
 
         // Apply Infeed Limelight
-        visionResult = infeedLimelight3G.getBotposeEstimateMT2();
-        visionStdDevs = infeedLimelight3G.getSTDevsXY(drivetrain);
+        visionResult = subsystems.infeedLimelight3G.getBotposeEstimateMT2();
+        visionStdDevs = subsystems.infeedLimelight3G.getSTDevsXY(subsystems.drivetrain);
         if (visionStdDevs.isPresent())
-            drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
+            subsystems.drivetrain.addVisionMeasurement(visionResult.pose, visionResult.timestampSeconds,
                     VecBuilder.fill(visionStdDevs.get()[0], visionStdDevs.get()[1], Double.MAX_VALUE));
     }
 
@@ -652,23 +628,23 @@ public class CommandFactory {
     }
 
     public void setMT2Pipeline() {
-        chassisLimelight.setPipeline(VisionConstants.MEGATAG_PIPELINE);
-        selectedStrategy = odometryStrategy;
+        subsystems.chassisLimelight.setPipeline(VisionConstants.MEGATAG_PIPELINE);
+        selectedStrategy = subsystems.odometryStrategy;
     }
 
     public void setChassisPipeline() {
-        selectedStrategy = chassisLimelight2dStrategy;
-        chassisLimelight.setPipeline(VisionConstants.TY_PIPELINE);
+        selectedStrategy = subsystems.chassisLimelight2dStrategy;
+        subsystems.chassisLimelight.setPipeline(VisionConstants.TY_PIPELINE);
     }
 
     public void setTeleopMT2RotationThresholds() {
-        chassisLimelight.setTeleopMT2Threshold();
-        infeedLimelight3G.setTeleopMT2Threshold();
+        subsystems.chassisLimelight.setTeleopMT2Threshold();
+        subsystems.infeedLimelight3G.setTeleopMT2Threshold();
     }
 
     public void setAutonMT2RotationThresholds() {
-        chassisLimelight.setAutonMT2Threshold();
-        infeedLimelight3G.setAutonMT2Threshold();
+        subsystems.chassisLimelight.setAutonMT2Threshold();
+        subsystems.infeedLimelight3G.setAutonMT2Threshold();
     }
 
     // ==============================
@@ -677,12 +653,13 @@ public class CommandFactory {
 
     /** Stop Shooter */
     public void stopShooter() {
-        shooter.stop();
+        subsystems.shooter.stop();
     }
 
     /** Push limelight data to the CANdle */
     public Command encodeLimelights() {
-        return candle.encodeLimelights(chassisLimelight, chassisLimelight, infeedLimelight3G);
+        return subsystems.candle.encodeLimelights(subsystems.chassisLimelight, subsystems.chassisLimelight,
+                subsystems.infeedLimelight3G);
     }
 
     // ==============================

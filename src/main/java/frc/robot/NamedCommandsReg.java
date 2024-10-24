@@ -8,68 +8,22 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.VBusConstants;
-import frc.robot.subsystems.Candle;
-import frc.robot.subsystems.Climber;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.Conveyor;
-import frc.robot.subsystems.Fan;
-import frc.robot.subsystems.FanPivot;
-import frc.robot.subsystems.Infeed;
-import frc.robot.subsystems.Pivot;
-import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.ShotSpeeds;
-import frc.robot.subsystems.Whippy;
 import frc.robot.utils.BeakUtils;
-import frc.robot.utils.DriverCamera;
-import frc.robot.utils.Limelight;
-import frc.robot.utils.NoteSensing;
 import frc.robot.utils.ShooterTable;
-import frc.robot.utils.ShootingStrategy;
 import frc.robot.utils.SubAutos;
+import frc.robot.utils.SubsystemContainer;
 
 public class NamedCommandsReg {
-    private final CommandSwerveDrivetrain drivetrain;
-    private final Infeed infeed;
-    private final Shooter shooter;
-    private final Conveyor conveyor;
-    private final Climber climber;
-    private final Pivot pivot;
-    private final Fan fan;
-    private final FanPivot fanPivot;
-    private final Whippy whippy;
-    private final Candle candle;
-    private final NoteSensing noteSensing;
-    private final DriverCamera driverCamera;
-    private final Limelight shooterLimelight, chassisLimelight, infeedLimelight3G;
-    private final ShootingStrategy shooterLimelightStrategy, odometryStrategy, chassisLimelight2dStrategy;
+    private final SubsystemContainer subsystems;
     private final SlewRateLimiter xLimiter, yLimiter, thetaLimiter;
     private final SubAutos autos;
     private final CommandFactory commandFactory;
     private final RobotContainer robotContainer;
-    public NamedCommandsReg(CommandSwerveDrivetrain drivetrain, Infeed infeed, Shooter shooter, Conveyor conveyor,
-            Climber climber, Pivot pivot, Fan fan, FanPivot fanPivot, Whippy whippy, Candle candle,
-            NoteSensing noteSensing, DriverCamera driverCamera, Limelight shooterLimelight, Limelight chassisLimelight,
-            Limelight infeedLimelight3G, ShootingStrategy shooterLimelightStrategy, ShootingStrategy odometryStrategy,
-            ShootingStrategy chassisLimelight2dStrategy, SlewRateLimiter xLimiter, SlewRateLimiter yLimiter,
+
+    public NamedCommandsReg(SubsystemContainer subsystems, SlewRateLimiter xLimiter, SlewRateLimiter yLimiter,
             SlewRateLimiter thetaLimiter, SubAutos autos, RobotContainer robotContainer) {
-        this.drivetrain = drivetrain;
-        this.infeed = infeed;
-        this.shooter = shooter;
-        this.conveyor = conveyor;
-        this.climber = climber;
-        this.pivot = pivot;
-        this.fan = fan;
-        this.fanPivot = fanPivot;
-        this.whippy = whippy;
-        this.candle = candle;
-        this.noteSensing = noteSensing;
-        this.driverCamera = driverCamera;
-        this.shooterLimelight = shooterLimelight;
-        this.chassisLimelight = chassisLimelight;
-        this.infeedLimelight3G = infeedLimelight3G;
-        this.shooterLimelightStrategy = shooterLimelightStrategy;
-        this.odometryStrategy = odometryStrategy;
-        this.chassisLimelight2dStrategy = chassisLimelight2dStrategy;
+        this.subsystems = subsystems;
         this.xLimiter = xLimiter;
         this.yLimiter = yLimiter;
         this.thetaLimiter = thetaLimiter;
@@ -82,7 +36,7 @@ public class NamedCommandsReg {
 
     private void initNamedCommands() {
         /* ... */
-        NamedCommands.registerCommand("Pivot Zero", pivot.zeroCommand());
+        NamedCommands.registerCommand("Pivot Zero", subsystems.pivot.zeroCommand());
 
         /* Infeed & Spit */
         NamedCommands.registerCommand("Smart Infeed", commandFactory.smartInfeedCommand());
@@ -90,72 +44,77 @@ public class NamedCommandsReg {
         NamedCommands.registerCommand("Dumb Infeed", commandFactory
                 .runBoth(true, VBusConstants.SLOW_CONVEYOR_VBUS, VBusConstants.INFEED_VBUS).withTimeout(.25));
 
-        NamedCommands.registerCommand("Infeed", infeed.runMotorCommand(VBusConstants.INFEED_VBUS)
-                .alongWith(conveyor.runMotorCommand(VBusConstants.FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
+        NamedCommands.registerCommand("Infeed", subsystems.infeed.runMotorCommand(VBusConstants.INFEED_VBUS)
+                .alongWith(subsystems.conveyor.runMotorCommand(VBusConstants.FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
 
-        NamedCommands.registerCommand("C Infeed", infeed.runMotorCommand(VBusConstants.INFEED_VBUS)
-                .alongWith(conveyor.runMotorCommand(VBusConstants.FAST_CONVEYOR_VBUS)).repeatedly().withTimeout(1.0));
+        NamedCommands.registerCommand("C Infeed", subsystems.infeed.runMotorCommand(VBusConstants.INFEED_VBUS)
+                .alongWith(subsystems.conveyor.runMotorCommand(VBusConstants.FAST_CONVEYOR_VBUS)).repeatedly()
+                .withTimeout(1.0));
 
         NamedCommands.registerCommand("First Spit Note",
-                infeed.runMotorCommand(VBusConstants.INFEED_VBUS)
-                        .alongWith(conveyor.runMotorCommand(VBusConstants.FAST_CONVEYOR_VBUS))
-                        .alongWith(shooter.spinBothCommand(0.20)).repeatedly());
+                subsystems.infeed.runMotorCommand(VBusConstants.INFEED_VBUS)
+                        .alongWith(subsystems.conveyor.runMotorCommand(VBusConstants.FAST_CONVEYOR_VBUS))
+                        .alongWith(subsystems.shooter.spinBothCommand(0.20)).repeatedly());
         NamedCommands.registerCommand("Spit Note",
-                infeed.runMotorCommand(VBusConstants.INFEED_VBUS)
-                        .alongWith(conveyor.runMotorCommand(VBusConstants.FAST_CONVEYOR_VBUS))
-                        .alongWith(shooter.spinBothCommand(0.11)).repeatedly());
+                subsystems.infeed.runMotorCommand(VBusConstants.INFEED_VBUS)
+                        .alongWith(subsystems.conveyor.runMotorCommand(VBusConstants.FAST_CONVEYOR_VBUS))
+                        .alongWith(subsystems.shooter.spinBothCommand(0.11)).repeatedly());
 
-        NamedCommands.registerCommand("Prepare Spit", shooter.spinBothCommand(0.15));
+        NamedCommands.registerCommand("Prepare Spit", subsystems.shooter.spinBothCommand(0.15));
 
         NamedCommands.registerCommand("Fix Note", commandFactory.fixNoteCommand());
 
         NamedCommands.registerCommand("Finish Infeed",
-                commandFactory.smartInfeedAutoCommand().andThen(shooter.runShotCommand(ShotSpeeds.FAST)));
+                commandFactory.smartInfeedAutoCommand().andThen(subsystems.shooter.runShotCommand(ShotSpeeds.FAST)));
 
         NamedCommands.registerCommand("Magic Shoot",
-                Commands.waitSeconds(0.1).andThen(commandFactory.magicShootCommand(() -> odometryStrategy)));// updateDrivePoseMT2Command().repeatedly().withTimeout(0.1).andThen(magicShootCommand(()
+                Commands.waitSeconds(0.1).andThen(commandFactory.magicShootCommand(() -> subsystems.odometryStrategy)));// updateDrivePoseMT2Command().repeatedly().withTimeout(0.1).andThen(magicShootCommand(()
         // -> odometryStrategy)));
 
-        NamedCommands.registerCommand("Magic Shoot++", commandFactory.magicShootCommand(() -> odometryStrategy));
+        NamedCommands.registerCommand("Magic Shoot++",
+                commandFactory.magicShootCommand(() -> subsystems.odometryStrategy));
 
-        NamedCommands.registerCommand("Mega Tag Shoot", commandFactory.magicShootCommand(() -> odometryStrategy));
+        NamedCommands.registerCommand("Mega Tag Shoot",
+                commandFactory.magicShootCommand(() -> subsystems.odometryStrategy));
         NamedCommands.registerCommand("Choose Shoot", commandFactory.magicShootCommand());
 
         NamedCommands.registerCommand("Spit Wipe Note 5-3",
-                drivetrain.staticAlign(() -> Constants.AutoPoses.DOWNWARD_ROTATION).withTimeout(0.5)
+                subsystems.drivetrain.staticAlign(() -> Constants.AutoPoses.DOWNWARD_ROTATION).withTimeout(0.5)
                         .andThen(commandFactory.conveyCommand().withTimeout(0.5))
-                        .andThen(drivetrain.staticAlign(() -> Rotation2d.fromDegrees(90.0)).withTimeout(0.5))
-                        .onlyIf(noteSensing.hasInfedSupplier()));
+                        .andThen(subsystems.drivetrain.staticAlign(() -> Rotation2d.fromDegrees(90.0)).withTimeout(0.5))
+                        .onlyIf(subsystems.noteSensing.hasInfedSupplier()));
 
         NamedCommands.registerCommand("Spit Wipe Note 2",
-                drivetrain.staticAlign(() -> Constants.AutoPoses.UPWARD_ROTATION).withTimeout(0.5)
+                subsystems.drivetrain.staticAlign(() -> Constants.AutoPoses.UPWARD_ROTATION).withTimeout(0.5)
                         .andThen(commandFactory.runThree(() -> VBusConstants.FAST_CONVEYOR_VBUS,
                                 () -> VBusConstants.INFEED_VBUS, () -> 0.2).withTimeout(0.25))
-                        .andThen(drivetrain.staticAlign(() -> Rotation2d.fromDegrees(90.0)).withTimeout(0.5))
-                        .onlyIf(noteSensing.hasInfedSupplier()));
+                        .andThen(subsystems.drivetrain.staticAlign(() -> Rotation2d.fromDegrees(90.0)).withTimeout(0.5))
+                        .onlyIf(subsystems.noteSensing.hasInfedSupplier()));
 
         /* Shooter & Pivot */
-        NamedCommands.registerCommand("Fast Shooter", shooter.runShotCommand(ShotSpeeds.FAST));
+        NamedCommands.registerCommand("Fast Shooter", subsystems.shooter.runShotCommand(ShotSpeeds.FAST));
 
-        NamedCommands.registerCommand("Shooter", shooter.runShotCommand(ShotSpeeds.FAST, 0.85));
+        NamedCommands.registerCommand("Shooter", subsystems.shooter.runShotCommand(ShotSpeeds.FAST, 0.85));
 
-        NamedCommands.registerCommand("Stop Shooter", shooter.stopCommand());
+        NamedCommands.registerCommand("Stop Shooter", subsystems.shooter.stopCommand());
 
-        NamedCommands.registerCommand("Home Pivot", pivot.runToHomeCommand());
+        NamedCommands.registerCommand("Home Pivot", subsystems.pivot.runToHomeCommand());
 
         NamedCommands.registerCommand("Rotate To Speaker Source PC3",
-                drivetrain.staticAlign(() -> Rotation2d.fromDegrees(BeakUtils.allianceIsBlue() ? -63 : -117)));
+                subsystems.drivetrain
+                        .staticAlign(() -> Rotation2d.fromDegrees(BeakUtils.allianceIsBlue() ? -63 : -117)));
 
         /* 4 piece pivots */
         NamedCommands.registerCommand("Preload Note",
-                pivot.runToPositionCommand(16.0).alongWith(driverCamera.setShooterCameraCommand())); // 17
+                subsystems.pivot.runToPositionCommand(16.0)
+                        .alongWith(subsystems.driverCamera.setShooterCameraCommand())); // 17
 
-        NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(11)); // 11
-        NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(14.625)); // 15
-        NamedCommands.registerCommand("Note C", pivot.runToPositionCommand(13.5)); // 13.5
-        NamedCommands.registerCommand("Preload Note at sub", pivot.runToPositionCommand(30));
+        NamedCommands.registerCommand("Note A", subsystems.pivot.runToPositionCommand(11)); // 11
+        NamedCommands.registerCommand("Note B", subsystems.pivot.runToPositionCommand(14.625)); // 15
+        NamedCommands.registerCommand("Note C", subsystems.pivot.runToPositionCommand(13.5)); // 13.5
+        NamedCommands.registerCommand("Preload Note at sub", subsystems.pivot.runToPositionCommand(30));
 
-        NamedCommands.registerCommand("Note 1", pivot.runToPositionCommand(17.5)); // 17.5
+        NamedCommands.registerCommand("Note 1", subsystems.pivot.runToPositionCommand(17.5)); // 17.5
 
         /* Pathfinding Shots */
         NamedCommands.registerCommand("Amp Shot",
@@ -171,16 +130,16 @@ public class NamedCommandsReg {
 
         NamedCommands.registerCommand("Stationary Source Shot", commandFactory.shootCommand(22.1));
         NamedCommands.registerCommand("Magic Source Shot",
-                commandFactory.magicShootCommand(21.6, () -> chassisLimelight2dStrategy, true));
+                commandFactory.magicShootCommand(21.6, () -> subsystems.chassisLimelight2dStrategy, true));
 
         NamedCommands.registerCommand("Spitless Source Shot 1", commandFactory.shootCommand(15.8));
         NamedCommands.registerCommand("Spitless Source Shot 2", commandFactory.shootCommand(17));
         NamedCommands.registerCommand("Spitless Source Shot 3", commandFactory.shootCommand(17.2));
 
-        NamedCommands.registerCommand("Right Preload", pivot.runOnce(pivot::zeroEncoder)
+        NamedCommands.registerCommand("Right Preload", subsystems.pivot.runOnce(subsystems.pivot::zeroEncoder)
                 .andThen(commandFactory.shootCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(5.2)))));
 
-        NamedCommands.registerCommand("Center Preload", pivot.runOnce(pivot::zeroEncoder)
+        NamedCommands.registerCommand("Center Preload", subsystems.pivot.runOnce(subsystems.pivot::zeroEncoder)
                 .andThen(commandFactory.shootCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(4.2)))));
 
         NamedCommands.registerCommand("Note C Pathfinding",
@@ -194,20 +153,20 @@ public class NamedCommandsReg {
         NamedCommands.registerCommand("P Amp Shot", commandFactory.shootCommand(13.5));
         NamedCommands.registerCommand("Stationary Shot Amp", commandFactory.shootCommand(13.5));
 
-        NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(5.0));
-        NamedCommands.registerCommand("Source Pivot 4", pivot.runToPositionCommand(6.0));
-        NamedCommands.registerCommand("Source Pivot Red", pivot.runToPositionCommand(5.0));
+        NamedCommands.registerCommand("Source Pivot", subsystems.pivot.runToPositionCommand(5.0));
+        NamedCommands.registerCommand("Source Pivot 4", subsystems.pivot.runToPositionCommand(6.0));
+        NamedCommands.registerCommand("Source Pivot Red", subsystems.pivot.runToPositionCommand(5.0));
 
-        NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(4.75));
-        NamedCommands.registerCommand("Amp Pivot Red", pivot.runToPositionCommand(4.75));
+        NamedCommands.registerCommand("Amp Pivot", subsystems.pivot.runToPositionCommand(4.75));
+        NamedCommands.registerCommand("Amp Pivot Red", subsystems.pivot.runToPositionCommand(4.75));
 
         NamedCommands.registerCommand("Convey", commandFactory.conveyCommand());
-        NamedCommands.registerCommand("4 Piece Pivot", pivot.runToPositionCommand(14));
-        NamedCommands.registerCommand("P Pivot", pivot.runToPositionCommand(16));
+        NamedCommands.registerCommand("4 Piece Pivot", subsystems.pivot.runToPositionCommand(14));
+        NamedCommands.registerCommand("P Pivot", subsystems.pivot.runToPositionCommand(16));
         NamedCommands.registerCommand("Stationary Source Shot", commandFactory.shootCommand(15.3));
 
-        NamedCommands.registerCommand("4 Piece A", pivot.runToPositionCommand(13.75));
-        NamedCommands.registerCommand("4 Piece C", pivot.runToPositionCommand(14.0));
+        NamedCommands.registerCommand("4 Piece A", subsystems.pivot.runToPositionCommand(13.75));
+        NamedCommands.registerCommand("4 Piece C", subsystems.pivot.runToPositionCommand(14.0));
 
         /* Sub Autos */
         NamedCommands.registerCommand("5 Or 4", autos.note5or4());
@@ -229,9 +188,9 @@ public class NamedCommandsReg {
         NamedCommands.registerCommand("MT2 Loc OFF", Commands.runOnce(() -> commandFactory.setUseMT2(false)));
 
         NamedCommands.registerCommand("PB3AC skip shot",
-                (Commands.waitSeconds(0.2).andThen(commandFactory.magicShootCommand(() -> odometryStrategy)))
-                        .onlyIf(noteSensing.getHasInfedCache()));
+                (Commands.waitSeconds(0.2).andThen(commandFactory.magicShootCommand(() -> subsystems.odometryStrategy)))
+                        .onlyIf(subsystems.noteSensing.getHasInfedCache()));
 
-        NamedCommands.registerCommand("Cache hasInfed", Commands.runOnce(noteSensing::cacheInfeedState));
+        NamedCommands.registerCommand("Cache hasInfed", Commands.runOnce(subsystems.noteSensing::cacheInfeedState));
     }
 }

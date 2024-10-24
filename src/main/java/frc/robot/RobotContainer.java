@@ -39,6 +39,7 @@ import frc.robot.utils.ShooterTable;
 import frc.robot.utils.ShooterTable.VisionTableEntry.CameraLerpStrat;
 import frc.robot.utils.ShootingStrategy;
 import frc.robot.utils.SubAutos;
+import frc.robot.utils.SubsystemContainer;
 
 public class RobotContainer {
     // =============================================== //
@@ -53,8 +54,6 @@ public class RobotContainer {
     /** Controllers & Subsystems */
     // ======================== //
     private final CommandXboxController driverController = new CommandXboxController(OI_DRIVER_CONTROLLER);
-    private final CommandXboxController operatorController = new CommandXboxController(OI_OPERATOR_CONTROLLER);
-    private final CommandXboxController emergencyController = new CommandXboxController(OI_EMERGENCY_CONTROLLER);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
     private final Infeed infeed = new Infeed();
@@ -65,6 +64,7 @@ public class RobotContainer {
     private final Fan fan = new Fan();
     private final FanPivot fanPivot = new FanPivot();
     private final Whippy whippy = new Whippy();
+    private final SubsystemContainer subsystems;
     private final CommandFactory commandFactory;
     private final DashboardLogging dashboardLogging;
     private final SubAutos autos;
@@ -110,27 +110,20 @@ public class RobotContainer {
     public RobotContainer() {
         autos = new SubAutos(noteSensing);
 
-        commandFactory = new CommandFactory(drivetrain, infeed, shooter, conveyor, climber, pivot, fan, fanPivot,
+        subsystems = new SubsystemContainer(drivetrain, infeed, shooter, conveyor, climber, pivot, fan, fanPivot,
                 whippy, candle, noteSensing, driverCamera, shooterLimelight, chassisLimelight, infeedLimelight3G,
-                shooterLimelightStrategy, odometryStrategy, chassisLimelight2dStrategy, xLimiter, yLimiter,
-                thetaLimiter, autos, this);
+                shooterLimelightStrategy, odometryStrategy, chassisLimelight2dStrategy);
 
-        dashboardLogging = new DashboardLogging(drivetrain, infeed, shooter, conveyor, climber, pivot, fan, fanPivot,
-                whippy, candle, noteSensing, driverCamera, shooterLimelight, chassisLimelight, infeedLimelight3G,
-                shooterLimelightStrategy, odometryStrategy, chassisLimelight2dStrategy, xLimiter, yLimiter,
-                thetaLimiter, autos, this);
+        commandFactory = new CommandFactory(subsystems, xLimiter, yLimiter, thetaLimiter, autos, this);
+
+        dashboardLogging = new DashboardLogging(subsystems, xLimiter, yLimiter, thetaLimiter, autos, this);
 
         ShooterTable.setHeckinessLevel(() -> drivetrain.getRotation());
 
-        new NamedCommandsReg(drivetrain, infeed, shooter, conveyor, climber, pivot, fan, fanPivot, whippy, candle,
-                noteSensing, driverCamera, shooterLimelight, chassisLimelight, infeedLimelight3G,
-                shooterLimelightStrategy, odometryStrategy, chassisLimelight2dStrategy, xLimiter, yLimiter,
-                thetaLimiter, autos, this);
+        new NamedCommandsReg(subsystems, xLimiter, yLimiter, thetaLimiter, autos, this);
 
-        new ControllerBindings(new int[]{OI_DRIVER_CONTROLLER, OI_OPERATOR_CONTROLLER, OI_EMERGENCY_CONTROLLER},
-                drivetrain, infeed, shooter, conveyor, climber, pivot, fan, fanPivot, whippy, candle, noteSensing,
-                driverCamera, shooterLimelight, chassisLimelight, infeedLimelight3G, shooterLimelightStrategy,
-                odometryStrategy, chassisLimelight2dStrategy, xLimiter, yLimiter, thetaLimiter, autos, this);
+        new ControllerBindings(new int[] { OI_DRIVER_CONTROLLER, OI_OPERATOR_CONTROLLER, OI_EMERGENCY_CONTROLLER },
+                subsystems, xLimiter, yLimiter, thetaLimiter, autos, this);
 
         initAutonChooser();
         dashboardLogging.initDashboardLogging();
