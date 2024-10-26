@@ -561,8 +561,8 @@ public class RobotContainer {
 		driverController.rightBumper().onTrue(Commands.runOnce(() -> currentSpeed = SLOW_SPEED))
 				.onFalse(Commands.runOnce(() -> currentSpeed = BASE_SPEED));
 
-		/* Shooter Lock */
-		driverController.leftStick().onTrue(magicLockCommand());
+        /* Shooter Lock */
+        // driverController.leftStick().onTrue(magicLockCommand());
 
 		// ========================= //
 		/* Misc */
@@ -637,8 +637,11 @@ public class RobotContainer {
 		operatorController.y()
 				.onTrue(Commands.runOnce(() -> selectedStrategy = odometryStrategy).andThen(shuttleShortCommand()));
 
-		/* Zero Climber */
-		operatorController.rightStick().onTrue(safeClimbCommand(climber.zeroCommand()));
+        /* Zero Climber */
+        operatorController.leftStick().onTrue(safeClimbCommand(climber.zeroCommand()));
+          /* End snap, limelight & stop all motors */
+        operatorController.rightStick().onTrue(stopAllCommand(true).alongWith(drivetrain.runOnce(() -> {
+        })));
 
 		// ================ //
 		/* Amp & Trap Magic */
@@ -665,18 +668,34 @@ public class RobotContainer {
 		/* Bump Pivot Down */
 		emergencyController.leftBumper().onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 1)));
 
-		// ============== //
-		/* Manual Climber */
-		// ============== //
+        // ============== //
+        /* Manual Climber */
+        // ============== //
+//=====================================================================================================================
+//=====================================================================================================================
 
-		/* Climber Up */
-		emergencyController.rightTrigger(0.2).whileTrue(safeClimbCommand(climber.runMotorCommand(CLIMBER_VBUS, true)))
-				.onFalse(climber.stopCommand());
+        //AGS -- Override Emergency Controller triggers to ignore limit switches for CORI -- change made Oct 21, 2024
 
-		/* Climber Down FULL SEND */
-		emergencyController.leftTrigger(0.2)
-				.whileTrue(safeClimbCommand(climber.runMotorCommand(-FAST_CLIMBER_VBUS, true)))
-				.onFalse(climber.holdCurrentPositionCommand());
+        
+        /* Climber Up */
+        emergencyController.rightTrigger(0.2).whileTrue(
+                climber.runMotorCommand(CLIMBER_VBUS, true));
+
+        // emergencyController.rightTrigger(0.2).whileTrue(
+        //         safeClimbCommand(climber.runMotorCommand(CLIMBER_VBUS, true)))
+        //         .onFalse(climber.stopCommand());
+
+        /* Climber Down FULL SEND */
+        emergencyController.leftTrigger(0.2).whileTrue(
+           climber.runMotorCommand(-CLIMBER_VBUS, true));
+
+        // emergencyController.leftTrigger(0.2).whileTrue(
+        //         safeClimbCommand(climber.runMotorCommand(-FAST_CLIMBER_VBUS, true)))
+        //         .onFalse(climber.holdCurrentPositionCommand());
+
+//=====================================================================================================================
+//=====================================================================================================================
+
 
 		/* Ready Climb */
 		emergencyController.povUp()

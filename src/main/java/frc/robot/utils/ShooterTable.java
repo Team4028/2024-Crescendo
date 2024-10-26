@@ -82,25 +82,25 @@ public class ShooterTable {
 
 	private static void fillInTable() {
 
-		final double GLOBAL_OFFSET = 0.375; // offset from pre-iri good
-		// put entries here
-		// Distances must go from top to bottom: shortest to longest
-		// IF YOU INCREASE DISTANCE, SHOOTER ANGLE GOES UP
-		shooterTable.add(new ShooterTableEntry(Feet.of(4.4), 30.9 + GLOBAL_OFFSET + 0.25, 0.6, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(5), 28.0 + GLOBAL_OFFSET + 0.25, 0.7, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(6), 23.8 + GLOBAL_OFFSET + 0.25, 0.8, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(8), 17.0 + GLOBAL_OFFSET + 0.25, 0.9, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(10), 13.1 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(11.5), 10.2 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(13), 7.7 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(14.5), 6.5 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(16), 5.1 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(17.5), 4.9 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(19), 4.4 + GLOBAL_OFFSET + 0.125, 1.0, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(20.5), 3.5 + GLOBAL_OFFSET + 0.0, 1.0, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(22), 3.1 + GLOBAL_OFFSET + 0.0, 1.0, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(24), 2.6 + GLOBAL_OFFSET + 0.0, 1.0, Feet.of(0.0)));
-		shooterTable.add(new ShooterTableEntry(Feet.of(27), 0.25 + GLOBAL_OFFSET + 0.0, 0.98, Feet.of(0.0)));
+        final double GLOBAL_OFFSET = 0.5; // all shooter table entries use this value
+        // put entries here
+        // Distances must go from top to bottom: shortest to longest
+        // IF YOU INCREASE DISTANCE, SHOOTER ANGLE GOES UP
+        shooterTable.add(new ShooterTableEntry(Feet.of(4.4), 30.9 + GLOBAL_OFFSET + 0.25, 0.6, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(5), 28.0 + GLOBAL_OFFSET + 0.25, 0.7, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(6), 23.8 + GLOBAL_OFFSET + 0.25, 0.8, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(8), 17.0 + GLOBAL_OFFSET + 0.25, 0.9, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(10), 13.1 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(11.5), 10.2 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(13), 7.7 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(14.5), 6.5 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(16), 5.1 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(17.5), 4.9 + GLOBAL_OFFSET + 0.25, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(19), 4.4 + GLOBAL_OFFSET + 0.125, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(20.5), 3.5 + GLOBAL_OFFSET + 0.0, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(22), 3.1 + GLOBAL_OFFSET + 0.0, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(24), 2.6 + GLOBAL_OFFSET + 0.0, 1.0, Feet.of(0.0)));
+        shooterTable.add(new ShooterTableEntry(Feet.of(27), 0.25 + GLOBAL_OFFSET + 0.0, 0.98, Feet.of(0.0)));
 
 		// shuttle table entries
 		if (AT_HOME_SHUTTLE_TABLE) {
