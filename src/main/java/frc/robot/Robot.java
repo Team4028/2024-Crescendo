@@ -80,7 +80,6 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.schedule();
         }
 
-
         // m_robotContainer.zero();
         // m_robotContainer.configVisionFieldOrigins();
     }

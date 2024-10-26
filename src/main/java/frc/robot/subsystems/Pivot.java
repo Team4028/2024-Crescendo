@@ -150,13 +150,10 @@ public class Pivot extends SubsystemBase {
                 * ConversionConstants.LINEAR_ACTUATOR_ROTATIONS_TO_INCHES_SCALAR)
                 + ConversionConstants.LINEAR_ACTUATOR_INITIAL_LENGTH;
 
-        double angle = Math.acos(
-                (Math.pow(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT, 2)
-                        + Math.pow(ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT, 2)
-                        - sideC * sideC //
-                )
-                        / (2 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
-                                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT));
+        double angle = Math.acos((Math.pow(ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT, 2)
+                + Math.pow(ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT, 2) - sideC * sideC //
+        ) / (2 * ConversionConstants.SHOOTER_PIVOT_TO_LINEAR_ACTUATOR_PIVOT
+                * ConversionConstants.SHOOTER_PIVOT_TO_TOP_SHOOTER_PIVOT));
 
         return angle - INCIDENT_OFFSET;
     }
@@ -203,8 +200,7 @@ public class Pivot extends SubsystemBase {
     }
 
     public Command runToTrapCommand() {
-        return runToPositionCommand(STAGE_PIVOT)
-                .andThen(runToPositionCommand(HARD_STOP));
+        return runToPositionCommand(STAGE_PIVOT).andThen(runToPositionCommand(HARD_STOP));
     }
 
     public Command runToClimbCommand() {
@@ -223,10 +219,9 @@ public class Pivot extends SubsystemBase {
         return runOnce(() -> {
             zeroTimer.restart();
             isVbus = true;
-        })
-                .andThen(runMotorCommand(-0.05).repeatedly()
-                        .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
-                                && Math.abs(encoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
+        }).andThen(runMotorCommand(-0.05).repeatedly()
+                .until(() -> zeroTimer.get() >= ZERO_TIMER_THRESHOLD
+                        && Math.abs(encoder.getVelocity()) < ZERO_VELOCITY_THRESHOLD))
                 .andThen(runMotorCommand(0.).alongWith(Commands.runOnce(() -> zeroTimer.stop())))
                 .andThen(runOnce(() -> encoder.setPosition(0.)))
                 .andThen(new WaitCommand(0.25).andThen(runToPositionCommand(HOLD_POSITION)))

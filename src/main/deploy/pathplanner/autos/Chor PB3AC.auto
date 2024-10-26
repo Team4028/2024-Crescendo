@@ -1,0 +1,97 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.4301601648330688,
+      "y": 5.55
+    },
+    "rotation": 2.454385671423811e-22
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "MT2 Loc OFF"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "PB3AC.1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "MT2 Loc ON"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "PB3AC.2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "PB3AC.3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PB3AC skip shot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "PB3AC.4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Magic Shoot++"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "PB3AC.5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Finish Infeed"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Magic Shoot++"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "PB3AC.6"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Choreo Middle",
+  "choreoAuto": true
+}

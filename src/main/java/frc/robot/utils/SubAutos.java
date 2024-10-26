@@ -17,8 +17,7 @@ public class SubAutos {
     }
 
     private Command standardMagic(String successPath, String returnPath, String bailPath, float delay) {
-        SubAutoGenerator shoot = new SubAutoGenerator().addPath(successPath)
-                .addCommand(new WaitCommand(delay))
+        SubAutoGenerator shoot = new SubAutoGenerator().addPath(successPath).addCommand(new WaitCommand(delay))
                 .addNamedCommand("Magic Shoot");
         if (returnPath != null)
             shoot.addPath(returnPath);

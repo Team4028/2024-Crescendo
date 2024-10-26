@@ -32,7 +32,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -148,10 +147,8 @@ public class RobotContainer {
 
     private ShootingStrategy selectedStrategy = chassisLimelight2dStrategy;
 
-    private final HashMap<ShootingStrategy, String> strategyMap = new HashMap<>(Map.of(
-            shooterLimelightStrategy, "MVR",
-            odometryStrategy, "MegaTag2",
-            chassisLimelight2dStrategy, "3G 2D"));
+    private final HashMap<ShootingStrategy, String> strategyMap = new HashMap<>(
+            Map.of(shooterLimelightStrategy, "MVR", odometryStrategy, "MegaTag2", chassisLimelight2dStrategy, "3G 2D"));
 
     private ShooterTableEntry entryToRun;
 
@@ -172,7 +169,7 @@ public class RobotContainer {
     private final SlewRateLimiter thetaLimiter = new SlewRateLimiter(4.);
 
     private static final double MAX_SPEED = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top
-                                                                               // speed
+                                                                                // speed
     private static final double MAX_ANGULAR_SPEED = 4 * Math.PI; // 2rps
 
     private static final double BASE_SPEED = 0.25;
@@ -181,15 +178,8 @@ public class RobotContainer {
     private double currentSpeed = BASE_SPEED;
 
     private enum SnapDirection {
-        None(Double.NaN),
-        Forward(0),
-        Left(90),
-        Back(180),
-        Right(270),
-        LeftTrap(-60.),
-        RightTrap(60.),
-        BluePass(-40.0),
-        RedPass(-150.0);
+        None(Double.NaN), Forward(0), Left(90), Back(180), Right(270), LeftTrap(-60.), RightTrap(60.), BluePass(
+                -40.0), RedPass(-150.0);
 
         public double Angle;
 
@@ -219,13 +209,9 @@ public class RobotContainer {
     }
 
     private ClimbSequence currentSequence = ClimbSequence.Default;
-    private final Map<ClimbSequence, Command> sequenceCommandMap = Map.of(
-            ClimbSequence.Default, Commands.none(),
-            ClimbSequence.Prep, prepClimbCommand(),
-            ClimbSequence.Fan, fanReadyCommand(),
-            ClimbSequence.Shoot, trapShootCommand(),
-            ClimbSequence.End, endSequenceCommand(),
-            ClimbSequence.Climb, climbCommand());
+    private final Map<ClimbSequence, Command> sequenceCommandMap = Map.of(ClimbSequence.Default, Commands.none(),
+            ClimbSequence.Prep, prepClimbCommand(), ClimbSequence.Fan, fanReadyCommand(), ClimbSequence.Shoot,
+            trapShootCommand(), ClimbSequence.End, endSequenceCommand(), ClimbSequence.Climb, climbCommand());
 
     private static double MAX_INDEX = 27.;
     private static double MIN_INDEX = 4.2;
@@ -252,9 +238,8 @@ public class RobotContainer {
     // ======================== //
     /** Swerve Control & Logging */
     // ======================== //
-    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MAX_SPEED * 0.02).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.01)
-            .withDriveRequestType(DriveRequestType.Velocity);
+    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric().withDeadband(MAX_SPEED * 0.02)
+            .withRotationalDeadband(MAX_ANGULAR_SPEED * 0.01).withDriveRequestType(DriveRequestType.Velocity);
 
     private final SwerveRequest.RobotCentric robotRelativeDrive = new SwerveRequest.RobotCentric()
             .withDeadband(MAX_SPEED * 0.02).withRotationalDeadband(MAX_ANGULAR_SPEED * 0.01)
@@ -264,8 +249,7 @@ public class RobotContainer {
 
     private final SwerveRequest.SwerveDriveBrake xDrive = new SwerveDriveBrake();
     private final SwerveRequest.FieldCentricFacingAngle snapDrive = new SwerveRequest.FieldCentricFacingAngle()
-            .withDeadband(MAX_SPEED * 0.035)
-            .withDriveRequestType(DriveRequestType.Velocity);
+            .withDeadband(MAX_SPEED * 0.035).withDriveRequestType(DriveRequestType.Velocity);
 
     public RobotContainer() {
         snapDrive.HeadingController = new PhoenixPIDController(10, 0., 0.);
@@ -289,17 +273,15 @@ public class RobotContainer {
         DashboardStore.add("Shooter Table Name",
                 () -> indexMap.containsKey(currentIndex) ? indexMap.get(currentIndex) : "Manual");
 
-        DashboardStore.add("Chassis 2D Distance",
-                () -> {
-                    var res = chassisLimelight.getTagDistance(7);
-                    if (res.isPresent())
-                        return Units.metersToFeet(res.get());
-                    return Double.NaN;
-                });
+        DashboardStore.add("Chassis 2D Distance", () -> {
+            var res = chassisLimelight.getTagDistance(7);
+            if (res.isPresent())
+                return Units.metersToFeet(res.get());
+            return Double.NaN;
+        });
 
         // this is weird
-        DashboardStore.add("Snapped",
-                () -> drivetrain.getCurrentRequest().getClass().equals(snapDrive.getClass()));
+        DashboardStore.add("Snapped", () -> drivetrain.getCurrentRequest().getClass().equals(snapDrive.getClass()));
         DashboardStore.add("Robot Relative",
                 () -> drivetrain.getCurrentRequest().getClass().equals(robotRelativeDrive.getClass()));
 
@@ -309,10 +291,8 @@ public class RobotContainer {
 
         DashboardStore.add("Sequence", () -> currentSequence.name());
 
-        DashboardStore.add("Limelight Distance",
-                () -> shooterLimelightStrategy.getTargetEntry().Distance.in(Feet));
-        DashboardStore.add("LimelightG Distance",
-                () -> chassisLimelight2dStrategy.getTargetEntry().Distance.in(Feet));
+        DashboardStore.add("Limelight Distance", () -> shooterLimelightStrategy.getTargetEntry().Distance.in(Feet));
+        DashboardStore.add("LimelightG Distance", () -> chassisLimelight2dStrategy.getTargetEntry().Distance.in(Feet));
 
         DashboardStore.add("Chassis MT2 Distance", () -> BeakUtils
                 .goalTranslation(chassisLimelight.getBotposeEstimateMT2().pose.getTranslation()).getNorm());
@@ -322,9 +302,7 @@ public class RobotContainer {
 
         DashboardStore.add("Last Shot", () -> lastShot);
         DashboardStore.add("Odometry Distance",
-                () -> Units.metersToFeet(
-                        BeakUtils.goalTranslation(drivetrain.getTranslation())
-                                .getNorm()));
+                () -> Units.metersToFeet(BeakUtils.goalTranslation(drivetrain.getTranslation()).getNorm()));
 
         DashboardStore.add("Strategy", () -> strategyMap.get(selectedStrategy));
 
@@ -346,10 +324,8 @@ public class RobotContainer {
 
         initAutonChooser();
 
-        ampPrep = pivot.runToClimbCommand()
-                .alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
-                .alongWith(shooter.setSlotCommand(Shooter.Slots.AMP)
-                        .andThen(shooter.runShotCommand(ShotSpeeds.AMP)));
+        ampPrep = pivot.runToClimbCommand().alongWith(whippy.whippyWheelsCommand(WHIPPY_VBUS))
+                .alongWith(shooter.setSlotCommand(Shooter.Slots.AMP).andThen(shooter.runShotCommand(ShotSpeeds.AMP)));
 
         configureBindings();
     }
@@ -363,13 +339,9 @@ public class RobotContainer {
         autonChooser.addOption("Zero", zeroCommand());
 
         autonChooser.addOption("Shoot Note", zeroCommand()
-                .andThen(runEntryCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(4.2)),
-                        () -> ShotSpeeds.FAST))
-                .andThen(Commands.waitUntil(shooterAndPivotReady()))
-                .andThen(conveyCommand())
-                .andThen(Commands.waitSeconds(1.0))
-                .andThen(pivot.runToHomeCommand())
-                .andThen(shooter.stopCommand()));
+                .andThen(runEntryCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(4.2)), () -> ShotSpeeds.FAST))
+                .andThen(Commands.waitUntil(shooterAndPivotReady())).andThen(conveyCommand())
+                .andThen(Commands.waitSeconds(1.0)).andThen(pivot.runToHomeCommand()).andThen(shooter.stopCommand()));
 
         SmartDashboard.putData("Auto Chooser", autonChooser);
     }
@@ -381,8 +353,7 @@ public class RobotContainer {
         /* Infeed & Spit */
         NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
 
-        NamedCommands.registerCommand("Dumb Infeed",
-                runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(.25));
+        NamedCommands.registerCommand("Dumb Infeed", runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(.25));
 
         NamedCommands.registerCommand("Infeed", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly());// .withTimeout(1.5));
@@ -390,14 +361,12 @@ public class RobotContainer {
         NamedCommands.registerCommand("C Infeed", infeed.runMotorCommand(INFEED_VBUS)
                 .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS)).repeatedly().withTimeout(1.0));
 
-        NamedCommands.registerCommand("First Spit Note", infeed.runMotorCommand(INFEED_VBUS)
-                .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
-                .alongWith(shooter.spinBothCommand(0.20))
-                .repeatedly());
-        NamedCommands.registerCommand("Spit Note", infeed.runMotorCommand(INFEED_VBUS)
-                .alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
-                .alongWith(shooter.spinBothCommand(0.11))
-                .repeatedly());
+        NamedCommands.registerCommand("First Spit Note",
+                infeed.runMotorCommand(INFEED_VBUS).alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
+                        .alongWith(shooter.spinBothCommand(0.20)).repeatedly());
+        NamedCommands.registerCommand("Spit Note",
+                infeed.runMotorCommand(INFEED_VBUS).alongWith(conveyor.runMotorCommand(FAST_CONVEYOR_VBUS))
+                        .alongWith(shooter.spinBothCommand(0.11)).repeatedly());
 
         NamedCommands.registerCommand("Prepare Spit", shooter.spinBothCommand(0.15));
 
@@ -408,7 +377,8 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Magic Shoot",
                 Commands.waitSeconds(0.1).andThen(magicShootCommand(() -> odometryStrategy)));// updateDrivePoseMT2Command().repeatedly().withTimeout(0.1).andThen(magicShootCommand(()
-                                                                                              // -> odometryStrategy)));
+                                                                                                // ->
+                                                                                                // odometryStrategy)));
 
         NamedCommands.registerCommand("Magic Shoot++", magicShootCommand(() -> odometryStrategy));
 
@@ -428,23 +398,20 @@ public class RobotContainer {
                         .onlyIf(noteSensing.hasInfedSupplier()));
 
         /* Shooter & Pivot */
-        NamedCommands.registerCommand("Fast Shooter",
-                shooter.runShotCommand(ShotSpeeds.FAST));
+        NamedCommands.registerCommand("Fast Shooter", shooter.runShotCommand(ShotSpeeds.FAST));
 
-        NamedCommands.registerCommand("Shooter",
-                shooter.runShotCommand(ShotSpeeds.FAST, 0.85));
+        NamedCommands.registerCommand("Shooter", shooter.runShotCommand(ShotSpeeds.FAST, 0.85));
 
         NamedCommands.registerCommand("Stop Shooter", shooter.stopCommand());
 
         NamedCommands.registerCommand("Home Pivot", pivot.runToHomeCommand());
 
         NamedCommands.registerCommand("Rotate To Speaker Source PC3",
-                drivetrain.staticAlign(
-                        () -> Rotation2d.fromDegrees(BeakUtils.allianceIsBlue() ? -63 : -117)));
+                drivetrain.staticAlign(() -> Rotation2d.fromDegrees(BeakUtils.allianceIsBlue() ? -63 : -117)));
 
         /* 4 piece pivots */
-        NamedCommands.registerCommand("Preload Note", pivot.runToPositionCommand(16.0)
-                .alongWith(driverCamera.setShooterCameraCommand())); // 17
+        NamedCommands.registerCommand("Preload Note",
+                pivot.runToPositionCommand(16.0).alongWith(driverCamera.setShooterCameraCommand())); // 17
 
         NamedCommands.registerCommand("Note A", pivot.runToPositionCommand(11)); // 11
         NamedCommands.registerCommand("Note B", pivot.runToPositionCommand(14.625)); // 15
@@ -461,8 +428,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("Sad Stationary Amp Shot 2", shootCommand(16.5));
         NamedCommands.registerCommand("Epic Amp Shot", shootCommand(7.5)); // 7.5
 
-        NamedCommands.registerCommand("Center Pathfinding Shot", pathfindingShotCommand(
-                13.0, Constants.CENTER_SHOT, 0.8, 0.));
+        NamedCommands.registerCommand("Center Pathfinding Shot",
+                pathfindingShotCommand(13.0, Constants.CENTER_SHOT, 0.8, 0.));
 
         NamedCommands.registerCommand("Stationary Source Shot", shootCommand(22.1));
         NamedCommands.registerCommand("Magic Source Shot",
@@ -523,11 +490,11 @@ public class RobotContainer {
         NamedCommands.registerCommand("MT2 Loc ON", Commands.runOnce(() -> useMT2 = true));
         NamedCommands.registerCommand("MT2 Loc OFF", Commands.runOnce(() -> useMT2 = false));
 
-        NamedCommands.registerCommand("PB3AC skip shot", (Commands.waitSeconds(0.2)
-                .andThen(magicShootCommand(() -> odometryStrategy))).onlyIf(noteSensing.getHasInfedCache()));
+        NamedCommands.registerCommand("PB3AC skip shot",
+                (Commands.waitSeconds(0.2).andThen(magicShootCommand(() -> odometryStrategy)))
+                        .onlyIf(noteSensing.getHasInfedCache()));
 
-        NamedCommands.registerCommand("Cache hasInfed",
-                Commands.runOnce(noteSensing::cacheInfeedState));
+        NamedCommands.registerCommand("Cache hasInfed", Commands.runOnce(noteSensing::cacheInfeedState));
     }
 
     // =========================== //
@@ -540,22 +507,19 @@ public class RobotContainer {
         new Trigger(climber::reverseLimit).onTrue(climber.hitReverseLimitCommand());
         new Trigger(climber.reverseLimitOnSupplier()).and(() -> cancelClimbRequestShooterDown).onTrue(
                 pivot.runToHomeCommand().andThen(Commands.runOnce(() -> cancelClimbRequestShooterDown = false))); // I
-                                                                                                                  // hate
-                                                                                                                  // it
-                                                                                                                  // but
-                                                                                                                  // it
-                                                                                                                  // works
-                                                                                                                  // lol
+                                                                                                                    // hate
+                                                                                                                    // it
+                                                                                                                    // but
+                                                                                                                    // it
+                                                                                                                    // works
+                                                                                                                    // lol
 
         // ================ //
         /* Default Commands */
         // ================ //
 
-        drivetrain.setDefaultCommand(
-                drivetrain.applyRequest(() -> drive
-                        .withVelocityX(getXSpeed(true))
-                        .withVelocityY(getYSpeed(true))
-                        .withRotationalRate(getRotationSpeed())));
+        drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> drive.withVelocityX(getXSpeed(true))
+                .withVelocityY(getYSpeed(true)).withRotationalRate(getRotationSpeed())));
 
         conveyor.setDefaultCommand(conveyor.runMotorCommand(0.));
         infeed.setDefaultCommand(infeed.runMotorCommand(0.));
@@ -583,10 +547,9 @@ public class RobotContainer {
         // ========================== //
 
         /* Robot-Relative Drive */
-        driverController.y().toggleOnTrue(drivetrain.applyRequest(() -> robotRelativeDrive
-                .withVelocityX(getXSpeed(false))
-                .withVelocityY(getYSpeed(false))
-                .withRotationalRate(getRotationSpeed())));
+        driverController.y()
+                .toggleOnTrue(drivetrain.applyRequest(() -> robotRelativeDrive.withVelocityX(getXSpeed(false))
+                        .withVelocityY(getYSpeed(false)).withRotationalRate(getRotationSpeed())));
 
         /* X-Drive */
         driverController.x().whileTrue(drivetrain.applyRequest(() -> xDrive));
@@ -609,11 +572,10 @@ public class RobotContainer {
         driverController.rightStick().onTrue(stopAllCommand(true).alongWith(drivetrain.runOnce(() -> {
         })));
 
-        driverController.a().onTrue(runEntryCommand(() -> PASSING_SHOT, () -> ShotSpeeds.FAST)
-                .andThen(Commands.either(
-                        snapCommand(SnapDirection.BluePass),
-                        snapCommand(SnapDirection.RedPass),
-                        () -> BeakUtils.allianceIsBlue())));
+        driverController.a()
+                .onTrue(runEntryCommand(() -> PASSING_SHOT, () -> ShotSpeeds.FAST)
+                        .andThen(Commands.either(snapCommand(SnapDirection.BluePass),
+                                snapCommand(SnapDirection.RedPass), () -> BeakUtils.allianceIsBlue())));
 
         // =================== //
         /* OPERATOR CONTROLLER */
@@ -634,12 +596,10 @@ public class RobotContainer {
         operatorController.leftTrigger()
                 .onTrue(runEntryCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(currentIndex)),
                         () -> ShotSpeeds.FAST))
-                .onFalse(stopAllCommand()
-                        .andThen(Commands.runOnce(this::setCameraWithWait)));
+                .onFalse(stopAllCommand().andThen(Commands.runOnce(this::setCameraWithWait)));
 
         /* Convey Note */
-        operatorController.rightTrigger()
-                .whileTrue(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS));
+        operatorController.rightTrigger().whileTrue(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS));
 
         /* Magic Shoot */
         operatorController.x().toggleOnTrue(magicShootCommand());
@@ -648,26 +608,19 @@ public class RobotContainer {
         operatorController.povRight().onTrue(setStrategyCommand(shooterLimelightStrategy));
         operatorController.povDown().onTrue(setStrategyCommand(chassisLimelight2dStrategy)
                 .alongWith(chassisLimelight.setPipelineCommand(TY_PIPELINE)));
-        operatorController.povLeft().onTrue(setStrategyCommand(odometryStrategy)
-                .alongWith(chassisLimelight.setPipelineCommand(MEGATAG_PIPELINE)));
+        operatorController.povLeft().onTrue(
+                setStrategyCommand(odometryStrategy).alongWith(chassisLimelight.setPipelineCommand(MEGATAG_PIPELINE)));
 
         /* Manual/Preset Mode */
-        operatorController.back()
-                .onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));
+        operatorController.back().onTrue(Commands.runOnce(() -> useManual = !useManual).andThen(this::pushIndexData));
 
         /* Shooter Table Index Up */
-        operatorController.rightBumper().onTrue(
-                Commands.either(
-                        Commands.runOnce(() -> manualIndex += 1.0),
-                        Commands.runOnce(() -> presetIndex += 1),
-                        () -> useManual).andThen(this::pushIndexData));
+        operatorController.rightBumper().onTrue(Commands.either(Commands.runOnce(() -> manualIndex += 1.0),
+                Commands.runOnce(() -> presetIndex += 1), () -> useManual).andThen(this::pushIndexData));
 
         /* Shooter Table Index Down */
-        operatorController.leftBumper().onTrue(
-                Commands.either(
-                        Commands.runOnce(() -> manualIndex -= 1.0),
-                        Commands.runOnce(() -> presetIndex -= 1),
-                        () -> useManual).andThen(this::pushIndexData));
+        operatorController.leftBumper().onTrue(Commands.either(Commands.runOnce(() -> manualIndex -= 1.0),
+                Commands.runOnce(() -> presetIndex -= 1), () -> useManual).andThen(this::pushIndexData));
 
         // ========================= //
         /* Pivot Control */
@@ -686,7 +639,7 @@ public class RobotContainer {
 
         /* Zero Climber */
         operatorController.leftStick().onTrue(safeClimbCommand(climber.zeroCommand()));
-          /* End snap, limelight & stop all motors */
+        /* End snap, limelight & stop all motors */
         operatorController.rightStick().onTrue(stopAllCommand(true).alongWith(drivetrain.runOnce(() -> {
         })));
 
@@ -699,11 +652,8 @@ public class RobotContainer {
         /* Full Outfeed: left Y */
         operatorController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
                 .or(operatorController.axisLessThan(XboxController.Axis.kLeftY.value, -0.2))
-                .whileTrue(
-                        runThree(
-                                () -> -operatorController.getLeftY(),
-                                () -> -operatorController.getLeftY(),
-                                () -> -operatorController.getLeftY()));
+                .whileTrue(runThree(() -> -operatorController.getLeftY(), () -> -operatorController.getLeftY(),
+                        () -> -operatorController.getLeftY()));
         // ==================== //
         /* EMERGENCY CONTROLLER */
         // ==================== //
@@ -713,57 +663,49 @@ public class RobotContainer {
         // ==================== //
 
         // /* Bump Pivot Up */
-        emergencyController.rightBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 1)));
+        emergencyController.rightBumper().onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() + 1)));
 
         /* Bump Pivot Down */
-        emergencyController.leftBumper()
-                .onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 1)));
+        emergencyController.leftBumper().onTrue(pivot.runOnce(() -> pivot.runToPosition(pivot.getPosition() - 1)));
 
         // ============== //
         /* Manual Climber */
         // ============== //
-//=====================================================================================================================
-//=====================================================================================================================
+        // =====================================================================================================================
+        // =====================================================================================================================
 
-        //AGS -- Override Emergency Controller triggers to ignore limit switches for CORI -- change made Oct 21, 2024
+        // AGS -- Override Emergency Controller triggers to ignore limit switches for
+        // CORI -- change made Oct 21, 2024
 
-        
         /* Climber Up */
-        emergencyController.rightTrigger(0.2).whileTrue(
-                climber.runMotorCommand(CLIMBER_VBUS, true));
+        emergencyController.rightTrigger(0.2).whileTrue(climber.runMotorCommand(CLIMBER_VBUS, true));
 
         // emergencyController.rightTrigger(0.2).whileTrue(
-        //         safeClimbCommand(climber.runMotorCommand(CLIMBER_VBUS, true)))
-        //         .onFalse(climber.stopCommand());
+        // safeClimbCommand(climber.runMotorCommand(CLIMBER_VBUS, true)))
+        // .onFalse(climber.stopCommand());
 
         /* Climber Down FULL SEND */
-        emergencyController.leftTrigger(0.2).whileTrue(
-           climber.runMotorCommand(-CLIMBER_VBUS, true));
+        emergencyController.leftTrigger(0.2).whileTrue(climber.runMotorCommand(-CLIMBER_VBUS, true));
 
         // emergencyController.leftTrigger(0.2).whileTrue(
-        //         safeClimbCommand(climber.runMotorCommand(-FAST_CLIMBER_VBUS, true)))
-        //         .onFalse(climber.holdCurrentPositionCommand());
+        // safeClimbCommand(climber.runMotorCommand(-FAST_CLIMBER_VBUS, true)))
+        // .onFalse(climber.holdCurrentPositionCommand());
 
-//=====================================================================================================================
-//=====================================================================================================================
-
+        // =====================================================================================================================
+        // =====================================================================================================================
 
         /* Ready Climb */
         emergencyController.povUp()
-                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS,
-                        ClimberPositions.READY, false)))
+                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY, false)))
                 .onFalse(climber.stopCommand());
 
         /* Climb */
         emergencyController.povDown()
-                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS,
-                        ClimberPositions.CLIMB, true)))
+                .onTrue(safeClimbCommand(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.CLIMB, true)))
                 .onFalse(climber.holdCurrentPositionCommand());
 
         /* funk */
-        emergencyController.povLeft().onTrue(safeClimbCommand(climber.holdCommand()))
-                .onFalse(climber.stopCommand());
+        emergencyController.povLeft().onTrue(safeClimbCommand(climber.holdCommand())).onFalse(climber.stopCommand());
 
         /* Stop Hold */
         emergencyController.povRight().onTrue(Commands.runOnce(() -> climber.getCurrentCommand().cancel()));
@@ -787,12 +729,10 @@ public class RobotContainer {
                 Commands.startEnd(() -> {
                     fanPivot.runToTrap();
                     m_fan.runMotor(FAN_VBUS);
-                },
-                        () -> {
-                            fanPivot.hold();
-                            m_fan.stop();
-                        },
-                        fanPivot, m_fan));
+                }, () -> {
+                    fanPivot.hold();
+                    m_fan.stop();
+                }, fanPivot, m_fan));
 
         // emergencyController.b().toggleOnTrue(coolShootCommand());
         // emergencyController.y()
@@ -803,11 +743,8 @@ public class RobotContainer {
         /* Full Outfeed: left Y */
         emergencyController.axisGreaterThan(XboxController.Axis.kLeftY.value, 0.2)
                 .or(emergencyController.axisLessThan(XboxController.Axis.kLeftY.value, -0.2))
-                .whileTrue(
-                        runThree(
-                                () -> -emergencyController.getLeftY(),
-                                () -> -emergencyController.getLeftY(),
-                                () -> -emergencyController.getLeftY()));
+                .whileTrue(runThree(() -> -emergencyController.getLeftY(), () -> -emergencyController.getLeftY(),
+                        () -> -emergencyController.getLeftY()));
 
         if (Utils.isSimulation()) {
             drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -832,21 +769,17 @@ public class RobotContainer {
     //
 
     private double getRotationSpeed() {
-        return scaleDriverController(-driverController.getRightX(),
-                thetaLimiter, currentSpeed) *
-                MAX_ANGULAR_SPEED;
+        return scaleDriverController(-driverController.getRightX(), thetaLimiter, currentSpeed) * MAX_ANGULAR_SPEED;
     }
 
     private double getYSpeed(boolean flip) {
-        return (flip ? getDriveSignum()
-                : 1) * scaleDriverController(-driverController.getLeftX(), yLimiter, currentSpeed)
-                * MAX_SPEED;
+        return (flip ? getDriveSignum() : 1)
+                * scaleDriverController(-driverController.getLeftX(), yLimiter, currentSpeed) * MAX_SPEED;
     }
 
     private double getXSpeed(boolean flip) {
-        return (flip ? getDriveSignum()
-                : 1) * scaleDriverController(-driverController.getLeftY(), xLimiter, currentSpeed)
-                * MAX_SPEED;
+        return (flip ? getDriveSignum() : 1)
+                * scaleDriverController(-driverController.getLeftY(), xLimiter, currentSpeed) * MAX_SPEED;
     }
 
     /** Invert drivetrain based on alliance */
@@ -856,17 +789,14 @@ public class RobotContainer {
 
     /** Set Snap Direction Toggle */
     private Command snapCommand(SnapDirection direction) {
-        return drivetrain.applyRequest(() -> snapDrive
-                .withVelocityX(getXSpeed(true))
-                .withVelocityY(getYSpeed(true))
+        return drivetrain.applyRequest(() -> snapDrive.withVelocityX(getXSpeed(true)).withVelocityY(getYSpeed(true))
                 .withTargetDirection(Rotation2d.fromDegrees(direction.Angle)));
     }
 
     /** Joystick Scaling */
     private double scaleDriverController(double controllerInput, SlewRateLimiter limiter, double baseSpeedPercent) {
         return limiter.calculate(
-                controllerInput * (baseSpeedPercent
-                        + driverController.getRightTriggerAxis() * (1 - baseSpeedPercent)));
+                controllerInput * (baseSpeedPercent + driverController.getRightTriggerAxis() * (1 - baseSpeedPercent)));
     }
 
     //
@@ -891,22 +821,22 @@ public class RobotContainer {
         ClimbSequence seq = ClimbSequence.Default;
 
         switch (currentSequence) {
-            case Default:
+            case Default :
                 seq = enableTrap || enableClimber ? ClimbSequence.Prep : ClimbSequence.Default;
                 break;
-            case Prep:
+            case Prep :
                 seq = ClimbSequence.Fan;
                 break;
-            case Fan:
+            case Fan :
                 seq = enableTrap ? ClimbSequence.Shoot : ClimbSequence.End;
                 break;
-            case Shoot:
+            case Shoot :
                 seq = ClimbSequence.End;
                 break;
-            case End:
+            case End :
                 seq = enableClimber ? ClimbSequence.Climb : ClimbSequence.Default;
                 break;
-            default:
+            default :
                 seq = ClimbSequence.Default;
                 break;
         }
@@ -918,8 +848,7 @@ public class RobotContainer {
     private Command prepClimbCommand() {
         // Pivot => Trap Position
         // Shooter => Trap Mode
-        return pivot.runToTrapCommand()
-                .alongWith(shooter.setSlotCommand(Slots.TRAP));
+        return pivot.runToTrapCommand().alongWith(shooter.setSlotCommand(Slots.TRAP));
     }
 
     /** Prime the fan & shooter */
@@ -928,15 +857,10 @@ public class RobotContainer {
         // Shooting Routine
         // Climber Up
         return fanPivot.runToTrapCommand()
-                .alongWith(m_fan.runMotorCommand(FAN_VBUS)
-                        .andThen(BeakCommands.repeatCommand(fixNoteCommand(), 2))
-                        .andThen(shooter.runShotCommand(ShotSpeeds.TRAP))
-                        .onlyIf(() -> enableTrap))
-                .alongWith(
-                        climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY,
-                                false)
-                                .onlyIf(() -> enableClimber && pivot
-                                        .getPosition() > PIVOT_UP_THRESHOLD));
+                .alongWith(m_fan.runMotorCommand(FAN_VBUS).andThen(BeakCommands.repeatCommand(fixNoteCommand(), 2))
+                        .andThen(shooter.runShotCommand(ShotSpeeds.TRAP)).onlyIf(() -> enableTrap))
+                .alongWith(climber.runToPositionCommand(CLIMBER_VBUS, ClimberPositions.READY, false)
+                        .onlyIf(() -> enableClimber && pivot.getPosition() > PIVOT_UP_THRESHOLD));
     }
 
     private Command dumbCancelClimbCommand() {
@@ -944,15 +868,10 @@ public class RobotContainer {
         return Commands.runOnce(() -> {
             currentSequence = ClimbSequence.Default;
             cancelClimbRequestShooterDown = true;
-        }).andThen(
-                fanPivot.runToTrapCommand(),
-                Commands.waitSeconds(0.2),
-                safeClimbCommand(
-                        climber.zeroCommand().until(climber.reverseLimitOnSupplier())
-                                .alongWith(
-                                        Commands.waitSeconds(1).andThen(fanPivot.runToHomeCommand()),
-                                        m_fan.stopCommand(),
-                                        shooter.stopCommand())));
+        }).andThen(fanPivot.runToTrapCommand(), Commands.waitSeconds(0.2),
+                safeClimbCommand(climber.zeroCommand().until(climber.reverseLimitOnSupplier()).alongWith(
+                        Commands.waitSeconds(1).andThen(fanPivot.runToHomeCommand()), m_fan.stopCommand(),
+                        shooter.stopCommand())));
     }
 
     /** Shoot */
@@ -967,8 +886,7 @@ public class RobotContainer {
         // Fan Stop
         // Shooter Stop/Fast Mode
         // Pivot Down if not climbing
-        return fanPivot.runToHomeCommand()
-                .alongWith(m_fan.stopCommand())
+        return fanPivot.runToHomeCommand().alongWith(m_fan.stopCommand())
                 .alongWith(shooter.stopCommand().andThen(shooter.setSlotCommand(Slots.FAST)))
                 .alongWith(safePivotCommand(pivot.runToHomeCommand()).unless(() -> enableClimber));
     }
@@ -997,29 +915,19 @@ public class RobotContainer {
     // =========================== //
 
     /** yee haw */
-    private Command mirroredPathfindingShotCommand(double pivotAngle, Pose2d target, double scale,
-            double endVelocity) {
-        Pose2d redPose = new Pose2d(
-                target.getTranslation(),
-                target.getRotation().minus(Rotation2d.fromDegrees(6.)));
+    private Command mirroredPathfindingShotCommand(double pivotAngle, Pose2d target, double scale, double endVelocity) {
+        Pose2d redPose = new Pose2d(target.getTranslation(), target.getRotation().minus(Rotation2d.fromDegrees(6.)));
 
         return runBoth(false, FAST_CONVEYOR_VBUS, INFEED_VBUS).repeatedly()
                 .alongWith(pivot.runToPositionCommand(pivotAngle))
-                .alongWith(
-                        Commands.either(
-                                drivetrain.mirrorablePathFindCommand(target, scale,
-                                        endVelocity),
-                                drivetrain.mirrorablePathFindCommand(redPose, scale,
-                                        endVelocity),
-                                BeakUtils::allianceIsBlue));
+                .alongWith(Commands.either(drivetrain.mirrorablePathFindCommand(target, scale, endVelocity),
+                        drivetrain.mirrorablePathFindCommand(redPose, scale, endVelocity), BeakUtils::allianceIsBlue));
     }
 
     /** Pathfinding Auton Shot */
     private Command pathfindingShotCommand(double targetDistance, Pose2d target, double scale, double endVelocity) {
-        return drivetrain
-                .mirrorablePathFindCommand(target, scale, endVelocity)
-                .deadlineWith(smartInfeedCommand().withTimeout(0.6).andThen(coolNoteFixCommand(0.2))
-                        .andThen(shooter.runShotCommand(ShotSpeeds.FAST)))
+        return drivetrain.mirrorablePathFindCommand(target, scale, endVelocity).deadlineWith(smartInfeedCommand()
+                .withTimeout(0.6).andThen(coolNoteFixCommand(0.2)).andThen(shooter.runShotCommand(ShotSpeeds.FAST)))
                 .andThen(shootCommand(targetDistance));
     }
 
@@ -1029,24 +937,20 @@ public class RobotContainer {
 
     /** Fix Note Sequence */
     private Command fixNoteCommand() {
-        return runBoth(true, FAST_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(0.25).andThen(
-                conveyBackCommand(-2.0, 0.25));
+        return runBoth(true, FAST_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(0.25).andThen(conveyBackCommand(-2.0, 0.25));
     }
 
     /** Fix Note Backwards */
     private Command conveyBackCommand(double rotations, double timeout) {
         return shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-                .raceWith(conveyor.runXRotations(rotations).withTimeout(timeout))
-                .alongWith(infeed.runMotorCommand(0.))
+                .raceWith(conveyor.runXRotations(rotations).withTimeout(timeout)).alongWith(infeed.runMotorCommand(0.))
                 .andThen(shooter.stopCommand());
     }
 
     /** Special Note Fix */
     private Command coolNoteFixCommand(double timeout) {
-        return shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly()
-                .alongWith(infeed.runMotorCommand(0.))
-                .alongWith(conveyor.runMotorCommand(-0.2)).withTimeout(timeout)
-                .andThen(shooter.stopCommand())
+        return shooter.spinMotorLeftCommand(SHOOTER_BACKOUT_VBUS).repeatedly().alongWith(infeed.runMotorCommand(0.))
+                .alongWith(conveyor.runMotorCommand(-0.2)).withTimeout(timeout).andThen(shooter.stopCommand())
                 .andThen(conveyor.brakeStopCommand());
     }
 
@@ -1057,42 +961,32 @@ public class RobotContainer {
 
     /** Smart Infeed Command Generator */
     private Command smartInfeedCommand() {
-        return runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS)
-                .until(noteSensing.hasInfedSupplier())
-                .andThen(runBoth(true, 0., 0.).withTimeout(0.1))
-                .andThen(conveyBackCommand(-4.0, 0.5))
+        return runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS).until(noteSensing.hasInfedSupplier())
+                .andThen(runBoth(true, 0., 0.).withTimeout(0.1)).andThen(conveyBackCommand(-4.0, 0.5))
                 .finallyDo(shooter::stop);
     }
 
     private Command smartInfeedAutoCommand() {
-        return runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS)
-                .until(noteSensing.hasInfedSupplier())
-                .andThen(runBoth(true, 0., 0.).withTimeout(0.1))
-                .andThen(conveyBackCommand(-4.0, 0.1))
+        return runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS).until(noteSensing.hasInfedSupplier())
+                .andThen(runBoth(true, 0., 0.).withTimeout(0.1)).andThen(conveyBackCommand(-4.0, 0.1))
                 .finallyDo(shooter::stop);
     }
 
     /** Run both Conveyor and Infeed */
     private Command runBoth(boolean stopShooter, double conveyorVbus, double infeedVbus) {
-        return shooter.brakeStopCommand().onlyIf(() -> stopShooter)
-                .alongWith(infeed.runMotorCommand(infeedVbus)
-                        .alongWith(conveyor.runMotorCommand(conveyorVbus)).repeatedly());
+        return shooter.brakeStopCommand().onlyIf(() -> stopShooter).alongWith(
+                infeed.runMotorCommand(infeedVbus).alongWith(conveyor.runMotorCommand(conveyorVbus)).repeatedly());
     }
 
     /** Run Conveyor, Infeed, and shooter if backwards */
-    private Command runThree(Supplier<Double> conveyorVbus, Supplier<Double> infeedVbus,
-            Supplier<Double> shooterVbus) {
+    private Command runThree(Supplier<Double> conveyorVbus, Supplier<Double> infeedVbus, Supplier<Double> shooterVbus) {
         return new FunctionalCommand(() -> {
-        },
-                () -> {
-                    infeed.runMotor(infeedVbus.get());
-                    conveyor.runMotor(conveyorVbus.get());
-                    shooter.spinMotorRight(0.3 * shooterVbus.get());
-                    shooter.spinMotorLeft(0.3 * shooterVbus.get());
-                },
-                (z) -> shooter.stop(),
-                () -> false,
-                infeed, conveyor);
+        }, () -> {
+            infeed.runMotor(infeedVbus.get());
+            conveyor.runMotor(conveyorVbus.get());
+            shooter.spinMotorRight(0.3 * shooterVbus.get());
+            shooter.spinMotorLeft(0.3 * shooterVbus.get());
+        }, (z) -> shooter.stop(), () -> false, infeed, conveyor);
     }
 
     //
@@ -1107,14 +1001,14 @@ public class RobotContainer {
      * Generate a command to continuously run the shooter while aligning to the
      * target.
      * 
-     * @param strategy The {@link ShootingStrategy} to use.
+     * @param strategy
+     *            The {@link ShootingStrategy} to use.
      */
     private Command magicLockCommand(Supplier<ShootingStrategy> strategy) {
         return fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier())
                 .andThen(driverCamera.setShooterCameraCommand())
-                .andThen(drivetrain.speakerLock(() -> getXSpeed(true), () -> getYSpeed(true), strategy)
-                        .alongWith(runEntryCommand(() -> strategy.get().getTargetEntry(true),
-                                () -> ShotSpeeds.FAST).repeatedly()))
+                .andThen(drivetrain.speakerLock(() -> getXSpeed(true), () -> getYSpeed(true), strategy).alongWith(
+                        runEntryCommand(() -> strategy.get().getTargetEntry(true), () -> ShotSpeeds.FAST).repeatedly()))
                 .finallyDo(driverCamera::setInfeedCamera);
     }
 
@@ -1128,54 +1022,51 @@ public class RobotContainer {
 
     private Command shuttleCommand() {
         return updateDrivePoseMT2Command()
-                .andThen(drivetrain
-                        .applyRequest(() -> snapDrive.withTargetDirection(
-                                BeakUtils.passingTranslation(odometryStrategy
-                                        .getDrivetrainFieldTranslation(true))
-                                        .getAngle())
-                                .withVelocityX(getXSpeed(true))
-                                .withVelocityY(getYSpeed(true)))
-                        .alongWith(runEntryCommand(
-                                () -> ShooterTable.calcShuttleTableEntry(
-                                        Meters.of(odometryStrategy
-                                                .getDrivetrainGoalTranslation(
-                                                        true)
-                                                .getNorm())),
-                                () -> ShotSpeeds.FAST))
-                        .repeatedly());
+                .andThen(
+                        drivetrain
+                                .applyRequest(() -> snapDrive
+                                        .withTargetDirection(BeakUtils
+                                                .passingTranslation(
+                                                        odometryStrategy.getDrivetrainFieldTranslation(true))
+                                                .getAngle())
+                                        .withVelocityX(getXSpeed(true)).withVelocityY(getYSpeed(true)))
+                                .alongWith(runEntryCommand(
+                                        () -> ShooterTable.calcShuttleTableEntry(Meters
+                                                .of(odometryStrategy.getDrivetrainGoalTranslation(true).getNorm())),
+                                        () -> ShotSpeeds.FAST))
+                                .repeatedly());
     }
 
     private Command shuttleShortCommand() {
         return updateDrivePoseMT2Command()
-                .andThen(drivetrain
-                        .applyRequest(() -> snapDrive.withTargetDirection(
-                                BeakUtils.passingTranslation(odometryStrategy
-                                        .getDrivetrainFieldTranslation(true))
-                                        .getAngle()
-                                        .rotateBy(BeakUtils.allianceIsBlue() ? Constants.SHUTTLE_SHORT_OFFSET_BLUE
-                                                : Constants.SHUTTLE_SHORT_OFFSET_RED))
-                                .withVelocityX(getXSpeed(true))
-                                .withVelocityY(getYSpeed(true)))
-                        .alongWith(runEntryCommand(
-                                () -> ShooterTable.calcShortShuttleTableEntry(
-                                        Meters.of(odometryStrategy
-                                                .getDrivetrainGoalTranslation(
-                                                        true)
-                                                .getNorm())),
-                                () -> ShotSpeeds.FAST))
-                        .repeatedly());
+                .andThen(
+                        drivetrain
+                                .applyRequest(
+                                        () -> snapDrive
+                                                .withTargetDirection(BeakUtils
+                                                        .passingTranslation(
+                                                                odometryStrategy.getDrivetrainFieldTranslation(true))
+                                                        .getAngle()
+                                                        .rotateBy(BeakUtils.allianceIsBlue()
+                                                                ? Constants.SHUTTLE_SHORT_OFFSET_BLUE
+                                                                : Constants.SHUTTLE_SHORT_OFFSET_RED))
+                                                .withVelocityX(getXSpeed(true)).withVelocityY(getYSpeed(true)))
+                                .alongWith(runEntryCommand(
+                                        () -> ShooterTable.calcShortShuttleTableEntry(Meters
+                                                .of(odometryStrategy.getDrivetrainGoalTranslation(true).getNorm())),
+                                        () -> ShotSpeeds.FAST))
+                                .repeatedly());
     }
 
     /**
      * Generate a command to run the shooter, convey, & stop everything thereafter.
      * 
-     * @param entry The entry to run.
+     * @param entry
+     *            The entry to run.
      */
     private Command shootCommand(Supplier<ShooterTableEntry> entry) {
-        return driverCamera.setShooterCameraCommand()
-                .andThen(runEntryCommand(entry, () -> ShotSpeeds.FAST))
-                .andThen(Commands.waitUntil(shooterAndPivotReady()))
-                .andThen(conveyCommand().withTimeout(0.75))
+        return driverCamera.setShooterCameraCommand().andThen(runEntryCommand(entry, () -> ShotSpeeds.FAST))
+                .andThen(Commands.waitUntil(shooterAndPivotReady())).andThen(conveyCommand().withTimeout(0.75))
                 .finallyDo(() -> {
                     shooter.stop();
                     pivot.runToPosition(Pivot.HOLD_POSITION);
@@ -1186,7 +1077,8 @@ public class RobotContainer {
     /**
      * Generate a command to shoot based on a target distance.
      * 
-     * @param distance The target distance, in feet.
+     * @param distance
+     *            The target distance, in feet.
      */
     private Command shootCommand(double distance) {
         return shootCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(distance)));
@@ -1195,17 +1087,20 @@ public class RobotContainer {
     /**
      * Generate a command to use the specified entry to run a magic shot.
      * 
-     * @param entry    The entry to run.
-     * @param strategy The strategy to use for rotation.
-     * @param lock     Whether or not to align the drivetrain.
+     * @param entry
+     *            The entry to run.
+     * @param strategy
+     *            The strategy to use for rotation.
+     * @param lock
+     *            Whether or not to align the drivetrain.
      */
     private Command magicShootCommand(Supplier<ShooterTableEntry> entry, Supplier<ShootingStrategy> strategy,
             boolean lock, Rotation2d offset) {
         return Commands.runOnce(() -> entryToRun = entry.get())
-                .andThen(fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier()))
+                .andThen(
+                        fixNoteCommand().unless(noteSensing.conveyorSeesNoteSupplier()))
                 .andThen(driverCamera.setShooterCameraCommand())
-                .andThen(runEntryCommand(() -> entryToRun,
-                        () -> ShotSpeeds.FAST)
+                .andThen(runEntryCommand(() -> entryToRun, () -> ShotSpeeds.FAST)
                         .alongWith(drivetrain.speakerAlign(strategy, offset).withTimeout(0.5)
                                 .unless(() -> Math.abs(strategy.get().getTargetOffset().getDegrees()) < 0.25))
                         .onlyIf(() -> lock))
@@ -1215,9 +1110,12 @@ public class RobotContainer {
     /**
      * Generate a command to use the specified entry to run a magic shot.
      * 
-     * @param entry    The entry to run.
-     * @param strategy The strategy to use for rotation.
-     * @param lock     Whether or not to align the drivetrain.
+     * @param entry
+     *            The entry to run.
+     * @param strategy
+     *            The strategy to use for rotation.
+     * @param lock
+     *            Whether or not to align the drivetrain.
      */
     private Command magicShootCommand(Supplier<ShooterTableEntry> entry, Supplier<ShootingStrategy> strategy,
             boolean lock) {
@@ -1227,20 +1125,24 @@ public class RobotContainer {
     /**
      * Generate a command to use the specified distance to run a magic shot.
      * 
-     * @param distance The shot to run.
-     * @param strategy The strategy to use for rotation.
-     * @param lock     Whether or not to align the drivetrain.
+     * @param distance
+     *            The shot to run.
+     * @param strategy
+     *            The strategy to use for rotation.
+     * @param lock
+     *            Whether or not to align the drivetrain.
      */
-    private Command magicShootCommand(double distance, Supplier<ShootingStrategy> strategy,
-            boolean lock) {
+    private Command magicShootCommand(double distance, Supplier<ShootingStrategy> strategy, boolean lock) {
         return magicShootCommand(() -> ShooterTable.calcShooterTableEntry(Feet.of(distance)), strategy, lock);
     }
 
     /**
      * Generate a command to use the specified strategy to run a magic shot.
      * 
-     * @param strategy The {@link ShootingStrategy} to use.
-     * @param lock     Whether or not to align the drivetrain.
+     * @param strategy
+     *            The {@link ShootingStrategy} to use.
+     * @param lock
+     *            Whether or not to align the drivetrain.
      */
     private Command magicShootCommand(Supplier<ShootingStrategy> strategy, boolean lock, Rotation2d offset) {
         return magicShootCommand(() -> strategy.get().getTargetEntry(), strategy, lock, offset);
@@ -1249,8 +1151,10 @@ public class RobotContainer {
     /**
      * Generate a command to use the specified strategy to run a magic shot.
      * 
-     * @param strategy The {@link ShootingStrategy} to use.
-     * @param lock     Whether or not to align the drivetrain.
+     * @param strategy
+     *            The {@link ShootingStrategy} to use.
+     * @param lock
+     *            Whether or not to align the drivetrain.
      */
     private Command magicShootCommand(Supplier<ShootingStrategy> strategy, boolean lock) {
         return magicShootCommand(() -> strategy.get().getTargetEntry(), strategy, lock, ShootingStrategy.OFFSET);
@@ -1260,7 +1164,8 @@ public class RobotContainer {
      * Generate a command to use the specified strategy to run a magic, aligning
      * shot.
      * 
-     * @param strategy The {@link ShootingStrategy} to use.
+     * @param strategy
+     *            The {@link ShootingStrategy} to use.
      */
     private Command magicShootCommand(Supplier<ShootingStrategy> strategy) {
         return magicShootCommand(strategy, true);
@@ -1276,8 +1181,7 @@ public class RobotContainer {
 
     /** Run a Shooter Table Entry */
     private Command runEntryCommand(Supplier<ShooterTableEntry> entry, Supplier<ShotSpeeds> speed) {
-        return shooter.runEntryCommand(entry, speed)
-                .alongWith(pivot.runToPositionCommand(() -> entry.get().Angle))
+        return shooter.runEntryCommand(entry, speed).alongWith(pivot.runToPositionCommand(() -> entry.get().Angle))
                 .alongWith(Commands.runOnce(() -> lastShot = entry.get().Distance.in(Feet))
                         .onlyIf(() -> entry.get().Distance != null));
     }
@@ -1302,14 +1206,9 @@ public class RobotContainer {
 
     /** Stop all motors and zero everything */
     private Command stopAllCommand(boolean switchCamera) {
-        return Commands.parallel(
-                infeed.stopCommand(),
-                conveyor.stopCommand(),
-                shooter.stopCommand().andThen(shooter.setSlotCommand(Shooter.Slots.FAST)),
-                pivot.runToHomeCommand(),
-                m_fan.stopCommand(),
-                fanPivot.runToHomeCommand(),
-                whippy.stopCommand(),
+        return Commands.parallel(infeed.stopCommand(), conveyor.stopCommand(),
+                shooter.stopCommand().andThen(shooter.setSlotCommand(Shooter.Slots.FAST)), pivot.runToHomeCommand(),
+                m_fan.stopCommand(), fanPivot.runToHomeCommand(), whippy.stopCommand(),
                 driverCamera.setInfeedCameraCommand().onlyIf(() -> switchCamera),
                 Commands.runOnce(() -> currentSequence = ClimbSequence.Default));
     }
@@ -1369,8 +1268,7 @@ public class RobotContainer {
     /** Auton Command */
     public Command getAutonomousCommand() {
         return new InstantCommand(() -> drivetrain.seedFieldRelative(new Pose2d()))
-                .andThen(NamedCommands.getCommand("AprilTag Zero"))
-                .andThen(autonChooser.getSelected());
+                .andThen(NamedCommands.getCommand("AprilTag Zero")).andThen(autonChooser.getSelected());
     }
 
     // ================ //

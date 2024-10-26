@@ -43,8 +43,7 @@ public class Climber extends SubsystemBase {
     private static final double UP_POSITION = 118.0;
 
     /* Configs */
-    private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(100.)
+    private final CurrentLimitsConfigs currentConfigs = new CurrentLimitsConfigs().withStatorCurrentLimit(100.)
             .withSupplyCurrentLimit(80.);
 
     private final Slot0Configs m_pidConfigs = new Slot0Configs()
@@ -52,21 +51,16 @@ public class Climber extends SubsystemBase {
             .withKP(0.2);
 
     /* Requests */
-    private final DutyCycleOut m_focRequest = new DutyCycleOut(0.)
-            .withEnableFOC(true);
+    private final DutyCycleOut m_focRequest = new DutyCycleOut(0.).withEnableFOC(true);
 
-    private final PositionDutyCycle m_positionRequest = new PositionDutyCycle(0.)
-            .withEnableFOC(true);
+    private final PositionDutyCycle m_positionRequest = new PositionDutyCycle(0.).withEnableFOC(true);
     // .withSlot(0);
 
     private double m_target = 0.;
     private double m_targetSign = 1;
 
     public enum ClimberPositions {
-        CLIMB(0.0),
-        HOLD(0.0),
-        DISENGAGE(70.),
-        READY(111.0);
+        CLIMB(0.0), HOLD(0.0), DISENGAGE(70.), READY(111.0);
 
         public double Position;
 
@@ -200,13 +194,11 @@ public class Climber extends SubsystemBase {
         return runOnce(() -> {
             m_target = position;
             m_targetSign = Math.signum(getError());
-        })
-                .andThen(runOnce(() -> runMotor(m_targetSign * Math.abs(output), true)))
+        }).andThen(runOnce(() -> runMotor(m_targetSign * Math.abs(output), true)))
                 // make sure overdrives aren't (generally) possible
                 .andThen(Commands.waitUntil(() -> m_targetSign == -1 ? //
                         getError() > -2.0 : getError() < 2.0))
-                .andThen(stopCommand())
-                .andThen(holdCommand().onlyIf(() -> hold));
+                .andThen(stopCommand()).andThen(holdCommand().onlyIf(() -> hold));
     }
 
     public Command runToPositionCommand(double output, ClimberPositions position, boolean hold) {
@@ -218,8 +210,7 @@ public class Climber extends SubsystemBase {
     }
 
     public Command hitReverseLimitCommand() {
-        return stopCommand().andThen(setEncoderPositionCommand(ZERO_POSITION))
-                .andThen(holdCommand());
+        return stopCommand().andThen(setEncoderPositionCommand(ZERO_POSITION)).andThen(holdCommand());
     }
 
     public Command holdCurrentPositionCommand() {

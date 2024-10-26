@@ -19,16 +19,8 @@ public class Candle extends SubsystemBase {
     private Color color;
 
     public enum Color {
-        GREEN(0, 254, 0),
-        PURPLE(118, 0, 254),
-        PINK(254, 0, 118),
-        YELLOW(118, 118, 0),
-        ORANGE(254, 55, 0),
-        LBLUE(55, 55, 254),
-        BLUE(0, 0, 254),
-        WHITE(254, 254, 254),
-        RED(254, 0, 0),
-        OFF(0, 0, 0);
+        GREEN(0, 254, 0), PURPLE(118, 0, 254), PINK(254, 0, 118), YELLOW(118, 118, 0), ORANGE(254, 55, 0), LBLUE(55, 55,
+                254), BLUE(0, 0, 254), WHITE(254, 254, 254), RED(254, 0, 0), OFF(0, 0, 0);
 
         public int r;
         public int g;
@@ -79,7 +71,7 @@ public class Candle extends SubsystemBase {
 
     public void setLedsColor(int ledIndex, int count, int r, int g, int b) {
         candle.setLEDs(r, g, b, 0, ledIndex, count);
-        
+
     }
 
     // Basic colors //
@@ -108,62 +100,62 @@ public class Candle extends SubsystemBase {
     // Creates the complex animations //
 
     // public FireAnimation burnyBurn() {
-    //     return new FireAnimation(1, 0.5, NUM_LEDS, 0.5, 0.1);
+    // return new FireAnimation(1, 0.5, NUM_LEDS, 0.5, 0.1);
     // }
 
     // public RainbowAnimation rainbow() {
-    //     return new RainbowAnimation(100.00, 0.9, NUM_LEDS, true, 0);
+    // return new RainbowAnimation(100.00, 0.9, NUM_LEDS, true, 0);
     // }
 
     // public SingleFadeAnimation fade(Color color) {
-    //     return new SingleFadeAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS);
+    // return new SingleFadeAnimation(color.r, color.g, color.b, 100, 0.8,
+    // NUM_LEDS);
     // }
 
     // public ColorFlowAnimation shootFlow(Color color) {
-    //     return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, Direction.Forward);
+    // return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS,
+    // Direction.Forward);
     // }
 
     // public ColorFlowAnimation infeedFlow(Color color) {
-    //     return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, Direction.Backward);
+    // return new ColorFlowAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS,
+    // Direction.Backward);
     // }
 
     // public StrobeAnimation strobe(Color color) {
-    //     return new StrobeAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, 0);
+    // return new StrobeAnimation(color.r, color.g, color.b, 100, 0.8, NUM_LEDS, 0);
     // }
 
     // // Commands for complex animations //
     // public Command runBurnyBurnCommand() {
-    //     return runOnce(() -> candle.clearAnimation(NUM_LEDS)).andThen(runOnce(() -> candle.animate(burnyBurn())));
+    // return runOnce(() -> candle.clearAnimation(NUM_LEDS)).andThen(runOnce(() ->
+    // candle.animate(burnyBurn())));
     // }
 
     // public Command runRainbowAnimationCommnad() {
-    //     return runOnce(() -> candle.animate(rainbow()));
+    // return runOnce(() -> candle.animate(rainbow()));
     // }
 
     // public Command runFade(Color color) {
-    //     return runOnce(() -> candle.animate(fade(color)));
+    // return runOnce(() -> candle.animate(fade(color)));
     // }
 
     // public Command runShootFlow(Color color) {
-    //     return runOnce(() -> candle.animate(shootFlow(color)));
+    // return runOnce(() -> candle.animate(shootFlow(color)));
     // }
 
     // public Command runInfeedFlow(Color color) {
-    //     return runOnce(() -> candle.animate(infeedFlow(color)));
+    // return runOnce(() -> candle.animate(infeedFlow(color)));
     // }
 
     // public Command runStrobe(Color color) {
-    //     return runOnce(() -> candle.animate(strobe(color)));
+    // return runOnce(() -> candle.animate(strobe(color)));
     // }
 
     // Blink command -> Use for anything //
     public Command blink(Color color, int cycles) {
-        return BeakCommands.repeatCommand(
-                setNoColorCommand().andThen(
-                        Commands.waitSeconds(0.25),
-                        runOnce(() -> setColor(color)),
-                        Commands.waitSeconds(0.25)),
-                cycles);
+        return BeakCommands.repeatCommand(setNoColorCommand().andThen(Commands.waitSeconds(0.25),
+                runOnce(() -> setColor(color)), Commands.waitSeconds(0.25)), cycles);
     }
 
     @Override
