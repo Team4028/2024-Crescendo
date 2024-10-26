@@ -38,11 +38,18 @@ public final class Constants {
 
     public static final double AUTON_SECONDS_LINE_DELAY = 0.5;
 
+    // @formatter:off
     public static enum AutoPoses {
-        AMP_SHOT(new Translation2d(4.73, 6.95)), MID_SHOT(new Translation2d(2.89, 5.54)), SOURCE_SHOT(
-                new Translation2d(3.87, 2.56)), NOTE1(new Translation2d(8.4, 7.29)), NOTE2(
-                        new Translation2d(8.4, 5.65)), NOTE3(new Translation2d(8.4, 3.95)), NOTE4(
-                                new Translation2d(8.4, 2.45)), NOTE5(new Translation2d(8.4, 0.71));
+        AMP_SHOT(new Translation2d(4.73, 6.95)), 
+        MID_SHOT(new Translation2d(2.89, 5.54)), 
+        SOURCE_SHOT(new Translation2d(3.87, 2.56)), 
+        NOTE1(new Translation2d(8.4, 7.29)), 
+        NOTE2(new Translation2d(8.4, 5.65)), 
+        NOTE3(new Translation2d(8.4, 3.95)), 
+        NOTE4(new Translation2d(8.4, 2.45)), 
+        NOTE5(new Translation2d(8.4, 0.71));
+
+    //@formatter:on
 
         public static Rotation2d UPWARD_ROTATION = Rotation2d.fromDegrees(42.5);
         public static Rotation2d DOWNWARD_ROTATION = Rotation2d.fromDegrees(-42.5);
