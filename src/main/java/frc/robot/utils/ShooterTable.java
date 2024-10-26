@@ -85,7 +85,7 @@ public class ShooterTable {
 
     private static void fillInTable() {
 
-        final double GLOBAL_OFFSET = 0.375; // offset from pre-iri good
+        final double GLOBAL_OFFSET = 0.5; // all shooter table entries use this value
         // put entries here
         // Distances must go from top to bottom: shortest to longest
         // IF YOU INCREASE DISTANCE, SHOOTER ANGLE GOES UP
