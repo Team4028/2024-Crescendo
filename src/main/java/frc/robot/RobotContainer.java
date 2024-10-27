@@ -379,7 +379,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Pivot Zero", pivot.zeroCommand());
 
         /* Infeed & Spit */
-        NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
+        NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand().withTimeout(2));
 
         NamedCommands.registerCommand("Dumb Infeed",
                 runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(.25));
