@@ -45,7 +45,7 @@
   "eventMarkers": [
     {
       "name": "Finnish Infeed",
-      "waypointRelativePos": 0.3,
+      "waypointRelativePos": 0.5,
       "command": {
         "type": "parallel",
         "data": {
@@ -58,11 +58,11 @@
             }
           ]
         }
-      }
+      } 
     },
     {
       "name": "Cache",
-      "waypointRelativePos": 0.5,
+      "waypointRelativePos": 0.1,
       "command": {
         "type": "parallel",
         "data": {
