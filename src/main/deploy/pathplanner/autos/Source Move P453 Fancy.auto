@@ -24,9 +24,15 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "Source Move 5 Shoot"
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "5 Or 3"
+            "name": "Magic Shoot"
           }
         },
         {

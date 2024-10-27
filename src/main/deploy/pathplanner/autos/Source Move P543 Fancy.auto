@@ -24,9 +24,15 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "Source 4 - Shot"
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "4 Or 3"
+            "name": "Magic Shoot"
           }
         },
         {
