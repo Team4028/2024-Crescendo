@@ -633,10 +633,10 @@ public class RobotContainer {
 
                 operatorController.leftStick()
                                 .onTrue(drivetrain.applyRequest(() -> snapDrive
-                                                .withTargetDirection(Rotation2d.fromDegrees(40))
+                                                .withTargetDirection(Rotation2d.fromDegrees(90))
                                                 .withVelocityX(chassisLimelight.getTV() == 1
                                                                 ? chassisLimelight.getTargetX().get().getDegrees()
-                                                                : 0)));
+                                                                : 0).withVelocityY(0.0)));
 
                 // ========================= //
                 /* Driver Help Control */
