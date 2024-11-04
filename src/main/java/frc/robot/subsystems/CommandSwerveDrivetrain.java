@@ -31,12 +31,15 @@ import com.pathplanner.lib.util.PIDConstants;
 
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.units.*;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
@@ -88,11 +91,11 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
 
     private Rotation2d alignmentTarget = new Rotation2d();
 
-    private static final double STATIC_ALIGN_kP = 6.0;
+    private static final double STATIC_ALIGN_kP = 8.0;
     private static final double STATIC_ALIGN_VELOCITY = 6.0;
     private static final double STATIC_ALIGN_ACCELERATION = 12.0;
 
-    private static final double LOCK_ALIGN_kP = 8.5;
+    private static final double LOCK_ALIGN_kP = 10.0;
 
     private static final double TARGET_ACQUIRE_THRESHOLD = 1.0;
     private static final double TARGET_ACQUIRE_kP = 6.0;
@@ -505,4 +508,5 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                             .withRotationalRate(useRotation ? output : 0.0));
                 }, this);
     }
+
 }
