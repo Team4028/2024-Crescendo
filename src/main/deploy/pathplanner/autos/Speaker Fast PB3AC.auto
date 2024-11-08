@@ -42,9 +42,15 @@
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.1
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "PB3AC skip shot"
+            "name": "Magic Shoot"
           }
         },
         {

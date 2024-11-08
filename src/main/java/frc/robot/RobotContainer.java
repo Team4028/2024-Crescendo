@@ -383,8 +383,8 @@ public class RobotContainer {
                 /* ... */
                 NamedCommands.registerCommand("Pivot Zero", pivot.zeroCommand());
 
-                /* Infeed & Spit */
-                NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand());
+        /* Infeed & Spit */
+        NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand().withTimeout(2));
 
                 NamedCommands.registerCommand("Dumb Infeed",
                                 runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(.25));
@@ -498,9 +498,9 @@ public class RobotContainer {
                 NamedCommands.registerCommand("P Amp Shot", shootCommand(13.5));
                 NamedCommands.registerCommand("Stationary Shot Amp", shootCommand(13.5));
 
-                NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(5.0));
-                NamedCommands.registerCommand("Source Pivot 4", pivot.runToPositionCommand(6.0));
-                NamedCommands.registerCommand("Source Pivot Red", pivot.runToPositionCommand(5.0));
+        NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(4.875));
+        NamedCommands.registerCommand("Source Pivot 4", pivot.runToPositionCommand(6.0));
+        NamedCommands.registerCommand("Source Pivot Red", pivot.runToPositionCommand(5.0));
 
                 NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(4.75));
                 NamedCommands.registerCommand("Amp Pivot Red", pivot.runToPositionCommand(4.75));
