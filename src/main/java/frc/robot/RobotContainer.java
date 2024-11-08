@@ -631,13 +631,6 @@ public class RobotContainer {
                 /* OPERATOR CONTROLLER */
                 // =================== //
 
-                operatorController.leftStick()
-                                .onTrue(drivetrain.applyRequest(() -> snapDrive
-                                                .withTargetDirection(Rotation2d.fromDegrees(90))
-                                                .withVelocityX(chassisLimelight.getTV() == 1
-                                                                ? chassisLimelight.getTargetX().get().getDegrees()
-                                                                : 0).withVelocityY(0.0)));
-
                 // ========================= //
                 /* Driver Help Control */
                 // ========================= //
@@ -728,6 +721,38 @@ public class RobotContainer {
                 // ==================== //
                 /* EMERGENCY CONTROLLER */
                 // ==================== //
+
+                // This is for testing starting as of 11/7/24//
+                emergencyController.leftStick()
+                                .onTrue(drivetrain.applyRequest(() -> snapDrive
+                                                .withTargetDirection(Rotation2d.fromDegrees(-90))
+                                                .withVelocityX(chassisLimelight.getTV() == 1
+                                                                ? (Math.abs(chassisLimelight.getTargetX().get()
+                                                                                .getDegrees()) > 3.5 ? Math.signum(
+                                                                                                chassisLimelight.getTargetX()
+                                                                                                                .get()
+                                                                                                                .getDegrees())
+                                                                                                : 0)
+                                                                : 0)
+                                                .withVelocityY(chassisLimelight.getTV() == 1
+                                                                ? (chassisLimelight.getTargetY().get()
+                                                                                .getDegrees() + 5 > 1 ? Math
+                                                                                                .signum(chassisLimelight
+                                                                                                                .getTargetY()
+                                                                                                                .get()
+                                                                                                                .getDegrees()
+                                                                                                                + 5)
+                                                                                                : (chassisLimelight
+                                                                                                                .getTargetY()
+                                                                                                                .get()
+                                                                                                                .getDegrees()
+                                                                                                                + 5 < -5 ? Math.signum(
+                                                                                                                                chassisLimelight.getTargetY()
+                                                                                                                                                .get()
+                                                                                                                                                .getDegrees()
+                                                                                                                                                - 5)
+                                                                                                                                : 0))
+                                                                : 0)));
 
                 // ==================== //
                 /* Manual Pivot Control */
