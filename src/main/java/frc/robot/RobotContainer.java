@@ -723,34 +723,34 @@ public class RobotContainer {
                 // ==================== //
 
                 // This is for testing starting as of 11/7/24//
+                
                 emergencyController.leftStick()
                                 .onTrue(drivetrain.applyRequest(() -> snapDrive
-                                                .withTargetDirection(Rotation2d.fromDegrees(-90))
-                                                .withVelocityX(chassisLimelight.getTV() == 1
-                                                                ? (Math.abs(chassisLimelight.getTargetX().get()
+                                                .withTargetDirection(Rotation2d.fromDegrees(90))
+                                                .withVelocityX(infeedLimelight3G.getTV() == 1
+                                                                ? (Math.abs(infeedLimelight3G.getTargetX().get()
                                                                                 .getDegrees()) > 3.5 ? Math.signum(
-                                                                                                chassisLimelight.getTargetX()
+                                                                                                infeedLimelight3G.getTargetX()
                                                                                                                 .get()
                                                                                                                 .getDegrees())
                                                                                                 : 0)
                                                                 : 0)
-                                                .withVelocityY(chassisLimelight.getTV() == 1
-                                                                ? (chassisLimelight.getTargetY().get()
-                                                                                .getDegrees() + 5 > 1 ? Math
-                                                                                                .signum(chassisLimelight
+                                                .withVelocityY(infeedLimelight3G.getTV() == 1
+                                                                ? (infeedLimelight3G.getTargetY().get()
+                                                                                .getDegrees() > -25 ? 0.25 * Math
+                                                                                                .signum(infeedLimelight3G
+                                                                                                                .getTargetY()
+                                                                                                                .get()
+                                                                                                                .getDegrees() + 22.5)
+                                                                                                : (infeedLimelight3G
                                                                                                                 .getTargetY()
                                                                                                                 .get()
                                                                                                                 .getDegrees()
-                                                                                                                + 5)
-                                                                                                : (chassisLimelight
-                                                                                                                .getTargetY()
-                                                                                                                .get()
-                                                                                                                .getDegrees()
-                                                                                                                + 5 < -5 ? Math.signum(
-                                                                                                                                chassisLimelight.getTargetY()
+                                                                                                                < -20 ? 0.25 * Math.signum(
+                                                                                                                                infeedLimelight3G.getTargetY()
                                                                                                                                                 .get()
                                                                                                                                                 .getDegrees()
-                                                                                                                                                - 5)
+                                                                                                                                                + 22.5)
                                                                                                                                 : 0))
                                                                 : 0)));
 
