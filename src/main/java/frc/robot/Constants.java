@@ -28,7 +28,7 @@ public final class Constants {
     public static final Rotation2d SHUTTLE_SHORT_OFFSET_RED = Rotation2d.fromDegrees(-5);
     public static final double SHUTTLE_BEAN_MODIFIER = -0.01;
 
-    public static final Pose2d AMP_TARGET = new Pose2d(1.83, 7.27, new Rotation2d(Math.PI / 2.));
+    public static final Pose2d AMP_TARGET = new Pose2d(1.90, 7.60, new Rotation2d(Math.PI / 2.));
 
     public static final Translation2d SHUTTLE_BLUE = new Translation2d(2.5, 8.22);
 

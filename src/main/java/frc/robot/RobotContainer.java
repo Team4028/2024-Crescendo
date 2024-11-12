@@ -29,6 +29,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
@@ -170,6 +171,7 @@ public class RobotContainer {
         // ====================================================== //
         /** Drivetrain Constants, Magic numbers, and ` Limiters */
         // ====================================================== //
+        private boolean isPathFindingToAmp = false;
         private final SlewRateLimiter xLimiter = new SlewRateLimiter(4.);
         private final SlewRateLimiter yLimiter = new SlewRateLimiter(4.);
         private final SlewRateLimiter thetaLimiter = new SlewRateLimiter(4.);
@@ -383,8 +385,8 @@ public class RobotContainer {
                 /* ... */
                 NamedCommands.registerCommand("Pivot Zero", pivot.zeroCommand());
 
-        /* Infeed & Spit */
-        NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand().withTimeout(2));
+                /* Infeed & Spit */
+                NamedCommands.registerCommand("Smart Infeed", smartInfeedCommand().withTimeout(2));
 
                 NamedCommands.registerCommand("Dumb Infeed",
                                 runBoth(true, SLOW_CONVEYOR_VBUS, INFEED_VBUS).withTimeout(.25));
@@ -498,9 +500,9 @@ public class RobotContainer {
                 NamedCommands.registerCommand("P Amp Shot", shootCommand(13.5));
                 NamedCommands.registerCommand("Stationary Shot Amp", shootCommand(13.5));
 
-        NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(4.875));
-        NamedCommands.registerCommand("Source Pivot 4", pivot.runToPositionCommand(6.0));
-        NamedCommands.registerCommand("Source Pivot Red", pivot.runToPositionCommand(5.0));
+                NamedCommands.registerCommand("Source Pivot", pivot.runToPositionCommand(4.875));
+                NamedCommands.registerCommand("Source Pivot 4", pivot.runToPositionCommand(6.0));
+                NamedCommands.registerCommand("Source Pivot Red", pivot.runToPositionCommand(5.0));
 
                 NamedCommands.registerCommand("Amp Pivot", pivot.runToPositionCommand(4.75));
                 NamedCommands.registerCommand("Amp Pivot Red", pivot.runToPositionCommand(4.75));
@@ -557,6 +559,7 @@ public class RobotContainer {
                                                                                                                  // it
                                                                                                                  // works
                                                                                                                  // lol
+                new Trigger(() -> drivetrain.getPose().relativeTo(Constants.AMP_TARGET).getTranslation().getNorm() < 0.5).and(() -> isPathFindingToAmp).onTrue(ampPrep.andThen(Commands.waitSeconds(1.5)).andThen(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS).repeatedly().withTimeout(1.5)).andThen(stopAllCommand(true).alongWith(Commands.runOnce(() -> isPathFindingToAmp = false))));
 
                 // ================ //
                 /* Default Commands */
@@ -723,36 +726,37 @@ public class RobotContainer {
                 // ==================== //
 
                 // This is for testing starting as of 11/7/24//
-                
-                emergencyController.leftStick()
-                                .onTrue(drivetrain.applyRequest(() -> snapDrive
-                                                .withTargetDirection(Rotation2d.fromDegrees(90))
-                                                .withVelocityX(infeedLimelight3G.getTV() == 1
-                                                                ? (Math.abs(infeedLimelight3G.getTargetX().get()
-                                                                                .getDegrees()) > 3.5 ? Math.signum(
-                                                                                                infeedLimelight3G.getTargetX()
-                                                                                                                .get()
-                                                                                                                .getDegrees())
-                                                                                                : 0)
-                                                                : 0)
-                                                .withVelocityY(infeedLimelight3G.getTV() == 1
-                                                                ? (infeedLimelight3G.getTargetY().get()
-                                                                                .getDegrees() > -25 ? 0.25 * Math
-                                                                                                .signum(infeedLimelight3G
-                                                                                                                .getTargetY()
-                                                                                                                .get()
-                                                                                                                .getDegrees() + 22.5)
-                                                                                                : (infeedLimelight3G
-                                                                                                                .getTargetY()
-                                                                                                                .get()
-                                                                                                                .getDegrees()
-                                                                                                                < -20 ? 0.25 * Math.signum(
-                                                                                                                                infeedLimelight3G.getTargetY()
-                                                                                                                                                .get()
-                                                                                                                                                .getDegrees()
-                                                                                                                                                + 22.5)
-                                                                                                                                : 0))
-                                                                : 0)));
+
+                // emergencyController.leftStick().onTrue(drivetrain.applyRequest(() ->
+                // snapDrive.withTargetDirection(Rotation2d.fromDegrees(90))
+                // .withVelocityX(infeedLimelight3G.getTV() == 1
+                // ? (Math.abs(infeedLimelight3G.getTargetX().get()
+                // .getDegrees()) > 3.5 ? Math.signum(
+                // infeedLimelight3G.getTargetX()
+                // .get()
+                // .getDegrees())
+                // : 0)
+                // : 0).withVelocityY(infeedLimelight3G.getTV() == 1 ?
+                // (infeedLimelight3G.getTargetY().get()
+                // .getDegrees() > -25 ? 0.25 * Math
+                // .signum(infeedLimelight3G
+                // .getTargetY()
+                // .get()
+                // .getDegrees() + 22.5)
+                // : (infeedLimelight3G
+                // .getTargetY()
+                // .get()
+                // .getDegrees()
+                // < -20 ? 0.25 * Math.signum(
+                // infeedLimelight3G.getTargetY()
+                // .get()
+                // .getDegrees()
+                // + 22.5)
+                // : 0))
+                // : 0)));
+
+                //Obstacles.
+                emergencyController.leftStick().onTrue(drivetrain.pathFindCommand(Constants.AMP_TARGET, 0.5, 0.0).alongWith(Commands.runOnce(() -> isPathFindingToAmp = true)));
 
                 // ==================== //
                 /* Manual Pivot Control */
