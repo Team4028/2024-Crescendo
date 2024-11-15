@@ -172,6 +172,7 @@ public class RobotContainer {
         /** Drivetrain Constants, Magic numbers, and ` Limiters */
         // ====================================================== //
         private boolean isPathFindingToAmp = false;
+        private boolean isPathFindingToNoteB = false;
         private final SlewRateLimiter xLimiter = new SlewRateLimiter(4.);
         private final SlewRateLimiter yLimiter = new SlewRateLimiter(4.);
         private final SlewRateLimiter thetaLimiter = new SlewRateLimiter(4.);
@@ -559,8 +560,18 @@ public class RobotContainer {
                                                                                                                  // it
                                                                                                                  // works
                                                                                                                  // lol
-                new Trigger(() -> drivetrain.getPose().relativeTo(Constants.AMP_TARGET).getTranslation().getNorm() < 0.5).and(() -> isPathFindingToAmp).onTrue(ampPrep.andThen(Commands.waitSeconds(1.5)).andThen(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS).repeatedly().withTimeout(1.5)).andThen(stopAllCommand(true).alongWith(Commands.runOnce(() -> isPathFindingToAmp = false))));
+                new Trigger(() -> drivetrain.getPose().relativeTo(Constants.AMP_TARGET).getTranslation()
+                                .getNorm() < 0.5)
+                                .and(() -> isPathFindingToAmp)
+                                .onTrue(ampPrep.andThen(Commands.waitSeconds(1.5))
+                                                .andThen(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS)
+                                                                .repeatedly().withTimeout(1.5))
+                                                .andThen(stopAllCommand(true).alongWith(
+                                                                Commands.runOnce(() -> isPathFindingToAmp = false))));
 
+                new Trigger(() -> drivetrain.getPose().relativeTo(Constants.NOTE_B_LOCATION).getTranslation()
+                                .getNorm() < 0.5).and(() -> isPathFindingToNoteB)
+                                .onTrue(drivetrain.translateToPositionWithPID(Constants.NOTE_B_LOCATION.getTranslation()));
                 // ================ //
                 /* Default Commands */
                 // ================ //
@@ -755,8 +766,11 @@ public class RobotContainer {
                 // : 0))
                 // : 0)));
 
-                //Obstacles.
-                emergencyController.leftStick().onTrue(drivetrain.pathFindCommand(Constants.AMP_TARGET, 0.5, 0.0).alongWith(Commands.runOnce(() -> isPathFindingToAmp = true)));
+                // Obstacles.
+                emergencyController.leftStick()
+                                .onTrue(drivetrain.pathFindCommand(Constants.NOTE_B_LOCATION, 0.5, 0.0)
+                                                .alongWith(Commands.runOnce(() -> isPathFindingToNoteB = true)));
+                // .andThen(Commands.runOnce(() -> isPathFindingToAmp = true)));
 
                 // ==================== //
                 /* Manual Pivot Control */

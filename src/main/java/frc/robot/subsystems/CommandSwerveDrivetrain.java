@@ -85,6 +85,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
             vbusFL, vbusFR, vbusBL, vbusBR;
 
     private final SwerveRequest.ApplyChassisSpeeds autoRequest = new SwerveRequest.ApplyChassisSpeeds();
+    private final SwerveRequest.ApplyChassisSpeeds pidRequest = new SwerveRequest.ApplyChassisSpeeds();
     private final SwerveRequest.FieldCentric speakerLockDrive = new SwerveRequest.FieldCentric();
     private final SwerveRequest.RobotCentric staticAlignDrive = new SwerveRequest.RobotCentric();
     private final SwerveRequest.RobotCentric targetAcquireDrive = new SwerveRequest.RobotCentric();
@@ -101,10 +102,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     private static final double TARGET_ACQUIRE_kP = 6.0;
     private static final double TARGET_ACQUIRE_kD = 0.5;
 
-    private final ProfiledPIDController profyPidController = new ProfiledPIDController(0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(
-        0.0,
-        0.0
-    ));
+    private final PIDController profyPidController = new PIDController(1.0, 0, 0);
 
     private static final ProfiledPIDController STATIC_ALIGN_CONTROLLER = new ProfiledPIDController(
             // The PID gains
@@ -314,15 +312,16 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 endVel);
     }
 
-    public Command translateToPositionWithPID(Pose2d position) {
-        double theta = getPose().relativeTo(position).getRotation().getRadians();
-        return new ProfiledPIDCommand(profyPidController, () -> getPose().relativeTo(position).getTranslation().getNorm(), () -> new TrapezoidProfile.State(0.0, 0.0), (d, state) -> {
-            applyRequest(() -> autoRequest.withSpeeds(new ChassisSpeeds(
-                state.velocity * Math.cos(theta),
-                state.velocity * Math.sin(theta),
-                0.0
-            )));
-        }, this);
+    public Command translateToPositionWithPID(Translation2d pose) {
+        DoubleSupplier theta = () -> Math.PI - getPose().relativeTo(new Pose2d(pose, new Rotation2d())).getTranslation().getAngle().getRadians();
+        return new PIDCommand(profyPidController, () -> getPose().relativeTo(new Pose2d(pose, new Rotation2d())).getTranslation().getNorm(), 0.0,
+                (d) -> {
+                    System.out.println(edu.wpi.first.math.util.Units.radiansToDegrees(theta.getAsDouble()));
+                    setControl(pidRequest.withSpeeds(new ChassisSpeeds(
+                            d * Math.cos(theta.getAsDouble()),
+                            d * Math.sin(theta.getAsDouble()),
+                            0.0)));
+                }, this).andThen(applyRequest(() -> pidRequest.withSpeeds(new ChassisSpeeds())));
     }
 
     public Command mirrorablePathFindCommand(Pose2d desiredPose, double scale, double endVel) { // may end up being
