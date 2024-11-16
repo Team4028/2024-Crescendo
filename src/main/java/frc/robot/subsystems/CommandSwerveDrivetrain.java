@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.lang.Math;
 
 import org.photonvision.EstimatedRobotPose;
 
@@ -53,6 +54,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.SwerveVoltRequest;
 import frc.robot.generated.TunerConstants;
+import frc.robot.utils.BeakUtils;
 import frc.robot.utils.LogStore;
 import frc.robot.utils.ShootingStrategy;
 import frc.robot.utils.SignalStore;
@@ -102,7 +104,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     private static final double TARGET_ACQUIRE_kP = 6.0;
     private static final double TARGET_ACQUIRE_kD = 0.5;
 
-    private final PIDController profyPidController = new PIDController(1.0, 0, 0);
+    private final PIDController profyPidController = new PIDController(4, 0, 0);
 
     private static final ProfiledPIDController STATIC_ALIGN_CONTROLLER = new ProfiledPIDController(
             // The PID gains
@@ -165,6 +167,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
 
         configModules(modules);
         configLogging();
+        profyPidController.setTolerance(0.025);
     }
 
     // public CommandSwerveDrivetrain(SwerveDrivetrainConstants driveTrainConstants,
@@ -313,15 +316,16 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     }
 
     public Command translateToPositionWithPID(Translation2d pose) {
-        DoubleSupplier theta = () -> Math.PI - getPose().relativeTo(new Pose2d(pose, new Rotation2d())).getTranslation().getAngle().getRadians();
-        return new PIDCommand(profyPidController, () -> getPose().relativeTo(new Pose2d(pose, new Rotation2d())).getTranslation().getNorm(), 0.0,
+        DoubleSupplier theta = () -> 1.5 * Math.PI
+                - getPose().relativeTo(new Pose2d(pose, new Rotation2d())).getTranslation().getAngle().getRadians();
+        return new PIDCommand(profyPidController,
+                () -> -getPose().relativeTo(new Pose2d(pose, new Rotation2d())).getTranslation().getNorm(), 0.0,
                 (d) -> {
-                    System.out.println(edu.wpi.first.math.util.Units.radiansToDegrees(theta.getAsDouble()));
                     setControl(pidRequest.withSpeeds(new ChassisSpeeds(
-                            d * Math.cos(theta.getAsDouble()),
-                            d * Math.sin(theta.getAsDouble()),
+                            Math.min(3, Math.max(d * Math.cos(theta.getAsDouble()), -3)),
+                            Math.min(3, Math.max(d * -Math.sin(theta.getAsDouble()), -3)),
                             0.0)));
-                }, this).andThen(applyRequest(() -> pidRequest.withSpeeds(new ChassisSpeeds())));
+                }, this);
     }
 
     public Command mirrorablePathFindCommand(Pose2d desiredPose, double scale, double endVel) { // may end up being

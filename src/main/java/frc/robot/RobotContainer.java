@@ -560,18 +560,26 @@ public class RobotContainer {
                                                                                                                  // it
                                                                                                                  // works
                                                                                                                  // lol
-                new Trigger(() -> drivetrain.getPose().relativeTo(Constants.AMP_TARGET).getTranslation()
-                                .getNorm() < 0.5)
-                                .and(() -> isPathFindingToAmp)
-                                .onTrue(ampPrep.andThen(Commands.waitSeconds(1.5))
-                                                .andThen(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS)
-                                                                .repeatedly().withTimeout(1.5))
-                                                .andThen(stopAllCommand(true).alongWith(
-                                                                Commands.runOnce(() -> isPathFindingToAmp = false))));
+                // new Trigger(() ->
+                // drivetrain.getPose().relativeTo(Constants.AMP_TARGET).getTranslation()
+                // .getNorm() < 0.5)
+                // .and(() -> isPathFindingToAmp)
+                // .onTrue(ampPrep.andThen(Commands.waitSeconds(1.5))
+                // .andThen(runBoth(false, FAST_CONVEYOR_VBUS, SLOW_INFEED_VBUS)
+                // .repeatedly().withTimeout(1.5))
+                // .andThen(stopAllCommand(true).alongWith(
+                // Commands.runOnce(() -> isPathFindingToAmp = false))));
 
                 new Trigger(() -> drivetrain.getPose().relativeTo(Constants.NOTE_B_LOCATION).getTranslation()
                                 .getNorm() < 0.5).and(() -> isPathFindingToNoteB)
-                                .onTrue(drivetrain.translateToPositionWithPID(Constants.NOTE_B_LOCATION.getTranslation()));
+                                .onTrue(drivetrain.translateToPositionWithPID(Constants.NOTE_B_LOCATION.getTranslation()))
+                                .onFalse(Commands.runOnce(() -> isPathFindingToNoteB = false));
+
+                // new Trigger(() -> drivetrain.getPose().relativeTo(Constants.AMP_TARGET).getTranslation()
+                //                 .getNorm() < 0.5).and(() -> isPathFindingToAmp)
+                //                 .onTrue(drivetrain.translateToPositionWithPID(Constants.AMP_TARGET.getTranslation()))
+                //                 .onFalse(Commands.runOnce(() -> isPathFindingToAmp = false));
+
                 // ================ //
                 /* Default Commands */
                 // ================ //
