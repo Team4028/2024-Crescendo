@@ -55,6 +55,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.SwerveVoltRequest;
 import frc.robot.generated.TunerConstants;
 import frc.robot.utils.BeakUtils;
+import frc.robot.utils.DashboardStore;
 import frc.robot.utils.LogStore;
 import frc.robot.utils.ShootingStrategy;
 import frc.robot.utils.SignalStore;
@@ -116,6 +117,11 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                     STATIC_ALIGN_VELOCITY,
                     STATIC_ALIGN_ACCELERATION));
 
+    private static final PIDController ANGLE_CONTROLLER = new PIDController(
+            4.0,
+            0.0,
+            0.0);
+
     private static final PIDController LOCK_ALIGN_CONTROLLER = new PIDController(
             LOCK_ALIGN_kP,
             0.0,
@@ -168,6 +174,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         configModules(modules);
         configLogging();
         profyPidController.setTolerance(0.025);
+        ANGLE_CONTROLLER.setTolerance(edu.wpi.first.math.util.Units.degreesToRadians(2.0));
     }
 
     // public CommandSwerveDrivetrain(SwerveDrivetrainConstants driveTrainConstants,
@@ -315,16 +322,18 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 endVel);
     }
 
-    public Command translateToPositionWithPID(Translation2d pose) {
+    public Command translateToPositionWithPID(Translation2d pose, double targetAngle) {
         DoubleSupplier theta = () -> 1.5 * Math.PI
                 - getPose().relativeTo(new Pose2d(pose, new Rotation2d())).getTranslation().getAngle().getRadians();
         return new PIDCommand(profyPidController,
                 () -> -getPose().relativeTo(new Pose2d(pose, new Rotation2d())).getTranslation().getNorm(), 0.0,
                 (d) -> {
+                    double angularVelocity = ANGLE_CONTROLLER.calculate(this.getPose().getRotation().getRadians(),
+                            targetAngle);
                     setControl(pidRequest.withSpeeds(new ChassisSpeeds(
                             Math.min(3, Math.max(d * Math.cos(theta.getAsDouble()), -3)),
                             Math.min(3, Math.max(d * -Math.sin(theta.getAsDouble()), -3)),
-                            0.0)));
+                            angularVelocity)));
                 }, this);
     }
 
@@ -528,4 +537,8 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 }, this);
     }
 
+    @Override
+    public void periodic() {
+        DashboardStore.add("Pigeon Rot", () -> m_pigeon2.getYaw().getValueAsDouble());
+    }
 }

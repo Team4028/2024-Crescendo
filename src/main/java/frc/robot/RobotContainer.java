@@ -572,13 +572,16 @@ public class RobotContainer {
 
                 new Trigger(() -> drivetrain.getPose().relativeTo(Constants.NOTE_B_LOCATION).getTranslation()
                                 .getNorm() < 0.5).and(() -> isPathFindingToNoteB)
-                                .onTrue(drivetrain.translateToPositionWithPID(Constants.NOTE_B_LOCATION.getTranslation()))
+                                .onTrue(drivetrain.translateToPositionWithPID(
+                                                Constants.NOTE_B_LOCATION.getTranslation(), Units.degreesToRadians(225)))
                                 .onFalse(Commands.runOnce(() -> isPathFindingToNoteB = false));
 
                 // new Trigger(() -> drivetrain.getPose().relativeTo(Constants.AMP_TARGET).getTranslation()
                 //                 .getNorm() < 0.5).and(() -> isPathFindingToAmp)
-                //                 .onTrue(drivetrain.translateToPositionWithPID(Constants.AMP_TARGET.getTranslation()))
-                //                 .onFalse(Commands.runOnce(() -> isPathFindingToAmp = false));
+                //                 .onTrue(drivetrain.translateToPositionWithPID(
+                //                                 Constants.AMP_TARGET.getTranslation(), Units.degreesToRadians(90)))
+                //                 .onFalse(Commands.runOnce(() -> isPathFindingToAmp= false));
+   
 
                 // ================ //
                 /* Default Commands */
