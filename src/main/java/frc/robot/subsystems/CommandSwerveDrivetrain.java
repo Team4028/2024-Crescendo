@@ -328,12 +328,13 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         return new PIDCommand(profyPidController,
                 () -> -getPose().relativeTo(new Pose2d(pose, new Rotation2d())).getTranslation().getNorm(), 0.0,
                 (d) -> {
-                    double angularVelocity = ANGLE_CONTROLLER.calculate(this.getPose().getRotation().getRadians(),
-                            targetAngle);
-                    setControl(pidRequest.withSpeeds(new ChassisSpeeds(
+                    setControl(pidRequest.withSpeeds(ChassisSpeeds.fromRobotRelativeSpeeds(new ChassisSpeeds(
                             Math.min(3, Math.max(d * Math.cos(theta.getAsDouble()), -3)),
                             Math.min(3, Math.max(d * -Math.sin(theta.getAsDouble()), -3)),
-                            angularVelocity)));
+                            /*
+                             * ANGLE_CONTROLLER.calculate(this.getPose().getRotation().getRadians(),
+                             * targetAngle)
+                             */0.0), getRotation().minus(Rotation2d.fromDegrees(90)))));
                 }, this);
     }
 
