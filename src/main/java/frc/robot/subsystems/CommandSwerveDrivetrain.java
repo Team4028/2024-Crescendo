@@ -105,7 +105,10 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     private static final double TARGET_ACQUIRE_kP = 6.0;
     private static final double TARGET_ACQUIRE_kD = 0.5;
 
-    private final PIDController profyPidController = new PIDController(4, 0, 0);
+    private static final double TRANSLATION_SPEED_M_PER_SEC = 0.75;
+    private static final double OMEGA_RAD_PER_SEC = Math.PI;
+
+    private final PIDController profyPidController = new PIDController(2, 0, 0);
 
     private static final ProfiledPIDController STATIC_ALIGN_CONTROLLER = new ProfiledPIDController(
             // The PID gains
@@ -322,19 +325,18 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 endVel);
     }
 
-    public Command translateToPositionWithPID(Translation2d pose, double targetAngle) {
-        DoubleSupplier theta = () -> 1.5 * Math.PI
-                - getPose().relativeTo(new Pose2d(pose, new Rotation2d())).getTranslation().getAngle().getRadians();
+    public Command translateToPositionWithPID(Pose2d pose, double targetAngle) {
+        DoubleSupplier theta = () -> new Pose2d(pose.getTranslation(), new Rotation2d()).relativeTo(new Pose2d(getPose().getTranslation(), new Rotation2d()))
+                .getTranslation().getAngle().getRadians();
         return new PIDCommand(profyPidController,
-                () -> -getPose().relativeTo(new Pose2d(pose, new Rotation2d())).getTranslation().getNorm(), 0.0,
+                () -> -new Pose2d(pose.getTranslation(), new Rotation2d()).relativeTo(new Pose2d(getPose().getTranslation(), new Rotation2d())).getTranslation()
+                        .getNorm(),
+                0.0,
                 (d) -> {
-                    setControl(pidRequest.withSpeeds(ChassisSpeeds.fromRobotRelativeSpeeds(new ChassisSpeeds(
-                            Math.min(3, Math.max(d * Math.cos(theta.getAsDouble()), -3)),
-                            Math.min(3, Math.max(d * -Math.sin(theta.getAsDouble()), -3)),
-                            /*
-                             * ANGLE_CONTROLLER.calculate(this.getPose().getRotation().getRadians(),
-                             * targetAngle)
-                             */0.0), getRotation().minus(Rotation2d.fromDegrees(90)))));
+                    setControl(pidRequest.withSpeeds(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(
+                            Math.min(TRANSLATION_SPEED_M_PER_SEC, Math.max(d * Math.cos(theta.getAsDouble()), -TRANSLATION_SPEED_M_PER_SEC)),
+                            Math.min(TRANSLATION_SPEED_M_PER_SEC, Math.max(d * Math.sin(theta.getAsDouble()), -TRANSLATION_SPEED_M_PER_SEC)),
+                            Math.min(OMEGA_RAD_PER_SEC, Math.max(-OMEGA_RAD_PER_SEC, ANGLE_CONTROLLER.calculate(getRotation().getRadians(), targetAngle)))), getRotation())));
                 }, this);
     }
 
