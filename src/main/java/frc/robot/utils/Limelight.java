@@ -95,7 +95,7 @@ public class Limelight extends VisionSystem {
                 return Optional.of(new Double[] { 1.0, 1.0 });
             }
             return Optional.of(new Double[] { 0.1, 0.1 });
-        } else if (visionResults.tagCount == 1 && visionResults.avgTagArea >= 0.4
+        } else if (visionResults.tagCount == 1 && visionResults.avgTagArea >= 0.23
                 && validPose) {
             return Optional.of(new Double[] { 0.1, 0.1 });
         } else {

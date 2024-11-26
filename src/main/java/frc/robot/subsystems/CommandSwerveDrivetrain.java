@@ -326,17 +326,24 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     }
 
     public Command translateToPositionWithPID(Pose2d pose, double targetAngle) {
-        DoubleSupplier theta = () -> new Pose2d(pose.getTranslation(), new Rotation2d()).relativeTo(new Pose2d(getPose().getTranslation(), new Rotation2d()))
+        DoubleSupplier theta = () -> new Pose2d(pose.getTranslation(), new Rotation2d())
+                .relativeTo(new Pose2d(getPose().getTranslation(), new Rotation2d()))
                 .getTranslation().getAngle().getRadians();
         return new PIDCommand(profyPidController,
-                () -> -new Pose2d(pose.getTranslation(), new Rotation2d()).relativeTo(new Pose2d(getPose().getTranslation(), new Rotation2d())).getTranslation()
+                () -> -new Pose2d(pose.getTranslation(), new Rotation2d())
+                        .relativeTo(new Pose2d(getPose().getTranslation(), new Rotation2d())).getTranslation()
                         .getNorm(),
                 0.0,
                 (d) -> {
                     setControl(pidRequest.withSpeeds(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(
-                            Math.min(TRANSLATION_SPEED_M_PER_SEC, Math.max(d * Math.cos(theta.getAsDouble()), -TRANSLATION_SPEED_M_PER_SEC)),
-                            Math.min(TRANSLATION_SPEED_M_PER_SEC, Math.max(d * Math.sin(theta.getAsDouble()), -TRANSLATION_SPEED_M_PER_SEC)),
-                            Math.min(OMEGA_RAD_PER_SEC, Math.max(-OMEGA_RAD_PER_SEC, ANGLE_CONTROLLER.calculate(getRotation().getRadians(), targetAngle)))), getRotation())));
+                            Math.min(TRANSLATION_SPEED_M_PER_SEC,
+                                    Math.max(d * Math.cos(theta.getAsDouble()), -TRANSLATION_SPEED_M_PER_SEC)),
+                            Math.min(TRANSLATION_SPEED_M_PER_SEC,
+                                    Math.max(d * Math.sin(theta.getAsDouble()), -TRANSLATION_SPEED_M_PER_SEC)),
+                            Math.min(OMEGA_RAD_PER_SEC,
+                                    Math.max(-OMEGA_RAD_PER_SEC,
+                                            ANGLE_CONTROLLER.calculate(getRotation().getRadians(), targetAngle)))),
+                            getRotation())));
                 }, this);
     }
 
